@@ -28,6 +28,36 @@ class TableCrafter {
       exportFiltered: true,
       exportFilename: 'table-export.csv',
       currentPage: 1,
+      // Advanced filtering configuration
+      filters: {
+        advanced: false,
+        autoDetect: true,
+        types: {}, // Custom filter types per column
+        showClearAll: true
+      },
+      // Bulk operations configuration
+      bulk: {
+        enabled: false,
+        operations: ['delete', 'export'],
+        showProgress: true
+      },
+      // Add new entries configuration
+      addNew: {
+        enabled: false,
+        modal: true,
+        fields: [],
+        validation: {}
+      },
+      // Mobile responsive configuration
+      responsive: {
+        enabled: true,
+        breakpoints: {
+          mobile: { width: 480, layout: 'cards' },
+          tablet: { width: 768, layout: 'compact' },
+          desktop: { width: 1024, layout: 'table' }
+        },
+        fieldVisibility: {}
+      },
       ...config
     };
 
@@ -39,6 +69,9 @@ class TableCrafter {
     this.filters = {};
     this.isLoading = false;
     this.editingCell = null;
+    this.selectedRows = new Set();
+    this.filterTypes = {};
+    this.uniqueValues = {};
 
     // Initialize if data provided
     if (this.config.data) {
@@ -409,7 +442,7 @@ class TableCrafter {
   }
 
   /**
-   * Get filtered data
+   * Get filtered data with advanced filtering support
    */
   getFilteredData() {
     if (!this.config.filterable || Object.keys(this.filters).length === 0) {
@@ -418,9 +451,41 @@ class TableCrafter {
 
     return this.data.filter(row => {
       return Object.entries(this.filters).every(([field, filterValue]) => {
-        if (!filterValue) return true;
-        const cellValue = (row[field] || '').toString().toLowerCase();
-        return cellValue.includes(filterValue.toLowerCase());
+        if (!filterValue || (Array.isArray(filterValue) && filterValue.length === 0)) {
+          return true;
+        }
+
+        const cellValue = row[field];
+        const filterType = this.filterTypes[field] || 'text';
+
+        switch (filterType) {
+          case 'multiselect':
+            return Array.isArray(filterValue) && filterValue.includes(cellValue);
+
+          case 'daterange':
+            if (!cellValue) return false;
+            const cellDate = new Date(cellValue);
+            const fromDate = filterValue.from ? new Date(filterValue.from) : null;
+            const toDate = filterValue.to ? new Date(filterValue.to) : null;
+            
+            if (fromDate && cellDate < fromDate) return false;
+            if (toDate && cellDate > toDate) return false;
+            return true;
+
+          case 'numberrange':
+            if (!cellValue && cellValue !== 0) return false;
+            const numValue = parseFloat(cellValue);
+            if (isNaN(numValue)) return false;
+            
+            if (filterValue.min !== undefined && numValue < filterValue.min) return false;
+            if (filterValue.max !== undefined && numValue > filterValue.max) return false;
+            return true;
+
+          default: // text
+            const cellString = (cellValue || '').toString().toLowerCase();
+            const filterString = filterValue.toString().toLowerCase();
+            return cellString.includes(filterString);
+        }
       });
     });
   }
@@ -546,37 +611,300 @@ class TableCrafter {
   }
 
   /**
+   * Analyze data to detect filter types
+   */
+  detectFilterTypes() {
+    if (!this.config.filters.autoDetect || this.data.length === 0) {
+      return;
+    }
+
+    this.config.columns.forEach(column => {
+      const field = column.field;
+      const values = this.data.map(row => row[field]).filter(val => val != null);
+      
+      if (values.length === 0) return;
+
+      // Store unique values for dropdowns
+      this.uniqueValues[field] = [...new Set(values)];
+
+      // Auto-detect filter type if not specified
+      if (!this.config.filters.types[field]) {
+        const sampleValue = values[0];
+        
+        // Check if it's a date
+        if (this.isDateField(values)) {
+          this.filterTypes[field] = 'daterange';
+        }
+        // Check if it's numeric
+        else if (this.isNumericField(values)) {
+          this.filterTypes[field] = 'numberrange';
+        }
+        // Check if it should be a multiselect (limited unique values)
+        else if (this.uniqueValues[field].length <= 20 && this.uniqueValues[field].length > 1) {
+          this.filterTypes[field] = 'multiselect';
+        }
+        // Default to text
+        else {
+          this.filterTypes[field] = 'text';
+        }
+      } else {
+        this.filterTypes[field] = this.config.filters.types[field].type || 'text';
+      }
+    });
+  }
+
+  /**
+   * Check if field contains date values
+   */
+  isDateField(values) {
+    const datePatterns = [
+      /^\d{4}-\d{2}-\d{2}/, // YYYY-MM-DD
+      /^\d{2}\/\d{2}\/\d{4}/, // MM/DD/YYYY
+      /^\d{2}-\d{2}-\d{4}/ // MM-DD-YYYY
+    ];
+    
+    return values.slice(0, 5).every(val => {
+      const str = val.toString();
+      return datePatterns.some(pattern => pattern.test(str)) || !isNaN(Date.parse(str));
+    });
+  }
+
+  /**
+   * Check if field contains numeric values
+   */
+  isNumericField(values) {
+    return values.slice(0, 10).every(val => !isNaN(parseFloat(val)) && isFinite(val));
+  }
+
+  /**
    * Render filter controls
    */
   renderFilters() {
+    // Detect filter types first
+    this.detectFilterTypes();
+
     const filtersContainer = document.createElement('div');
     filtersContainer.className = 'tc-filters';
 
+    // Add clear all button if enabled
+    if (this.config.filters.showClearAll) {
+      const clearAllBtn = document.createElement('button');
+      clearAllBtn.className = 'tc-clear-filters';
+      clearAllBtn.textContent = 'Clear All Filters';
+      clearAllBtn.addEventListener('click', () => this.clearFilters());
+      filtersContainer.appendChild(clearAllBtn);
+    }
+
+    // Create filter row container
+    const filterRow = document.createElement('div');
+    filterRow.className = 'tc-filters-row';
+
     this.config.columns.forEach(column => {
-      const filterDiv = document.createElement('div');
-      filterDiv.className = 'tc-filter';
-
-      const label = document.createElement('label');
-      label.textContent = column.label;
-      label.className = 'tc-filter-label';
-
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'tc-filter-input';
-      input.placeholder = `Filter ${column.label}...`;
-      input.dataset.field = column.field;
-      input.value = this.filters[column.field] || '';
-
-      input.addEventListener('input', (e) => {
-        this.setFilter(column.field, e.target.value);
-      });
-
-      filterDiv.appendChild(label);
-      filterDiv.appendChild(input);
-      filtersContainer.appendChild(filterDiv);
+      const filterType = this.filterTypes[column.field] || 'text';
+      const filterDiv = this.createFilterControl(column, filterType);
+      filterRow.appendChild(filterDiv);
     });
 
+    filtersContainer.appendChild(filterRow);
     return filtersContainer;
+  }
+
+  /**
+   * Create individual filter control
+   */
+  createFilterControl(column, filterType) {
+    const filterDiv = document.createElement('div');
+    filterDiv.className = 'tc-filter';
+
+    const label = document.createElement('label');
+    label.textContent = column.label;
+    label.className = 'tc-filter-label';
+    filterDiv.appendChild(label);
+
+    switch (filterType) {
+      case 'multiselect':
+        filterDiv.appendChild(this.createMultiselectFilter(column));
+        break;
+      case 'daterange':
+        filterDiv.appendChild(this.createDateRangeFilter(column));
+        break;
+      case 'numberrange':
+        filterDiv.appendChild(this.createNumberRangeFilter(column));
+        break;
+      default:
+        filterDiv.appendChild(this.createTextFilter(column));
+    }
+
+    return filterDiv;
+  }
+
+  /**
+   * Create text filter input
+   */
+  createTextFilter(column) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'tc-filter-input';
+    input.placeholder = `Filter ${column.label}...`;
+    input.dataset.field = column.field;
+    input.value = this.filters[column.field] || '';
+
+    input.addEventListener('input', (e) => {
+      this.setFilter(column.field, e.target.value);
+    });
+
+    return input;
+  }
+
+  /**
+   * Create multiselect filter dropdown
+   */
+  createMultiselectFilter(column) {
+    const container = document.createElement('div');
+    container.className = 'tc-multiselect-container';
+
+    const button = document.createElement('button');
+    button.className = 'tc-multiselect-button';
+    button.textContent = 'Select values...';
+    button.type = 'button';
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'tc-multiselect-dropdown';
+    dropdown.style.display = 'none';
+
+    const uniqueValues = this.uniqueValues[column.field] || [];
+    const currentFilter = this.filters[column.field] || [];
+
+    uniqueValues.forEach(value => {
+      const option = document.createElement('label');
+      option.className = 'tc-multiselect-option';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = value;
+      checkbox.checked = currentFilter.includes(value);
+      checkbox.addEventListener('change', () => {
+        this.updateMultiselectFilter(column.field, dropdown);
+      });
+
+      option.appendChild(checkbox);
+      option.appendChild(document.createTextNode(value));
+      dropdown.appendChild(option);
+    });
+
+    button.addEventListener('click', () => {
+      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Update button text based on selection
+    this.updateMultiselectButton(button, currentFilter);
+
+    container.appendChild(button);
+    container.appendChild(dropdown);
+    return container;
+  }
+
+  /**
+   * Update multiselect filter based on checkbox changes
+   */
+  updateMultiselectFilter(field, dropdown) {
+    const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+    const selectedValues = Array.from(checkboxes)
+      .filter(cb => cb.checked)
+      .map(cb => cb.value);
+
+    this.setFilter(field, selectedValues);
+    
+    // Update button text
+    const button = dropdown.previousElementSibling;
+    this.updateMultiselectButton(button, selectedValues);
+  }
+
+  /**
+   * Update multiselect button text
+   */
+  updateMultiselectButton(button, selectedValues) {
+    if (selectedValues.length === 0) {
+      button.textContent = 'Select values...';
+    } else if (selectedValues.length === 1) {
+      button.textContent = selectedValues[0];
+    } else {
+      button.textContent = `${selectedValues.length} selected`;
+    }
+  }
+
+  /**
+   * Create date range filter
+   */
+  createDateRangeFilter(column) {
+    const container = document.createElement('div');
+    container.className = 'tc-daterange-container';
+
+    const fromInput = document.createElement('input');
+    fromInput.type = 'date';
+    fromInput.className = 'tc-date-from';
+    fromInput.placeholder = 'From';
+
+    const toInput = document.createElement('input');
+    toInput.type = 'date';
+    toInput.className = 'tc-date-to';
+    toInput.placeholder = 'To';
+
+    const currentFilter = this.filters[column.field] || {};
+    fromInput.value = currentFilter.from || '';
+    toInput.value = currentFilter.to || '';
+
+    const updateDateFilter = () => {
+      const filter = {};
+      if (fromInput.value) filter.from = fromInput.value;
+      if (toInput.value) filter.to = toInput.value;
+      
+      this.setFilter(column.field, Object.keys(filter).length > 0 ? filter : null);
+    };
+
+    fromInput.addEventListener('change', updateDateFilter);
+    toInput.addEventListener('change', updateDateFilter);
+
+    container.appendChild(fromInput);
+    container.appendChild(toInput);
+    return container;
+  }
+
+  /**
+   * Create number range filter
+   */
+  createNumberRangeFilter(column) {
+    const container = document.createElement('div');
+    container.className = 'tc-numberrange-container';
+
+    const minInput = document.createElement('input');
+    minInput.type = 'number';
+    minInput.className = 'tc-number-min';
+    minInput.placeholder = 'Min';
+
+    const maxInput = document.createElement('input');
+    maxInput.type = 'number';
+    maxInput.className = 'tc-number-max';
+    maxInput.placeholder = 'Max';
+
+    const currentFilter = this.filters[column.field] || {};
+    minInput.value = currentFilter.min || '';
+    maxInput.value = currentFilter.max || '';
+
+    const updateNumberFilter = () => {
+      const filter = {};
+      if (minInput.value) filter.min = parseFloat(minInput.value);
+      if (maxInput.value) filter.max = parseFloat(maxInput.value);
+      
+      this.setFilter(column.field, Object.keys(filter).length > 0 ? filter : null);
+    };
+
+    minInput.addEventListener('input', updateNumberFilter);
+    maxInput.addEventListener('input', updateNumberFilter);
+
+    container.appendChild(minInput);
+    container.appendChild(maxInput);
+    return container;
   }
 
   /**
