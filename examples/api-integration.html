@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TableCrafter.js - API Integration Demo</title>
+    <link rel="stylesheet" href="../src/tablecrafter.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .api-status {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 20px 0;
+            color: #2e7d32;
+        }
+        .mock-api-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TableCrafter.js - API Integration Demo</h1>
+        <p>This demo shows how to integrate TableCrafter.js with a REST API backend.</p>
+
+        <div class="mock-api-info">
+            <strong>Note:</strong> This demo uses a mock API for demonstration. In production, replace the mock functions with real API endpoints.
+        </div>
+
+        <div class="api-status">
+            <strong>API Status:</strong> <span id="api-status">Connecting...</span>
+        </div>
+
+        <div id="api-table"></div>
+
+        <h2>Configuration</h2>
+        <div class="code-block">
+const table = new TableCrafter('#api-table', {
+    // No initial data - will be loaded from API
+    columns: [
+        { field: 'id', label: 'ID' },
+        { field: 'name', label: 'Name', editable: true },
+        { field: 'email', label: 'Email', editable: true },
+        { 
+            field: 'department_id', 
+            label: 'Department',
+            editable: true,
+            lookup: {
+                type: 'departments',
+                url: '/api/departments',
+                valueField: 'id',
+                displayField: 'name'
+            }
+        },
+        { field: 'role', label: 'Role', editable: true },
+        { field: 'created_at', label: 'Created' }
+    ],
+    
+    // API configuration
+    api: {
+        baseUrl: '/api/users',
+        endpoints: {
+            data: '',
+            create: '',
+            update: '/{id}',
+            delete: '/{id}',
+            lookup: '/lookup'
+        },
+        headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': 'demo-api-key'
+        },
+        authentication: {
+            type: 'bearer',
+            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        }
+    },
+    
+    editable: true,
+    pagination: true,
+    pageSize: 10,
+    filterable: true,
+    exportable: true,
+    
+    bulk: {
+        enabled: true,
+        operations: ['delete', 'export']
+    },
+    
+    addNew: {
+        enabled: true,
+        modal: true,
+        fields: [
+            { name: 'name', label: 'Name', type: 'text', required: true },
+            { name: 'email', label: 'Email', type: 'email', required: true },
+            { name: 'role', label: 'Role', type: 'text', required: true }
+        ]
+    }
+});
+
+// Load data from API
+table.loadDataFromAPI().then(() => {
+    table.render();
+}).catch(error => {
+    console.error('Failed to load data:', error);
+});
+        </div>
+
+        <h2>Mock API Implementation</h2>
+        <div class="code-block">
+// Mock API server simulation
+class MockAPIServer {
+    constructor() {
+        this.users = [
+            { id: 1, name: 'John Doe', email: 'john@example.com', department_id: 1, role: 'Developer', created_at: '2023-01-15' },
+            { id: 2, name: 'Jane Smith', email: 'jane@example.com', department_id: 2, role: 'Designer', created_at: '2023-02-20' },
+            // ... more data
+        ];
+        this.departments = [
+            { id: 1, name: 'Engineering' },
+            { id: 2, name: 'Design' },
+            { id: 3, name: 'Marketing' }
+        ];
+    }
+
+    async get(url) {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        if (url === '/api/users') {
+            return { data: this.users, total: this.users.length };
+        }
+        if (url === '/api/departments') {
+            return this.departments;
+        }
+        throw new Error('Endpoint not found');
+    }
+
+    async post(url, data) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        if (url === '/api/users') {
+            const newUser = { 
+                id: Math.max(...this.users.map(u => u.id)) + 1,
+                ...data,
+                created_at: new Date().toISOString().split('T')[0]
+            };
+            this.users.push(newUser);
+            return newUser;
+        }
+        throw new Error('Endpoint not found');
+    }
+
+    async put(url, data) {
+        await new Promise(resolve => setTimeout(resolve, 400));
+        
+        const match = url.match(/\/api\/users\/(\d+)/);
+        if (match) {
+            const id = parseInt(match[1]);
+            const userIndex = this.users.findIndex(u => u.id === id);
+            if (userIndex !== -1) {
+                this.users[userIndex] = { ...this.users[userIndex], ...data };
+                return this.users[userIndex];
+            }
+        }
+        throw new Error('User not found');
+    }
+
+    async delete(url) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const match = url.match(/\/api\/users\/(\d+)/);
+        if (match) {
+            const id = parseInt(match[1]);
+            const userIndex = this.users.findIndex(u => u.id === id);
+            if (userIndex !== -1) {
+                this.users.splice(userIndex, 1);
+                return { success: true };
+            }
+        }
+        throw new Error('User not found');
+    }
+}
+        </div>
+    </div>
+
+    <script src="../src/tablecrafter.js"></script>
+    <script>
+        // Mock API Server
+        class MockAPIServer {
+            constructor() {
+                this.users = [
+                    { id: 1, name: 'John Doe', email: 'john@example.com', department_id: 1, role: 'Senior Developer', created_at: '2023-01-15' },
+                    { id: 2, name: 'Jane Smith', email: 'jane@example.com', department_id: 2, role: 'UI Designer', created_at: '2023-02-20' },
+                    { id: 3, name: 'Mike Johnson', email: 'mike@example.com', department_id: 1, role: 'DevOps Engineer', created_at: '2023-03-10' },
+                    { id: 4, name: 'Sarah Wilson', email: 'sarah@example.com', department_id: 3, role: 'Marketing Manager', created_at: '2023-04-05' },
+                    { id: 5, name: 'Tom Brown', email: 'tom@example.com', department_id: 1, role: 'Junior Developer', created_at: '2023-05-12' },
+                    { id: 6, name: 'Lisa Davis', email: 'lisa@example.com', department_id: 2, role: 'UX Designer', created_at: '2023-06-18' },
+                    { id: 7, name: 'Kevin Miller', email: 'kevin@example.com', department_id: 3, role: 'Content Writer', created_at: '2023-07-22' },
+                    { id: 8, name: 'Amy Taylor', email: 'amy@example.com', department_id: 1, role: 'QA Engineer', created_at: '2023-08-30' }
+                ];
+                this.departments = [
+                    { id: 1, name: 'Engineering' },
+                    { id: 2, name: 'Design' },
+                    { id: 3, name: 'Marketing' }
+                ];
+            }
+
+            async request(method, url, data = null) {
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 500));
+                
+                try {
+                    switch (method) {
+                        case 'GET':
+                            if (url === '/api/users') {
+                                return this.users;
+                            }
+                            if (url === '/api/users/lookup/departments') {
+                                return this.departments;
+                            }
+                            break;
+                            
+                        case 'POST':
+                            if (url === '/api/users') {
+                                const newUser = { 
+                                    id: Math.max(...this.users.map(u => u.id)) + 1,
+                                    ...data,
+                                    created_at: new Date().toISOString().split('T')[0]
+                                };
+                                this.users.push(newUser);
+                                return newUser;
+                            }
+                            break;
+                            
+                        case 'PUT':
+                            const putMatch = url.match(/\/api\/users\/(\d+)/);
+                            if (putMatch) {
+                                const id = parseInt(putMatch[1]);
+                                const userIndex = this.users.findIndex(u => u.id === id);
+                                if (userIndex !== -1) {
+                                    this.users[userIndex] = { ...this.users[userIndex], ...data };
+                                    return this.users[userIndex];
+                                }
+                            }
+                            break;
+                            
+                        case 'DELETE':
+                            const deleteMatch = url.match(/\/api\/users\/(\d+)/);
+                            if (deleteMatch) {
+                                const id = parseInt(deleteMatch[1]);
+                                const userIndex = this.users.findIndex(u => u.id === id);
+                                if (userIndex !== -1) {
+                                    this.users.splice(userIndex, 1);
+                                    return { success: true };
+                                }
+                            }
+                            break;
+                    }
+                    
+                    throw new Error(`Endpoint not found: ${method} ${url}`);
+                } catch (error) {
+                    // Simulate occasional API errors
+                    if (Math.random() < 0.05) {
+                        throw new Error('Simulated API error');
+                    }
+                    throw error;
+                }
+            }
+        }
+
+        // Initialize mock server
+        const mockAPI = new MockAPIServer();
+
+        // Override fetch for this demo
+        const originalFetch = window.fetch;
+        window.fetch = async function(url, options = {}) {
+            const method = options.method || 'GET';
+            const data = options.body ? JSON.parse(options.body) : null;
+            
+            try {
+                const result = await mockAPI.request(method, url, data);
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => result
+                };
+            } catch (error) {
+                return {
+                    ok: false,
+                    status: 500,
+                    json: async () => ({ error: error.message })
+                };
+            }
+        };
+
+        // Update API status
+        function updateAPIStatus(status, color = '#4caf50') {
+            const statusElement = document.getElementById('api-status');
+            statusElement.textContent = status;
+            statusElement.style.color = color;
+        }
+
+        // Initialize the table with API integration
+        const table = new TableCrafter('#api-table', {
+            columns: [
+                { field: 'id', label: 'ID' },
+                { field: 'name', label: 'Name', editable: true },
+                { field: 'email', label: 'Email', editable: true },
+                { 
+                    field: 'department_id', 
+                    label: 'Department',
+                    editable: true,
+                    lookup: {
+                        type: 'departments',
+                        url: '/api/users/lookup/departments',
+                        valueField: 'id',
+                        displayField: 'name'
+                    }
+                },
+                { field: 'role', label: 'Role', editable: true },
+                { field: 'created_at', label: 'Created' }
+            ],
+            
+            // API configuration
+            api: {
+                baseUrl: '/api/users',
+                endpoints: {
+                    data: '',
+                    create: '',
+                    update: '/{id}',
+                    delete: '/{id}',
+                    lookup: '/lookup'
+                },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': 'demo-api-key'
+                },
+                authentication: {
+                    type: 'bearer',
+                    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo.token'
+                }
+            },
+            
+            editable: true,
+            pagination: true,
+            pageSize: 5,
+            filterable: true,
+            exportable: true,
+            
+            filters: {
+                advanced: true,
+                autoDetect: true,
+                showClearAll: true
+            },
+            
+            bulk: {
+                enabled: true,
+                operations: ['delete', 'export']
+            },
+            
+            addNew: {
+                enabled: true,
+                modal: true,
+                fields: [
+                    { name: 'name', label: 'Full Name', type: 'text', required: true },
+                    { name: 'email', label: 'Email', type: 'email', required: true },
+                    { name: 'role', label: 'Role', type: 'text', required: true }
+                ],
+                validation: {
+                    name: { required: true, minLength: 2 },
+                    email: { required: true, type: 'email' }
+                }
+            },
+            
+            state: {
+                persist: true,
+                storage: 'localStorage',
+                key: 'api_demo_table'
+            },
+            
+            // Event callbacks
+            onEdit: function(event) {
+                console.log('Edit event:', event);
+                updateAPIStatus('Data updated successfully');
+                setTimeout(() => updateAPIStatus('Connected'), 2000);
+            },
+            onAdd: function(event) {
+                console.log('Add event:', event);
+                updateAPIStatus('New entry created');
+                setTimeout(() => updateAPIStatus('Connected'), 2000);
+            },
+            onBulkAction: function(event) {
+                console.log('Bulk action:', event);
+                if (event.action === 'delete') {
+                    updateAPIStatus(`Deleted ${event.selectedRows.length} items`);
+                    setTimeout(() => updateAPIStatus('Connected'), 2000);
+                }
+            }
+        });
+
+        // Load data from API and render
+        updateAPIStatus('Loading data...', '#ff9800');
+        
+        table.loadDataFromAPI().then(() => {
+            updateAPIStatus('Connected');
+            table.render();
+        }).catch(error => {
+            console.error('Failed to load data:', error);
+            updateAPIStatus('Connection failed', '#f44336');
+        });
+    </script>
+</body>
+</html>
