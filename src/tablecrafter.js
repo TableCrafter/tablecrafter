@@ -58,6 +58,34 @@ class TableCrafter {
         },
         fieldVisibility: {}
       },
+      // API integration configuration
+      api: {
+        baseUrl: '',
+        endpoints: {
+          data: '/data',
+          create: '/create',
+          update: '/update',
+          delete: '/delete',
+          lookup: '/lookup'
+        },
+        headers: {},
+        authentication: null
+      },
+      // Permission system configuration
+      permissions: {
+        enabled: false,
+        view: ['*'],
+        edit: ['*'],
+        delete: ['*'],
+        create: ['*'],
+        ownOnly: false
+      },
+      // State persistence configuration
+      state: {
+        persist: false,
+        storage: 'localStorage',
+        key: 'tablecrafter_state'
+      },
       ...config
     };
 
@@ -72,6 +100,12 @@ class TableCrafter {
     this.selectedRows = new Set();
     this.filterTypes = {};
     this.uniqueValues = {};
+    this.lookupCache = new Map();
+    this.currentUser = null;
+    this.userPermissions = [];
+
+    // Load state if persistence enabled
+    this.loadState();
 
     // Initialize if data provided
     if (this.config.data) {
@@ -319,13 +353,20 @@ class TableCrafter {
         const tr = document.createElement('tr');
         tr.dataset.rowIndex = actualRowIndex;
 
-        this.config.columns.forEach(column => {
+        this.config.columns.forEach(async (column) => {
           const td = document.createElement('td');
-          td.textContent = row[column.field] || '';
+          
+          // Format lookup values
+          let displayValue = row[column.field] || '';
+          if (column.lookup && displayValue) {
+            displayValue = await this.formatLookupValue(column, displayValue);
+          }
+          
+          td.textContent = displayValue;
           td.dataset.field = column.field;
 
-          // Make cell editable if configured
-          if (this.config.editable && column.editable) {
+          // Make cell editable if configured and user has permission
+          if (this.config.editable && column.editable && this.hasPermission('edit', row)) {
             td.className = 'tc-editable';
             td.addEventListener('click', (e) => this.startEdit(e, actualRowIndex, column.field));
           }
@@ -497,11 +538,21 @@ class TableCrafter {
 
           const value = document.createElement('span');
           value.className = 'tc-card-value';
-          value.textContent = row[column.field] || '';
+          
+          // Format lookup values
+          let displayValue = row[column.field] || '';
+          if (column.lookup && displayValue) {
+            this.formatLookupValue(column, displayValue).then(formatted => {
+              value.textContent = formatted;
+            });
+          } else {
+            value.textContent = displayValue;
+          }
+          
           value.dataset.field = column.field;
 
-          // Make field editable if configured
-          if (this.config.editable && column.editable) {
+          // Make field editable if configured and user has permission
+          if (this.config.editable && column.editable && this.hasPermission('edit', row)) {
             value.className += ' tc-editable';
             value.addEventListener('click', (e) => this.startEdit(e, actualRowIndex, column.field));
           }
@@ -528,11 +579,21 @@ class TableCrafter {
 
             const value = document.createElement('span');
             value.className = 'tc-card-value';
-            value.textContent = row[column.field] || '';
+            
+            // Format lookup values
+            let displayValue = row[column.field] || '';
+            if (column.lookup && displayValue) {
+              this.formatLookupValue(column, displayValue).then(formatted => {
+                value.textContent = formatted;
+              });
+            } else {
+              value.textContent = displayValue;
+            }
+            
             value.dataset.field = column.field;
 
-            // Make field editable if configured
-            if (this.config.editable && column.editable) {
+            // Make field editable if configured and user has permission
+            if (this.config.editable && column.editable && this.hasPermission('edit', row)) {
               value.className += ' tc-editable';
               value.addEventListener('click', (e) => this.startEdit(e, actualRowIndex, column.field));
             }
@@ -568,8 +629,13 @@ class TableCrafter {
   /**
    * Start editing a cell
    */
-  startEdit(event, rowIndex, field) {
+  async startEdit(event, rowIndex, field) {
     const target = event.currentTarget;
+    
+    // Check permissions
+    if (!this.hasPermission('edit', this.data[rowIndex])) {
+      return;
+    }
     
     // Don't start edit if already editing
     if (this.editingCell === target) {
@@ -582,36 +648,53 @@ class TableCrafter {
     }
 
     const currentValue = this.data[rowIndex][field];
+    const column = this.config.columns.find(col => col.field === field);
     
-    // Create input
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = currentValue || '';
-    input.className = 'tc-edit-input';
+    let editElement;
+    
+    // Create appropriate edit control based on field type
+    if (column && column.lookup) {
+      // Create lookup dropdown
+      editElement = await this.createLookupDropdown(column, currentValue);
+      editElement.className = 'tc-edit-select';
+    } else {
+      // Create regular input
+      editElement = document.createElement('input');
+      editElement.type = column?.type || 'text';
+      editElement.value = currentValue || '';
+      editElement.className = 'tc-edit-input';
+    }
 
-    // Store original value
-    input.dataset.originalValue = currentValue || '';
-    input.dataset.rowIndex = rowIndex;
-    input.dataset.field = field;
+    // Store original value and metadata
+    editElement.dataset.originalValue = currentValue || '';
+    editElement.dataset.rowIndex = rowIndex;
+    editElement.dataset.field = field;
 
-    // Replace content with input
+    // Replace content with edit element
     target.innerHTML = '';
-    target.appendChild(input);
+    target.appendChild(editElement);
     
-    // Focus and select
-    input.focus();
-    input.select();
+    // Focus the element
+    editElement.focus();
+    if (editElement.select) {
+      editElement.select();
+    }
 
     // Set current editing cell
     this.editingCell = target;
 
-    // Handle blur
-    input.addEventListener('blur', () => this.saveEdit(input));
+    // Handle blur/change events
+    if (editElement.tagName === 'SELECT') {
+      editElement.addEventListener('change', () => this.saveEdit(editElement));
+      editElement.addEventListener('blur', () => this.saveEdit(editElement));
+    } else {
+      editElement.addEventListener('blur', () => this.saveEdit(editElement));
+    }
 
     // Handle Enter/Escape keys
-    input.addEventListener('keydown', (e) => {
+    editElement.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
-        this.saveEdit(input);
+        this.saveEdit(editElement);
       } else if (e.key === 'Escape') {
         this.cancelEdit();
       }
@@ -621,14 +704,27 @@ class TableCrafter {
   /**
    * Save edited value
    */
-  saveEdit(input) {
-    const rowIndex = parseInt(input.dataset.rowIndex);
-    const field = input.dataset.field;
-    const oldValue = input.dataset.originalValue;
-    const newValue = input.value;
+  async saveEdit(element) {
+    const rowIndex = parseInt(element.dataset.rowIndex);
+    const field = element.dataset.field;
+    const oldValue = element.dataset.originalValue;
+    const newValue = element.value;
 
     // Update data
     this.data[rowIndex][field] = newValue;
+
+    // Update via API if configured
+    if (this.config.api.baseUrl) {
+      try {
+        await this.updateEntry(rowIndex, { [field]: newValue });
+      } catch (error) {
+        // Revert on error
+        this.data[rowIndex][field] = oldValue;
+        alert('Failed to save changes: ' + error.message);
+        this.cancelEdit();
+        return;
+      }
+    }
 
     // Call onEdit callback if provided
     if (this.config.onEdit) {
@@ -640,9 +736,17 @@ class TableCrafter {
       });
     }
 
-    // Update display
-    const parent = input.parentElement;
-    parent.textContent = newValue;
+    // Update display with formatted value
+    const parent = element.parentElement;
+    const column = this.config.columns.find(col => col.field === field);
+    
+    if (column && column.lookup) {
+      // Format lookup value for display
+      const displayValue = await this.formatLookupValue(column, newValue);
+      parent.textContent = displayValue;
+    } else {
+      parent.textContent = newValue;
+    }
     
     // Clear editing state
     this.editingCell = null;
@@ -654,9 +758,9 @@ class TableCrafter {
   cancelEdit() {
     if (!this.editingCell) return;
 
-    const input = this.editingCell.querySelector('input');
-    if (input) {
-      this.editingCell.textContent = input.dataset.originalValue;
+    const element = this.editingCell.querySelector('input, select');
+    if (element) {
+      this.editingCell.textContent = element.dataset.originalValue;
     }
     
     this.editingCell = null;
@@ -666,11 +770,14 @@ class TableCrafter {
    * Get filtered data with advanced filtering support
    */
   getFilteredData() {
+    // Apply permission filtering first
+    let data = this.getPermissionFilteredData();
+    
     if (!this.config.filterable || Object.keys(this.filters).length === 0) {
-      return this.data;
+      return data;
     }
 
-    return this.data.filter(row => {
+    return data.filter(row => {
       return Object.entries(this.filters).every(([field, filterValue]) => {
         if (!filterValue || (Array.isArray(filterValue) && filterValue.length === 0)) {
           return true;
@@ -752,6 +859,7 @@ class TableCrafter {
     const totalPages = this.getTotalPages();
     if (page >= 1 && page <= totalPages) {
       this.currentPage = page;
+      this.saveState();
       this.render();
     }
   }
@@ -1132,14 +1240,17 @@ class TableCrafter {
    * Set filter for a field
    */
   setFilter(field, value) {
-    if (!value || value.trim() === '') {
+    if (!value || (typeof value === 'string' && value.trim() === '') || (Array.isArray(value) && value.length === 0)) {
       delete this.filters[field];
     } else {
-      this.filters[field] = value.trim();
+      this.filters[field] = typeof value === 'string' ? value.trim() : value;
     }
 
     // Reset to first page when filtering
     this.currentPage = 1;
+
+    // Save state if persistence enabled
+    this.saveState();
 
     // Call onFilter callback if provided
     if (this.config.onFilter) {
@@ -1159,6 +1270,7 @@ class TableCrafter {
   clearFilters() {
     this.filters = {};
     this.currentPage = 1;
+    this.saveState();
     this.render();
   }
 
@@ -1291,6 +1403,7 @@ class TableCrafter {
 
     // Reset to first page after sorting
     this.currentPage = 1;
+    this.saveState();
     this.render();
   }
 
@@ -1688,9 +1801,384 @@ class TableCrafter {
   }
 
   /**
+   * API Integration Methods
+   */
+
+  /**
+   * Make API request with authentication and error handling
+   */
+  async apiRequest(endpoint, options = {}) {
+    const config = this.config.api;
+    const url = config.baseUrl + endpoint;
+    
+    const requestOptions = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...config.headers
+      },
+      ...options
+    };
+
+    // Add authentication if configured
+    if (config.authentication) {
+      if (config.authentication.type === 'bearer') {
+        requestOptions.headers['Authorization'] = `Bearer ${config.authentication.token}`;
+      } else if (config.authentication.type === 'api-key') {
+        requestOptions.headers[config.authentication.headerName] = config.authentication.key;
+      }
+    }
+
+    try {
+      const response = await fetch(url, requestOptions);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Load data from API
+   */
+  async loadDataFromAPI() {
+    if (!this.config.api.baseUrl) {
+      throw new Error('API base URL not configured');
+    }
+
+    try {
+      this.isLoading = true;
+      const data = await this.apiRequest(this.config.api.endpoints.data);
+      this.data = Array.isArray(data) ? data : data.data || [];
+      this.isLoading = false;
+      
+      if (this.container.querySelector('.tc-wrapper')) {
+        this.render();
+      }
+      
+      return this.data;
+    } catch (error) {
+      this.isLoading = false;
+      throw error;
+    }
+  }
+
+  /**
+   * Create new entry via API
+   */
+  async createEntry(entryData) {
+    if (!this.config.api.baseUrl) {
+      // Fall back to local creation
+      this.data.push(entryData);
+      return entryData;
+    }
+
+    try {
+      const response = await this.apiRequest(this.config.api.endpoints.create, {
+        method: 'POST',
+        body: JSON.stringify(entryData)
+      });
+      
+      // Add to local data
+      this.data.push(response);
+      return response;
+    } catch (error) {
+      console.error('Failed to create entry:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update entry via API
+   */
+  async updateEntry(index, entryData) {
+    const originalEntry = this.data[index];
+    
+    if (!this.config.api.baseUrl) {
+      // Fall back to local update
+      this.data[index] = { ...originalEntry, ...entryData };
+      return this.data[index];
+    }
+
+    try {
+      const response = await this.apiRequest(
+        `${this.config.api.endpoints.update}/${originalEntry.id || index}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify(entryData)
+        }
+      );
+      
+      // Update local data
+      this.data[index] = response;
+      return response;
+    } catch (error) {
+      console.error('Failed to update entry:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete entry via API
+   */
+  async deleteEntry(index) {
+    const entry = this.data[index];
+    
+    if (!this.config.api.baseUrl) {
+      // Fall back to local deletion
+      this.data.splice(index, 1);
+      return true;
+    }
+
+    try {
+      await this.apiRequest(
+        `${this.config.api.endpoints.delete}/${entry.id || index}`,
+        { method: 'DELETE' }
+      );
+      
+      // Remove from local data
+      this.data.splice(index, 1);
+      return true;
+    } catch (error) {
+      console.error('Failed to delete entry:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Lookup Fields System
+   */
+
+  /**
+   * Load lookup data for a field
+   */
+  async loadLookupData(field, lookupConfig) {
+    const cacheKey = `${field}_${JSON.stringify(lookupConfig)}`;
+    
+    // Check cache first
+    if (this.lookupCache.has(cacheKey)) {
+      return this.lookupCache.get(cacheKey);
+    }
+
+    try {
+      let data;
+      
+      if (lookupConfig.url) {
+        // Load from custom URL
+        const response = await fetch(lookupConfig.url);
+        data = await response.json();
+      } else if (lookupConfig.type && this.config.api.baseUrl) {
+        // Load from API endpoint
+        const endpoint = `${this.config.api.endpoints.lookup}/${lookupConfig.type}`;
+        data = await this.apiRequest(endpoint);
+      } else if (lookupConfig.data) {
+        // Use provided static data
+        data = lookupConfig.data;
+      } else {
+        throw new Error('No lookup data source configured');
+      }
+
+      // Apply filters if specified
+      if (lookupConfig.filter) {
+        data = data.filter(item => {
+          return Object.entries(lookupConfig.filter).every(([key, value]) => {
+            return item[key] === value;
+          });
+        });
+      }
+
+      // Cache the result
+      this.lookupCache.set(cacheKey, data);
+      return data;
+    } catch (error) {
+      console.error('Failed to load lookup data:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Create lookup dropdown for editing
+   */
+  async createLookupDropdown(column, currentValue) {
+    const lookupConfig = column.lookup;
+    if (!lookupConfig) return null;
+
+    const data = await this.loadLookupData(column.field, lookupConfig);
+    
+    const select = document.createElement('select');
+    select.className = 'tc-lookup-select';
+    
+    // Add empty option
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = 'Select...';
+    select.appendChild(emptyOption);
+    
+    // Add options from lookup data
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item[lookupConfig.valueField || 'id'];
+      option.textContent = item[lookupConfig.displayField || 'name'];
+      
+      if (option.value == currentValue) {
+        option.selected = true;
+      }
+      
+      select.appendChild(option);
+    });
+    
+    return select;
+  }
+
+  /**
+   * Format lookup field display value
+   */
+  async formatLookupValue(column, value) {
+    if (!value || !column.lookup) return value;
+    
+    const lookupConfig = column.lookup;
+    const data = await this.loadLookupData(column.field, lookupConfig);
+    
+    const item = data.find(item => 
+      item[lookupConfig.valueField || 'id'] == value
+    );
+    
+    return item ? item[lookupConfig.displayField || 'name'] : value;
+  }
+
+  /**
+   * Permission System
+   */
+
+  /**
+   * Set current user context
+   */
+  setCurrentUser(user) {
+    this.currentUser = user;
+    this.userPermissions = user.roles || user.permissions || [];
+  }
+
+  /**
+   * Check if user has permission for action
+   */
+  hasPermission(action, entry = null) {
+    if (!this.config.permissions.enabled) {
+      return true;
+    }
+
+    const permissions = this.config.permissions;
+    const allowedRoles = permissions[action] || [];
+    
+    // Check if all users allowed
+    if (allowedRoles.includes('*')) {
+      return true;
+    }
+    
+    // Check if user has required role
+    const hasRole = this.userPermissions.some(role => allowedRoles.includes(role));
+    if (!hasRole) {
+      return false;
+    }
+    
+    // Check own-only restriction
+    if (permissions.ownOnly && entry && this.currentUser) {
+      return entry.user_id === this.currentUser.id || entry.created_by === this.currentUser.id;
+    }
+    
+    return true;
+  }
+
+  /**
+   * Filter data based on permissions
+   */
+  getPermissionFilteredData() {
+    if (!this.config.permissions.enabled || !this.config.permissions.ownOnly) {
+      return this.data;
+    }
+    
+    return this.data.filter(entry => this.hasPermission('view', entry));
+  }
+
+  /**
+   * State Persistence System
+   */
+
+  /**
+   * Save current state to storage
+   */
+  saveState() {
+    if (!this.config.state.persist) return;
+    
+    const state = {
+      filters: this.filters,
+      sortField: this.sortField,
+      sortOrder: this.sortOrder,
+      currentPage: this.currentPage,
+      selectedRows: Array.from(this.selectedRows),
+      timestamp: Date.now()
+    };
+    
+    try {
+      const storage = this.config.state.storage === 'sessionStorage' ? 
+        sessionStorage : localStorage;
+      storage.setItem(this.config.state.key, JSON.stringify(state));
+    } catch (error) {
+      console.warn('Failed to save state:', error);
+    }
+  }
+
+  /**
+   * Load state from storage
+   */
+  loadState() {
+    if (!this.config.state.persist) return;
+    
+    try {
+      const storage = this.config.state.storage === 'sessionStorage' ? 
+        sessionStorage : localStorage;
+      const stateJson = storage.getItem(this.config.state.key);
+      
+      if (!stateJson) return;
+      
+      const state = JSON.parse(stateJson);
+      
+      // Restore state
+      this.filters = state.filters || {};
+      this.sortField = state.sortField;
+      this.sortOrder = state.sortOrder || 'asc';
+      this.currentPage = state.currentPage || 1;
+      this.selectedRows = new Set(state.selectedRows || []);
+      
+    } catch (error) {
+      console.warn('Failed to load state:', error);
+    }
+  }
+
+  /**
+   * Clear saved state
+   */
+  clearState() {
+    try {
+      const storage = this.config.state.storage === 'sessionStorage' ? 
+        sessionStorage : localStorage;
+      storage.removeItem(this.config.state.key);
+    } catch (error) {
+      console.warn('Failed to clear state:', error);
+    }
+  }
+
+  /**
    * Destroy the table instance
    */
   destroy() {
+    // Save final state
+    this.saveState();
+    
     // Remove event listeners
     if (this.config.responsive) {
       window.removeEventListener('resize', this.handleResize);
@@ -1703,6 +2191,7 @@ class TableCrafter {
     this.data = [];
     this.editingCell = null;
     this.selectedRows.clear();
+    this.lookupCache.clear();
   }
 }
 
