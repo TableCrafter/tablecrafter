@@ -48,6 +48,41 @@ class TableCrafter {
         fields: [],
         validation: {}
       },
+      // Data validation configuration
+      validation: {
+        enabled: true,
+        showErrors: true,
+        validateOnEdit: true,
+        validateOnSubmit: true,
+        rules: {}, // Column-specific validation rules
+        messages: {
+          required: 'This field is required',
+          email: 'Please enter a valid email address',
+          minLength: 'Minimum length is {min} characters',
+          maxLength: 'Maximum length is {max} characters',
+          min: 'Minimum value is {min}',
+          max: 'Maximum value is {max}',
+          pattern: 'Please enter a valid format',
+          custom: 'Validation failed'
+        }
+      },
+      // Rich cell types configuration
+      cellTypes: {
+        text: { multiline: false },
+        textarea: { rows: 3 },
+        number: { step: 1, precision: 2 },
+        email: { validation: true },
+        date: { format: 'YYYY-MM-DD', showCalendar: true },
+        datetime: { format: 'YYYY-MM-DDTHH:mm', showTime: true },
+        select: { multiple: false, searchable: false },
+        multiselect: { multiple: true, searchable: true },
+        checkbox: { label: '' },
+        radio: { orientation: 'horizontal' },
+        file: { accept: '*/*', multiple: false, preview: true },
+        url: { openInNewTab: true },
+        color: { format: 'hex' },
+        range: { min: 0, max: 100, step: 1 }
+      },
       // Mobile responsive configuration
       responsive: {
         enabled: true,
@@ -103,9 +138,19 @@ class TableCrafter {
     this.lookupCache = new Map();
     this.currentUser = null;
     this.userPermissions = [];
+    this.validationErrors = new Map(); // Track validation errors by cell
+    this.validationRules = new Map(); // Compiled validation rules
+    this.cellTypeRegistry = new Map(); // Rich cell type handlers
+    this.activeEditors = new Map(); // Track active rich editors
 
     // Load state if persistence enabled
     this.loadState();
+
+    // Initialize validation system
+    this.initializeValidation();
+
+    // Initialize rich cell types system
+    this.initializeCellTypes();
 
     // Initialize if data provided
     if (this.config.data) {
@@ -657,6 +702,9 @@ class TableCrafter {
       // Create lookup dropdown
       editElement = await this.createLookupDropdown(column, currentValue);
       editElement.className = 'tc-edit-select';
+    } else if (column && column.type && this.cellTypeRegistry.has(column.type)) {
+      // Create rich cell type editor
+      editElement = await this.createRichCellEditor(column, currentValue, rowIndex);
     } else {
       // Create regular input
       editElement = document.createElement('input');
@@ -708,7 +756,39 @@ class TableCrafter {
     const rowIndex = parseInt(element.dataset.rowIndex);
     const field = element.dataset.field;
     const oldValue = element.dataset.originalValue;
-    const newValue = element.value;
+    
+    // Get new value based on element type
+    let newValue;
+    if (element.getValue && typeof element.getValue === 'function') {
+      // Rich cell type with custom getValue method
+      newValue = element.getValue();
+    } else if (element.type === 'checkbox') {
+      newValue = element.checked;
+    } else if (element.type === 'file') {
+      newValue = element.files.length > 0 ? element.files[0].name : oldValue;
+    } else {
+      newValue = element.value;
+    }
+
+    // Validate the new value
+    if (this.config.validation.enabled && this.config.validation.validateOnEdit) {
+      const validation = this.validateField(field, newValue, this.data[rowIndex]);
+      
+      if (!validation.isValid) {
+        // Show validation errors
+        this.showValidationError(element, validation.errors);
+        this.setValidationError(rowIndex, field, validation.errors);
+        
+        // Don't save invalid data
+        element.value = oldValue; // Revert to original value
+        element.focus();
+        return;
+      } else {
+        // Clear any existing validation errors
+        this.clearValidationError(element);
+        this.setValidationError(rowIndex, field, []);
+      }
+    }
 
     // Update data
     this.data[rowIndex][field] = newValue;
@@ -1645,56 +1725,30 @@ class TableCrafter {
     
     const fields = this.config.addNew.fields.length > 0 ? 
       this.config.addNew.fields : 
-      this.config.columns.filter(col => col.field !== 'id' && col.editable !== false);
+      this.config.columns.filter(col => col.field !== 'id');
 
-    fields.forEach((field, index) => {
+    fields.forEach(field => {
       const fieldDiv = document.createElement('div');
       fieldDiv.className = 'tc-form-field';
-      
-      // Add validation error container
-      const errorContainer = document.createElement('div');
-      errorContainer.className = 'tc-form-error';
-      errorContainer.style.display = 'none';
 
       const label = document.createElement('label');
       label.className = 'tc-form-label';
       label.textContent = field.label || field.name;
       label.setAttribute('for', `tc-form-${field.field || field.name}`);
-      
-      // Add required indicator
-      if (field.validation?.required || field.required) {
-        const required = document.createElement('span');
-        required.className = 'tc-required';
-        required.textContent = ' *';
-        label.appendChild(required);
-      }
 
-      // Create appropriate input based on rich cell type
-      const inputElement = this.createFormInput(field);
-      inputElement.id = `tc-form-${field.field || field.name}`;
-      inputElement.name = field.field || field.name;
+      const input = document.createElement('input');
+      input.className = 'tc-form-input';
+      input.type = field.type || 'text';
+      input.id = `tc-form-${field.field || field.name}`;
+      input.name = field.field || field.name;
+      input.required = field.required || false;
       
-      // Add validation attributes
-      if (field.validation?.required || field.required) {
-        inputElement.required = true;
+      if (field.placeholder) {
+        input.placeholder = field.placeholder;
       }
-      
-      // Add real-time validation
-      inputElement.addEventListener('blur', () => {
-        this.validateFormField(inputElement, field, errorContainer);
-      });
-      
-      inputElement.addEventListener('input', () => {
-        // Clear error on input
-        if (errorContainer.style.display !== 'none') {
-          errorContainer.style.display = 'none';
-          inputElement.classList.remove('tc-validation-error');
-        }
-      });
 
       fieldDiv.appendChild(label);
-      fieldDiv.appendChild(inputElement);
-      fieldDiv.appendChild(errorContainer);
+      fieldDiv.appendChild(input);
       form.appendChild(fieldDiv);
     });
 
@@ -1733,33 +1787,21 @@ class TableCrafter {
    * Handle add new entry form submission
    */
   handleAddNewSubmit(form) {
-    // Validate entire form before submission
-    const isValid = this.validateEntireForm(form);
-    
-    if (!isValid) {
-      return;
-    }
-
     const formData = new FormData(form);
     const newEntry = {};
 
-    // Process form data based on field types
-    const fields = this.config.addNew.fields.length > 0 ? 
-      this.config.addNew.fields : 
-      this.config.columns.filter(col => col.field !== 'id' && col.editable !== false);
+    for (let [key, value] of formData.entries()) {
+      newEntry[key] = value;
+    }
 
-    fields.forEach(field => {
-      const fieldName = field.field || field.name;
-      const inputElement = form.querySelector(`[name="${fieldName}"]`);
+    // Validate using the new validation system
+    if (this.config.validation.enabled && this.config.validation.validateOnSubmit) {
+      const validation = this.validateRow(newEntry, -1); // -1 for new entry
       
-      if (inputElement) {
-        newEntry[fieldName] = this.extractFormFieldValue(inputElement, field);
+      if (!validation.isValid) {
+        this.showFormValidationErrors(form, validation.errors);
+        return;
       }
-    });
-
-    // Generate ID if not provided
-    if (!newEntry.id) {
-      newEntry.id = this.data.length > 0 ? Math.max(...this.data.map(d => d.id || 0)) + 1 : 1;
     }
 
     // Add to data
@@ -1779,324 +1821,6 @@ class TableCrafter {
         totalEntries: this.data.length
       });
     }
-  }
-
-  /**
-   * Create form input based on field type
-   */
-  createFormInput(field) {
-    const type = field.type || 'text';
-    const fieldName = field.field || field.name;
-    
-    switch (type) {
-      case 'textarea':
-        const textarea = document.createElement('textarea');
-        textarea.className = 'tc-form-input tc-textarea';
-        textarea.rows = field.rows || 3;
-        if (field.placeholder) textarea.placeholder = field.placeholder;
-        if (field.validation?.maxLength) textarea.maxLength = field.validation.maxLength;
-        return textarea;
-        
-      case 'select':
-        const select = document.createElement('select');
-        select.className = 'tc-form-input tc-select';
-        
-        if (!field.validation?.required && !field.required) {
-          const defaultOption = document.createElement('option');
-          defaultOption.value = '';
-          defaultOption.textContent = field.placeholder || 'Select an option';
-          select.appendChild(defaultOption);
-        }
-        
-        if (field.options) {
-          field.options.forEach(option => {
-            const optionElement = document.createElement('option');
-            optionElement.value = typeof option === 'object' ? option.value : option;
-            optionElement.textContent = typeof option === 'object' ? option.label : option;
-            select.appendChild(optionElement);
-          });
-        }
-        return select;
-        
-      case 'multiselect':
-        const multiselectContainer = document.createElement('div');
-        multiselectContainer.className = 'tc-multiselect-form-container';
-        
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = fieldName;
-        
-        const checkboxContainer = document.createElement('div');
-        checkboxContainer.className = 'tc-multiselect-checkboxes';
-        
-        if (field.options) {
-          field.options.forEach(option => {
-            const checkboxDiv = document.createElement('div');
-            checkboxDiv.className = 'tc-checkbox-item';
-            
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.value = typeof option === 'object' ? option.value : option;
-            checkbox.addEventListener('change', () => {
-              this.updateMultiselectValue(checkboxContainer, hiddenInput);
-            });
-            
-            const label = document.createElement('label');
-            label.textContent = typeof option === 'object' ? option.label : option;
-            
-            checkboxDiv.appendChild(checkbox);
-            checkboxDiv.appendChild(label);
-            checkboxContainer.appendChild(checkboxDiv);
-          });
-        }
-        
-        multiselectContainer.appendChild(hiddenInput);
-        multiselectContainer.appendChild(checkboxContainer);
-        return multiselectContainer;
-        
-      case 'checkbox':
-        const checkboxInput = document.createElement('input');
-        checkboxInput.type = 'checkbox';
-        checkboxInput.className = 'tc-form-input tc-checkbox';
-        checkboxInput.value = '1';
-        return checkboxInput;
-        
-      case 'radio':
-        const radioContainer = document.createElement('div');
-        radioContainer.className = 'tc-radio-form-container';
-        
-        const radioHidden = document.createElement('input');
-        radioHidden.type = 'hidden';
-        radioHidden.name = fieldName;
-        
-        if (field.options) {
-          field.options.forEach(option => {
-            const radioDiv = document.createElement('div');
-            radioDiv.className = 'tc-radio-item';
-            
-            const radio = document.createElement('input');
-            radio.type = 'radio';
-            radio.name = `${fieldName}_radio`;
-            radio.value = typeof option === 'object' ? option.value : option;
-            radio.addEventListener('change', () => {
-              if (radio.checked) {
-                radioHidden.value = radio.value;
-              }
-            });
-            
-            const label = document.createElement('label');
-            label.textContent = typeof option === 'object' ? option.label : option;
-            
-            radioDiv.appendChild(radio);
-            radioDiv.appendChild(label);
-            radioContainer.appendChild(radioDiv);
-          });
-        }
-        
-        radioContainer.appendChild(radioHidden);
-        return radioContainer;
-        
-      case 'file':
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.className = 'tc-form-input tc-file';
-        if (field.accept) fileInput.accept = field.accept;
-        if (field.multiple) fileInput.multiple = field.multiple;
-        return fileInput;
-        
-      case 'color':
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.className = 'tc-form-input tc-color';
-        return colorInput;
-        
-      case 'range':
-        const rangeContainer = document.createElement('div');
-        rangeContainer.className = 'tc-range-form-container';
-        
-        const rangeInput = document.createElement('input');
-        rangeInput.type = 'range';
-        rangeInput.className = 'tc-form-input tc-range';
-        rangeInput.min = field.min || 0;
-        rangeInput.max = field.max || 100;
-        rangeInput.step = field.step || 1;
-        
-        const rangeValue = document.createElement('span');
-        rangeValue.className = 'tc-range-value';
-        rangeValue.textContent = rangeInput.value;
-        
-        rangeInput.addEventListener('input', () => {
-          rangeValue.textContent = rangeInput.value;
-        });
-        
-        const rangeHidden = document.createElement('input');
-        rangeHidden.type = 'hidden';
-        rangeHidden.name = fieldName;
-        rangeHidden.value = rangeInput.value;
-        
-        rangeInput.addEventListener('input', () => {
-          rangeHidden.value = rangeInput.value;
-        });
-        
-        rangeContainer.appendChild(rangeInput);
-        rangeContainer.appendChild(rangeValue);
-        rangeContainer.appendChild(rangeHidden);
-        return rangeContainer;
-        
-      case 'number':
-        const numberInput = document.createElement('input');
-        numberInput.type = 'number';
-        numberInput.className = 'tc-form-input tc-number';
-        if (field.min !== undefined) numberInput.min = field.min;
-        if (field.max !== undefined) numberInput.max = field.max;
-        if (field.step !== undefined) numberInput.step = field.step;
-        if (field.placeholder) numberInput.placeholder = field.placeholder;
-        return numberInput;
-        
-      case 'email':
-        const emailInput = document.createElement('input');
-        emailInput.type = 'email';
-        emailInput.className = 'tc-form-input tc-email';
-        if (field.placeholder) emailInput.placeholder = field.placeholder;
-        return emailInput;
-        
-      case 'url':
-        const urlInput = document.createElement('input');
-        urlInput.type = 'url';
-        urlInput.className = 'tc-form-input tc-url';
-        if (field.placeholder) urlInput.placeholder = field.placeholder;
-        return urlInput;
-        
-      case 'date':
-        const dateInput = document.createElement('input');
-        dateInput.type = 'date';
-        dateInput.className = 'tc-form-input tc-date';
-        if (field.min) dateInput.min = field.min;
-        if (field.max) dateInput.max = field.max;
-        return dateInput;
-        
-      case 'datetime':
-        const datetimeInput = document.createElement('input');
-        datetimeInput.type = 'datetime-local';
-        datetimeInput.className = 'tc-form-input tc-datetime';
-        return datetimeInput;
-        
-      default: // text
-        const textInput = document.createElement('input');
-        textInput.type = 'text';
-        textInput.className = 'tc-form-input tc-text';
-        if (field.placeholder) textInput.placeholder = field.placeholder;
-        if (field.validation?.maxLength) textInput.maxLength = field.validation.maxLength;
-        return textInput;
-    }
-  }
-  
-  /**
-   * Update multiselect hidden value
-   */
-  updateMultiselectValue(container, hiddenInput) {
-    const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
-    const values = Array.from(checkboxes).map(cb => cb.value);
-    hiddenInput.value = JSON.stringify(values);
-  }
-  
-  /**
-   * Extract form field value based on type
-   */
-  extractFormFieldValue(inputElement, field) {
-    const type = field.type || 'text';
-    
-    switch (type) {
-      case 'multiselect':
-        const hiddenInput = inputElement.querySelector('input[type="hidden"]');
-        return hiddenInput ? JSON.parse(hiddenInput.value || '[]') : [];
-        
-      case 'checkbox':
-        return inputElement.checked;
-        
-      case 'radio':
-        const radioHidden = inputElement.querySelector('input[type="hidden"]');
-        return radioHidden ? radioHidden.value : '';
-        
-      case 'range':
-        const rangeHidden = inputElement.querySelector('input[type="hidden"]');
-        return rangeHidden ? parseFloat(rangeHidden.value) : 0;
-        
-      case 'number':
-        return inputElement.value ? parseFloat(inputElement.value) : null;
-        
-      case 'file':
-        return inputElement.files.length > 0 ? inputElement.files[0].name : '';
-        
-      default:
-        return inputElement.value;
-    }
-  }
-  
-  /**
-   * Validate individual form field
-   */
-  validateFormField(inputElement, field, errorContainer) {
-    const value = this.extractFormFieldValue(inputElement.closest('.tc-form-field'), field);
-    const validation = field.validation || {};
-    
-    // Clear previous errors
-    inputElement.classList.remove('tc-validation-error');
-    errorContainer.style.display = 'none';
-    
-    // Required validation
-    if ((validation.required || field.required) && (!value || value === '' || (Array.isArray(value) && value.length === 0))) {
-      this.showFieldError(inputElement, errorContainer, validation.message || this.config.validation?.messages?.required || 'This field is required');
-      return false;
-    }
-    
-    // Skip other validations if empty and not required
-    if (!value || value === '') {
-      return true;
-    }
-    
-    // Type-specific validation
-    const error = this.validateFieldValue(value, field);
-    if (error) {
-      this.showFieldError(inputElement, errorContainer, error);
-      return false;
-    }
-    
-    return true;
-  }
-  
-  /**
-   * Show field error
-   */
-  showFieldError(inputElement, errorContainer, message) {
-    inputElement.classList.add('tc-validation-error');
-    errorContainer.textContent = message;
-    errorContainer.style.display = 'block';
-  }
-  
-  /**
-   * Validate entire form
-   */
-  validateEntireForm(form) {
-    let isValid = true;
-    const fields = this.config.addNew.fields.length > 0 ? 
-      this.config.addNew.fields : 
-      this.config.columns.filter(col => col.field !== 'id' && col.editable !== false);
-    
-    fields.forEach(field => {
-      const fieldName = field.field || field.name;
-      const inputElement = form.querySelector(`[name="${fieldName}"]`);
-      const errorContainer = form.querySelector(`#tc-form-${fieldName}`).closest('.tc-form-field').querySelector('.tc-form-error');
-      
-      if (inputElement && errorContainer) {
-        const fieldValid = this.validateFormField(inputElement, field, errorContainer);
-        if (!fieldValid) {
-          isValid = false;
-        }
-      }
-    });
-    
-    return isValid;
   }
 
   /**
@@ -2527,6 +2251,647 @@ class TableCrafter {
     } catch (error) {
       console.warn('Failed to clear state:', error);
     }
+  }
+
+  /**
+   * Rich Cell Types System
+   */
+
+  /**
+   * Initialize built-in cell types
+   */
+  initializeCellTypes() {
+    // Register built-in cell types
+    this.registerCellType('text', this.createTextEditor.bind(this));
+    this.registerCellType('textarea', this.createTextareaEditor.bind(this));
+    this.registerCellType('number', this.createNumberEditor.bind(this));
+    this.registerCellType('email', this.createEmailEditor.bind(this));
+    this.registerCellType('date', this.createDateEditor.bind(this));
+    this.registerCellType('datetime', this.createDateTimeEditor.bind(this));
+    this.registerCellType('select', this.createSelectEditor.bind(this));
+    this.registerCellType('multiselect', this.createMultiSelectEditor.bind(this));
+    this.registerCellType('checkbox', this.createCheckboxEditor.bind(this));
+    this.registerCellType('radio', this.createRadioEditor.bind(this));
+    this.registerCellType('file', this.createFileEditor.bind(this));
+    this.registerCellType('url', this.createUrlEditor.bind(this));
+    this.registerCellType('color', this.createColorEditor.bind(this));
+    this.registerCellType('range', this.createRangeEditor.bind(this));
+  }
+
+  /**
+   * Register a custom cell type
+   */
+  registerCellType(type, editorFactory) {
+    this.cellTypeRegistry.set(type, editorFactory);
+  }
+
+  /**
+   * Create rich cell editor based on column type
+   */
+  async createRichCellEditor(column, currentValue, rowIndex) {
+    const editorFactory = this.cellTypeRegistry.get(column.type);
+    if (!editorFactory) {
+      throw new Error(`Unknown cell type: ${column.type}`);
+    }
+
+    return await editorFactory(column, currentValue, rowIndex);
+  }
+
+  /**
+   * Built-in Cell Type Editors
+   */
+
+  createTextEditor(column, currentValue) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentValue || '';
+    input.className = 'tc-edit-input tc-text-input';
+    
+    if (column.maxLength) input.maxLength = column.maxLength;
+    if (column.placeholder) input.placeholder = column.placeholder;
+    
+    return input;
+  }
+
+  createTextareaEditor(column, currentValue) {
+    const textarea = document.createElement('textarea');
+    textarea.value = currentValue || '';
+    textarea.className = 'tc-edit-textarea';
+    
+    const config = this.config.cellTypes.textarea;
+    textarea.rows = column.rows || config.rows;
+    
+    if (column.maxLength) textarea.maxLength = column.maxLength;
+    if (column.placeholder) textarea.placeholder = column.placeholder;
+    
+    return textarea;
+  }
+
+  createNumberEditor(column, currentValue) {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.value = currentValue || '';
+    input.className = 'tc-edit-input tc-number-input';
+    
+    if (column.min !== undefined) input.min = column.min;
+    if (column.max !== undefined) input.max = column.max;
+    if (column.step !== undefined) input.step = column.step;
+    if (column.placeholder) input.placeholder = column.placeholder;
+    
+    return input;
+  }
+
+  createEmailEditor(column, currentValue) {
+    const input = document.createElement('input');
+    input.type = 'email';
+    input.value = currentValue || '';
+    input.className = 'tc-edit-input tc-email-input';
+    
+    if (column.placeholder) input.placeholder = column.placeholder;
+    
+    return input;
+  }
+
+  createDateEditor(column, currentValue) {
+    const input = document.createElement('input');
+    input.type = 'date';
+    input.className = 'tc-edit-input tc-date-input';
+    
+    // Format date value for input
+    if (currentValue) {
+      const date = new Date(currentValue);
+      if (!isNaN(date.getTime())) {
+        input.value = date.toISOString().split('T')[0];
+      }
+    }
+    
+    if (column.min) input.min = column.min;
+    if (column.max) input.max = column.max;
+    
+    return input;
+  }
+
+  createDateTimeEditor(column, currentValue) {
+    const input = document.createElement('input');
+    input.type = 'datetime-local';
+    input.className = 'tc-edit-input tc-datetime-input';
+    
+    // Format datetime value for input
+    if (currentValue) {
+      const date = new Date(currentValue);
+      if (!isNaN(date.getTime())) {
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+        input.value = localDate.toISOString().slice(0, 16);
+      }
+    }
+    
+    return input;
+  }
+
+  createSelectEditor(column, currentValue) {
+    const select = document.createElement('select');
+    select.className = 'tc-edit-select';
+    
+    // Add default option
+    if (column.placeholder) {
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = column.placeholder;
+      defaultOption.disabled = true;
+      select.appendChild(defaultOption);
+    }
+    
+    // Add options
+    const options = column.options || [];
+    options.forEach(option => {
+      const optionElement = document.createElement('option');
+      
+      if (typeof option === 'string') {
+        optionElement.value = option;
+        optionElement.textContent = option;
+      } else {
+        optionElement.value = option.value;
+        optionElement.textContent = option.label || option.value;
+      }
+      
+      if (optionElement.value === currentValue) {
+        optionElement.selected = true;
+      }
+      
+      select.appendChild(optionElement);
+    });
+    
+    return select;
+  }
+
+  createMultiSelectEditor(column, currentValue) {
+    const container = document.createElement('div');
+    container.className = 'tc-multiselect-container';
+    
+    const selectedValues = Array.isArray(currentValue) ? currentValue : 
+      (currentValue ? currentValue.split(',') : []);
+    
+    const options = column.options || [];
+    options.forEach(option => {
+      const label = document.createElement('label');
+      label.className = 'tc-multiselect-option';
+      
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'tc-multiselect-checkbox';
+      
+      const text = document.createElement('span');
+      
+      if (typeof option === 'string') {
+        checkbox.value = option;
+        text.textContent = option;
+        checkbox.checked = selectedValues.includes(option);
+      } else {
+        checkbox.value = option.value;
+        text.textContent = option.label || option.value;
+        checkbox.checked = selectedValues.includes(option.value);
+      }
+      
+      label.appendChild(checkbox);
+      label.appendChild(text);
+      container.appendChild(label);
+    });
+    
+    // Add method to get selected values
+    container.getValue = function() {
+      const checkboxes = this.querySelectorAll('input[type="checkbox"]:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    };
+    
+    return container;
+  }
+
+  createCheckboxEditor(column, currentValue) {
+    const container = document.createElement('div');
+    container.className = 'tc-checkbox-container';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'tc-edit-checkbox';
+    checkbox.checked = this.isTruthy(currentValue);
+    
+    if (column.label) {
+      const label = document.createElement('label');
+      label.className = 'tc-checkbox-label';
+      
+      const text = document.createElement('span');
+      text.textContent = column.label;
+      
+      label.appendChild(checkbox);
+      label.appendChild(text);
+      container.appendChild(label);
+    } else {
+      container.appendChild(checkbox);
+    }
+    
+    // Add method to get value
+    container.getValue = function() {
+      return this.querySelector('input[type="checkbox"]').checked;
+    };
+    
+    return container;
+  }
+
+  createRadioEditor(column, currentValue) {
+    const container = document.createElement('div');
+    container.className = 'tc-radio-container';
+    
+    const fieldName = `radio_${Date.now()}_${Math.random()}`;
+    const options = column.options || [];
+    
+    options.forEach(option => {
+      const label = document.createElement('label');
+      label.className = 'tc-radio-option';
+      
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = fieldName;
+      radio.className = 'tc-edit-radio';
+      
+      const text = document.createElement('span');
+      
+      if (typeof option === 'string') {
+        radio.value = option;
+        text.textContent = option;
+        radio.checked = option === currentValue;
+      } else {
+        radio.value = option.value;
+        text.textContent = option.label || option.value;
+        radio.checked = option.value === currentValue;
+      }
+      
+      label.appendChild(radio);
+      label.appendChild(text);
+      container.appendChild(label);
+    });
+    
+    // Add method to get selected value
+    container.getValue = function() {
+      const selected = this.querySelector('input[type="radio"]:checked');
+      return selected ? selected.value : '';
+    };
+    
+    return container;
+  }
+
+  createFileEditor(column, currentValue) {
+    const container = document.createElement('div');
+    container.className = 'tc-file-container';
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.className = 'tc-edit-file';
+    
+    if (column.accept) input.accept = column.accept;
+    if (column.multiple) input.multiple = column.multiple;
+    
+    // Show current file if exists
+    if (currentValue) {
+      const preview = document.createElement('div');
+      preview.className = 'tc-file-preview';
+      preview.textContent = `Current: ${currentValue}`;
+      container.appendChild(preview);
+    }
+    
+    container.appendChild(input);
+    
+    // Add method to get value
+    container.getValue = function() {
+      const fileInput = this.querySelector('input[type="file"]');
+      return fileInput.files.length > 0 ? fileInput.files[0].name : currentValue;
+    };
+    
+    return container;
+  }
+
+  createUrlEditor(column, currentValue) {
+    const input = document.createElement('input');
+    input.type = 'url';
+    input.value = currentValue || '';
+    input.className = 'tc-edit-input tc-url-input';
+    input.placeholder = column.placeholder || 'https://example.com';
+    
+    return input;
+  }
+
+  createColorEditor(column, currentValue) {
+    const container = document.createElement('div');
+    container.className = 'tc-color-container';
+    
+    const input = document.createElement('input');
+    input.type = 'color';
+    input.value = currentValue || '#000000';
+    input.className = 'tc-edit-color';
+    
+    const textInput = document.createElement('input');
+    textInput.type = 'text';
+    textInput.value = currentValue || '#000000';
+    textInput.className = 'tc-color-text';
+    textInput.placeholder = '#000000';
+    
+    // Sync color picker and text input
+    input.addEventListener('change', () => {
+      textInput.value = input.value;
+    });
+    
+    textInput.addEventListener('change', () => {
+      if (/^#[0-9A-F]{6}$/i.test(textInput.value)) {
+        input.value = textInput.value;
+      }
+    });
+    
+    container.appendChild(input);
+    container.appendChild(textInput);
+    
+    // Add method to get value
+    container.getValue = function() {
+      return this.querySelector('.tc-color-text').value;
+    };
+    
+    return container;
+  }
+
+  createRangeEditor(column, currentValue) {
+    const container = document.createElement('div');
+    container.className = 'tc-range-container';
+    
+    const range = document.createElement('input');
+    range.type = 'range';
+    range.value = currentValue || column.min || 0;
+    range.className = 'tc-edit-range';
+    
+    if (column.min !== undefined) range.min = column.min;
+    if (column.max !== undefined) range.max = column.max;
+    if (column.step !== undefined) range.step = column.step;
+    
+    const display = document.createElement('span');
+    display.className = 'tc-range-display';
+    display.textContent = range.value;
+    
+    range.addEventListener('input', () => {
+      display.textContent = range.value;
+    });
+    
+    container.appendChild(range);
+    container.appendChild(display);
+    
+    // Add method to get value
+    container.getValue = function() {
+      return this.querySelector('input[type="range"]').value;
+    };
+    
+    return container;
+  }
+
+  /**
+   * Helper method to determine if a value is truthy for checkboxes
+   */
+  isTruthy(value) {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      return ['true', '1', 'yes', 'on'].includes(value.toLowerCase());
+    }
+    if (typeof value === 'number') return value !== 0;
+    return false;
+  }
+
+  /**
+   * Data Validation System
+   */
+
+  /**
+   * Initialize validation rules for columns
+   */
+  initializeValidation() {
+    if (!this.config.validation.enabled) return;
+
+    this.config.columns.forEach(column => {
+      if (column.validation) {
+        this.validationRules.set(column.field, column.validation);
+      }
+    });
+  }
+
+  /**
+   * Validate a single field value
+   */
+  validateField(field, value, rowData = {}) {
+    if (!this.config.validation.enabled) return { isValid: true };
+
+    const rules = this.validationRules.get(field) || this.config.validation.rules[field];
+    if (!rules) return { isValid: true };
+
+    const errors = [];
+
+    // Required validation
+    if (rules.required && (value === null || value === undefined || value === '')) {
+      errors.push(this.getValidationMessage('required', rules));
+    }
+
+    // Skip other validations if empty and not required
+    if (!rules.required && (value === null || value === undefined || value === '')) {
+      return { isValid: true };
+    }
+
+    // Email validation
+    if (rules.email || rules.type === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        errors.push(this.getValidationMessage('email', rules));
+      }
+    }
+
+    // Min/Max length validation
+    if (rules.minLength && value.length < rules.minLength) {
+      errors.push(this.getValidationMessage('minLength', rules));
+    }
+    if (rules.maxLength && value.length > rules.maxLength) {
+      errors.push(this.getValidationMessage('maxLength', rules));
+    }
+
+    // Min/Max value validation (for numbers)
+    if (rules.min !== undefined) {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue < rules.min) {
+        errors.push(this.getValidationMessage('min', rules));
+      }
+    }
+    if (rules.max !== undefined) {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue > rules.max) {
+        errors.push(this.getValidationMessage('max', rules));
+      }
+    }
+
+    // Pattern validation
+    if (rules.pattern) {
+      const regex = new RegExp(rules.pattern);
+      if (!regex.test(value)) {
+        errors.push(this.getValidationMessage('pattern', rules));
+      }
+    }
+
+    // Custom validation function
+    if (rules.custom && typeof rules.custom === 'function') {
+      try {
+        const result = rules.custom(value, rowData, field);
+        if (result !== true) {
+          errors.push(typeof result === 'string' ? result : this.getValidationMessage('custom', rules));
+        }
+      } catch (error) {
+        errors.push(this.getValidationMessage('custom', rules));
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors: errors
+    };
+  }
+
+  /**
+   * Get validation message with parameter substitution
+   */
+  getValidationMessage(type, rules) {
+    let message = rules.message || this.config.validation.messages[type];
+    
+    // Substitute parameters
+    if (rules.minLength) message = message.replace('{min}', rules.minLength);
+    if (rules.maxLength) message = message.replace('{max}', rules.maxLength);
+    if (rules.min !== undefined) message = message.replace('{min}', rules.min);
+    if (rules.max !== undefined) message = message.replace('{max}', rules.max);
+    
+    return message;
+  }
+
+  /**
+   * Validate entire row
+   */
+  validateRow(rowData, rowIndex) {
+    if (!this.config.validation.enabled) return { isValid: true };
+
+    const errors = {};
+    let isValid = true;
+
+    this.config.columns.forEach(column => {
+      const validation = this.validateField(column.field, rowData[column.field], rowData);
+      if (!validation.isValid) {
+        errors[column.field] = validation.errors;
+        isValid = false;
+      }
+    });
+
+    return { isValid, errors };
+  }
+
+  /**
+   * Show validation error for a cell
+   */
+  showValidationError(element, errors) {
+    if (!this.config.validation.showErrors || !errors || errors.length === 0) return;
+
+    // Remove existing error
+    this.clearValidationError(element);
+
+    // Add error class
+    element.classList.add('tc-validation-error');
+
+    // Create error tooltip
+    const errorTooltip = document.createElement('div');
+    errorTooltip.className = 'tc-validation-tooltip';
+    errorTooltip.textContent = errors[0]; // Show first error
+    
+    // Position tooltip
+    const rect = element.getBoundingClientRect();
+    errorTooltip.style.position = 'absolute';
+    errorTooltip.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+    errorTooltip.style.left = (rect.left + window.scrollX) + 'px';
+    errorTooltip.style.zIndex = '1000';
+
+    document.body.appendChild(errorTooltip);
+
+    // Store reference for cleanup
+    element._validationTooltip = errorTooltip;
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => this.clearValidationError(element), 5000);
+  }
+
+  /**
+   * Clear validation error for a cell
+   */
+  clearValidationError(element) {
+    element.classList.remove('tc-validation-error');
+    
+    if (element._validationTooltip) {
+      document.body.removeChild(element._validationTooltip);
+      delete element._validationTooltip;
+    }
+  }
+
+  /**
+   * Set validation error state for a cell
+   */
+  setValidationError(rowIndex, field, errors) {
+    const key = `${rowIndex}_${field}`;
+    if (errors && errors.length > 0) {
+      this.validationErrors.set(key, errors);
+    } else {
+      this.validationErrors.delete(key);
+    }
+  }
+
+  /**
+   * Get validation errors for a cell
+   */
+  getValidationErrors(rowIndex, field) {
+    const key = `${rowIndex}_${field}`;
+    return this.validationErrors.get(key) || [];
+  }
+
+  /**
+   * Clear all validation errors
+   */
+  clearAllValidationErrors() {
+    this.validationErrors.clear();
+    // Remove all error classes and tooltips
+    const errorElements = this.container.querySelectorAll('.tc-validation-error');
+    errorElements.forEach(element => this.clearValidationError(element));
+  }
+
+  /**
+   * Show validation errors in a form (for Add New modal)
+   */
+  showFormValidationErrors(form, fieldErrors) {
+    // Clear existing errors
+    const existingErrors = form.querySelectorAll('.tc-validation-message');
+    existingErrors.forEach(error => error.remove());
+    
+    const errorFields = form.querySelectorAll('.tc-field-error');
+    errorFields.forEach(field => field.classList.remove('tc-field-error'));
+
+    // Show new errors
+    Object.keys(fieldErrors).forEach(fieldName => {
+      const field = form.querySelector(`[name="${fieldName}"]`);
+      if (field) {
+        // Add error class to field
+        field.classList.add('tc-field-error');
+        
+        // Create error message
+        const errorMessage = document.createElement('span');
+        errorMessage.className = 'tc-validation-message';
+        errorMessage.textContent = fieldErrors[fieldName][0]; // Show first error
+        
+        // Insert after the field
+        field.parentNode.insertBefore(errorMessage, field.nextSibling);
+      }
+    });
   }
 
   /**

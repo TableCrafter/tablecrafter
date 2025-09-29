@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TableCrafter - Rich Cell Types Example</title>
+    <link rel="stylesheet" href="../src/tablecrafter.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .example-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .cell-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .cell-type-card {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #1976d2;
+        }
+        
+        .cell-type-card h5 {
+            margin: 0 0 8px 0;
+            color: #1976d2;
+        }
+        
+        .cell-type-card p {
+            margin: 0;
+            font-size: 13px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📝 TableCrafter Rich Cell Types</h1>
+        <p>Comprehensive demonstration of all supported cell types with editing capabilities</p>
+    </div>
+
+    <div class="example-info">
+        <h3>🎯 Available Rich Cell Types</h3>
+        
+        <div class="cell-types-grid">
+            <div class="cell-type-card">
+                <h5>📝 Text & Textarea</h5>
+                <p>Single line and multi-line text input with length validation</p>
+            </div>
+            <div class="cell-type-card">
+                <h5>🔢 Number</h5>
+                <p>Numeric input with min/max constraints and step controls</p>
+            </div>
+            <div class="cell-type-card">
+                <h5>📧 Email</h5>
+                <p>Email input with built-in format validation</p>
+            </div>
+            <div class="cell-type-card">
+                <h5>📅 Date & DateTime</h5>
+                <p>Date pickers with calendar interface and time selection</p>
+            </div>
+            <div class="cell-type-card">
+                <h5>📋 Select & Multiselect</h5>
+                <p>Dropdown and checkbox-based multi-selection</p>
+            </div>
+            <div class="cell-type-card">
+                <h5>☑️ Checkbox</h5>
+                <p>Boolean values with custom labels</p>
+            </div>
+            <div class="cell-type-card">
+                <h5>📻 Radio</h5>
+                <p>Single selection from multiple options</p>
+            </div>
+            <div class="cell-type-card">
+                <h5>📎 File Upload</h5>
+                <p>File selection with type restrictions and preview</p>
+            </div>
+            <div class="cell-type-card">
+                <h5>🔗 URL</h5>
+                <p>URL input with validation and link preview</p>
+            </div>
+            <div class="cell-type-card">
+                <h5>🎨 Color</h5>
+                <p>Color picker with hex value display</p>
+            </div>
+            <div class="cell-type-card">
+                <h5>📊 Range</h5>
+                <p>Slider input with min/max/step controls</p>
+            </div>
+        </div>
+        
+        <p><strong>Instructions:</strong> Click on any cell to see the rich editor in action. Each cell type provides specialized controls for optimal data entry.</p>
+    </div>
+
+    <div id="rich-cell-table"></div>
+
+    <script src="../src/tablecrafter.js"></script>
+    <script>
+        // Sample data showcasing all rich cell types
+        const richCellData = [
+            {
+                id: 1,
+                name: 'John Doe',
+                bio: 'Software engineer with 10+ years experience in web development.',
+                age: 28,
+                email: 'john@example.com',
+                birthDate: '1995-06-15',
+                lastLogin: '2023-09-29T14:30',
+                department: 'Engineering',
+                skills: ['JavaScript', 'React', 'Node.js'],
+                isActive: true,
+                priority: 'High',
+                avatar: 'john-avatar.jpg',
+                website: 'https://johndoe.dev',
+                favoriteColor: '#3498db',
+                experience: 8
+            },
+            {
+                id: 2,
+                name: 'Jane Smith',
+                bio: 'UX/UI designer passionate about creating beautiful and functional interfaces.',
+                age: 32,
+                email: 'jane@example.com',
+                birthDate: '1991-03-22',
+                lastLogin: '2023-09-29T09:15',
+                department: 'Design',
+                skills: ['Figma', 'Sketch', 'Prototyping'],
+                isActive: true,
+                priority: 'Medium',
+                avatar: 'jane-avatar.jpg',
+                website: 'https://janesmith.design',
+                favoriteColor: '#e74c3c',
+                experience: 6
+            },
+            {
+                id: 3,
+                name: 'Bob Johnson',
+                bio: 'Project manager ensuring smooth delivery of complex software projects.',
+                age: 45,
+                email: 'bob@example.com',
+                birthDate: '1978-11-08',
+                lastLogin: '2023-09-28T16:45',
+                department: 'Management',
+                skills: ['Agile', 'Scrum', 'Leadership'],
+                isActive: false,
+                priority: 'Low',
+                avatar: 'bob-avatar.jpg',
+                website: 'https://linkedin.com/in/bobjohnson',
+                favoriteColor: '#2ecc71',
+                experience: 3
+            }
+        ];
+
+        // Define columns with rich cell types
+        const richCellColumns = [
+            {
+                field: 'id',
+                label: 'ID',
+                editable: false,
+                type: 'number'
+            },
+            {
+                field: 'name',
+                label: 'Full Name',
+                editable: true,
+                type: 'text',
+                placeholder: 'Enter full name',
+                validation: {
+                    required: true,
+                    minLength: 2,
+                    maxLength: 50
+                }
+            },
+            {
+                field: 'bio',
+                label: 'Biography',
+                editable: true,
+                type: 'textarea',
+                rows: 4,
+                placeholder: 'Enter a brief biography...',
+                validation: {
+                    maxLength: 500
+                }
+            },
+            {
+                field: 'age',
+                label: 'Age',
+                editable: true,
+                type: 'number',
+                min: 18,
+                max: 120,
+                validation: {
+                    required: true,
+                    min: 18,
+                    max: 120
+                }
+            },
+            {
+                field: 'email',
+                label: 'Email',
+                editable: true,
+                type: 'email',
+                placeholder: 'user@example.com',
+                validation: {
+                    required: true,
+                    email: true
+                }
+            },
+            {
+                field: 'birthDate',
+                label: 'Birth Date',
+                editable: true,
+                type: 'date',
+                min: '1950-01-01',
+                max: '2005-12-31'
+            },
+            {
+                field: 'lastLogin',
+                label: 'Last Login',
+                editable: true,
+                type: 'datetime'
+            },
+            {
+                field: 'department',
+                label: 'Department',
+                editable: true,
+                type: 'select',
+                options: [
+                    'Engineering',
+                    'Design',
+                    'Marketing',
+                    'Sales',
+                    'Management',
+                    'HR'
+                ],
+                placeholder: 'Select department'
+            },
+            {
+                field: 'skills',
+                label: 'Skills',
+                editable: true,
+                type: 'multiselect',
+                options: [
+                    'JavaScript',
+                    'React',
+                    'Vue.js',
+                    'Angular',
+                    'Node.js',
+                    'Python',
+                    'Java',
+                    'Figma',
+                    'Sketch',
+                    'Prototyping',
+                    'Agile',
+                    'Scrum',
+                    'Leadership'
+                ]
+            },
+            {
+                field: 'isActive',
+                label: 'Active',
+                editable: true,
+                type: 'checkbox',
+                label: 'Is Active'
+            },
+            {
+                field: 'priority',
+                label: 'Priority',
+                editable: true,
+                type: 'radio',
+                options: ['Low', 'Medium', 'High', 'Critical']
+            },
+            {
+                field: 'avatar',
+                label: 'Avatar',
+                editable: true,
+                type: 'file',
+                accept: 'image/*',
+                preview: true
+            },
+            {
+                field: 'website',
+                label: 'Website',
+                editable: true,
+                type: 'url',
+                placeholder: 'https://example.com'
+            },
+            {
+                field: 'favoriteColor',
+                label: 'Favorite Color',
+                editable: true,
+                type: 'color'
+            },
+            {
+                field: 'experience',
+                label: 'Experience (years)',
+                editable: true,
+                type: 'range',
+                min: 0,
+                max: 20,
+                step: 1
+            }
+        ];
+
+        // Create TableCrafter instance with rich cell types
+        const table = new TableCrafter('#rich-cell-table', {
+            data: richCellData,
+            columns: richCellColumns,
+            editable: true,
+            responsive: true,
+            pagination: true,
+            pageSize: 10,
+            
+            // Enable validation for rich cell types
+            validation: {
+                enabled: true,
+                showErrors: true,
+                validateOnEdit: true
+            },
+
+            // Callback for edits
+            onEdit: function(change) {
+                console.log('🎯 Rich cell edit:', {
+                    field: change.field,
+                    oldValue: change.oldValue,
+                    newValue: change.newValue,
+                    type: this.config.columns.find(col => col.field === change.field)?.type
+                });
+            }
+        });
+
+        // Render the table
+        table.render();
+
+        // Add helpful information
+        console.log('📝 TableCrafter Rich Cell Types Demo');
+        console.log('Available cell types:', [
+            'text', 'textarea', 'number', 'email', 'date', 'datetime',
+            'select', 'multiselect', 'checkbox', 'radio', 'file', 'url', 'color', 'range'
+        ]);
+        console.log('Try editing different cells to see specialized editors in action!');
+
+        // Demo function to show how to add custom cell types
+        window.addCustomCellType = function() {
+            // Example: Add a custom phone number cell type
+            table.registerCellType('phone', function(column, currentValue) {
+                const input = document.createElement('input');
+                input.type = 'tel';
+                input.value = currentValue || '';
+                input.className = 'tc-edit-input tc-phone-input';
+                input.placeholder = '(555) 123-4567';
+                
+                // Add input formatting
+                input.addEventListener('input', function() {
+                    let value = this.value.replace(/\D/g, '');
+                    if (value.length >= 6) {
+                        value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)}`;
+                    } else if (value.length >= 3) {
+                        value = `(${value.slice(0,3)}) ${value.slice(3)}`;
+                    }
+                    this.value = value;
+                });
+                
+                return input;
+            });
+            
+            console.log('✨ Custom phone cell type registered! Use type: "phone" in column config.');
+        };
+    </script>
+</body>
+</html>
