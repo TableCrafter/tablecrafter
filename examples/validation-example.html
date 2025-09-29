@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TableCrafter - Data Validation Example</title>
+    <link rel="stylesheet" href="../src/tablecrafter.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .example-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .validation-rules {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .validation-rules h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .validation-rules ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 TableCrafter Data Validation System</h1>
+        <p>Advanced validation with real-time feedback and error handling</p>
+    </div>
+
+    <div class="example-info">
+        <h3>💡 Try editing the cells below to test validation:</h3>
+        
+        <div class="validation-rules">
+            <h4>📋 Validation Rules in Effect:</h4>
+            <ul>
+                <li><strong>Name:</strong> Required, minimum 2 characters, maximum 50 characters</li>
+                <li><strong>Email:</strong> Required, must be valid email format</li>
+                <li><strong>Age:</strong> Must be between 18 and 120</li>
+                <li><strong>Phone:</strong> Must match pattern (XXX) XXX-XXXX</li>
+                <li><strong>Website:</strong> Custom validation function</li>
+            </ul>
+        </div>
+        
+        <p><strong>Instructions:</strong> Click on any cell to edit. Invalid values will show red borders and error tooltips.</p>
+    </div>
+
+    <div id="validation-table"></div>
+
+    <script src="../src/tablecrafter.js"></script>
+    <script>
+        // Sample data for validation testing
+        const validationData = [
+            {
+                id: 1,
+                name: 'John Doe',
+                email: 'john@example.com',
+                age: 28,
+                phone: '(555) 123-4567',
+                website: 'https://johndoe.com'
+            },
+            {
+                id: 2,
+                name: 'Jane Smith',
+                email: 'jane@example.com',
+                age: 32,
+                phone: '(555) 987-6543',
+                website: 'https://janesmith.org'
+            },
+            {
+                id: 3,
+                name: 'Bob Johnson',
+                email: 'bob@example.com',
+                age: 45,
+                phone: '(555) 456-7890',
+                website: 'https://bobjohnson.net'
+            }
+        ];
+
+        // Define columns with validation rules
+        const validationColumns = [
+            {
+                field: 'id',
+                label: 'ID',
+                editable: false
+            },
+            {
+                field: 'name',
+                label: 'Full Name',
+                editable: true,
+                validation: {
+                    required: true,
+                    minLength: 2,
+                    maxLength: 50,
+                    message: 'Name must be between 2 and 50 characters'
+                }
+            },
+            {
+                field: 'email',
+                label: 'Email Address',
+                editable: true,
+                validation: {
+                    required: true,
+                    email: true,
+                    message: 'Please enter a valid email address'
+                }
+            },
+            {
+                field: 'age',
+                label: 'Age',
+                editable: true,
+                validation: {
+                    required: true,
+                    min: 18,
+                    max: 120,
+                    message: 'Age must be between 18 and 120'
+                }
+            },
+            {
+                field: 'phone',
+                label: 'Phone Number',
+                editable: true,
+                validation: {
+                    required: true,
+                    pattern: '^\\(\\d{3}\\) \\d{3}-\\d{4}$',
+                    message: 'Phone must be in format (XXX) XXX-XXXX'
+                }
+            },
+            {
+                field: 'website',
+                label: 'Website',
+                editable: true,
+                validation: {
+                    custom: function(value, rowData, field) {
+                        if (!value) return true; // Optional field
+                        
+                        // Custom validation: must be a valid URL
+                        try {
+                            const url = new URL(value);
+                            return url.protocol === 'http:' || url.protocol === 'https:';
+                        } catch (e) {
+                            return 'Please enter a valid URL starting with http:// or https://';
+                        }
+                    }
+                }
+            }
+        ];
+
+        // Create TableCrafter instance with validation enabled
+        const table = new TableCrafter('#validation-table', {
+            data: validationData,
+            columns: validationColumns,
+            editable: true,
+            responsive: true,
+            pagination: true,
+            pageSize: 10,
+            
+            // Enable validation system
+            validation: {
+                enabled: true,
+                showErrors: true,
+                validateOnEdit: true,
+                validateOnSubmit: true,
+                messages: {
+                    required: 'This field is required',
+                    email: 'Please enter a valid email address',
+                    minLength: 'Minimum length is {min} characters',
+                    maxLength: 'Maximum length is {max} characters',
+                    min: 'Minimum value is {min}',
+                    max: 'Maximum value is {max}',
+                    pattern: 'Please enter a valid format',
+                    custom: 'Validation failed'
+                }
+            },
+
+            // Callback for successful edits
+            onEdit: function(change) {
+                console.log('✅ Valid edit saved:', change);
+                
+                // You could send to API here
+                // await this.updateEntry(change.rowIndex, change.newData);
+            }
+        });
+
+        // Render the table
+        table.render();
+
+        // Add some helpful information
+        console.log('🔧 TableCrafter Validation System Demo');
+        console.log('Try editing cells with invalid data to see validation in action!');
+        console.log('Validation rules:', {
+            name: 'Required, 2-50 chars',
+            email: 'Required, valid email',
+            age: 'Required, 18-120',
+            phone: 'Required, (XXX) XXX-XXXX format',
+            website: 'Optional, valid URL'
+        });
+    </script>
+</body>
+</html>
