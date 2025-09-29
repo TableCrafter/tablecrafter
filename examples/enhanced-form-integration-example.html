@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TableCrafter - Enhanced Form Integration Example</title>
+    <link rel="stylesheet" href="../src/tablecrafter.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .example-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .feature-card {
+            background: #e8f5e8;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .feature-card h5 {
+            margin: 0 0 8px 0;
+            color: #28a745;
+        }
+        
+        .feature-card p {
+            margin: 0;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .demo-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .demo-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 TableCrafter Enhanced Form Integration</h1>
+        <p>Seamless integration of rich cell types, validation, and form controls</p>
+    </div>
+
+    <div class="example-info">
+        <h3>🎯 Enhanced Form Features</h3>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <h5>🎨 Rich Cell Type Forms</h5>
+                <p>All 14 cell types automatically create appropriate form controls</p>
+            </div>
+            <div class="feature-card">
+                <h5>✅ Real-time Validation</h5>
+                <p>Instant feedback with field-level validation and error display</p>
+            </div>
+            <div class="feature-card">
+                <h5>📱 Responsive Design</h5>
+                <p>Forms adapt beautifully to mobile and desktop screens</p>
+            </div>
+            <div class="feature-card">
+                <h5>🔄 Seamless Integration</h5>
+                <p>Matches inline editing capabilities with consistent UX</p>
+            </div>
+            <div class="feature-card">
+                <h5>🎯 Smart Form Fields</h5>
+                <p>Automatic field generation from column configuration</p>
+            </div>
+            <div class="feature-card">
+                <h5>💾 Data Persistence</h5>
+                <p>Proper data extraction and formatting for all field types</p>
+            </div>
+        </div>
+        
+        <p><strong>Instructions:</strong> Click "Add New Entry" to experience the enhanced form with rich cell types and validation. Try entering invalid data to see validation in action.</p>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="demo-button" onclick="triggerAddNew()">🆕 Add New Entry</button>
+            <button class="demo-button" onclick="showFormDemo()">📋 Demo All Field Types</button>
+        </div>
+    </div>
+
+    <div id="enhanced-form-table"></div>
+
+    <script src="../src/tablecrafter.js"></script>
+    <script>
+        // Enhanced form integration data
+        const enhancedFormData = [
+            {
+                id: 1,
+                name: 'Alice Johnson',
+                bio: 'Senior Product Manager with 8+ years experience in SaaS platforms.',
+                age: 34,
+                email: 'alice.johnson@example.com',
+                startDate: '2020-03-15',
+                lastActive: '2023-09-29T10:30',
+                department: 'Product',
+                skills: ['Product Strategy', 'User Research', 'Analytics'],
+                isRemote: true,
+                priority: 'High',
+                avatar: 'alice-profile.jpg',
+                portfolio: 'https://alice-johnson.com',
+                brandColor: '#8e44ad',
+                satisfaction: 9
+            },
+            {
+                id: 2,
+                name: 'David Chen',
+                bio: 'Full-stack developer specializing in React and Node.js applications.',
+                age: 29,
+                email: 'david.chen@example.com',
+                startDate: '2021-07-22',
+                lastActive: '2023-09-29T14:15',
+                department: 'Engineering',
+                skills: ['React', 'Node.js', 'PostgreSQL', 'AWS'],
+                isRemote: false,
+                priority: 'Medium',
+                avatar: 'david-profile.jpg',
+                portfolio: 'https://github.com/davidchen',
+                brandColor: '#3498db',
+                satisfaction: 8
+            }
+        ];
+
+        // Enhanced form column configuration
+        const enhancedFormColumns = [
+            {
+                field: 'id',
+                label: 'ID',
+                editable: false,
+                type: 'number'
+            },
+            {
+                field: 'name',
+                label: 'Full Name',
+                editable: true,
+                type: 'text',
+                placeholder: 'Enter full name',
+                validation: {
+                    required: true,
+                    minLength: 2,
+                    maxLength: 100,
+                    message: 'Name must be between 2 and 100 characters'
+                }
+            },
+            {
+                field: 'bio',
+                label: 'Biography',
+                editable: true,
+                type: 'textarea',
+                rows: 4,
+                placeholder: 'Tell us about yourself...',
+                validation: {
+                    maxLength: 500,
+                    message: 'Biography cannot exceed 500 characters'
+                }
+            },
+            {
+                field: 'age',
+                label: 'Age',
+                editable: true,
+                type: 'number',
+                min: 18,
+                max: 100,
+                validation: {
+                    required: true,
+                    min: 18,
+                    max: 100,
+                    message: 'Age must be between 18 and 100'
+                }
+            },
+            {
+                field: 'email',
+                label: 'Email Address',
+                editable: true,
+                type: 'email',
+                placeholder: 'user@company.com',
+                validation: {
+                    required: true,
+                    email: true,
+                    message: 'Please enter a valid email address'
+                }
+            },
+            {
+                field: 'startDate',
+                label: 'Start Date',
+                editable: true,
+                type: 'date',
+                min: '2020-01-01',
+                max: '2025-12-31',
+                validation: {
+                    required: true,
+                    message: 'Start date is required'
+                }
+            },
+            {
+                field: 'lastActive',
+                label: 'Last Active',
+                editable: true,
+                type: 'datetime'
+            },
+            {
+                field: 'department',
+                label: 'Department',
+                editable: true,
+                type: 'select',
+                options: [
+                    'Engineering',
+                    'Product',
+                    'Design',
+                    'Marketing',
+                    'Sales',
+                    'Customer Success',
+                    'Operations',
+                    'Finance',
+                    'HR'
+                ],
+                placeholder: 'Select department',
+                validation: {
+                    required: true,
+                    message: 'Please select a department'
+                }
+            },
+            {
+                field: 'skills',
+                label: 'Skills & Expertise',
+                editable: true,
+                type: 'multiselect',
+                options: [
+                    'JavaScript',
+                    'React',
+                    'Vue.js',
+                    'Angular',
+                    'Node.js',
+                    'Python',
+                    'Java',
+                    'Product Strategy',
+                    'User Research',
+                    'Analytics',
+                    'Design Systems',
+                    'Figma',
+                    'Sketch',
+                    'Marketing Automation',
+                    'Sales Operations',
+                    'Customer Support',
+                    'PostgreSQL',
+                    'MongoDB',
+                    'AWS',
+                    'Azure',
+                    'Docker',
+                    'Kubernetes'
+                ],
+                validation: {
+                    custom: function(value) {
+                        if (!value || value.length === 0) {
+                            return 'Please select at least one skill';
+                        }
+                        if (value.length > 6) {
+                            return 'Please select no more than 6 skills';
+                        }
+                        return true;
+                    }
+                }
+            },
+            {
+                field: 'isRemote',
+                label: 'Remote Worker',
+                editable: true,
+                type: 'checkbox'
+            },
+            {
+                field: 'priority',
+                label: 'Priority Level',
+                editable: true,
+                type: 'radio',
+                options: ['Low', 'Medium', 'High', 'Critical'],
+                validation: {
+                    required: true,
+                    message: 'Please select a priority level'
+                }
+            },
+            {
+                field: 'avatar',
+                label: 'Profile Picture',
+                editable: true,
+                type: 'file',
+                accept: 'image/*',
+                preview: true
+            },
+            {
+                field: 'portfolio',
+                label: 'Portfolio/Website',
+                editable: true,
+                type: 'url',
+                placeholder: 'https://yourwebsite.com',
+                validation: {
+                    custom: function(value) {
+                        if (!value) return true; // Optional field
+                        try {
+                            const url = new URL(value);
+                            if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+                                return 'URL must start with http:// or https://';
+                            }
+                            return true;
+                        } catch (e) {
+                            return 'Please enter a valid URL';
+                        }
+                    }
+                }
+            },
+            {
+                field: 'brandColor',
+                label: 'Brand Color',
+                editable: true,
+                type: 'color'
+            },
+            {
+                field: 'satisfaction',
+                label: 'Job Satisfaction (1-10)',
+                editable: true,
+                type: 'range',
+                min: 1,
+                max: 10,
+                step: 1,
+                validation: {
+                    required: true,
+                    min: 1,
+                    max: 10,
+                    message: 'Satisfaction rating must be between 1 and 10'
+                }
+            }
+        ];
+
+        // Create enhanced TableCrafter instance
+        const table = new TableCrafter('#enhanced-form-table', {
+            data: enhancedFormData,
+            columns: enhancedFormColumns,
+            editable: true,
+            responsive: true,
+            pagination: true,
+            pageSize: 10,
+            
+            // Enhanced form configuration
+            addNew: {
+                enabled: true,
+                buttonText: '🆕 Add New Team Member',
+                title: 'Add New Team Member',
+                fields: enhancedFormColumns.filter(col => col.field !== 'id')
+            },
+            
+            // Enhanced validation system
+            validation: {
+                enabled: true,
+                showErrors: true,
+                validateOnEdit: true,
+                validateOnSubmit: true,
+                messages: {
+                    required: 'This field is required',
+                    email: 'Please enter a valid email address',
+                    minLength: 'Must be at least {min} characters',
+                    maxLength: 'Cannot exceed {max} characters',
+                    min: 'Minimum value is {min}',
+                    max: 'Maximum value is {max}',
+                    pattern: 'Please enter a valid format',
+                    custom: 'Validation failed'
+                }
+            },
+
+            // Enhanced callbacks
+            onAdd: function(result) {
+                console.log('🎉 New team member added:', result.newEntry);
+                
+                // Show success message
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #28a745;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 6px;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                    z-index: 10000;
+                    font-weight: 600;
+                `;
+                notification.textContent = `✅ ${result.newEntry.name} added successfully!`;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            },
+            
+            onEdit: function(change) {
+                console.log('📝 Team member updated:', {
+                    field: change.field,
+                    oldValue: change.oldValue,
+                    newValue: change.newValue,
+                    member: change.newData.name
+                });
+            }
+        });
+
+        // Render the table
+        table.render();
+
+        // Helper functions for demo
+        function triggerAddNew() {
+            const addButton = document.querySelector('.tc-add-new-btn');
+            if (addButton) {
+                addButton.click();
+            }
+        }
+        
+        function showFormDemo() {
+            alert('Click "Add New Team Member" to see all rich cell types in action!\n\n' +
+                  'The form demonstrates:\n' +
+                  '• Text and textarea inputs with validation\n' +
+                  '• Number inputs with min/max constraints\n' +
+                  '• Email validation\n' +
+                  '• Date and datetime pickers\n' +
+                  '• Dropdown and multiselect options\n' +
+                  '• Checkboxes and radio buttons\n' +
+                  '• File upload with preview\n' +
+                  '• URL validation\n' +
+                  '• Color picker\n' +
+                  '• Range slider with live value display\n' +
+                  '• Real-time validation feedback');
+        }
+
+        // Add helpful information
+        console.log('🔧 TableCrafter Enhanced Form Integration Demo');
+        console.log('Features demonstrated:');
+        console.log('• Rich cell type form controls');
+        console.log('• Real-time validation feedback');
+        console.log('• Responsive form design');
+        console.log('• Data extraction and persistence');
+        console.log('• Seamless UX integration');
+        console.log('');
+        console.log('Try adding a new entry to see the enhanced form in action!');
+    </script>
+</body>
+</html>

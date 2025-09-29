@@ -740,3 +740,318 @@
   border-color: #28a745 !important;
   background-color: #d4edda !important;
 }
+
+/* === Enhanced Form Integration Styles === */
+
+/* Form field containers */
+.tc-form-field {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.tc-form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.tc-required {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Form input base styles */
+.tc-form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.tc-form-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.tc-form-input:hover:not(:focus) {
+  border-color: #c6d0dd;
+}
+
+/* Textarea specific */
+.tc-form-input.tc-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+/* Select specific */
+.tc-form-input.tc-select {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23666" d="M6 8L2 4h8z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 40px;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Multiselect container */
+.tc-multiselect-form-container {
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  background-color: #fff;
+  transition: border-color 0.2s ease;
+}
+
+.tc-multiselect-form-container:focus-within {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.tc-multiselect-checkboxes {
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.tc-checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  gap: 8px;
+}
+
+.tc-checkbox-item input[type="checkbox"] {
+  margin: 0;
+  width: auto;
+}
+
+.tc-checkbox-item label {
+  margin: 0;
+  cursor: pointer;
+  font-weight: normal;
+  flex: 1;
+}
+
+/* Radio container */
+.tc-radio-form-container {
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 12px;
+  background-color: #fff;
+}
+
+.tc-radio-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.tc-radio-item:last-child {
+  margin-bottom: 0;
+}
+
+.tc-radio-item input[type="radio"] {
+  margin: 0;
+  width: auto;
+}
+
+.tc-radio-item label {
+  margin: 0;
+  cursor: pointer;
+  font-weight: normal;
+  flex: 1;
+}
+
+/* File input */
+.tc-form-input.tc-file {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.tc-form-input.tc-file::-webkit-file-upload-button {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 4px 12px;
+  margin-right: 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* Color input */
+.tc-form-input.tc-color {
+  width: 60px;
+  height: 40px;
+  padding: 2px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Range container */
+.tc-range-form-container {
+  padding: 8px 0;
+}
+
+.tc-form-input.tc-range {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.tc-range-value {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Form error messages */
+.tc-form-error {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  color: #721c24;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Error state for form inputs */
+.tc-form-input.tc-validation-error {
+  border-color: #dc3545 !important;
+  background-color: #f8d7da !important;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
+}
+
+/* Enhanced form modal styles */
+.tc-modal-form {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 0 4px;
+}
+
+.tc-modal-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tc-modal-form::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.tc-modal-form::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.tc-modal-form::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Enhanced form modal actions */
+.tc-modal-actions {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e1e5e9;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.tc-btn-save,
+.tc-btn-cancel {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.tc-btn-save {
+  background-color: #007bff;
+  color: white;
+}
+
+.tc-btn-save:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.tc-btn-save:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.tc-btn-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.tc-btn-cancel:hover {
+  background-color: #545b62;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+.tc-btn-cancel:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+/* Form responsive design */
+@media (max-width: 768px) {
+  .tc-modal-form {
+    max-height: 60vh;
+  }
+  
+  .tc-modal-actions {
+    flex-direction: column;
+  }
+  
+  .tc-btn-save,
+  .tc-btn-cancel {
+    width: 100%;
+  }
+  
+  .tc-multiselect-checkboxes {
+    max-height: 120px;
+  }
+  
+  .tc-range-form-container {
+    padding: 12px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .tc-form-field {
+    margin-bottom: 16px;
+  }
+  
+  .tc-form-input {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  
+  .tc-form-label {
+    font-size: 13px;
+  }
+}
