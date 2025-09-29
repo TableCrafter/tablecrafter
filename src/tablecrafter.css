@@ -740,3 +740,70 @@
   border-color: #28a745 !important;
   background-color: #d4edda !important;
 }
+
+/* === Data Validation Styles === */
+.tc-validation-error {
+  border-color: #dc3545 !important;
+  background-color: #f8d7da !important;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+.tc-validation-tooltip {
+  background-color: #dc3545;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  max-width: 250px;
+  word-wrap: break-word;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.tc-validation-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 10px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #dc3545;
+}
+
+/* Validation error state for form fields */
+.tc-field-error {
+  border-color: #dc3545;
+  background-color: #fff5f5;
+}
+
+.tc-field-error:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+  outline: none;
+}
+
+/* Validation success state */
+.tc-field-valid {
+  border-color: #28a745;
+  background-color: #f8fff9;
+}
+
+.tc-field-valid:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
+  outline: none;
+}
+
+/* Validation message styling */
+.tc-validation-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.tc-validation-message.tc-success {
+  color: #28a745;
+}

@@ -48,6 +48,24 @@ class TableCrafter {
         fields: [],
         validation: {}
       },
+      // Data validation configuration
+      validation: {
+        enabled: true,
+        showErrors: true,
+        validateOnEdit: true,
+        validateOnSubmit: true,
+        rules: {}, // Column-specific validation rules
+        messages: {
+          required: 'This field is required',
+          email: 'Please enter a valid email address',
+          minLength: 'Minimum length is {min} characters',
+          maxLength: 'Maximum length is {max} characters',
+          min: 'Minimum value is {min}',
+          max: 'Maximum value is {max}',
+          pattern: 'Please enter a valid format',
+          custom: 'Validation failed'
+        }
+      },
       // Mobile responsive configuration
       responsive: {
         enabled: true,
@@ -103,9 +121,14 @@ class TableCrafter {
     this.lookupCache = new Map();
     this.currentUser = null;
     this.userPermissions = [];
+    this.validationErrors = new Map(); // Track validation errors by cell
+    this.validationRules = new Map(); // Compiled validation rules
 
     // Load state if persistence enabled
     this.loadState();
+
+    // Initialize validation system
+    this.initializeValidation();
 
     // Initialize if data provided
     if (this.config.data) {
@@ -709,6 +732,26 @@ class TableCrafter {
     const field = element.dataset.field;
     const oldValue = element.dataset.originalValue;
     const newValue = element.value;
+
+    // Validate the new value
+    if (this.config.validation.enabled && this.config.validation.validateOnEdit) {
+      const validation = this.validateField(field, newValue, this.data[rowIndex]);
+      
+      if (!validation.isValid) {
+        // Show validation errors
+        this.showValidationError(element, validation.errors);
+        this.setValidationError(rowIndex, field, validation.errors);
+        
+        // Don't save invalid data
+        element.value = oldValue; // Revert to original value
+        element.focus();
+        return;
+      } else {
+        // Clear any existing validation errors
+        this.clearValidationError(element);
+        this.setValidationError(rowIndex, field, []);
+      }
+    }
 
     // Update data
     this.data[rowIndex][field] = newValue;
@@ -1714,13 +1757,14 @@ class TableCrafter {
       newEntry[key] = value;
     }
 
-    // Validate if validation rules provided
-    const validation = this.config.addNew.validation || {};
-    const errors = this.validateEntry(newEntry, validation);
-
-    if (errors.length > 0) {
-      this.showValidationErrors(form, errors);
-      return;
+    // Validate using the new validation system
+    if (this.config.validation.enabled && this.config.validation.validateOnSubmit) {
+      const validation = this.validateRow(newEntry, -1); // -1 for new entry
+      
+      if (!validation.isValid) {
+        this.showFormValidationErrors(form, validation.errors);
+        return;
+      }
     }
 
     // Add to data
@@ -2170,6 +2214,239 @@ class TableCrafter {
     } catch (error) {
       console.warn('Failed to clear state:', error);
     }
+  }
+
+  /**
+   * Data Validation System
+   */
+
+  /**
+   * Initialize validation rules for columns
+   */
+  initializeValidation() {
+    if (!this.config.validation.enabled) return;
+
+    this.config.columns.forEach(column => {
+      if (column.validation) {
+        this.validationRules.set(column.field, column.validation);
+      }
+    });
+  }
+
+  /**
+   * Validate a single field value
+   */
+  validateField(field, value, rowData = {}) {
+    if (!this.config.validation.enabled) return { isValid: true };
+
+    const rules = this.validationRules.get(field) || this.config.validation.rules[field];
+    if (!rules) return { isValid: true };
+
+    const errors = [];
+
+    // Required validation
+    if (rules.required && (value === null || value === undefined || value === '')) {
+      errors.push(this.getValidationMessage('required', rules));
+    }
+
+    // Skip other validations if empty and not required
+    if (!rules.required && (value === null || value === undefined || value === '')) {
+      return { isValid: true };
+    }
+
+    // Email validation
+    if (rules.email || rules.type === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        errors.push(this.getValidationMessage('email', rules));
+      }
+    }
+
+    // Min/Max length validation
+    if (rules.minLength && value.length < rules.minLength) {
+      errors.push(this.getValidationMessage('minLength', rules));
+    }
+    if (rules.maxLength && value.length > rules.maxLength) {
+      errors.push(this.getValidationMessage('maxLength', rules));
+    }
+
+    // Min/Max value validation (for numbers)
+    if (rules.min !== undefined) {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue < rules.min) {
+        errors.push(this.getValidationMessage('min', rules));
+      }
+    }
+    if (rules.max !== undefined) {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue > rules.max) {
+        errors.push(this.getValidationMessage('max', rules));
+      }
+    }
+
+    // Pattern validation
+    if (rules.pattern) {
+      const regex = new RegExp(rules.pattern);
+      if (!regex.test(value)) {
+        errors.push(this.getValidationMessage('pattern', rules));
+      }
+    }
+
+    // Custom validation function
+    if (rules.custom && typeof rules.custom === 'function') {
+      try {
+        const result = rules.custom(value, rowData, field);
+        if (result !== true) {
+          errors.push(typeof result === 'string' ? result : this.getValidationMessage('custom', rules));
+        }
+      } catch (error) {
+        errors.push(this.getValidationMessage('custom', rules));
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors: errors
+    };
+  }
+
+  /**
+   * Get validation message with parameter substitution
+   */
+  getValidationMessage(type, rules) {
+    let message = rules.message || this.config.validation.messages[type];
+    
+    // Substitute parameters
+    if (rules.minLength) message = message.replace('{min}', rules.minLength);
+    if (rules.maxLength) message = message.replace('{max}', rules.maxLength);
+    if (rules.min !== undefined) message = message.replace('{min}', rules.min);
+    if (rules.max !== undefined) message = message.replace('{max}', rules.max);
+    
+    return message;
+  }
+
+  /**
+   * Validate entire row
+   */
+  validateRow(rowData, rowIndex) {
+    if (!this.config.validation.enabled) return { isValid: true };
+
+    const errors = {};
+    let isValid = true;
+
+    this.config.columns.forEach(column => {
+      const validation = this.validateField(column.field, rowData[column.field], rowData);
+      if (!validation.isValid) {
+        errors[column.field] = validation.errors;
+        isValid = false;
+      }
+    });
+
+    return { isValid, errors };
+  }
+
+  /**
+   * Show validation error for a cell
+   */
+  showValidationError(element, errors) {
+    if (!this.config.validation.showErrors || !errors || errors.length === 0) return;
+
+    // Remove existing error
+    this.clearValidationError(element);
+
+    // Add error class
+    element.classList.add('tc-validation-error');
+
+    // Create error tooltip
+    const errorTooltip = document.createElement('div');
+    errorTooltip.className = 'tc-validation-tooltip';
+    errorTooltip.textContent = errors[0]; // Show first error
+    
+    // Position tooltip
+    const rect = element.getBoundingClientRect();
+    errorTooltip.style.position = 'absolute';
+    errorTooltip.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+    errorTooltip.style.left = (rect.left + window.scrollX) + 'px';
+    errorTooltip.style.zIndex = '1000';
+
+    document.body.appendChild(errorTooltip);
+
+    // Store reference for cleanup
+    element._validationTooltip = errorTooltip;
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => this.clearValidationError(element), 5000);
+  }
+
+  /**
+   * Clear validation error for a cell
+   */
+  clearValidationError(element) {
+    element.classList.remove('tc-validation-error');
+    
+    if (element._validationTooltip) {
+      document.body.removeChild(element._validationTooltip);
+      delete element._validationTooltip;
+    }
+  }
+
+  /**
+   * Set validation error state for a cell
+   */
+  setValidationError(rowIndex, field, errors) {
+    const key = `${rowIndex}_${field}`;
+    if (errors && errors.length > 0) {
+      this.validationErrors.set(key, errors);
+    } else {
+      this.validationErrors.delete(key);
+    }
+  }
+
+  /**
+   * Get validation errors for a cell
+   */
+  getValidationErrors(rowIndex, field) {
+    const key = `${rowIndex}_${field}`;
+    return this.validationErrors.get(key) || [];
+  }
+
+  /**
+   * Clear all validation errors
+   */
+  clearAllValidationErrors() {
+    this.validationErrors.clear();
+    // Remove all error classes and tooltips
+    const errorElements = this.container.querySelectorAll('.tc-validation-error');
+    errorElements.forEach(element => this.clearValidationError(element));
+  }
+
+  /**
+   * Show validation errors in a form (for Add New modal)
+   */
+  showFormValidationErrors(form, fieldErrors) {
+    // Clear existing errors
+    const existingErrors = form.querySelectorAll('.tc-validation-message');
+    existingErrors.forEach(error => error.remove());
+    
+    const errorFields = form.querySelectorAll('.tc-field-error');
+    errorFields.forEach(field => field.classList.remove('tc-field-error'));
+
+    // Show new errors
+    Object.keys(fieldErrors).forEach(fieldName => {
+      const field = form.querySelector(`[name="${fieldName}"]`);
+      if (field) {
+        // Add error class to field
+        field.classList.add('tc-field-error');
+        
+        // Create error message
+        const errorMessage = document.createElement('span');
+        errorMessage.className = 'tc-validation-message';
+        errorMessage.textContent = fieldErrors[fieldName][0]; // Show first error
+        
+        // Insert after the field
+        field.parentNode.insertBefore(errorMessage, field.nextSibling);
+      }
+    });
   }
 
   /**
