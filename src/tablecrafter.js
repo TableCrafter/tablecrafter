@@ -153,7 +153,75 @@ class TableCrafter {
    * Check if mobile viewport
    */
   isMobile() {
-    return window.innerWidth <= this.config.mobileBreakpoint;
+    const breakpoint = this.getCurrentBreakpoint();
+    return breakpoint === 'mobile';
+  }
+
+  /**
+   * Toggle row selection for bulk operations
+   */
+  toggleRowSelection(rowIndex, selected) {
+    if (selected) {
+      this.selectedRows.add(rowIndex);
+    } else {
+      this.selectedRows.delete(rowIndex);
+    }
+
+    // Update bulk controls visibility
+    this.updateBulkControls();
+
+    // Call callback if provided
+    if (this.config.onSelectionChange) {
+      this.config.onSelectionChange({
+        selectedRows: Array.from(this.selectedRows),
+        totalSelected: this.selectedRows.size
+      });
+    }
+  }
+
+  /**
+   * Select all visible rows
+   */
+  selectAllRows() {
+    const displayData = this.getPaginatedData();
+    displayData.forEach((row, index) => {
+      const actualRowIndex = this.config.pagination ? 
+        (this.currentPage - 1) * this.config.pageSize + index : 
+        index;
+      this.selectedRows.add(actualRowIndex);
+    });
+    
+    this.updateBulkControls();
+    this.render();
+  }
+
+  /**
+   * Deselect all rows
+   */
+  deselectAllRows() {
+    this.selectedRows.clear();
+    this.updateBulkControls();
+    this.render();
+  }
+
+  /**
+   * Update bulk controls visibility and state
+   */
+  updateBulkControls() {
+    const bulkControls = this.container.querySelector('.tc-bulk-controls');
+    if (!bulkControls) return;
+
+    const selectedCount = this.selectedRows.size;
+    const bulkInfo = bulkControls.querySelector('.tc-bulk-info');
+    
+    if (selectedCount === 0) {
+      bulkControls.style.display = 'none';
+    } else {
+      bulkControls.style.display = 'flex';
+      if (bulkInfo) {
+        bulkInfo.textContent = `${selectedCount} item${selectedCount === 1 ? '' : 's'} selected`;
+      }
+    }
   }
 
   /**
@@ -170,6 +238,11 @@ class TableCrafter {
     // Add filters if enabled
     if (this.config.filterable) {
       wrapper.appendChild(this.renderFilters());
+    }
+
+    // Add bulk controls if enabled
+    if (this.config.bulk.enabled) {
+      wrapper.appendChild(this.renderBulkControls());
     }
 
     // Add export controls if enabled
@@ -271,13 +344,77 @@ class TableCrafter {
   }
 
   /**
-   * Render cards view for mobile
+   * Get current breakpoint
+   */
+  getCurrentBreakpoint() {
+    const width = window.innerWidth;
+    const breakpoints = this.config.responsive.breakpoints || {
+      mobile: { width: 480, layout: 'cards' },
+      tablet: { width: 768, layout: 'compact' },
+      desktop: { width: 1024, layout: 'table' }
+    };
+
+    if (width <= breakpoints.mobile.width) return 'mobile';
+    if (width <= breakpoints.tablet.width) return 'tablet';
+    return 'desktop';
+  }
+
+  /**
+   * Get visible fields for current breakpoint
+   */
+  getVisibleFields(breakpoint) {
+    const visibility = this.config.responsive.fieldVisibility || {};
+    const breakpointConfig = visibility[breakpoint];
+    
+    if (!breakpointConfig) {
+      return this.config.columns;
+    }
+
+    if (breakpointConfig.showFields) {
+      return this.config.columns.filter(col => breakpointConfig.showFields.includes(col.field));
+    }
+
+    if (breakpointConfig.hideFields) {
+      return this.config.columns.filter(col => !breakpointConfig.hideFields.includes(col.field));
+    }
+
+    return this.config.columns;
+  }
+
+  /**
+   * Get hidden fields for current breakpoint
+   */
+  getHiddenFields(breakpoint) {
+    const visibility = this.config.responsive.fieldVisibility || {};
+    const breakpointConfig = visibility[breakpoint];
+    
+    if (!breakpointConfig) {
+      return [];
+    }
+
+    if (breakpointConfig.hideFields) {
+      return this.config.columns.filter(col => breakpointConfig.hideFields.includes(col.field));
+    }
+
+    if (breakpointConfig.showFields) {
+      return this.config.columns.filter(col => !breakpointConfig.showFields.includes(col.field));
+    }
+
+    return [];
+  }
+
+  /**
+   * Render cards view for mobile with expandable details
    */
   renderCards() {
     const cardsContainer = document.createElement('div');
     cardsContainer.className = 'tc-cards-container';
 
     const displayData = this.getPaginatedData();
+    const breakpoint = this.getCurrentBreakpoint();
+    const visibleFields = this.getVisibleFields(breakpoint);
+    const hiddenFields = this.getHiddenFields(breakpoint);
+    const hasHiddenFields = hiddenFields.length > 0;
     
     if (displayData.length === 0) {
       // Show no results message
@@ -294,25 +431,63 @@ class TableCrafter {
           rowIndex;
         const card = document.createElement('div');
         card.className = 'tc-card';
+        if (hasHiddenFields) {
+          card.className += ' tc-card-expandable';
+        }
         card.dataset.rowIndex = actualRowIndex;
 
-        // Card header
+        // Bulk selection checkbox if enabled
+        if (this.config.bulk.enabled) {
+          const checkboxContainer = document.createElement('div');
+          checkboxContainer.className = 'tc-card-checkbox';
+          
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'tc-row-checkbox';
+          checkbox.dataset.rowIndex = actualRowIndex;
+          checkbox.checked = this.selectedRows.has(actualRowIndex);
+          checkbox.addEventListener('change', (e) => {
+            this.toggleRowSelection(actualRowIndex, e.target.checked);
+          });
+          
+          checkboxContainer.appendChild(checkbox);
+          card.appendChild(checkboxContainer);
+        }
+
+        // Card header with expand toggle
         const cardHeader = document.createElement('div');
         cardHeader.className = 'tc-card-header';
         
         // Use first column as title
         const firstColumn = this.config.columns[0];
         if (firstColumn) {
-          cardHeader.textContent = row[firstColumn.field] || `Item ${actualRowIndex + 1}`;
+          const title = document.createElement('span');
+          title.textContent = row[firstColumn.field] || `Item ${actualRowIndex + 1}`;
+          cardHeader.appendChild(title);
+        }
+
+        // Add expand toggle if there are hidden fields
+        if (hasHiddenFields) {
+          const toggle = document.createElement('span');
+          toggle.className = 'tc-card-toggle';
+          toggle.textContent = '▼';
+          cardHeader.appendChild(toggle);
+          
+          cardHeader.addEventListener('click', () => {
+            this.toggleCard(card);
+          });
+          cardHeader.style.cursor = 'pointer';
         }
         
         card.appendChild(cardHeader);
 
-        // Card body with fields
+        // Card body with visible fields
         const cardBody = document.createElement('div');
         cardBody.className = 'tc-card-body';
 
-        this.config.columns.forEach(column => {
+        visibleFields.forEach(column => {
+          if (column === firstColumn) return; // Skip first column as it's in header
+          
           const field = document.createElement('div');
           field.className = 'tc-card-field';
 
@@ -337,11 +512,57 @@ class TableCrafter {
         });
 
         card.appendChild(cardBody);
+
+        // Hidden fields section (initially hidden)
+        if (hasHiddenFields) {
+          const hiddenSection = document.createElement('div');
+          hiddenSection.className = 'tc-card-hidden-fields';
+
+          hiddenFields.forEach(column => {
+            const field = document.createElement('div');
+            field.className = 'tc-card-field';
+
+            const label = document.createElement('span');
+            label.className = 'tc-card-label';
+            label.textContent = column.label + ':';
+
+            const value = document.createElement('span');
+            value.className = 'tc-card-value';
+            value.textContent = row[column.field] || '';
+            value.dataset.field = column.field;
+
+            // Make field editable if configured
+            if (this.config.editable && column.editable) {
+              value.className += ' tc-editable';
+              value.addEventListener('click', (e) => this.startEdit(e, actualRowIndex, column.field));
+            }
+
+            field.appendChild(label);
+            field.appendChild(value);
+            hiddenSection.appendChild(field);
+          });
+
+          card.appendChild(hiddenSection);
+        }
+
         cardsContainer.appendChild(card);
       });
     }
 
     return cardsContainer;
+  }
+
+  /**
+   * Toggle card expansion
+   */
+  toggleCard(card) {
+    const isExpanded = card.classList.contains('tc-card-expanded');
+    
+    if (isExpanded) {
+      card.classList.remove('tc-card-expanded');
+    } else {
+      card.classList.add('tc-card-expanded');
+    }
   }
 
   /**
@@ -1092,6 +1313,381 @@ class TableCrafter {
   }
 
   /**
+   * Render bulk controls
+   */
+  renderBulkControls() {
+    const bulkContainer = document.createElement('div');
+    bulkContainer.className = 'tc-bulk-controls';
+    bulkContainer.style.display = 'none'; // Initially hidden
+
+    // Bulk info
+    const bulkInfo = document.createElement('div');
+    bulkInfo.className = 'tc-bulk-info';
+    bulkInfo.textContent = '0 items selected';
+
+    // Select all checkbox
+    const selectAllContainer = document.createElement('label');
+    selectAllContainer.className = 'tc-bulk-select-all';
+    
+    const selectAllCheckbox = document.createElement('input');
+    selectAllCheckbox.type = 'checkbox';
+    selectAllCheckbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        this.selectAllRows();
+      } else {
+        this.deselectAllRows();
+      }
+    });
+    
+    selectAllContainer.appendChild(selectAllCheckbox);
+    selectAllContainer.appendChild(document.createTextNode(' Select All'));
+
+    // Bulk actions
+    const actionsContainer = document.createElement('div');
+    actionsContainer.className = 'tc-bulk-actions';
+
+    // Create action buttons based on configuration
+    this.config.bulk.operations.forEach(operation => {
+      const button = document.createElement('button');
+      button.className = `tc-bulk-${operation}`;
+      button.textContent = operation.charAt(0).toUpperCase() + operation.slice(1);
+      button.addEventListener('click', () => this.performBulkAction(operation));
+      actionsContainer.appendChild(button);
+    });
+
+    bulkContainer.appendChild(bulkInfo);
+    bulkContainer.appendChild(selectAllContainer);
+    bulkContainer.appendChild(actionsContainer);
+
+    return bulkContainer;
+  }
+
+  /**
+   * Perform bulk action on selected rows
+   */
+  performBulkAction(action) {
+    const selectedRows = Array.from(this.selectedRows);
+    if (selectedRows.length === 0) return;
+
+    const selectedData = selectedRows.map(index => this.data[index]).filter(Boolean);
+
+    switch (action) {
+      case 'delete':
+        this.bulkDelete(selectedRows, selectedData);
+        break;
+      case 'export':
+        this.bulkExport(selectedData);
+        break;
+      case 'edit':
+        this.bulkEdit(selectedRows, selectedData);
+        break;
+      default:
+        // Call custom bulk action if provided
+        if (this.config.onBulkAction) {
+          this.config.onBulkAction({
+            action: action,
+            selectedRows: selectedRows,
+            selectedData: selectedData
+          });
+        }
+    }
+  }
+
+  /**
+   * Bulk delete selected rows
+   */
+  bulkDelete(selectedRows, selectedData) {
+    if (!confirm(`Are you sure you want to delete ${selectedRows.length} item${selectedRows.length === 1 ? '' : 's'}?`)) {
+      return;
+    }
+
+    // Sort indices in descending order to remove from end first
+    selectedRows.sort((a, b) => b - a);
+    
+    selectedRows.forEach(index => {
+      this.data.splice(index, 1);
+    });
+
+    // Clear selection
+    this.selectedRows.clear();
+    this.updateBulkControls();
+    this.render();
+
+    // Call callback if provided
+    if (this.config.onBulkDelete) {
+      this.config.onBulkDelete({
+        deletedRows: selectedRows,
+        deletedData: selectedData
+      });
+    }
+  }
+
+  /**
+   * Bulk export selected rows
+   */
+  bulkExport(selectedData) {
+    const originalData = this.data;
+    this.data = selectedData;
+    
+    try {
+      this.downloadCSV();
+    } finally {
+      this.data = originalData;
+    }
+
+    // Call callback if provided
+    if (this.config.onBulkExport) {
+      this.config.onBulkExport({
+        exportedData: selectedData
+      });
+    }
+  }
+
+  /**
+   * Bulk edit selected rows
+   */
+  bulkEdit(selectedRows, selectedData) {
+    // This could open a modal for bulk editing
+    // For now, just call the callback
+    if (this.config.onBulkEdit) {
+      this.config.onBulkEdit({
+        selectedRows: selectedRows,
+        selectedData: selectedData
+      });
+    }
+  }
+
+  /**
+   * Render add new entry button
+   */
+  renderAddNewButton() {
+    if (!this.config.addNew.enabled) return null;
+
+    const button = document.createElement('button');
+    button.className = 'tc-add-new';
+    button.textContent = 'Add New Entry';
+    button.addEventListener('click', () => this.showAddNewModal());
+    
+    return button;
+  }
+
+  /**
+   * Show add new entry modal
+   */
+  showAddNewModal() {
+    const modal = this.createModal('Add New Entry', this.renderAddNewForm());
+    document.body.appendChild(modal);
+  }
+
+  /**
+   * Create modal structure
+   */
+  createModal(title, content) {
+    const overlay = document.createElement('div');
+    overlay.className = 'tc-modal-overlay';
+
+    const modal = document.createElement('div');
+    modal.className = 'tc-modal';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'tc-modal-header';
+    
+    const titleElement = document.createElement('h3');
+    titleElement.className = 'tc-modal-title';
+    titleElement.textContent = title;
+    
+    const closeButton = document.createElement('button');
+    closeButton.className = 'tc-modal-close';
+    closeButton.textContent = '×';
+    closeButton.addEventListener('click', () => {
+      document.body.removeChild(overlay);
+    });
+    
+    header.appendChild(titleElement);
+    header.appendChild(closeButton);
+
+    // Content
+    modal.appendChild(header);
+    modal.appendChild(content);
+
+    overlay.appendChild(modal);
+
+    // Close on overlay click
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        document.body.removeChild(overlay);
+      }
+    });
+
+    return overlay;
+  }
+
+  /**
+   * Render add new entry form
+   */
+  renderAddNewForm() {
+    const form = document.createElement('form');
+    form.className = 'tc-modal-form';
+    
+    const fields = this.config.addNew.fields.length > 0 ? 
+      this.config.addNew.fields : 
+      this.config.columns.filter(col => col.field !== 'id');
+
+    fields.forEach(field => {
+      const fieldDiv = document.createElement('div');
+      fieldDiv.className = 'tc-form-field';
+
+      const label = document.createElement('label');
+      label.className = 'tc-form-label';
+      label.textContent = field.label || field.name;
+      label.setAttribute('for', `tc-form-${field.field || field.name}`);
+
+      const input = document.createElement('input');
+      input.className = 'tc-form-input';
+      input.type = field.type || 'text';
+      input.id = `tc-form-${field.field || field.name}`;
+      input.name = field.field || field.name;
+      input.required = field.required || false;
+      
+      if (field.placeholder) {
+        input.placeholder = field.placeholder;
+      }
+
+      fieldDiv.appendChild(label);
+      fieldDiv.appendChild(input);
+      form.appendChild(fieldDiv);
+    });
+
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'tc-modal-actions';
+
+    const cancelButton = document.createElement('button');
+    cancelButton.type = 'button';
+    cancelButton.className = 'tc-btn-cancel';
+    cancelButton.textContent = 'Cancel';
+    cancelButton.addEventListener('click', () => {
+      const overlay = form.closest('.tc-modal-overlay');
+      document.body.removeChild(overlay);
+    });
+
+    const saveButton = document.createElement('button');
+    saveButton.type = 'submit';
+    saveButton.className = 'tc-btn-save';
+    saveButton.textContent = 'Save';
+
+    actions.appendChild(cancelButton);
+    actions.appendChild(saveButton);
+    form.appendChild(actions);
+
+    // Handle form submission
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.handleAddNewSubmit(form);
+    });
+
+    return form;
+  }
+
+  /**
+   * Handle add new entry form submission
+   */
+  handleAddNewSubmit(form) {
+    const formData = new FormData(form);
+    const newEntry = {};
+
+    for (let [key, value] of formData.entries()) {
+      newEntry[key] = value;
+    }
+
+    // Validate if validation rules provided
+    const validation = this.config.addNew.validation || {};
+    const errors = this.validateEntry(newEntry, validation);
+
+    if (errors.length > 0) {
+      this.showValidationErrors(form, errors);
+      return;
+    }
+
+    // Add to data
+    this.data.push(newEntry);
+    
+    // Close modal
+    const overlay = form.closest('.tc-modal-overlay');
+    document.body.removeChild(overlay);
+    
+    // Re-render
+    this.render();
+
+    // Call callback if provided
+    if (this.config.onAdd) {
+      this.config.onAdd({
+        newEntry: newEntry,
+        totalEntries: this.data.length
+      });
+    }
+  }
+
+  /**
+   * Validate entry against rules
+   */
+  validateEntry(entry, rules) {
+    const errors = [];
+
+    Object.entries(rules).forEach(([field, rule]) => {
+      const value = entry[field];
+
+      if (rule.required && (!value || value.trim() === '')) {
+        errors.push({ field, message: rule.message || `${field} is required` });
+      }
+
+      if (value && rule.type === 'email' && !this.isValidEmail(value)) {
+        errors.push({ field, message: rule.message || 'Please enter a valid email address' });
+      }
+
+      if (value && rule.minLength && value.length < rule.minLength) {
+        errors.push({ field, message: rule.message || `${field} must be at least ${rule.minLength} characters` });
+      }
+
+      if (value && rule.maxLength && value.length > rule.maxLength) {
+        errors.push({ field, message: rule.message || `${field} must be no more than ${rule.maxLength} characters` });
+      }
+    });
+
+    return errors;
+  }
+
+  /**
+   * Show validation errors in form
+   */
+  showValidationErrors(form, errors) {
+    // Clear existing errors
+    form.querySelectorAll('.tc-form-error').forEach(error => error.remove());
+
+    errors.forEach(error => {
+      const field = form.querySelector(`[name="${error.field}"]`);
+      if (field) {
+        field.classList.add('tc-error');
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'tc-form-error';
+        errorDiv.textContent = error.message;
+        
+        field.parentNode.appendChild(errorDiv);
+      }
+    });
+  }
+
+  /**
+   * Validate email format
+   */
+  isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  /**
    * Destroy the table instance
    */
   destroy() {
@@ -1106,6 +1702,7 @@ class TableCrafter {
     // Clear data
     this.data = [];
     this.editingCell = null;
+    this.selectedRows.clear();
   }
 }
 
