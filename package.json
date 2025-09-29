@@ -1,0 +1,34 @@
+{
+  "name": "tablecrafter",
+  "version": "1.0.0",
+  "description": "A lightweight, mobile-responsive data table library with inline editing",
+  "main": "src/tablecrafter.js",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "build": "node build.js",
+    "dev": "jest --watch"
+  },
+  "keywords": [
+    "table",
+    "data-table",
+    "editable",
+    "responsive",
+    "mobile",
+    "javascript"
+  ],
+  "author": "Fahad Murtaza",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "jest": "^30.1.3",
+    "jest-environment-jsdom": "^30.1.2",
+    "jsdom": "^27.0.0"
+  }
+}
