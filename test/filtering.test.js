@@ -11,12 +11,14 @@ describe('TableCrafter Advanced Filtering', () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="table-container"></div>';
     container = document.getElementById('table-container');
+    jest.useFakeTimers();
   });
 
   afterEach(() => {
     if (table) {
       table.destroy();
     }
+    jest.useRealTimers();
   });
 
   test('should render filter controls when filterable is enabled', () => {
@@ -40,7 +42,9 @@ describe('TableCrafter Advanced Filtering', () => {
     table.render();
 
     expect(container.querySelector('.tc-filters')).toBeTruthy();
-    expect(container.querySelectorAll('.tc-filter-input')).toHaveLength(3);
+    // With auto-detection: id->numberrange, name->multiselect, department->multiselect
+    // No .tc-filter-input will be present (those are for text)
+    expect(container.querySelectorAll('.tc-filter')).toHaveLength(3);
   });
 
   test('should not render filter controls when filterable is disabled', () => {
@@ -74,7 +78,13 @@ describe('TableCrafter Advanced Filtering', () => {
     table = new TableCrafter('#table-container', {
       data,
       columns,
-      filterable: true
+      filterable: true,
+      filters: {
+        autoDetect: true,
+        types: {
+          name: { type: 'text' }
+        }
+      }
     });
 
     table.render();
@@ -83,6 +93,7 @@ describe('TableCrafter Advanced Filtering', () => {
     const nameFilter = container.querySelector('.tc-filter-input[data-field="name"]');
     nameFilter.value = 'John';
     nameFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
 
     const rows = container.querySelectorAll('tbody tr');
     expect(rows).toHaveLength(2); // John Doe and Bob Johnson
@@ -102,7 +113,13 @@ describe('TableCrafter Advanced Filtering', () => {
     table = new TableCrafter('#table-container', {
       data,
       columns,
-      filterable: true
+      filterable: true,
+      filters: {
+        autoDetect: true,
+        types: {
+          name: { type: 'text' }
+        }
+      }
     });
 
     table.render();
@@ -110,6 +127,7 @@ describe('TableCrafter Advanced Filtering', () => {
     const nameFilter = container.querySelector('.tc-filter-input[data-field="name"]');
     nameFilter.value = 'JANE';
     nameFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
 
     const rows = container.querySelectorAll('tbody tr');
     expect(rows).toHaveLength(1);
@@ -132,7 +150,14 @@ describe('TableCrafter Advanced Filtering', () => {
     table = new TableCrafter('#table-container', {
       data,
       columns,
-      filterable: true
+      filterable: true,
+      filters: {
+        autoDetect: true,
+        types: {
+          name: { type: 'text' },
+          department: { type: 'text' }
+        }
+      }
     });
 
     table.render();
@@ -141,11 +166,13 @@ describe('TableCrafter Advanced Filtering', () => {
     const deptFilter = container.querySelector('.tc-filter-input[data-field="department"]');
     deptFilter.value = 'Engineering';
     deptFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
 
     // Then filter by name
     const nameFilter = container.querySelector('.tc-filter-input[data-field="name"]');
     nameFilter.value = 'Jane';
     nameFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
 
     const rows = container.querySelectorAll('tbody tr');
     expect(rows).toHaveLength(1);
@@ -166,21 +193,29 @@ describe('TableCrafter Advanced Filtering', () => {
     table = new TableCrafter('#table-container', {
       data,
       columns,
-      filterable: true
+      filterable: true,
+      filters: {
+        autoDetect: true,
+        types: {
+          name: { type: 'text' }
+        }
+      }
     });
 
     table.render();
 
     const nameFilter = container.querySelector('.tc-filter-input[data-field="name"]');
-    
+
     // Apply filter
     nameFilter.value = 'John';
     nameFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
     expect(container.querySelectorAll('tbody tr')).toHaveLength(1);
 
     // Clear filter
     nameFilter.value = '';
     nameFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
     expect(container.querySelectorAll('tbody tr')).toHaveLength(2);
   });
 
@@ -198,7 +233,13 @@ describe('TableCrafter Advanced Filtering', () => {
     table = new TableCrafter('#table-container', {
       data,
       columns,
-      filterable: true
+      filterable: true,
+      filters: {
+        autoDetect: true,
+        types: {
+          name: { type: 'text' }
+        }
+      }
     });
 
     table.render();
@@ -206,6 +247,7 @@ describe('TableCrafter Advanced Filtering', () => {
     const nameFilter = container.querySelector('.tc-filter-input[data-field="name"]');
     nameFilter.value = 'NonExistent';
     nameFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
 
     expect(container.querySelector('.tc-no-results')).toBeTruthy();
     expect(container.querySelector('.tc-no-results').textContent).toContain('No results found');
@@ -227,9 +269,14 @@ describe('TableCrafter Advanced Filtering', () => {
     table = new TableCrafter('#table-container', {
       data,
       columns,
-      filterable: true,
       pagination: true,
-      pageSize: 5
+      pageSize: 5,
+      filters: {
+        autoDetect: true,
+        types: {
+          name: { type: 'text' }
+        }
+      }
     });
 
     table.render();
@@ -238,6 +285,7 @@ describe('TableCrafter Advanced Filtering', () => {
     const nameFilter = container.querySelector('.tc-filter-input[data-field="name"]');
     nameFilter.value = 'John';
     nameFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
 
     // Should show 5 results on first page
     const rows = container.querySelectorAll('tbody tr');
@@ -262,9 +310,14 @@ describe('TableCrafter Advanced Filtering', () => {
     table = new TableCrafter('#table-container', {
       data,
       columns,
-      filterable: true,
       pagination: true,
-      pageSize: 3
+      pageSize: 3,
+      filters: {
+        autoDetect: true,
+        types: {
+          name: { type: 'text' }
+        }
+      }
     });
 
     table.render();
@@ -280,6 +333,7 @@ describe('TableCrafter Advanced Filtering', () => {
     const nameFilter = container.querySelector('.tc-filter-input[data-field="name"]');
     nameFilter.value = 'John';
     nameFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
 
     // Should be back on page 1
     const currentPageAfter = container.querySelector('.tc-current-page');
@@ -308,7 +362,13 @@ describe('TableCrafter Advanced Filtering', () => {
       data,
       columns,
       filterable: true,
-      responsive: true
+      responsive: true,
+      filters: {
+        autoDetect: true,
+        types: {
+          name: { type: 'text' }
+        }
+      }
     });
 
     table.render();
@@ -316,6 +376,7 @@ describe('TableCrafter Advanced Filtering', () => {
     const nameFilter = container.querySelector('.tc-filter-input[data-field="name"]');
     nameFilter.value = 'John';
     nameFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
 
     const cards = container.querySelectorAll('.tc-card');
     expect(cards).toHaveLength(1);
@@ -343,7 +404,13 @@ describe('TableCrafter Advanced Filtering', () => {
     table = new TableCrafter('#table-container', {
       data,
       columns,
-      filterable: true
+      filterable: true,
+      filters: {
+        autoDetect: true,
+        types: {
+          status: { type: 'text' }
+        }
+      }
     });
 
     table.render();
@@ -354,6 +421,9 @@ describe('TableCrafter Advanced Filtering', () => {
     const rows = container.querySelectorAll('tbody tr');
     expect(rows).toHaveLength(1);
     expect(rows[0].querySelector('td[data-field="name"]').textContent).toBe('John');
+
+    // Advancing timers to ensure any pending renders from setFilter are processed
+    jest.advanceTimersByTime(300);
 
     // Clear filters programmatically
     table.clearFilters();
@@ -377,7 +447,13 @@ describe('TableCrafter Advanced Filtering', () => {
       data,
       columns,
       filterable: true,
-      onFilter: onFilterCallback
+      onFilter: onFilterCallback,
+      filters: {
+        autoDetect: true,
+        types: {
+          name: { type: 'text' }
+        }
+      }
     });
 
     table.render();
@@ -385,6 +461,7 @@ describe('TableCrafter Advanced Filtering', () => {
     const nameFilter = container.querySelector('.tc-filter-input[data-field="name"]');
     nameFilter.value = 'John';
     nameFilter.dispatchEvent(new Event('input'));
+    jest.advanceTimersByTime(300);
 
     expect(onFilterCallback).toHaveBeenCalledWith({
       filters: { name: 'John' },

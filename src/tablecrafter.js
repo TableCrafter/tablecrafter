@@ -18,8 +18,6 @@ class TableCrafter {
       data: [],
       columns: [],
       editable: false,
-      responsive: true,
-      mobileBreakpoint: 768,
       pageSize: 25,
       pagination: false,
       sortable: true,
@@ -450,11 +448,12 @@ class TableCrafter {
    */
   getCurrentBreakpoint() {
     const width = window.innerWidth;
-    const breakpoints = this.config.responsive.breakpoints || {
+    const defaults = {
       mobile: { width: 480, layout: 'cards' },
       tablet: { width: 768, layout: 'compact' },
       desktop: { width: 1024, layout: 'table' }
     };
+    const breakpoints = { ...defaults, ...(this.config.responsive.breakpoints || {}) };
 
     if (width <= breakpoints.mobile.width) return 'mobile';
     if (width <= breakpoints.tablet.width) return 'tablet';

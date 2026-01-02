@@ -38,7 +38,7 @@ describe('TableCrafter Initialization', () => {
         { field: 'name', label: 'Name' }
       ],
       editable: true,
-      responsive: true
+      responsive: { enabled: true }
     };
 
     const table = new TableCrafter('#table-container', config);
@@ -47,11 +47,17 @@ describe('TableCrafter Initialization', () => {
 
   test('should have default configuration', () => {
     const table = new TableCrafter('#table-container');
-    
+
     expect(table.config).toMatchObject({
       editable: false,
-      responsive: true,
-      mobileBreakpoint: 768,
+      responsive: {
+        enabled: true,
+        breakpoints: {
+          mobile: { width: 480, layout: 'cards' },
+          tablet: { width: 768, layout: 'compact' },
+          desktop: { width: 1024, layout: 'table' }
+        }
+      },
       pageSize: 25,
       sortable: true,
       filterable: true
@@ -208,8 +214,10 @@ describe('TableCrafter Mobile Responsiveness', () => {
     });
 
     table = new TableCrafter('#table-container', {
-      responsive: true,
-      mobileBreakpoint: 768
+      responsive: {
+        enabled: true,
+        breakpoints: { mobile: { width: 768 } }
+      }
     });
 
     expect(table.isMobile()).toBe(true);
@@ -232,10 +240,10 @@ describe('TableCrafter Mobile Responsiveness', () => {
       { field: 'email', label: 'Email' }
     ];
 
-    table = new TableCrafter('#table-container', { 
-      data, 
+    table = new TableCrafter('#table-container', {
+      data,
       columns,
-      responsive: true 
+      responsive: { enabled: true }
     });
     table.render();
 
@@ -247,11 +255,15 @@ describe('TableCrafter Mobile Responsiveness', () => {
     const data = [{ id: 1, name: 'John' }];
     const columns = [{ field: 'id', label: 'ID' }, { field: 'name', label: 'Name' }];
 
-    table = new TableCrafter('#table-container', { 
-      data, 
+    table = new TableCrafter('#table-container', {
+      data,
       columns,
-      responsive: true,
-      mobileBreakpoint: 768 
+      responsive: {
+        enabled: true,
+        breakpoints: {
+          mobile: { width: 768, layout: 'cards' }
+        }
+      }
     });
 
     // Start in desktop view
@@ -290,10 +302,10 @@ describe('TableCrafter Editing', () => {
       { field: 'email', label: 'Email', editable: true }
     ];
 
-    table = new TableCrafter('#table-container', { 
-      data, 
+    table = new TableCrafter('#table-container', {
+      data,
       columns,
-      editable: true 
+      editable: true
     });
     table.render();
 
@@ -311,16 +323,16 @@ describe('TableCrafter Editing', () => {
       { field: 'name', label: 'Name', editable: true }
     ];
 
-    table = new TableCrafter('#table-container', { 
-      data, 
+    table = new TableCrafter('#table-container', {
+      data,
       columns,
-      editable: true 
+      editable: true
     });
     table.render();
 
     const cells = container.querySelectorAll('tbody td');
     expect(cells).toHaveLength(2);
-    
+
     const editableCell = cells[1];
     editableCell.click();
 
@@ -337,17 +349,17 @@ describe('TableCrafter Editing', () => {
 
     const onEdit = jest.fn();
 
-    table = new TableCrafter('#table-container', { 
-      data, 
+    table = new TableCrafter('#table-container', {
+      data,
       columns,
       editable: true,
-      onEdit 
+      onEdit
     });
     table.render();
 
     const cells = container.querySelectorAll('tbody td');
     expect(cells).toHaveLength(2);
-    
+
     const editableCell = cells[1];
     editableCell.click();
 

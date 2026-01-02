@@ -12,12 +12,14 @@ describe('TableCrafter CSV Export', () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="table-container"></div>';
     container = document.getElementById('table-container');
+    jest.useFakeTimers();
   });
 
   afterEach(() => {
     if (table) {
       table.destroy();
     }
+    jest.useRealTimers();
   });
 
   test('should render export button when export is enabled', () => {
@@ -114,7 +116,7 @@ describe('TableCrafter CSV Export', () => {
     table.render();
 
     const csvData = table.exportToCSV();
-    
+
     // Test the full CSV content rather than splitting by lines 
     // since newlines within fields are valid CSV
     const expectedCSV = [
@@ -143,13 +145,20 @@ describe('TableCrafter CSV Export', () => {
       data,
       columns,
       exportable: true,
-      filterable: true
+      filterable: true,
+      filters: {
+        autoDetect: true,
+        types: {
+          department: { type: 'text' }
+        }
+      }
     });
 
     table.render();
 
     // Apply filter
     table.setFilter('department', 'Engineering');
+    jest.advanceTimersByTime(300);
 
     const csvData = table.exportToCSV();
     const expectedCSV = [
@@ -178,13 +187,20 @@ describe('TableCrafter CSV Export', () => {
       columns,
       exportable: true,
       filterable: true,
-      exportFiltered: false
+      exportFiltered: false,
+      filters: {
+        autoDetect: true,
+        types: {
+          department: { type: 'text' }
+        }
+      }
     });
 
     table.render();
 
     // Apply filter
     table.setFilter('department', 'Engineering');
+    jest.advanceTimersByTime(300);
 
     const csvData = table.exportToCSV();
     const expectedCSV = [
@@ -423,7 +439,7 @@ describe('TableCrafter CSV Export', () => {
 
     const csvData = table.exportToCSV();
     const lines = csvData.split('\n');
-    
+
     expect(lines).toHaveLength(26); // 25 data rows + 1 header
     expect(lines[0]).toBe('ID,Name');
     expect(lines[25]).toBe('25,"User 25"');
