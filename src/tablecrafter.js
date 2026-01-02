@@ -170,6 +170,22 @@ class TableCrafter {
   }
 
   /**
+   * Debounce Utility.
+   * Prevents rapid firing of expensive operations.
+   * 
+   * @param {Function} func The function to debounce.
+   * @param {number} wait Delay in milliseconds.
+   */
+  debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      const context = this;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+  }
+
+  /**
    * Resolve container from selector or element
    */
   resolveContainer(container) {
@@ -190,7 +206,7 @@ class TableCrafter {
     }
 
     this.isLoading = true;
-    
+
     try {
       const response = await fetch(this.dataUrl);
       if (!response.ok) {
@@ -199,11 +215,11 @@ class TableCrafter {
       const data = await response.json();
       this.data = data;
       this.isLoading = false;
-      
+
       if (this.container.querySelector('.tc-wrapper')) {
         this.render();
       }
-      
+
       return data;
     } catch (error) {
       this.isLoading = false;
@@ -264,12 +280,12 @@ class TableCrafter {
   selectAllRows() {
     const displayData = this.getPaginatedData();
     displayData.forEach((row, index) => {
-      const actualRowIndex = this.config.pagination ? 
-        (this.currentPage - 1) * this.config.pageSize + index : 
+      const actualRowIndex = this.config.pagination ?
+        (this.currentPage - 1) * this.config.pageSize + index :
         index;
       this.selectedRows.add(actualRowIndex);
     });
-    
+
     this.updateBulkControls();
     this.render();
   }
@@ -292,7 +308,7 @@ class TableCrafter {
 
     const selectedCount = this.selectedRows.size;
     const bulkInfo = bulkControls.querySelector('.tc-bulk-info');
-    
+
     if (selectedCount === 0) {
       bulkControls.style.display = 'none';
     } else {
@@ -376,9 +392,9 @@ class TableCrafter {
 
     // Render body
     const tbody = document.createElement('tbody');
-    
+
     const displayData = this.getPaginatedData();
-    
+
     if (displayData.length === 0) {
       // Show no results message
       const tr = document.createElement('tr');
@@ -392,21 +408,21 @@ class TableCrafter {
       tbody.appendChild(tr);
     } else {
       displayData.forEach((row, rowIndex) => {
-        const actualRowIndex = this.config.pagination ? 
-          (this.currentPage - 1) * this.config.pageSize + rowIndex : 
+        const actualRowIndex = this.config.pagination ?
+          (this.currentPage - 1) * this.config.pageSize + rowIndex :
           rowIndex;
         const tr = document.createElement('tr');
         tr.dataset.rowIndex = actualRowIndex;
 
         this.config.columns.forEach(async (column) => {
           const td = document.createElement('td');
-          
+
           // Format lookup values
           let displayValue = row[column.field] || '';
           if (column.lookup && displayValue) {
             displayValue = await this.formatLookupValue(column, displayValue);
           }
-          
+
           td.textContent = displayValue;
           td.dataset.field = column.field;
 
@@ -451,7 +467,7 @@ class TableCrafter {
   getVisibleFields(breakpoint) {
     const visibility = this.config.responsive.fieldVisibility || {};
     const breakpointConfig = visibility[breakpoint];
-    
+
     if (!breakpointConfig) {
       return this.config.columns;
     }
@@ -473,7 +489,7 @@ class TableCrafter {
   getHiddenFields(breakpoint) {
     const visibility = this.config.responsive.fieldVisibility || {};
     const breakpointConfig = visibility[breakpoint];
-    
+
     if (!breakpointConfig) {
       return [];
     }
@@ -501,7 +517,7 @@ class TableCrafter {
     const visibleFields = this.getVisibleFields(breakpoint);
     const hiddenFields = this.getHiddenFields(breakpoint);
     const hasHiddenFields = hiddenFields.length > 0;
-    
+
     if (displayData.length === 0) {
       // Show no results message
       const noResults = document.createElement('div');
@@ -512,8 +528,8 @@ class TableCrafter {
       cardsContainer.appendChild(noResults);
     } else {
       displayData.forEach((row, rowIndex) => {
-        const actualRowIndex = this.config.pagination ? 
-          (this.currentPage - 1) * this.config.pageSize + rowIndex : 
+        const actualRowIndex = this.config.pagination ?
+          (this.currentPage - 1) * this.config.pageSize + rowIndex :
           rowIndex;
         const card = document.createElement('div');
         card.className = 'tc-card';
@@ -526,7 +542,7 @@ class TableCrafter {
         if (this.config.bulk.enabled) {
           const checkboxContainer = document.createElement('div');
           checkboxContainer.className = 'tc-card-checkbox';
-          
+
           const checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
           checkbox.className = 'tc-row-checkbox';
@@ -535,7 +551,7 @@ class TableCrafter {
           checkbox.addEventListener('change', (e) => {
             this.toggleRowSelection(actualRowIndex, e.target.checked);
           });
-          
+
           checkboxContainer.appendChild(checkbox);
           card.appendChild(checkboxContainer);
         }
@@ -543,7 +559,7 @@ class TableCrafter {
         // Card header with expand toggle
         const cardHeader = document.createElement('div');
         cardHeader.className = 'tc-card-header';
-        
+
         // Use first column as title
         const firstColumn = this.config.columns[0];
         if (firstColumn) {
@@ -558,13 +574,13 @@ class TableCrafter {
           toggle.className = 'tc-card-toggle';
           toggle.textContent = '▼';
           cardHeader.appendChild(toggle);
-          
+
           cardHeader.addEventListener('click', () => {
             this.toggleCard(card);
           });
           cardHeader.style.cursor = 'pointer';
         }
-        
+
         card.appendChild(cardHeader);
 
         // Card body with visible fields
@@ -573,7 +589,7 @@ class TableCrafter {
 
         visibleFields.forEach(column => {
           if (column === firstColumn) return; // Skip first column as it's in header
-          
+
           const field = document.createElement('div');
           field.className = 'tc-card-field';
 
@@ -583,7 +599,7 @@ class TableCrafter {
 
           const value = document.createElement('span');
           value.className = 'tc-card-value';
-          
+
           // Format lookup values
           let displayValue = row[column.field] || '';
           if (column.lookup && displayValue) {
@@ -593,7 +609,7 @@ class TableCrafter {
           } else {
             value.textContent = displayValue;
           }
-          
+
           value.dataset.field = column.field;
 
           // Make field editable if configured and user has permission
@@ -624,7 +640,7 @@ class TableCrafter {
 
             const value = document.createElement('span');
             value.className = 'tc-card-value';
-            
+
             // Format lookup values
             let displayValue = row[column.field] || '';
             if (column.lookup && displayValue) {
@@ -634,7 +650,7 @@ class TableCrafter {
             } else {
               value.textContent = displayValue;
             }
-            
+
             value.dataset.field = column.field;
 
             // Make field editable if configured and user has permission
@@ -663,7 +679,7 @@ class TableCrafter {
    */
   toggleCard(card) {
     const isExpanded = card.classList.contains('tc-card-expanded');
-    
+
     if (isExpanded) {
       card.classList.remove('tc-card-expanded');
     } else {
@@ -676,12 +692,12 @@ class TableCrafter {
    */
   async startEdit(event, rowIndex, field) {
     const target = event.currentTarget;
-    
+
     // Check permissions
     if (!this.hasPermission('edit', this.data[rowIndex])) {
       return;
     }
-    
+
     // Don't start edit if already editing
     if (this.editingCell === target) {
       return;
@@ -694,9 +710,9 @@ class TableCrafter {
 
     const currentValue = this.data[rowIndex][field];
     const column = this.config.columns.find(col => col.field === field);
-    
+
     let editElement;
-    
+
     // Create appropriate edit control based on field type
     if (column && column.lookup) {
       // Create lookup dropdown
@@ -721,7 +737,7 @@ class TableCrafter {
     // Replace content with edit element
     target.innerHTML = '';
     target.appendChild(editElement);
-    
+
     // Focus the element
     editElement.focus();
     if (editElement.select) {
@@ -756,7 +772,7 @@ class TableCrafter {
     const rowIndex = parseInt(element.dataset.rowIndex);
     const field = element.dataset.field;
     const oldValue = element.dataset.originalValue;
-    
+
     // Get new value based on element type
     let newValue;
     if (element.getValue && typeof element.getValue === 'function') {
@@ -773,12 +789,12 @@ class TableCrafter {
     // Validate the new value
     if (this.config.validation.enabled && this.config.validation.validateOnEdit) {
       const validation = this.validateField(field, newValue, this.data[rowIndex]);
-      
+
       if (!validation.isValid) {
         // Show validation errors
         this.showValidationError(element, validation.errors);
         this.setValidationError(rowIndex, field, validation.errors);
-        
+
         // Don't save invalid data
         element.value = oldValue; // Revert to original value
         element.focus();
@@ -819,7 +835,7 @@ class TableCrafter {
     // Update display with formatted value
     const parent = element.parentElement;
     const column = this.config.columns.find(col => col.field === field);
-    
+
     if (column && column.lookup) {
       // Format lookup value for display
       const displayValue = await this.formatLookupValue(column, newValue);
@@ -827,7 +843,7 @@ class TableCrafter {
     } else {
       parent.textContent = newValue;
     }
-    
+
     // Clear editing state
     this.editingCell = null;
   }
@@ -842,7 +858,7 @@ class TableCrafter {
     if (element) {
       this.editingCell.textContent = element.dataset.originalValue;
     }
-    
+
     this.editingCell = null;
   }
 
@@ -852,7 +868,7 @@ class TableCrafter {
   getFilteredData() {
     // Apply permission filtering first
     let data = this.getPermissionFilteredData();
-    
+
     if (!this.config.filterable || Object.keys(this.filters).length === 0) {
       return data;
     }
@@ -875,7 +891,7 @@ class TableCrafter {
             const cellDate = new Date(cellValue);
             const fromDate = filterValue.from ? new Date(filterValue.from) : null;
             const toDate = filterValue.to ? new Date(filterValue.to) : null;
-            
+
             if (fromDate && cellDate < fromDate) return false;
             if (toDate && cellDate > toDate) return false;
             return true;
@@ -884,7 +900,7 @@ class TableCrafter {
             if (!cellValue && cellValue !== 0) return false;
             const numValue = parseFloat(cellValue);
             if (isNaN(numValue)) return false;
-            
+
             if (filterValue.min !== undefined && numValue < filterValue.min) return false;
             if (filterValue.max !== undefined && numValue > filterValue.max) return false;
             return true;
@@ -903,7 +919,7 @@ class TableCrafter {
    */
   getPaginatedData() {
     const filteredData = this.getFilteredData();
-    
+
     if (!this.config.pagination) {
       return filteredData;
     }
@@ -1030,7 +1046,7 @@ class TableCrafter {
     this.config.columns.forEach(column => {
       const field = column.field;
       const values = this.data.map(row => row[field]).filter(val => val != null);
-      
+
       if (values.length === 0) return;
 
       // Store unique values for dropdowns
@@ -1039,7 +1055,7 @@ class TableCrafter {
       // Auto-detect filter type if not specified
       if (!this.config.filters.types[field]) {
         const sampleValue = values[0];
-        
+
         // Check if it's a date
         if (this.isDateField(values)) {
           this.filterTypes[field] = 'daterange';
@@ -1071,7 +1087,7 @@ class TableCrafter {
       /^\d{2}\/\d{2}\/\d{4}/, // MM/DD/YYYY
       /^\d{2}-\d{2}-\d{4}/ // MM-DD-YYYY
     ];
-    
+
     return values.slice(0, 5).every(val => {
       const str = val.toString();
       return datePatterns.some(pattern => pattern.test(str)) || !isNaN(Date.parse(str));
@@ -1158,9 +1174,9 @@ class TableCrafter {
     input.dataset.field = column.field;
     input.value = this.filters[column.field] || '';
 
-    input.addEventListener('input', (e) => {
+    input.addEventListener('input', this.debounce((e) => {
       this.setFilter(column.field, e.target.value);
-    });
+    }, 300));
 
     return input;
   }
@@ -1223,7 +1239,7 @@ class TableCrafter {
       .map(cb => cb.value);
 
     this.setFilter(field, selectedValues);
-    
+
     // Update button text
     const button = dropdown.previousElementSibling;
     this.updateMultiselectButton(button, selectedValues);
@@ -1267,7 +1283,7 @@ class TableCrafter {
       const filter = {};
       if (fromInput.value) filter.from = fromInput.value;
       if (toInput.value) filter.to = toInput.value;
-      
+
       this.setFilter(column.field, Object.keys(filter).length > 0 ? filter : null);
     };
 
@@ -1304,12 +1320,13 @@ class TableCrafter {
       const filter = {};
       if (minInput.value) filter.min = parseFloat(minInput.value);
       if (maxInput.value) filter.max = parseFloat(maxInput.value);
-      
+
       this.setFilter(column.field, Object.keys(filter).length > 0 ? filter : null);
     };
 
-    minInput.addEventListener('input', updateNumberFilter);
-    maxInput.addEventListener('input', updateNumberFilter);
+    const debouncedUpdate = this.debounce(updateNumberFilter, 300);
+    minInput.addEventListener('input', debouncedUpdate);
+    maxInput.addEventListener('input', debouncedUpdate);
 
     container.appendChild(minInput);
     container.appendChild(maxInput);
@@ -1394,19 +1411,19 @@ class TableCrafter {
     if (value === null || value === undefined) {
       return '""';
     }
-    
+
     const stringValue = value.toString();
-    
+
     // If the value contains comma, newline, or quote, wrap in quotes and escape quotes
     if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
       return '"' + stringValue.replace(/"/g, '""') + '"';
     }
-    
+
     // For simple values without special characters, don't quote numbers
     if (!isNaN(stringValue) && !isNaN(parseFloat(stringValue))) {
       return stringValue;
     }
-    
+
     // Quote text values
     return '"' + stringValue + '"';
   }
@@ -1474,9 +1491,9 @@ class TableCrafter {
     this.data.sort((a, b) => {
       const aVal = a[field];
       const bVal = b[field];
-      
+
       if (aVal === bVal) return 0;
-      
+
       const result = aVal < bVal ? -1 : 1;
       return this.sortOrder === 'asc' ? result : -result;
     });
@@ -1494,7 +1511,7 @@ class TableCrafter {
     // Re-render if crossing mobile breakpoint
     const isMobileNow = this.isMobile();
     const wrapper = this.container.querySelector('.tc-wrapper');
-    
+
     if (!wrapper) return;
 
     const hasCards = wrapper.querySelector('.tc-cards-container');
@@ -1521,7 +1538,7 @@ class TableCrafter {
     // Select all checkbox
     const selectAllContainer = document.createElement('label');
     selectAllContainer.className = 'tc-bulk-select-all';
-    
+
     const selectAllCheckbox = document.createElement('input');
     selectAllCheckbox.type = 'checkbox';
     selectAllCheckbox.addEventListener('change', (e) => {
@@ -1531,7 +1548,7 @@ class TableCrafter {
         this.deselectAllRows();
       }
     });
-    
+
     selectAllContainer.appendChild(selectAllCheckbox);
     selectAllContainer.appendChild(document.createTextNode(' Select All'));
 
@@ -1596,7 +1613,7 @@ class TableCrafter {
 
     // Sort indices in descending order to remove from end first
     selectedRows.sort((a, b) => b - a);
-    
+
     selectedRows.forEach(index => {
       this.data.splice(index, 1);
     });
@@ -1621,7 +1638,7 @@ class TableCrafter {
   bulkExport(selectedData) {
     const originalData = this.data;
     this.data = selectedData;
-    
+
     try {
       this.downloadCSV();
     } finally {
@@ -1660,7 +1677,7 @@ class TableCrafter {
     button.className = 'tc-add-new';
     button.textContent = 'Add New Entry';
     button.addEventListener('click', () => this.showAddNewModal());
-    
+
     return button;
   }
 
@@ -1685,18 +1702,18 @@ class TableCrafter {
     // Header
     const header = document.createElement('div');
     header.className = 'tc-modal-header';
-    
+
     const titleElement = document.createElement('h3');
     titleElement.className = 'tc-modal-title';
     titleElement.textContent = title;
-    
+
     const closeButton = document.createElement('button');
     closeButton.className = 'tc-modal-close';
     closeButton.textContent = '×';
     closeButton.addEventListener('click', () => {
       document.body.removeChild(overlay);
     });
-    
+
     header.appendChild(titleElement);
     header.appendChild(closeButton);
 
@@ -1722,9 +1739,9 @@ class TableCrafter {
   renderAddNewForm() {
     const form = document.createElement('form');
     form.className = 'tc-modal-form';
-    
-    const fields = this.config.addNew.fields.length > 0 ? 
-      this.config.addNew.fields : 
+
+    const fields = this.config.addNew.fields.length > 0 ?
+      this.config.addNew.fields :
       this.config.columns.filter(col => col.field !== 'id');
 
     fields.forEach(field => {
@@ -1742,7 +1759,7 @@ class TableCrafter {
       input.id = `tc-form-${field.field || field.name}`;
       input.name = field.field || field.name;
       input.required = field.required || false;
-      
+
       if (field.placeholder) {
         input.placeholder = field.placeholder;
       }
@@ -1797,7 +1814,7 @@ class TableCrafter {
     // Validate using the new validation system
     if (this.config.validation.enabled && this.config.validation.validateOnSubmit) {
       const validation = this.validateRow(newEntry, -1); // -1 for new entry
-      
+
       if (!validation.isValid) {
         this.showFormValidationErrors(form, validation.errors);
         return;
@@ -1806,11 +1823,11 @@ class TableCrafter {
 
     // Add to data
     this.data.push(newEntry);
-    
+
     // Close modal
     const overlay = form.closest('.tc-modal-overlay');
     document.body.removeChild(overlay);
-    
+
     // Re-render
     this.render();
 
@@ -1863,11 +1880,11 @@ class TableCrafter {
       const field = form.querySelector(`[name="${error.field}"]`);
       if (field) {
         field.classList.add('tc-error');
-        
+
         const errorDiv = document.createElement('div');
         errorDiv.className = 'tc-form-error';
         errorDiv.textContent = error.message;
-        
+
         field.parentNode.appendChild(errorDiv);
       }
     });
@@ -1891,7 +1908,7 @@ class TableCrafter {
   async apiRequest(endpoint, options = {}) {
     const config = this.config.api;
     const url = config.baseUrl + endpoint;
-    
+
     const requestOptions = {
       method: 'GET',
       headers: {
@@ -1912,11 +1929,11 @@ class TableCrafter {
 
     try {
       const response = await fetch(url, requestOptions);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error('API request failed:', error);
@@ -1937,11 +1954,11 @@ class TableCrafter {
       const data = await this.apiRequest(this.config.api.endpoints.data);
       this.data = Array.isArray(data) ? data : data.data || [];
       this.isLoading = false;
-      
+
       if (this.container.querySelector('.tc-wrapper')) {
         this.render();
       }
-      
+
       return this.data;
     } catch (error) {
       this.isLoading = false;
@@ -1964,7 +1981,7 @@ class TableCrafter {
         method: 'POST',
         body: JSON.stringify(entryData)
       });
-      
+
       // Add to local data
       this.data.push(response);
       return response;
@@ -1979,7 +1996,7 @@ class TableCrafter {
    */
   async updateEntry(index, entryData) {
     const originalEntry = this.data[index];
-    
+
     if (!this.config.api.baseUrl) {
       // Fall back to local update
       this.data[index] = { ...originalEntry, ...entryData };
@@ -1994,7 +2011,7 @@ class TableCrafter {
           body: JSON.stringify(entryData)
         }
       );
-      
+
       // Update local data
       this.data[index] = response;
       return response;
@@ -2009,7 +2026,7 @@ class TableCrafter {
    */
   async deleteEntry(index) {
     const entry = this.data[index];
-    
+
     if (!this.config.api.baseUrl) {
       // Fall back to local deletion
       this.data.splice(index, 1);
@@ -2021,7 +2038,7 @@ class TableCrafter {
         `${this.config.api.endpoints.delete}/${entry.id || index}`,
         { method: 'DELETE' }
       );
-      
+
       // Remove from local data
       this.data.splice(index, 1);
       return true;
@@ -2040,7 +2057,7 @@ class TableCrafter {
    */
   async loadLookupData(field, lookupConfig) {
     const cacheKey = `${field}_${JSON.stringify(lookupConfig)}`;
-    
+
     // Check cache first
     if (this.lookupCache.has(cacheKey)) {
       return this.lookupCache.get(cacheKey);
@@ -2048,7 +2065,7 @@ class TableCrafter {
 
     try {
       let data;
-      
+
       if (lookupConfig.url) {
         // Load from custom URL
         const response = await fetch(lookupConfig.url);
@@ -2090,29 +2107,29 @@ class TableCrafter {
     if (!lookupConfig) return null;
 
     const data = await this.loadLookupData(column.field, lookupConfig);
-    
+
     const select = document.createElement('select');
     select.className = 'tc-lookup-select';
-    
+
     // Add empty option
     const emptyOption = document.createElement('option');
     emptyOption.value = '';
     emptyOption.textContent = 'Select...';
     select.appendChild(emptyOption);
-    
+
     // Add options from lookup data
     data.forEach(item => {
       const option = document.createElement('option');
       option.value = item[lookupConfig.valueField || 'id'];
       option.textContent = item[lookupConfig.displayField || 'name'];
-      
+
       if (option.value == currentValue) {
         option.selected = true;
       }
-      
+
       select.appendChild(option);
     });
-    
+
     return select;
   }
 
@@ -2121,14 +2138,14 @@ class TableCrafter {
    */
   async formatLookupValue(column, value) {
     if (!value || !column.lookup) return value;
-    
+
     const lookupConfig = column.lookup;
     const data = await this.loadLookupData(column.field, lookupConfig);
-    
-    const item = data.find(item => 
+
+    const item = data.find(item =>
       item[lookupConfig.valueField || 'id'] == value
     );
-    
+
     return item ? item[lookupConfig.displayField || 'name'] : value;
   }
 
@@ -2154,23 +2171,23 @@ class TableCrafter {
 
     const permissions = this.config.permissions;
     const allowedRoles = permissions[action] || [];
-    
+
     // Check if all users allowed
     if (allowedRoles.includes('*')) {
       return true;
     }
-    
+
     // Check if user has required role
     const hasRole = this.userPermissions.some(role => allowedRoles.includes(role));
     if (!hasRole) {
       return false;
     }
-    
+
     // Check own-only restriction
     if (permissions.ownOnly && entry && this.currentUser) {
       return entry.user_id === this.currentUser.id || entry.created_by === this.currentUser.id;
     }
-    
+
     return true;
   }
 
@@ -2181,7 +2198,7 @@ class TableCrafter {
     if (!this.config.permissions.enabled || !this.config.permissions.ownOnly) {
       return this.data;
     }
-    
+
     return this.data.filter(entry => this.hasPermission('view', entry));
   }
 
@@ -2194,7 +2211,7 @@ class TableCrafter {
    */
   saveState() {
     if (!this.config.state.persist) return;
-    
+
     const state = {
       filters: this.filters,
       sortField: this.sortField,
@@ -2203,9 +2220,9 @@ class TableCrafter {
       selectedRows: Array.from(this.selectedRows),
       timestamp: Date.now()
     };
-    
+
     try {
-      const storage = this.config.state.storage === 'sessionStorage' ? 
+      const storage = this.config.state.storage === 'sessionStorage' ?
         sessionStorage : localStorage;
       storage.setItem(this.config.state.key, JSON.stringify(state));
     } catch (error) {
@@ -2218,23 +2235,23 @@ class TableCrafter {
    */
   loadState() {
     if (!this.config.state.persist) return;
-    
+
     try {
-      const storage = this.config.state.storage === 'sessionStorage' ? 
+      const storage = this.config.state.storage === 'sessionStorage' ?
         sessionStorage : localStorage;
       const stateJson = storage.getItem(this.config.state.key);
-      
+
       if (!stateJson) return;
-      
+
       const state = JSON.parse(stateJson);
-      
+
       // Restore state
       this.filters = state.filters || {};
       this.sortField = state.sortField;
       this.sortOrder = state.sortOrder || 'asc';
       this.currentPage = state.currentPage || 1;
       this.selectedRows = new Set(state.selectedRows || []);
-      
+
     } catch (error) {
       console.warn('Failed to load state:', error);
     }
@@ -2245,7 +2262,7 @@ class TableCrafter {
    */
   clearState() {
     try {
-      const storage = this.config.state.storage === 'sessionStorage' ? 
+      const storage = this.config.state.storage === 'sessionStorage' ?
         sessionStorage : localStorage;
       storage.removeItem(this.config.state.key);
     } catch (error) {
@@ -2306,10 +2323,10 @@ class TableCrafter {
     input.type = 'text';
     input.value = currentValue || '';
     input.className = 'tc-edit-input tc-text-input';
-    
+
     if (column.maxLength) input.maxLength = column.maxLength;
     if (column.placeholder) input.placeholder = column.placeholder;
-    
+
     return input;
   }
 
@@ -2317,13 +2334,13 @@ class TableCrafter {
     const textarea = document.createElement('textarea');
     textarea.value = currentValue || '';
     textarea.className = 'tc-edit-textarea';
-    
+
     const config = this.config.cellTypes.textarea;
     textarea.rows = column.rows || config.rows;
-    
+
     if (column.maxLength) textarea.maxLength = column.maxLength;
     if (column.placeholder) textarea.placeholder = column.placeholder;
-    
+
     return textarea;
   }
 
@@ -2332,12 +2349,12 @@ class TableCrafter {
     input.type = 'number';
     input.value = currentValue || '';
     input.className = 'tc-edit-input tc-number-input';
-    
+
     if (column.min !== undefined) input.min = column.min;
     if (column.max !== undefined) input.max = column.max;
     if (column.step !== undefined) input.step = column.step;
     if (column.placeholder) input.placeholder = column.placeholder;
-    
+
     return input;
   }
 
@@ -2346,9 +2363,9 @@ class TableCrafter {
     input.type = 'email';
     input.value = currentValue || '';
     input.className = 'tc-edit-input tc-email-input';
-    
+
     if (column.placeholder) input.placeholder = column.placeholder;
-    
+
     return input;
   }
 
@@ -2356,7 +2373,7 @@ class TableCrafter {
     const input = document.createElement('input');
     input.type = 'date';
     input.className = 'tc-edit-input tc-date-input';
-    
+
     // Format date value for input
     if (currentValue) {
       const date = new Date(currentValue);
@@ -2364,10 +2381,10 @@ class TableCrafter {
         input.value = date.toISOString().split('T')[0];
       }
     }
-    
+
     if (column.min) input.min = column.min;
     if (column.max) input.max = column.max;
-    
+
     return input;
   }
 
@@ -2375,7 +2392,7 @@ class TableCrafter {
     const input = document.createElement('input');
     input.type = 'datetime-local';
     input.className = 'tc-edit-input tc-datetime-input';
-    
+
     // Format datetime value for input
     if (currentValue) {
       const date = new Date(currentValue);
@@ -2385,14 +2402,14 @@ class TableCrafter {
         input.value = localDate.toISOString().slice(0, 16);
       }
     }
-    
+
     return input;
   }
 
   createSelectEditor(column, currentValue) {
     const select = document.createElement('select');
     select.className = 'tc-edit-select';
-    
+
     // Add default option
     if (column.placeholder) {
       const defaultOption = document.createElement('option');
@@ -2401,12 +2418,12 @@ class TableCrafter {
       defaultOption.disabled = true;
       select.appendChild(defaultOption);
     }
-    
+
     // Add options
     const options = column.options || [];
     options.forEach(option => {
       const optionElement = document.createElement('option');
-      
+
       if (typeof option === 'string') {
         optionElement.value = option;
         optionElement.textContent = option;
@@ -2414,35 +2431,35 @@ class TableCrafter {
         optionElement.value = option.value;
         optionElement.textContent = option.label || option.value;
       }
-      
+
       if (optionElement.value === currentValue) {
         optionElement.selected = true;
       }
-      
+
       select.appendChild(optionElement);
     });
-    
+
     return select;
   }
 
   createMultiSelectEditor(column, currentValue) {
     const container = document.createElement('div');
     container.className = 'tc-multiselect-container';
-    
-    const selectedValues = Array.isArray(currentValue) ? currentValue : 
+
+    const selectedValues = Array.isArray(currentValue) ? currentValue :
       (currentValue ? currentValue.split(',') : []);
-    
+
     const options = column.options || [];
     options.forEach(option => {
       const label = document.createElement('label');
       label.className = 'tc-multiselect-option';
-      
+
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.className = 'tc-multiselect-checkbox';
-      
+
       const text = document.createElement('span');
-      
+
       if (typeof option === 'string') {
         checkbox.value = option;
         text.textContent = option;
@@ -2452,70 +2469,70 @@ class TableCrafter {
         text.textContent = option.label || option.value;
         checkbox.checked = selectedValues.includes(option.value);
       }
-      
+
       label.appendChild(checkbox);
       label.appendChild(text);
       container.appendChild(label);
     });
-    
+
     // Add method to get selected values
-    container.getValue = function() {
+    container.getValue = function () {
       const checkboxes = this.querySelectorAll('input[type="checkbox"]:checked');
       return Array.from(checkboxes).map(cb => cb.value);
     };
-    
+
     return container;
   }
 
   createCheckboxEditor(column, currentValue) {
     const container = document.createElement('div');
     container.className = 'tc-checkbox-container';
-    
+
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.className = 'tc-edit-checkbox';
     checkbox.checked = this.isTruthy(currentValue);
-    
+
     if (column.label) {
       const label = document.createElement('label');
       label.className = 'tc-checkbox-label';
-      
+
       const text = document.createElement('span');
       text.textContent = column.label;
-      
+
       label.appendChild(checkbox);
       label.appendChild(text);
       container.appendChild(label);
     } else {
       container.appendChild(checkbox);
     }
-    
+
     // Add method to get value
-    container.getValue = function() {
+    container.getValue = function () {
       return this.querySelector('input[type="checkbox"]').checked;
     };
-    
+
     return container;
   }
 
   createRadioEditor(column, currentValue) {
     const container = document.createElement('div');
     container.className = 'tc-radio-container';
-    
+
     const fieldName = `radio_${Date.now()}_${Math.random()}`;
     const options = column.options || [];
-    
+
     options.forEach(option => {
       const label = document.createElement('label');
       label.className = 'tc-radio-option';
-      
+
       const radio = document.createElement('input');
       radio.type = 'radio';
       radio.name = fieldName;
       radio.className = 'tc-edit-radio';
-      
+
       const text = document.createElement('span');
-      
+
       if (typeof option === 'string') {
         radio.value = option;
         text.textContent = option;
@@ -2525,32 +2542,32 @@ class TableCrafter {
         text.textContent = option.label || option.value;
         radio.checked = option.value === currentValue;
       }
-      
+
       label.appendChild(radio);
       label.appendChild(text);
       container.appendChild(label);
     });
-    
+
     // Add method to get selected value
-    container.getValue = function() {
+    container.getValue = function () {
       const selected = this.querySelector('input[type="radio"]:checked');
       return selected ? selected.value : '';
     };
-    
+
     return container;
   }
 
   createFileEditor(column, currentValue) {
     const container = document.createElement('div');
     container.className = 'tc-file-container';
-    
+
     const input = document.createElement('input');
     input.type = 'file';
     input.className = 'tc-edit-file';
-    
+
     if (column.accept) input.accept = column.accept;
     if (column.multiple) input.multiple = column.multiple;
-    
+
     // Show current file if exists
     if (currentValue) {
       const preview = document.createElement('div');
@@ -2558,15 +2575,15 @@ class TableCrafter {
       preview.textContent = `Current: ${currentValue}`;
       container.appendChild(preview);
     }
-    
+
     container.appendChild(input);
-    
+
     // Add method to get value
-    container.getValue = function() {
+    container.getValue = function () {
       const fileInput = this.querySelector('input[type="file"]');
       return fileInput.files.length > 0 ? fileInput.files[0].name : currentValue;
     };
-    
+
     return container;
   }
 
@@ -2576,76 +2593,76 @@ class TableCrafter {
     input.value = currentValue || '';
     input.className = 'tc-edit-input tc-url-input';
     input.placeholder = column.placeholder || 'https://example.com';
-    
+
     return input;
   }
 
   createColorEditor(column, currentValue) {
     const container = document.createElement('div');
     container.className = 'tc-color-container';
-    
+
     const input = document.createElement('input');
     input.type = 'color';
     input.value = currentValue || '#000000';
     input.className = 'tc-edit-color';
-    
+
     const textInput = document.createElement('input');
     textInput.type = 'text';
     textInput.value = currentValue || '#000000';
     textInput.className = 'tc-color-text';
     textInput.placeholder = '#000000';
-    
+
     // Sync color picker and text input
     input.addEventListener('change', () => {
       textInput.value = input.value;
     });
-    
+
     textInput.addEventListener('change', () => {
       if (/^#[0-9A-F]{6}$/i.test(textInput.value)) {
         input.value = textInput.value;
       }
     });
-    
+
     container.appendChild(input);
     container.appendChild(textInput);
-    
+
     // Add method to get value
-    container.getValue = function() {
+    container.getValue = function () {
       return this.querySelector('.tc-color-text').value;
     };
-    
+
     return container;
   }
 
   createRangeEditor(column, currentValue) {
     const container = document.createElement('div');
     container.className = 'tc-range-container';
-    
+
     const range = document.createElement('input');
     range.type = 'range';
     range.value = currentValue || column.min || 0;
     range.className = 'tc-edit-range';
-    
+
     if (column.min !== undefined) range.min = column.min;
     if (column.max !== undefined) range.max = column.max;
     if (column.step !== undefined) range.step = column.step;
-    
+
     const display = document.createElement('span');
     display.className = 'tc-range-display';
     display.textContent = range.value;
-    
+
     range.addEventListener('input', () => {
       display.textContent = range.value;
     });
-    
+
     container.appendChild(range);
     container.appendChild(display);
-    
+
     // Add method to get value
-    container.getValue = function() {
+    container.getValue = function () {
       return this.querySelector('input[type="range"]').value;
     };
-    
+
     return container;
   }
 
@@ -2760,13 +2777,13 @@ class TableCrafter {
    */
   getValidationMessage(type, rules) {
     let message = rules.message || this.config.validation.messages[type];
-    
+
     // Substitute parameters
     if (rules.minLength) message = message.replace('{min}', rules.minLength);
     if (rules.maxLength) message = message.replace('{max}', rules.maxLength);
     if (rules.min !== undefined) message = message.replace('{min}', rules.min);
     if (rules.max !== undefined) message = message.replace('{max}', rules.max);
-    
+
     return message;
   }
 
@@ -2806,7 +2823,7 @@ class TableCrafter {
     const errorTooltip = document.createElement('div');
     errorTooltip.className = 'tc-validation-tooltip';
     errorTooltip.textContent = errors[0]; // Show first error
-    
+
     // Position tooltip
     const rect = element.getBoundingClientRect();
     errorTooltip.style.position = 'absolute';
@@ -2828,7 +2845,7 @@ class TableCrafter {
    */
   clearValidationError(element) {
     element.classList.remove('tc-validation-error');
-    
+
     if (element._validationTooltip) {
       document.body.removeChild(element._validationTooltip);
       delete element._validationTooltip;
@@ -2872,7 +2889,7 @@ class TableCrafter {
     // Clear existing errors
     const existingErrors = form.querySelectorAll('.tc-validation-message');
     existingErrors.forEach(error => error.remove());
-    
+
     const errorFields = form.querySelectorAll('.tc-field-error');
     errorFields.forEach(field => field.classList.remove('tc-field-error'));
 
@@ -2882,12 +2899,12 @@ class TableCrafter {
       if (field) {
         // Add error class to field
         field.classList.add('tc-field-error');
-        
+
         // Create error message
         const errorMessage = document.createElement('span');
         errorMessage.className = 'tc-validation-message';
         errorMessage.textContent = fieldErrors[fieldName][0]; // Show first error
-        
+
         // Insert after the field
         field.parentNode.insertBefore(errorMessage, field.nextSibling);
       }
@@ -2900,7 +2917,7 @@ class TableCrafter {
   destroy() {
     // Save final state
     this.saveState();
-    
+
     // Remove event listeners
     if (this.config.responsive) {
       window.removeEventListener('resize', this.handleResize);
@@ -2908,7 +2925,7 @@ class TableCrafter {
 
     // Clear container
     this.container.innerHTML = '';
-    
+
     // Clear data
     this.data = [];
     this.editingCell = null;
@@ -2923,7 +2940,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 if (typeof define === 'function' && define.amd) {
-  define([], function() {
+  define([], function () {
     return TableCrafter;
   });
 }
