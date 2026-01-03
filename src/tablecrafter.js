@@ -1,6 +1,6 @@
 /**
  * TableCrafter - A lightweight, mobile-responsive data table library
- * @version 1.2.4
+ *  "version": "1.2.5",5
  * @author Fahad Murtaza
  * @license MIT
  */
@@ -1313,7 +1313,7 @@ class TableCrafter {
     if (!this.dropdowns) this.dropdowns = [];
     this.dropdowns.push(dropdown);
 
-    return container;
+    return button;
   }
 
   /**
