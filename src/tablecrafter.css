@@ -134,6 +134,9 @@
 }
 
 .tc-filter-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 38px;
   padding: 8px 12px;
   border: 1px solid #ced4da;
   border-radius: 4px;
@@ -161,11 +164,23 @@
   text-align: left;
   cursor: pointer;
   font-size: 14px;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  height: 40px;
+  /* Force consistent height */
+  box-sizing: border-box;
 }
 
-.tc-multiselect-button:hover {
+.tc-multiselect-button:hover,
+.tc-multiselect-button:focus {
+  outline: none;
   border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.tc-filter-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
 }
 
 .tc-multiselect-button::after {
