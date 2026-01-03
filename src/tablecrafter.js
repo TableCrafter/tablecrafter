@@ -1,6 +1,6 @@
 /**
  * TableCrafter - A lightweight, mobile-responsive data table library
- * @version 1.0.0
+ * @version 1.1.0
  * @author Fahad Murtaza
  * @license MIT
  */
@@ -199,11 +199,40 @@ class TableCrafter {
    * Load data from URL
    */
   async loadData() {
+    // If SSR mode is enabled and content exists, skip initial data fetch/render cycle
+    // to prevent FOUC (Flash of Unstyled Content).
+    if (this.container.dataset.ssr === "true" && this.container.dataset.tcInitialized !== "true") {
+      this.container.dataset.tcInitialized = "true";
+      // Still set the dataUrl if present, but don't fetch immediately if we want to rely on server data
+      // For this implementation, we assume if SSR is on, we trust the HTML until interaction.
+      // However, to enable sorting/pagination on client (which requires data array),
+      // we might want to fetch in background WITHOUT wiping the container.
+
+      if (this.dataUrl) {
+        try {
+          // Background fetch to populate this.data for interactive features
+          const response = await fetch(this.dataUrl);
+          const data = await response.json();
+          this.data = data;
+          // Do NOT call render() here, just populate data.
+          // Render will happen on next interaction (sort, page, etc).
+        } catch (e) {
+          console.error('Background fetch failed:', e);
+        }
+      }
+      return this.data;
+    }
+
     if (!this.dataUrl) {
       return Promise.resolve(this.data);
     }
 
     this.isLoading = true;
+
+    // Only show loading if NOT hydrating
+    if (this.container.innerHTML === '') {
+      this.container.innerHTML = '<div class="tc-loading">Loading...</div>';
+    }
 
     try {
       const response = await fetch(this.dataUrl);
@@ -214,7 +243,7 @@ class TableCrafter {
       this.data = data;
       this.isLoading = false;
 
-      if (this.container.querySelector('.tc-wrapper')) {
+      if (this.container.querySelector('.tc-wrapper') || this.container.innerHTML !== '') {
         this.render();
       }
 
