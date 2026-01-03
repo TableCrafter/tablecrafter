@@ -835,16 +835,7 @@
   background-color: white;
 }
 
-.tc-multiselect-container {
-  min-width: 200px;
-  max-width: 300px;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: white;
-  padding: 8px;
-}
+/* Legacy multiselect container removed */
 
 .tc-multiselect-option {
   display: block;
@@ -988,7 +979,6 @@
 }
 
 /* Rich cell type containers in edit mode */
-.tc-multiselect-container,
 .tc-checkbox-container,
 .tc-radio-container,
 .tc-file-container,
@@ -997,7 +987,6 @@
   position: relative;
   background-color: white;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Animation for cell type transitions */
@@ -1285,9 +1274,7 @@
 
 /* Mobile responsiveness for rich cell types and forms */
 @media (max-width: 768px) {
-  .tc-multiselect-container {
-    max-width: 250px;
-  }
+  /* Legacy mobile override removed */
 
   .tc-radio-container {
     flex-direction: column;
