@@ -1,6 +1,6 @@
 /**
  * TableCrafter - A lightweight, mobile-responsive data table library
- * @version 1.2.33
+ * @version 1.2.4
  * @author Fahad Murtaza
  * @license MIT
  */
@@ -1261,7 +1261,7 @@ class TableCrafter {
       checkbox.value = value;
       checkbox.checked = currentFilter.includes(value);
       checkbox.addEventListener('change', () => {
-        this.updateMultiselectFilter(column.field, dropdown);
+        this.updateMultiselectFilter(column.field, dropdown, button);
       });
 
       option.appendChild(checkbox);
@@ -1305,8 +1305,8 @@ class TableCrafter {
 
     button.addEventListener('click', toggleDropdown);
 
-    // Initial setup if data changed
-    this.updateMultiselectFilter(column.field, dropdown, true);
+    // Initial setup
+    this.updateMultiselectButton(button, currentFilter);
 
     // Append to body and track
     document.body.appendChild(dropdown);
@@ -1319,7 +1319,7 @@ class TableCrafter {
   /**
    * Update multiselect filter based on checkbox changes
    */
-  updateMultiselectFilter(field, dropdown) {
+  updateMultiselectFilter(field, dropdown, button) {
     const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
     const selectedValues = Array.from(checkboxes)
       .filter(cb => cb.checked)
@@ -1328,8 +1328,9 @@ class TableCrafter {
     this.setFilter(field, selectedValues);
 
     // Update button text
-    const button = dropdown.previousElementSibling;
-    this.updateMultiselectButton(button, selectedValues);
+    if (button) {
+      this.updateMultiselectButton(button, selectedValues);
+    }
   }
 
   /**
