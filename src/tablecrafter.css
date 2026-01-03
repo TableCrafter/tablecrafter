@@ -208,17 +208,20 @@
 
 /* === Date Range Filter === */
 .tc-daterange-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 .tc-date-from,
 .tc-date-to {
-  padding: 8px 12px;
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 8px;
+  font-size: 12px;
   border: 1px solid #ced4da;
   border-radius: 4px;
-  font-size: 14px;
   transition: border-color 0.2s;
 }
 
@@ -231,14 +234,17 @@
 
 /* === Number Range Filter === */
 .tc-numberrange-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 .tc-number-min,
 .tc-number-max {
-  padding: 8px 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 4px;
+  text-align: center;
   border: 1px solid #ced4da;
   border-radius: 4px;
   font-size: 14px;
@@ -288,7 +294,7 @@
 
 .tc-card-field {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr;
   gap: 8px;
   align-items: center;
 }
@@ -643,8 +649,13 @@
 }
 
 @keyframes tc-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .tc-progress-text {
@@ -658,31 +669,31 @@
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .tc-card-field {
     grid-template-columns: 1fr;
     gap: 4px;
   }
-  
+
   .tc-card-label {
     grid-row: 1;
   }
-  
+
   .tc-card-value {
     grid-row: 2;
   }
-  
+
   .tc-pagination {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .tc-bulk-controls {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
-  
+
   .tc-bulk-actions {
     justify-content: center;
   }
@@ -692,16 +703,16 @@
   .tc-wrapper {
     font-size: 13px;
   }
-  
+
   .tc-card {
     padding: 12px;
   }
-  
+
   .tc-modal {
     margin: 16px;
     width: calc(100% - 32px);
   }
-  
+
   .tc-daterange-container,
   .tc-numberrange-container {
     grid-template-columns: 1fr;
@@ -1302,38 +1313,38 @@
   .tc-multiselect-container {
     max-width: 250px;
   }
-  
+
   .tc-radio-container {
     flex-direction: column;
   }
-  
+
   .tc-color-container {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .tc-range-container {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .tc-modal-form {
     max-height: 60vh;
   }
-  
+
   .tc-modal-actions {
     flex-direction: column;
   }
-  
+
   .tc-btn-save,
   .tc-btn-cancel {
     width: 100%;
   }
-  
+
   .tc-multiselect-checkboxes {
     max-height: 120px;
   }
-  
+
   .tc-range-form-container {
     padding: 12px 0;
   }
@@ -1343,12 +1354,12 @@
   .tc-form-field {
     margin-bottom: 16px;
   }
-  
+
   .tc-form-input {
     padding: 8px 10px;
     font-size: 13px;
   }
-  
+
   .tc-form-label {
     font-size: 13px;
   }

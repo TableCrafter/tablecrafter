@@ -1,6 +1,6 @@
 /**
  * TableCrafter - A lightweight, mobile-responsive data table library
- * @version 1.1.0
+ * @version 1.1.9
  * @author Fahad Murtaza
  * @license MIT
  */
@@ -154,9 +154,11 @@ class TableCrafter {
     if (this.config.data) {
       if (Array.isArray(this.config.data)) {
         this.data = [...this.config.data];
+        this.autoDiscoverColumns();
       } else if (typeof this.config.data === 'string') {
         // URL provided, will load asynchronously
         this.dataUrl = this.config.data;
+        this.loadData();
       }
     }
 
@@ -242,6 +244,9 @@ class TableCrafter {
       const data = await response.json();
       this.data = data;
       this.isLoading = false;
+
+      // Auto-discover columns if not provided
+      this.autoDiscoverColumns();
 
       if (this.container.querySelector('.tc-wrapper') || this.container.innerHTML !== '') {
         this.render();
@@ -343,6 +348,20 @@ class TableCrafter {
       if (bulkInfo) {
         bulkInfo.textContent = `${selectedCount} item${selectedCount === 1 ? '' : 's'} selected`;
       }
+    }
+  }
+
+  /**
+   * Auto-discover columns from data
+   */
+  autoDiscoverColumns() {
+    if (this.data.length > 0 && this.config.columns.length === 0) {
+      const firstItem = this.data[0];
+      this.config.columns = Object.keys(firstItem).map(key => ({
+        field: key,
+        label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+        sortable: true
+      }));
     }
   }
 
@@ -1085,7 +1104,7 @@ class TableCrafter {
         const sampleValue = values[0];
 
         // Check if it's a date
-        if (this.isDateField(values)) {
+        if (this.isDateField(values) && !/sku|id|ref|code|serial|part/i.test(field)) {
           this.filterTypes[field] = 'daterange';
         }
         // Check if it's numeric
@@ -1093,7 +1112,10 @@ class TableCrafter {
           this.filterTypes[field] = 'numberrange';
         }
         // Check if it should be a multiselect (limited unique values)
-        else if (this.uniqueValues[field].length <= 20 && this.uniqueValues[field].length > 1) {
+        // Skip common text fields (name, email, etc)
+        else if (this.uniqueValues[field].length <= 20 &&
+          this.uniqueValues[field].length > 1 &&
+          !/name|email|title|desc|phone|address|subject/i.test(field)) {
           this.filterTypes[field] = 'multiselect';
         }
         // Default to text
@@ -1111,14 +1133,19 @@ class TableCrafter {
    */
   isDateField(values) {
     const datePatterns = [
-      /^\d{4}-\d{2}-\d{2}/, // YYYY-MM-DD
-      /^\d{2}\/\d{2}\/\d{4}/, // MM/DD/YYYY
-      /^\d{2}-\d{2}-\d{4}/ // MM-DD-YYYY
+      /^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
+      /^\d{2}\/\d{2}\/\d{4}$/, // MM/DD/YYYY
+      /^\d{2}-\d{2}-\d{4}$/, // MM-DD-YYYY
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/ // ISO
     ];
 
-    return values.slice(0, 5).every(val => {
+    return values.length > 0 && values.slice(0, 5).every(val => {
+      if (!val) return false;
       const str = val.toString();
-      return datePatterns.some(pattern => pattern.test(str)) || !isNaN(Date.parse(str));
+      // Must match strict pattern OR be a valid date parse that is NOT a number
+      // Also ensure it's not too short (Date.parse is very aggressive)
+      return datePatterns.some(pattern => pattern.test(str)) ||
+        (str.length > 6 && !isNaN(Date.parse(str)) && isNaN(Number(str)));
     });
   }
 
@@ -1245,15 +1272,54 @@ class TableCrafter {
       dropdown.appendChild(option);
     });
 
-    button.addEventListener('click', () => {
-      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-    });
+    // Toggle logic with Fixed Positioning (Popover)
+    const toggleDropdown = (e) => {
+      e.stopPropagation();
+      const isHidden = dropdown.style.display === 'none';
 
-    // Update button text based on selection
+      // Close all other dropdowns
+      document.querySelectorAll('.tc-multiselect-dropdown').forEach(d => d.style.display = 'none');
+
+      if (isHidden) {
+        dropdown.style.display = 'block';
+        dropdown.style.position = 'fixed';
+        dropdown.style.zIndex = '10000'; // High z-index
+
+        const rect = button.getBoundingClientRect();
+        dropdown.style.top = (rect.bottom) + 'px';
+        dropdown.style.left = rect.left + 'px';
+        dropdown.style.width = rect.width + 'px';
+        dropdown.style.maxHeight = '300px'; // Ensure visibility
+
+        // Add global listeners
+        document.addEventListener('click', closeDropdown);
+        window.addEventListener('scroll', closeDropdown, { capture: true });
+      } else {
+        closeDropdown();
+      }
+    };
+
+    const closeDropdown = (e) => {
+      if (e && (dropdown.contains(e.target) || e.target === button)) return;
+      dropdown.style.display = 'none';
+      document.removeEventListener('click', closeDropdown);
+      window.removeEventListener('scroll', closeDropdown, { capture: true });
+    };
+
+    button.addEventListener('click', toggleDropdown);
+
+    // Initial state
     this.updateMultiselectButton(button, currentFilter);
 
     container.appendChild(button);
-    container.appendChild(dropdown);
+
+    // Append dropdown to body to absolute breakout of any container clipping
+    document.body.appendChild(dropdown);
+
+    // Track for cleanup
+    if (!this.dropdowns) this.dropdowns = [];
+    this.dropdowns.push(dropdown);
+
     return container;
   }
 
@@ -2959,6 +3025,12 @@ class TableCrafter {
     this.editingCell = null;
     this.selectedRows.clear();
     this.lookupCache.clear();
+
+    // Cleanup dropdowns appended to body
+    if (this.dropdowns) {
+      this.dropdowns.forEach(dropdown => dropdown.remove());
+      this.dropdowns = [];
+    }
   }
 }
 
