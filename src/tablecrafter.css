@@ -169,10 +169,6 @@
 }
 
 /* === Multiselect Filter === */
-.tc-multiselect-container {
-  position: relative;
-}
-
 .tc-multiselect-button {
   display: flex;
   justify-content: space-between;

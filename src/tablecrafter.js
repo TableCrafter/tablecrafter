@@ -1,6 +1,6 @@
 /**
  * TableCrafter - A lightweight, mobile-responsive data table library
- * @version 1.2.1
+ * @version 1.2.3
  * @author Fahad Murtaza
  * @license MIT
  */
@@ -1240,9 +1240,6 @@ class TableCrafter {
    * Create multiselect filter dropdown
    */
   createMultiselectFilter(column) {
-    const container = document.createElement('div');
-    container.className = 'tc-multiselect-container';
-
     const button = document.createElement('button');
     button.className = 'tc-multiselect-button';
     button.textContent = 'Select values...';
@@ -1308,15 +1305,11 @@ class TableCrafter {
 
     button.addEventListener('click', toggleDropdown);
 
-    // Initial state
-    this.updateMultiselectButton(button, currentFilter);
+    // Initial setup if data changed
+    this.updateMultiselectFilter(column.field, dropdown, true);
 
-    container.appendChild(button);
-
-    // Append dropdown to body to absolute breakout of any container clipping
+    // Append to body and track
     document.body.appendChild(dropdown);
-
-    // Track for cleanup
     if (!this.dropdowns) this.dropdowns = [];
     this.dropdowns.push(dropdown);
 
