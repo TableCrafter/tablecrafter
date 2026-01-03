@@ -133,21 +133,39 @@
   letter-spacing: 0.5px;
 }
 
-.tc-filter-input {
+/* Base styles for all filter inputs/buttons */
+.tc-filter-input,
+.tc-multiselect-button,
+.tc-date-from,
+.tc-date-to,
+.tc-number-min,
+.tc-number-max {
   width: 100%;
-  box-sizing: border-box;
   height: 38px;
   padding: 8px 12px;
   border: 1px solid #ced4da;
   border-radius: 4px;
+  background: white;
+  color: #495057;
   font-size: 14px;
+  box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
+  text-align: left;
 }
 
-.tc-filter-input:focus {
+.tc-filter-input:focus,
+.tc-multiselect-button:focus,
+.tc-date-from:focus,
+.tc-date-to:focus,
+.tc-number-min:focus,
+.tc-number-max:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.tc-multiselect-button:hover {
+  border-color: #007bff;
 }
 
 /* === Multiselect Filter === */
@@ -156,38 +174,17 @@
 }
 
 .tc-multiselect-button {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  background: white;
-  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   cursor: pointer;
-  font-size: 14px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  height: 40px;
-  /* Force consistent height */
-  box-sizing: border-box;
-}
-
-.tc-multiselect-button:hover,
-.tc-multiselect-button:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.tc-filter-input {
-  width: 100%;
-  box-sizing: border-box;
-  height: 40px;
 }
 
 .tc-multiselect-button::after {
   content: '▼';
-  float: right;
   color: #6c757d;
-  font-size: 12px;
+  font-size: 10px;
+  margin-left: 8px;
 }
 
 .tc-multiselect-dropdown {
@@ -221,56 +218,23 @@
   margin-right: 8px;
 }
 
-/* === Date Range Filter === */
-.tc-daterange-container {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.tc-date-from,
-.tc-date-to {
-  flex: 1;
-  min-width: 0;
-  width: auto;
-  padding: 8px;
-  font-size: 12px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  transition: border-color 0.2s;
-}
-
-.tc-date-from:focus,
-.tc-date-to:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-/* === Number Range Filter === */
+/* === Date & Number Range Filters === */
+.tc-daterange-container,
 .tc-numberrange-container {
   display: flex;
   gap: 8px;
   align-items: center;
 }
 
+.tc-date-from,
+.tc-date-to,
 .tc-number-min,
 .tc-number-max {
   flex: 1;
   min-width: 0;
-  padding: 8px 4px;
   text-align: center;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: border-color 0.2s;
-}
-
-.tc-number-min:focus,
-.tc-number-max:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 /* === Mobile Cards === */
