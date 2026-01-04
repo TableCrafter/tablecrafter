@@ -205,10 +205,6 @@ class TableCrafter {
     // to prevent FOUC (Flash of Unstyled Content).
     if (this.container.dataset.ssr === "true" && this.container.dataset.tcInitialized !== "true") {
       this.container.dataset.tcInitialized = "true";
-      // Still set the dataUrl if present, but don't fetch immediately if we want to rely on server data
-      // For this implementation, we assume if SSR is on, we trust the HTML until interaction.
-      // However, to enable sorting/pagination on client (which requires data array),
-      // we might want to fetch in background WITHOUT wiping the container.
 
       if (this.dataUrl) {
         try {
@@ -216,8 +212,16 @@ class TableCrafter {
           const response = await fetch(this.dataUrl);
           const data = await response.json();
           this.data = data;
-          // Do NOT call render() here, just populate data.
-          // Render will happen on next interaction (sort, page, etc).
+
+          // Auto-discover columns and detect filters if not provided,
+          // so that tools can be injected around the SSR content.
+          if (this.config.columns.length === 0) {
+            this.autoDiscoverColumns();
+          }
+          this.detectFilterTypes();
+
+          // Hydrate: Add tools WITHOUT wiping the SSR table
+          this.render();
         } catch (e) {
           console.error('Background fetch failed:', e);
         }
@@ -369,16 +373,46 @@ class TableCrafter {
    * Main render method
    */
   render() {
-    // Clear container
-    this.container.innerHTML = '';
+    // Check if we are hydrating (SSR content already present)
+    const isHydrating = this.container.dataset.ssr === "true" &&
+      (this.container.querySelector('table') || this.container.querySelector('.tc-cards-container'));
 
-    // Create wrapper
-    const wrapper = document.createElement('div');
-    wrapper.className = 'tc-wrapper';
+    let wrapper;
+    if (isHydrating) {
+      // If hydrating, we don't clear the container. 
+      // Instead, we ensure the .tc-wrapper exists and wraps the content.
+      wrapper = this.container.querySelector('.tc-wrapper');
+      if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'tc-wrapper';
+
+        // Move all existing children into the wrapper
+        while (this.container.firstChild) {
+          wrapper.appendChild(this.container.firstChild);
+        }
+        this.container.appendChild(wrapper);
+      }
+
+      // Remove any existing tools to avoid duplicates
+      const tools = wrapper.querySelectorAll('.tc-filters, .tc-bulk-controls, .tc-export-controls, .tc-pagination');
+      tools.forEach(tool => tool.remove());
+    } else {
+      // Standard render: clear and rebuild
+      this.container.innerHTML = '';
+      wrapper = document.createElement('div');
+      wrapper.className = 'tc-wrapper';
+      this.container.appendChild(wrapper);
+    }
 
     // Add filters if enabled
     if (this.config.filterable) {
-      wrapper.appendChild(this.renderFilters());
+      // In hydration mode, insert at the top
+      const filters = this.renderFilters();
+      if (isHydrating) {
+        wrapper.insertBefore(filters, wrapper.firstChild);
+      } else {
+        wrapper.appendChild(filters);
+      }
     }
 
     // Add bulk controls if enabled
@@ -391,19 +425,19 @@ class TableCrafter {
       wrapper.appendChild(this.renderExportControls());
     }
 
-    // Render based on viewport
-    if (this.config.responsive && this.isMobile()) {
-      wrapper.appendChild(this.renderCards());
-    } else {
-      wrapper.appendChild(this.renderTable());
+    // Render data view if not hydrating
+    if (!isHydrating) {
+      if (this.config.responsive && this.isMobile()) {
+        wrapper.appendChild(this.renderCards());
+      } else {
+        wrapper.appendChild(this.renderTable());
+      }
     }
 
     // Add pagination if enabled and needed
     if (this.config.pagination && this.shouldShowPagination()) {
       wrapper.appendChild(this.renderPagination());
     }
-
-    this.container.appendChild(wrapper);
   }
 
   /**
