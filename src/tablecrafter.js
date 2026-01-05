@@ -1,6 +1,6 @@
 /**
  * TableCrafter - A lightweight, mobile-responsive data table library
- * @version 1.4.1
+ * @version 1.4.2
  * @author Fahad Murtaza
  * @license MIT
  */
@@ -272,7 +272,26 @@ class TableCrafter {
     } catch (error) {
       this.isLoading = false;
       console.error('TableCrafter: Data fetch failed:', error);
-      this.container.innerHTML = '<p class="tc-error">Error loading data.</p>';
+
+      this.container.innerHTML = `
+        <div class="tc-error-state" style="padding: 40px; text-align: center; border: 1px solid #fee2e2; background: #fef2f2; border-radius: 8px;">
+          <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
+          <h3 style="margin: 0 0 10px 0; color: #991b1b;">Unable to load data</h3>
+          <p style="margin: 0 0 20px 0; color: #b91c1c; font-size: 14px;">${error.message || 'Check your internet connection or data source URL.'}</p>
+          <button class="tc-retry-button" style="background: #991b1b; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+            Retry Loading
+          </button>
+        </div>
+      `;
+
+      const retryBtn = this.container.querySelector('.tc-retry-button');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+          this.container.innerHTML = '<div class="tc-loading">Retrying...</div>';
+          this.loadData();
+        });
+      }
+
       throw error;
     }
   }

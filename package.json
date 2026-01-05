@@ -1,6 +1,6 @@
 {
   "name": "tablecrafter",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A lightweight, mobile-responsive data table library with inline editing",
   "main": "src/tablecrafter.js",
   "directories": {
