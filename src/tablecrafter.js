@@ -1,12 +1,13 @@
 /**
  * TableCrafter - A lightweight, mobile-responsive data table library
- * @version 1.3.0
+ * @version 1.4.0
  * @author Fahad Murtaza
  * @license MIT
  */
 
 class TableCrafter {
   constructor(container, config = {}) {
+    console.log('TableCrafter: Initializing for', container);
     // Handle container parameter
     this.container = this.resolveContainer(container);
     if (!this.container) {
@@ -22,6 +23,8 @@ class TableCrafter {
       pagination: false,
       sortable: true,
       filterable: true,
+      globalSearch: true,
+      globalSearchPlaceholder: 'Search...',
       exportable: false,
       exportFiltered: true,
       exportFilename: 'table-export.csv',
@@ -128,6 +131,7 @@ class TableCrafter {
     this.sortField = null;
     this.sortOrder = 'asc';
     this.filters = {};
+    this.searchTerm = '';
     this.isLoading = false;
     this.editingCell = null;
     this.selectedRows = new Set();
@@ -191,7 +195,7 @@ class TableCrafter {
   resolveContainer(container) {
     if (typeof container === 'string') {
       return document.querySelector(container);
-    } else if (container instanceof HTMLElement) {
+    } else if (container && container.nodeType === 1) { // Check for Element nodeType instead of instanceof
       return container;
     }
     return null;
@@ -203,8 +207,10 @@ class TableCrafter {
   async loadData() {
     // If SSR mode is enabled and content exists, skip initial data fetch/render cycle
     // to prevent FOUC (Flash of Unstyled Content).
-    if (this.container.dataset.ssr === "true" && this.container.dataset.tcInitialized !== "true") {
-      this.container.dataset.tcInitialized = "true";
+    if (this.container.dataset.ssr === "true" && this.container.dataset.tcLoaded !== "true") {
+      this.container.dataset.tcLoaded = "true";
+
+      this.render(); // Immediate render to show tools (search, etc.) during hydration
 
       if (this.dataUrl) {
         try {
@@ -220,7 +226,8 @@ class TableCrafter {
           }
           this.detectFilterTypes();
 
-          // Hydrate: Add tools WITHOUT wiping the SSR table
+          // After data is loaded, we turn off SSR mode to allow full interactivity (sorting/filtering)
+          this.container.dataset.ssr = "false";
           this.render();
         } catch (e) {
           console.error('Background fetch failed:', e);
@@ -375,7 +382,7 @@ class TableCrafter {
   render() {
     // Check if we are hydrating (SSR content already present)
     const isHydrating = this.container.dataset.ssr === "true" &&
-      (this.container.querySelector('table') || this.container.querySelector('.tc-cards-container'));
+      (this.container.querySelector('table') || this.container.querySelector('.tc-cards-container') || this.container.querySelector('.tc-loading') || this.container.querySelector('.tc-wrapper'));
 
     let wrapper;
     if (isHydrating) {
@@ -394,7 +401,7 @@ class TableCrafter {
       }
 
       // Remove any existing tools to avoid duplicates
-      const tools = wrapper.querySelectorAll('.tc-filters, .tc-bulk-controls, .tc-export-controls, .tc-pagination');
+      const tools = wrapper.querySelectorAll('.tc-global-search-container, .tc-filters, .tc-bulk-controls, .tc-export-controls, .tc-pagination');
       tools.forEach(tool => tool.remove());
     } else {
       // Standard render: clear and rebuild
@@ -404,9 +411,8 @@ class TableCrafter {
       this.container.appendChild(wrapper);
     }
 
-    // Add filters if enabled
-    if (this.config.filterable) {
-      // In hydration mode, insert at the top
+    // Add filters/search if enabled
+    if (this.config.filterable || this.config.globalSearch) {
       const filters = this.renderFilters();
       if (isHydrating) {
         wrapper.insertBefore(filters, wrapper.firstChild);
@@ -422,7 +428,14 @@ class TableCrafter {
 
     // Add export controls if enabled
     if (this.config.exportable) {
-      wrapper.appendChild(this.renderExportControls());
+      const exportTools = this.renderExportControls();
+      if (isHydrating) {
+        // Find existing tools area or insert after table/cards
+        const target = wrapper.querySelector('.tc-table-container, .tc-cards-container') || wrapper.firstChild;
+        wrapper.insertBefore(exportTools, target);
+      } else {
+        wrapper.appendChild(exportTools);
+      }
     }
 
     // Render data view if not hydrating
@@ -950,7 +963,23 @@ class TableCrafter {
     // Apply permission filtering first
     let data = this.getPermissionFilteredData();
 
-    if (!this.config.filterable || Object.keys(this.filters).length === 0) {
+    if (!this.config.filterable && !this.config.globalSearch) {
+      return data;
+    }
+
+    // Apply global search filter
+    if (this.config.globalSearch && this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      data = data.filter(row => {
+        return Object.values(row).some(val => {
+          if (val === null || val === undefined) return false;
+          return val.toString().toLowerCase().includes(searchLower);
+        });
+      });
+    }
+
+    // Apply column filters
+    if (Object.keys(this.filters).length === 0) {
       return data;
     }
 
@@ -1194,14 +1223,11 @@ class TableCrafter {
    * Render filter controls
    */
   renderFilters() {
-    // Detect filter types first
-    this.detectFilterTypes();
-
     const filtersContainer = document.createElement('div');
     filtersContainer.className = 'tc-filters';
 
-    // Add clear all button if enabled
-    if (this.config.filters.showClearAll) {
+    // 1. Clear All Button
+    if (this.config.filterable && this.config.filters.showClearAll) {
       const clearAllBtn = document.createElement('button');
       clearAllBtn.className = 'tc-clear-filters';
       clearAllBtn.textContent = 'Clear All Filters';
@@ -1209,18 +1235,46 @@ class TableCrafter {
       filtersContainer.appendChild(clearAllBtn);
     }
 
-    // Create filter row container
-    const filterRow = document.createElement('div');
-    filterRow.className = 'tc-filters-row';
+    // 2. Specific Column Filters
+    if (this.config.filterable) {
+      this.detectFilterTypes();
+      const filterRow = document.createElement('div');
+      filterRow.className = 'tc-filters-row';
 
-    this.config.columns.forEach(column => {
-      const filterType = this.filterTypes[column.field] || 'text';
-      const filterDiv = this.createFilterControl(column, filterType);
-      filterRow.appendChild(filterDiv);
-    });
+      this.config.columns.forEach(column => {
+        const filterType = this.filterTypes[column.field] || 'text';
+        const filterDiv = this.createFilterControl(column, filterType);
+        filterRow.appendChild(filterDiv);
+      });
+      filtersContainer.appendChild(filterRow);
+    }
 
-    filtersContainer.appendChild(filterRow);
     return filtersContainer;
+  }
+
+  /**
+   * Render global search bar
+   */
+  renderGlobalSearch() {
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'tc-global-search-container';
+
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'tc-global-search';
+    searchInput.placeholder = this.config.globalSearchPlaceholder || 'Search table...';
+    searchInput.value = this.searchTerm;
+
+    const debouncedSearch = this.debounce((value) => {
+      this.searchTerm = value;
+      this.currentPage = 1;
+      this.render();
+    }, 300);
+
+    searchInput.addEventListener('input', (e) => debouncedSearch(e.target.value));
+
+    searchContainer.appendChild(searchInput);
+    return searchContainer;
   }
 
   /**
@@ -1504,9 +1558,73 @@ class TableCrafter {
     exportCsvBtn.className = 'tc-export-csv';
     exportCsvBtn.textContent = 'Export CSV';
     exportCsvBtn.addEventListener('click', () => this.downloadCSV());
-
     exportContainer.appendChild(exportCsvBtn);
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'tc-copy-clipboard';
+    copyBtn.textContent = 'Copy to Clipboard';
+    copyBtn.style.marginLeft = '8px';
+    copyBtn.addEventListener('click', () => this.copyToClipboard());
+    exportContainer.appendChild(copyBtn);
+
     return exportContainer;
+  }
+
+  /**
+   * Copy table data to clipboard
+   */
+  copyToClipboard() {
+    const exportableData = this.getExportableData();
+    const exportableColumns = this.getExportableColumns();
+
+    if (exportableData.length === 0) return;
+
+    // Create tab-separated text for spreadsheets
+    const header = exportableColumns.map(col => col.label).join('\t');
+    const rows = exportableData.map(row => {
+      return exportableColumns.map(col => row[col.field]).join('\t');
+    }).join('\n');
+
+    const text = header + '\n' + rows;
+
+    const onSuccess = () => {
+      const btn = this.container.querySelector('.tc-copy-clipboard');
+      if (btn) {
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('tc-copy-success');
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove('tc-copy-success');
+        }, 2000);
+      }
+    };
+
+    const onError = (err) => {
+      console.error('Failed to copy: ', err);
+      // Fallback method
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      textArea.style.top = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) onSuccess();
+      } catch (err) {
+        console.error('Fallback copy failed: ', err);
+      }
+      document.body.removeChild(textArea);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(onSuccess).catch(onError);
+    } else {
+      onError('Clipboard API unavailable');
+    }
   }
 
   /**
