@@ -1,6 +1,6 @@
 /**
  * TableCrafter - A lightweight, mobile-responsive data table library
- * @version 1.4.0
+ * @version 1.4.1
  * @author Fahad Murtaza
  * @license MIT
  */
@@ -154,8 +154,19 @@ class TableCrafter {
     // Initialize rich cell types system
     this.initializeCellTypes();
 
-    // Initialize if data provided
-    if (this.config.data) {
+    // Initialize if data provided or embedded in HTML
+    const initialDataScript = this.container.querySelector('.tc-initial-data');
+    if (initialDataScript) {
+      try {
+        this.data = JSON.parse(initialDataScript.textContent);
+        this.autoDiscoverColumns();
+        console.log('TableCrafter: Initialized from embedded data payload');
+      } catch (e) {
+        console.error('TableCrafter: Failed to parse embedded data', e);
+      }
+    }
+
+    if (!this.data && this.config.data) {
       if (Array.isArray(this.config.data)) {
         this.data = [...this.config.data];
         this.autoDiscoverColumns();
@@ -164,6 +175,10 @@ class TableCrafter {
         this.dataUrl = this.config.data;
         this.loadData();
       }
+    } else if (this.data && typeof this.config.data === 'string') {
+      // Data was embedded, but we still store the URL for potential refreshes
+      this.dataUrl = this.config.data;
+      // We don't call loadData() because we already have the data
     }
 
     // Bind resize handler if responsive
@@ -205,44 +220,40 @@ class TableCrafter {
    * Load data from URL
    */
   async loadData() {
-    // If SSR mode is enabled and content exists, skip initial data fetch/render cycle
-    // to prevent FOUC (Flash of Unstyled Content).
-    if (this.container.dataset.ssr === "true" && this.container.dataset.tcLoaded !== "true") {
-      this.container.dataset.tcLoaded = "true";
-
+    // If SSR mode is enabled and content exists, handle hydration logic
+    if (this.container.dataset.ssr === "true") {
       this.render(); // Immediate render to show tools (search, etc.) during hydration
 
+      if (this.data) {
+        // Option A: Zero-Latency Hydration (Data already present from embedded payload)
+        this.container.dataset.ssr = "false";
+        this.render();
+        return Promise.resolve(this.data);
+      }
+
       if (this.dataUrl) {
+        // Option B: Legacy Hydration (Background fetch for active SSR content)
         try {
-          // Background fetch to populate this.data for interactive features
           const response = await fetch(this.dataUrl);
           const data = await response.json();
           this.data = data;
-
-          // Auto-discover columns and detect filters if not provided,
-          // so that tools can be injected around the SSR content.
-          if (this.config.columns.length === 0) {
-            this.autoDiscoverColumns();
-          }
+          this.autoDiscoverColumns();
           this.detectFilterTypes();
-
-          // After data is loaded, we turn off SSR mode to allow full interactivity (sorting/filtering)
           this.container.dataset.ssr = "false";
           this.render();
         } catch (e) {
-          console.error('Background fetch failed:', e);
+          console.error('TableCrafter: Hydration fetch failed:', e);
         }
       }
       return this.data;
     }
 
+    // Standard non-SSR flow
     if (!this.dataUrl) {
       return Promise.resolve(this.data);
     }
 
     this.isLoading = true;
-
-    // Only show loading if NOT hydrating
     if (this.container.innerHTML === '') {
       this.container.innerHTML = '<div class="tc-loading">Loading...</div>';
     }
@@ -255,17 +266,13 @@ class TableCrafter {
       const data = await response.json();
       this.data = data;
       this.isLoading = false;
-
-      // Auto-discover columns if not provided
       this.autoDiscoverColumns();
-
-      if (this.container.querySelector('.tc-wrapper') || this.container.innerHTML !== '') {
-        this.render();
-      }
-
+      this.render();
       return data;
     } catch (error) {
       this.isLoading = false;
+      console.error('TableCrafter: Data fetch failed:', error);
+      this.container.innerHTML = '<p class="tc-error">Error loading data.</p>';
       throw error;
     }
   }
