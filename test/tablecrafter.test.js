@@ -90,7 +90,7 @@ describe('TableCrafter Data Loading', () => {
       { id: 2, name: 'Jane' }
     ];
 
-    fetch.mockResolvedValueOnce({
+    fetch.mockResolvedValue({
       ok: true,
       json: async () => mockData
     });
@@ -105,7 +105,7 @@ describe('TableCrafter Data Loading', () => {
   });
 
   test('should handle data loading errors', async () => {
-    fetch.mockRejectedValueOnce(new Error('Network error'));
+    fetch.mockRejectedValue(new Error('Network error'));
 
     table = new TableCrafter('#table-container', {
       data: 'https://api.example.com/data'

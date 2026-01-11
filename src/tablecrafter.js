@@ -1,6 +1,6 @@
 /**
  * TableCrafter - A lightweight, mobile-responsive data table library
- * @version 1.4.2
+ * @version 1.4.3
  * @author Fahad Murtaza
  * @license MIT
  */
@@ -166,19 +166,23 @@ class TableCrafter {
       }
     }
 
-    if (!this.data && this.config.data) {
+    if (this.data.length === 0 && this.config.data) {
       if (Array.isArray(this.config.data)) {
         this.data = [...this.config.data];
         this.autoDiscoverColumns();
+        this.render();
       } else if (typeof this.config.data === 'string') {
         // URL provided, will load asynchronously
         this.dataUrl = this.config.data;
-        this.loadData();
+        this.loadData().catch(() => {}); // Catch handled in loadData
       }
-    } else if (this.data && typeof this.config.data === 'string') {
+    } else if (this.data.length > 0 && typeof this.config.data === 'string') {
       // Data was embedded, but we still store the URL for potential refreshes
       this.dataUrl = this.config.data;
-      // We don't call loadData() because we already have the data
+      this.render();
+    } else if (this.data.length > 0) {
+      // Data present but no URL
+      this.render();
     }
 
     // Bind resize handler if responsive
@@ -224,7 +228,7 @@ class TableCrafter {
     if (this.container.dataset.ssr === "true") {
       this.render(); // Immediate render to show tools (search, etc.) during hydration
 
-      if (this.data) {
+      if (this.data && this.data.length > 0) {
         // Option A: Zero-Latency Hydration (Data already present from embedded payload)
         this.container.dataset.ssr = "false";
         this.render();
@@ -235,8 +239,8 @@ class TableCrafter {
         // Option B: Legacy Hydration (Background fetch for active SSR content)
         try {
           const response = await fetch(this.dataUrl);
-          const data = await response.json();
-          this.data = data;
+          let data = await response.json();
+          this.data = this.processData(data);
           this.autoDiscoverColumns();
           this.detectFilterTypes();
           this.container.dataset.ssr = "false";
@@ -253,47 +257,92 @@ class TableCrafter {
       return Promise.resolve(this.data);
     }
 
+    if (this.isLoading && this._loadPromise) {
+      return this._loadPromise;
+    }
+
     this.isLoading = true;
-    if (this.container.innerHTML === '') {
-      this.container.innerHTML = '<div class="tc-loading">Loading...</div>';
-    }
-
-    try {
-      const response = await fetch(this.dataUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      this.data = data;
-      this.isLoading = false;
-      this.autoDiscoverColumns();
-      this.render();
-      return data;
-    } catch (error) {
-      this.isLoading = false;
-      console.error('TableCrafter: Data fetch failed:', error);
-
-      this.container.innerHTML = `
-        <div class="tc-error-state" style="padding: 40px; text-align: center; border: 1px solid #fee2e2; background: #fef2f2; border-radius: 8px;">
-          <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
-          <h3 style="margin: 0 0 10px 0; color: #991b1b;">Unable to load data</h3>
-          <p style="margin: 0 0 20px 0; color: #b91c1c; font-size: 14px;">${error.message || 'Check your internet connection or data source URL.'}</p>
-          <button class="tc-retry-button" style="background: #991b1b; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">
-            Retry Loading
-          </button>
-        </div>
-      `;
-
-      const retryBtn = this.container.querySelector('.tc-retry-button');
-      if (retryBtn) {
-        retryBtn.addEventListener('click', () => {
-          this.container.innerHTML = '<div class="tc-loading">Retrying...</div>';
-          this.loadData();
-        });
+    this._loadPromise = (async () => {
+      if (this.container.innerHTML === '') {
+        this.container.innerHTML = '<div class="tc-loading">Loading...</div>';
       }
 
-      throw error;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+      try {
+        const response = await fetch(this.dataUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response || !response.ok) {
+          const status = response ? response.status : 'unknown';
+          throw new Error(`HTTP error! status: ${status}`);
+        }
+        
+        let data = await response.json();
+        this.data = this.processData(data);
+        this.isLoading = false;
+        this._loadPromise = null;
+        this.autoDiscoverColumns();
+        this.render();
+        return this.data;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        this.isLoading = false;
+        this._loadPromise = null;
+        if (error.name === 'AbortError') {
+          console.error('TableCrafter: Fetch timed out after 10 seconds');
+          error.message = 'Request timed out. Please check your data source speed or connectivity.';
+        }
+        console.error('TableCrafter: Data fetch failed:', error);
+
+        this.container.innerHTML = `
+          <div class="tc-error-state" style="padding: 40px; text-align: center; border: 1px solid #fee2e2; background: #fef2f2; border-radius: 8px;">
+            <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
+            <h3 style="margin: 0 0 10px 0; color: #991b1b;">Unable to load data</h3>
+            <p style="margin: 0 0 20px 0; color: #b91c1c; font-size: 14px;">${error.message || 'Check your internet connection or data source URL.'}</p>
+            <button class="tc-retry-button" style="background: #991b1b; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+              Retry Loading
+            </button>
+          </div>
+        `;
+
+        const retryBtn = this.container.querySelector('.tc-retry-button');
+        if (retryBtn) {
+          retryBtn.addEventListener('click', () => {
+            this.container.innerHTML = '<div class="tc-loading">Retrying...</div>';
+            this.loadData();
+          });
+        }
+
+        throw error;
+      }
+    })();
+
+    return this._loadPromise;
+  }
+
+  /**
+   * Process and normalize data based on configuration (root path, etc.)
+   */
+  processData(data) {
+    if (!data) return [];
+
+    // Handle nested data path (root)
+    const root = this.config.root || this.config.dataRoot;
+    if (root) {
+      const path = root.split('.');
+      for (const segment of path) {
+        if (data && typeof data === 'object' && segment in data) {
+          data = data[segment];
+        } else {
+          console.warn(`TableCrafter: Path segment "${segment}" not found in data`, data);
+          return [];
+        }
+      }
     }
+
+    return Array.isArray(data) ? data : (data ? [data] : []);
   }
 
   /**
@@ -394,7 +443,27 @@ class TableCrafter {
   autoDiscoverColumns() {
     if (this.data.length > 0 && this.config.columns.length === 0) {
       const firstItem = this.data[0];
-      this.config.columns = Object.keys(firstItem).map(key => ({
+      let keys = Object.keys(firstItem);
+
+      // Apply include/exclude rules
+      const include = this.config.include ?
+        (Array.isArray(this.config.include) ? this.config.include : this.config.include.split(',').map(s => s.trim())) :
+        null;
+      const exclude = this.config.exclude ?
+        (Array.isArray(this.config.exclude) ? this.config.exclude : this.config.exclude.split(',').map(s => s.trim())) :
+        [];
+
+      if (include) {
+        keys = keys.filter(key => include.includes(key));
+        // Sort keys to match include order
+        keys.sort((a, b) => include.indexOf(a) - include.indexOf(b));
+      }
+
+      if (exclude.length > 0) {
+        keys = keys.filter(key => !exclude.includes(key));
+      }
+
+      this.config.columns = keys.map(key => ({
         field: key,
         label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
         sortable: true
@@ -402,9 +471,6 @@ class TableCrafter {
     }
   }
 
-  /**
-   * Main render method
-   */
   render() {
     // Check if we are hydrating (SSR content already present)
     const isHydrating = this.container.dataset.ssr === "true" &&
@@ -437,13 +503,31 @@ class TableCrafter {
       this.container.appendChild(wrapper);
     }
 
-    // Add filters/search if enabled
-    if (this.config.filterable || this.config.globalSearch) {
-      const filters = this.renderFilters();
+    // Add global search if enabled
+    if (this.config.globalSearch) {
+      const searchContainer = this.renderGlobalSearch();
       if (isHydrating) {
-        wrapper.insertBefore(filters, wrapper.firstChild);
+        wrapper.insertBefore(searchContainer, wrapper.firstChild);
       } else {
-        wrapper.appendChild(filters);
+        wrapper.appendChild(searchContainer);
+      }
+    }
+
+    // Add filters if enabled
+    if (this.config.filterable) {
+      const filters = this.renderFilters();
+      if (filters) {
+        if (isHydrating) {
+          // If search was added, insert filters after it. Otherwise insert at beginning.
+          const search = wrapper.querySelector('.tc-global-search-container');
+          if (search && search.nextSibling) {
+            wrapper.insertBefore(filters, search.nextSibling);
+          } else {
+            wrapper.insertBefore(filters, wrapper.firstChild);
+          }
+        } else {
+          wrapper.appendChild(filters);
+        }
       }
     }
 
@@ -533,7 +617,7 @@ class TableCrafter {
         const tr = document.createElement('tr');
         tr.dataset.rowIndex = actualRowIndex;
 
-        this.config.columns.forEach(async (column) => {
+        const columnPromises = this.config.columns.map(async (column) => {
           const td = document.createElement('td');
 
           // Format lookup values
@@ -554,6 +638,8 @@ class TableCrafter {
           tr.appendChild(td);
         });
 
+        // We don't necessarily need to await them all here since they append to tr
+        // but it's cleaner to handle them.
         tbody.appendChild(tr);
       });
     }
@@ -1249,31 +1335,45 @@ class TableCrafter {
    * Render filter controls
    */
   renderFilters() {
+    if (!this.config.filterable) return null;
+
     const filtersContainer = document.createElement('div');
     filtersContainer.className = 'tc-filters';
 
     // 1. Clear All Button
-    if (this.config.filterable && this.config.filters.showClearAll) {
+    if (this.config.filters.showClearAll) {
       const clearAllBtn = document.createElement('button');
       clearAllBtn.className = 'tc-clear-filters';
       clearAllBtn.textContent = 'Clear All Filters';
       clearAllBtn.addEventListener('click', () => this.clearFilters());
+      
+      // Styling enhancements
+      clearAllBtn.style.padding = '6px 12px';
+      clearAllBtn.style.marginBottom = '10px';
+      clearAllBtn.style.backgroundColor = '#d63638';
+      clearAllBtn.style.color = '#fff';
+      clearAllBtn.style.border = '1px solid #d63638';
+      clearAllBtn.style.borderRadius = '4px';
+      clearAllBtn.style.cursor = 'pointer';
+      clearAllBtn.style.fontSize = '12px';
+
       filtersContainer.appendChild(clearAllBtn);
     }
 
     // 2. Specific Column Filters
-    if (this.config.filterable) {
-      this.detectFilterTypes();
-      const filterRow = document.createElement('div');
-      filterRow.className = 'tc-filters-row';
+    this.detectFilterTypes();
+    const filterRow = document.createElement('div');
+    filterRow.className = 'tc-filters-row';
 
-      this.config.columns.forEach(column => {
+    this.config.columns.forEach(column => {
+      // In advanced mode, we show all columns that aren't explicitly excluded
+      if (column.filterable !== false) {
         const filterType = this.filterTypes[column.field] || 'text';
         const filterDiv = this.createFilterControl(column, filterType);
         filterRow.appendChild(filterDiv);
-      });
-      filtersContainer.appendChild(filterRow);
-    }
+      }
+    });
+    filtersContainer.appendChild(filterRow);
 
     return filtersContainer;
   }
@@ -1298,6 +1398,14 @@ class TableCrafter {
     }, 300);
 
     searchInput.addEventListener('input', (e) => debouncedSearch(e.target.value));
+
+    // Styling enhancements
+    searchInput.style.padding = '8px 12px';
+    searchInput.style.marginBottom = '15px';
+    searchInput.style.width = '100%';
+    searchInput.style.maxWidth = '400px';
+    searchInput.style.border = '1px solid #ddd';
+    searchInput.style.borderRadius = '4px';
 
     searchContainer.appendChild(searchInput);
     return searchContainer;
