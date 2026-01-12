@@ -100,7 +100,9 @@ describe('TableCrafter Data Loading', () => {
     });
 
     await table.loadData();
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/data');
+    expect(fetch).toHaveBeenCalledWith('https://api.example.com/data', expect.objectContaining({
+      signal: expect.anything()
+    }));
     expect(table.getData()).toEqual(mockData);
   });
 
