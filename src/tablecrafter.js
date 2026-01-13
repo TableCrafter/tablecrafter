@@ -159,8 +159,19 @@ class TableCrafter {
     if (initialDataScript) {
       try {
         this.data = JSON.parse(initialDataScript.textContent);
+      console.log('TableCrafter: Initialized from embedded data payload');
+      
+      // If hydrating from SSR with embedded data, we must initialize state and listeners
+      if (this.container.dataset.ssr === "true") {
+        this.data = this.processData(this.data);
         this.autoDiscoverColumns();
-        console.log('TableCrafter: Initialized from embedded data payload');
+        this.detectFilterTypes();
+        this.container.dataset.ssr = "false";
+        this.hydrateListeners();
+      } else {
+        // Normal initialization from embedded data (no SSR/Hydration context)
+        this.autoDiscoverColumns();
+      }
       } catch (e) {
         console.error('TableCrafter: Failed to parse embedded data', e);
       }
