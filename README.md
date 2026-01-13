@@ -9,6 +9,7 @@ Advanced data table library with **complete WordPress plugin parity** - zero dep
 ## WordPress Parity Features
 
 - 🔍 **Advanced Filtering** - Auto-detection, multiselect, date ranges, number ranges
+- ✨ **Smart Data Formatting** - Auto-format ISO dates, URLs, emails, and booleans into rich HTML
 - ⚡ **Bulk Operations** - Multi-row selection, progress indicators, custom actions
 - 🔗 **Lookup Fields** - API-driven dropdowns with caching and role-based filtering
 - 🛡️ **Permission System** - Role-based access control with user context

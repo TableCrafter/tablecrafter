@@ -193,6 +193,95 @@ class TableCrafter {
   }
 
   /**
+   * Format value for display
+   */
+  formatValue(value, type) {
+    if (value === null || value === undefined) return '';
+    
+    // Auto-detect if not specified
+    if (!type) {
+      type = this.detectDataType(value);
+    }
+
+    switch (type) {
+      case 'date':
+        // Try to parse date
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return value;
+        
+        return date.toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      
+      case 'datetime':
+        const dt = new Date(value);
+        if (isNaN(dt.getTime())) return value;
+
+        return dt.toLocaleString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+      case 'boolean':
+        const isTrue = value === true || value === 'true' || value === 1 || value === '1';
+        return isTrue 
+          ? '<span class="tc-badge tc-badge-success">Yes</span>' 
+          : '<span class="tc-badge tc-badge-error">No</span>';
+
+      case 'email':
+        return `<a href="mailto:${value}" class="tc-link">${value}</a>`;
+
+      case 'url':
+        let url = value.toString();
+        // Ensure protocol
+        if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+        // Truncate for display
+        const displayUrl = value.length > 30 ? value.substring(0, 27) + '...' : value;
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="tc-link">${displayUrl}</a>`;
+
+      case 'image':
+         return `<img src="${value}" alt="Image" class="tc-cell-image" style="max-height: 50px; border-radius: 4px;">`;
+
+      default:
+        // Basic XSS protection for unknown types if it's a string
+        if (typeof value === 'string') {
+             return value;
+        }
+        return value.toString();
+    }
+  }
+
+  /**
+   * Detect data type from value
+   */
+  detectDataType(value) {
+    if (value === null || value === undefined) return 'text';
+    
+    // Check Boolean
+    if (typeof value === 'boolean' || value === 'true' || value === 'false') return 'boolean';
+
+    // Check String formats
+    if (typeof value === 'string') {
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'email';
+      if (/^https?:\/\/[^\s]+$/i.test(value)) {
+         return /\.(jpg|jpeg|png|gif|webp)$/i.test(value) ? 'image' : 'url';
+      }
+      // ISO Date Check (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss)
+      if (/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/.test(value)) {
+          const d = new Date(value);
+          return !isNaN(d.getTime()) ? 'date' : 'text';
+      }
+    }
+
+    return 'text';
+  }
+
+  /**
    * Debounce Utility.
    * Prevents rapid firing of expensive operations.
    * 
@@ -621,12 +710,26 @@ class TableCrafter {
           const td = document.createElement('td');
 
           // Format lookup values
-          let displayValue = row[column.field] || '';
-          if (column.lookup && displayValue) {
-            displayValue = await this.formatLookupValue(column, displayValue);
+          let displayValue = row[column.field];
+          
+          if (displayValue === null || displayValue === undefined) {
+             displayValue = '';
           }
 
-          td.textContent = displayValue;
+          if (column.lookup && displayValue) {
+            displayValue = await this.formatLookupValue(column, displayValue);
+            td.textContent = displayValue;
+          } else {
+             // Auto-format value
+             const formatted = this.formatValue(displayValue, column.type);
+             
+             // Check if formatted result is HTML (simple check: contains tags)
+             if (typeof formatted === 'string' && /<[a-z][\s\S]*>/i.test(formatted)) {
+                td.innerHTML = formatted;
+             } else {
+                td.textContent = formatted;
+             }
+          }
           td.dataset.field = column.field;
 
           // Make cell editable if configured and user has permission

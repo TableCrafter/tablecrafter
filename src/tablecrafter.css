@@ -1326,3 +1326,49 @@
     font-size: 13px;
   }
 }
+
+/* === Rich Data Presentation === */
+.tc-badge {
+  display: inline-block;
+  padding: 0.25em 0.4em;
+  font-size: 75%;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.25rem;
+}
+
+.tc-badge-success {
+  color: #fff;
+  background-color: #28a745;
+}
+
+.tc-badge-error {
+  color: #fff;
+  background-color: #dc3545;
+}
+
+.tc-link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.tc-link:hover {
+  text-decoration: underline;
+}
+
+.tc-cell-image {
+  max-height: 50px;
+  border-radius: 4px;
+  transition: transform 0.2s;
+  cursor: zoom-in;
+}
+
+.tc-cell-image:hover {
+  transform: scale(2.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  position: relative;
+}
