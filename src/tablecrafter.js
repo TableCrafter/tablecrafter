@@ -369,6 +369,10 @@ class TableCrafter {
 
   renderLoading() {
       if (!this.container) return;
+      // Do not show skeleton if we have SSR content that hasn't been hydrated yet
+      if (this.container.dataset.ssr === "true" && this.container.children.length > 0) {
+          return;
+      }
       
       // improved skeleton loading
       const skeletonRows = Array(5).fill(0).map(() => `
