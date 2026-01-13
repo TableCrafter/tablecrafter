@@ -324,7 +324,7 @@ class TableCrafter {
       // this.render(); // <-- REMOVED: Do not wipe server content yet!
       if (this.data && this.data.length > 0) {
         this.container.dataset.ssr = "false";
-        this.render();
+        this.hydrateListeners(); // Attach listeners to existing DOM
         this.isLoading = false;
         return Promise.resolve(this.data);
       }
@@ -655,6 +655,39 @@ class TableCrafter {
     if (this.config.pagination && this.shouldShowPagination()) {
       wrapper.appendChild(this.renderPagination());
     }
+  }
+
+  /**
+   * Hydrate listeners for server-rendered content
+   */
+  hydrateListeners() {
+    const table = this.container.querySelector('table.tc-table');
+    if (!table) return;
+
+    // Hydrate Sort Headers
+    if (this.config.sortable) {
+        const headers = table.querySelectorAll('th.tc-sortable');
+        headers.forEach((th, index) => {
+            // Get field from data attribute or fallback to config
+            const field = th.dataset.field || (this.config.columns[index] ? this.config.columns[index].field : null);
+            
+            if (field) {
+                // Remove old listeners if any (cloning to be safe or just add new ones)
+                // Note: In hydration we assume fresh DOM
+                th.addEventListener('click', () => this.sort(field));
+                th.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.sort(field);
+                    }
+                });
+            }
+        });
+    }
+
+    // Hydrate Filters (if they exist in DOM)
+    // For now, PHP only renders the table, filters are usually JS-only or need separate hydration logic.
+    // If we wanted to hydrate filters, we'd do it here. 
   }
 
   /**

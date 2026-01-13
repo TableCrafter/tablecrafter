@@ -56,4 +56,44 @@ describe('TableCrafter SSR Hydration', () => {
     // Wait for load to finish
     await loadPromise;
   });
+
+  test('should attach click listeners to server-rendered headers', async () => {
+      // Setup DOM with sortable headers (simulating PHP output)
+      document.body.innerHTML = `
+        <div id="tc-ssr-sort" data-ssr="true">
+          <table class="tc-table">
+            <thead>
+              <tr>
+                <th class="tc-sortable" data-field="name" aria-sort="none">Name</th>
+              </tr>
+            </thead>
+            <tbody><tr><td>Test</td></tr></tbody>
+          </table>
+        </div>
+      `;
+      
+      const container = document.getElementById('tc-ssr-sort');
+      const table = new TableCrafter('#tc-ssr-sort', {
+          data: [{ name: "Test" }], // Embedded or fetched doesn't matter for this test logic
+          columns: [{ field: 'name', label: 'Name', sortable: true }]
+      });
+
+      // Spy on the sort method directly
+      const sortSpy = jest.spyOn(table, 'sort'); // Note: this might need to be set before hydration if hydrating in constructor?
+      // Actually hydration happens in loadData which is async or called after.
+      // In constructor, we don't call loadData automatically unless configured? 
+      // Looking at constructor: it calls resolveContainer. It DOES NOT call loadData automatically in the snippet I saw?
+      // Let's check frontend.js usage: new TableCrafter(...) -> wait, does it auto-load?
+      // Creating the instance does not seem to trigger loadData in the constructor snippet I saw earlier (lines 1-100). 
+      // Checking tablecrafter.js ... 
+      
+      // Let's assume we need to call loadData to trigger hydration logic.
+      await table.loadData();
+      
+      // Now simulate click
+      const th = container.querySelector('th.tc-sortable');
+      th.click();
+
+      expect(sortSpy).toHaveBeenCalledWith('name');
+  });
 });
