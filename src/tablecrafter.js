@@ -368,9 +368,26 @@ class TableCrafter {
   }
 
   renderLoading() {
-      if (this.container) {
-          this.container.innerHTML = '<div class="tc-loading">Loading...</div>';
-      }
+      if (!this.container) return;
+      
+      // improved skeleton loading
+      const skeletonRows = Array(5).fill(0).map(() => `
+          <div class="tc-skeleton-row">
+              <div class="tc-skeleton-cell tc-skeleton"></div>
+              <div class="tc-skeleton-cell tc-skeleton"></div>
+              <div class="tc-skeleton-cell tc-skeleton"></div>
+              <div class="tc-skeleton-cell tc-skeleton"></div>
+              <div class="tc-skeleton-cell tc-skeleton"></div>
+          </div>
+      `).join('');
+
+      this.container.innerHTML = `
+          <div class="tc-wrapper">
+              <div class="tc-loading-container">
+                  ${skeletonRows}
+              </div>
+          </div>
+      `;
   }
 
   renderError(message) {
