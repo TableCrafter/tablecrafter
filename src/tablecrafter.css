@@ -1372,3 +1372,41 @@
   z-index: 100;
   position: relative;
 }
+/* Skeleton Loading */
+@keyframes tc-shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.tc-skeleton {
+  animation: tc-shimmer 2s linear infinite;
+  background: linear-gradient(to right, #f3f4f6 8%, #e5e7eb 18%, #f3f4f6 33%);
+  background-size: 1000px 100%;
+}
+
+.tc-skeleton-row {
+  display: flex;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tc-skeleton-cell {
+  height: 20px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  margin-right: 1rem;
+  flex: 1;
+}
+
+/* Dark mode support for skeleton */
+@media (prefers-color-scheme: dark) {
+  .tc-skeleton {
+    background: linear-gradient(to right, #374151 8%, #4b5563 18%, #374151 33%);
+  }
+  .tc-skeleton-cell {
+    background: #374151;
+  }
+  .tc-skeleton-row {
+    border-color: #374151;
+  }
+}
