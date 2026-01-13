@@ -668,12 +668,31 @@ class TableCrafter {
 
     this.config.columns.forEach(column => {
       const th = document.createElement('th');
+      th.setAttribute('scope', 'col');
       th.textContent = column.label;
       th.dataset.field = column.field;
 
       if (this.config.sortable && column.sortable !== false) {
         th.className = 'tc-sortable';
+        th.tabIndex = 0; // Make focusable
+        
+        // helper to get aria-sort state
+        let sortState = 'none';
+        if (this.sortField === column.field) {
+            sortState = this.sortOrder === 'asc' ? 'ascending' : 'descending';
+        }
+        th.setAttribute('aria-sort', sortState);
+
+        // Click handler
         th.addEventListener('click', () => this.sort(column.field));
+        
+        // Keyboard handler (Enter/Space)
+        th.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.sort(column.field);
+            }
+        });
       }
 
       headerRow.appendChild(th);
@@ -820,6 +839,7 @@ class TableCrafter {
   renderCards() {
     const cardsContainer = document.createElement('div');
     cardsContainer.className = 'tc-cards-container';
+    cardsContainer.setAttribute('role', 'list');
 
     const displayData = this.getPaginatedData();
     const breakpoint = this.getCurrentBreakpoint();
@@ -842,6 +862,7 @@ class TableCrafter {
           rowIndex;
         const card = document.createElement('div');
         card.className = 'tc-card';
+        card.setAttribute('role', 'listitem');
         if (hasHiddenFields) {
           card.className += ' tc-card-expandable';
         }
@@ -1491,6 +1512,7 @@ class TableCrafter {
     const searchInput = document.createElement('input');
     searchInput.type = 'text';
     searchInput.className = 'tc-global-search';
+    searchInput.setAttribute('aria-label', 'Search table');
     searchInput.placeholder = this.config.globalSearchPlaceholder || 'Search table...';
     searchInput.value = this.searchTerm;
 
