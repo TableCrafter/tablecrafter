@@ -174,7 +174,10 @@ class TableCrafter {
       } else if (typeof this.config.data === 'string') {
         // URL provided, will load asynchronously
         this.dataUrl = this.config.data;
-        this.loadData().catch(() => {}); // Catch handled in loadData
+        this.loadData().catch(err => {
+            console.error('TableCrafter: Initial load failed', err);
+            this.renderError('Unable to load data. Please check your connection.');
+        });
       }
     } else if (this.data.length > 0 && typeof this.config.data === 'string') {
       // Data was embedded, but we still store the URL for potential refreshes
@@ -313,103 +316,84 @@ class TableCrafter {
    * Load data from URL
    */
   async loadData() {
+    this.isLoading = true;
+    this.renderLoading();
+
     // If SSR mode is enabled and content exists, handle hydration logic
     if (this.container.dataset.ssr === "true") {
-      this.render(); // Immediate render to show tools (search, etc.) during hydration
-
+      this.render();
       if (this.data && this.data.length > 0) {
-        // Option A: Zero-Latency Hydration (Data already present from embedded payload)
         this.container.dataset.ssr = "false";
         this.render();
+        this.isLoading = false;
         return Promise.resolve(this.data);
       }
-
       if (this.dataUrl) {
-        // Option B: Legacy Hydration (Background fetch for active SSR content)
-        try {
-          const response = await fetch(this.dataUrl);
-          let data = await response.json();
-          this.data = this.processData(data);
-          this.autoDiscoverColumns();
-          this.detectFilterTypes();
-          this.container.dataset.ssr = "false";
-          this.render();
-        } catch (e) {
-          console.error('TableCrafter: Hydration fetch failed:', e);
-        }
+         try {
+           const response = await fetch(this.dataUrl);
+           if (!response.ok) throw new Error(`HTTP ${response.status}`);
+           const data = await response.json();
+           this.data = this.processData(data);
+           this.autoDiscoverColumns();
+           this.detectFilterTypes();
+           this.container.dataset.ssr = "false";
+           this.render();
+         } catch (e) {
+           console.error('TableCrafter: Hydration failed', e);
+           // Silent fail for hydration is okay, user sees SSR content
+         }
       }
+      this.isLoading = false;
       return this.data;
     }
 
-    // Standard non-SSR flow
-    if (!this.dataUrl) {
-      return Promise.resolve(this.data);
-    }
-
-    if (this.isLoading && this._loadPromise) {
-      return this._loadPromise;
-    }
-
-    this.isLoading = true;
-    this._loadPromise = (async () => {
-      if (this.container.innerHTML === '') {
-        this.container.innerHTML = '<div class="tc-loading">Loading...</div>';
+    // Standard Client-Side Load
+    try {
+      const response = await fetch(this.dataUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
-      try {
-        const response = await fetch(this.dataUrl, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (!response || !response.ok) {
-          const status = response ? response.status : 'unknown';
-          throw new Error(`HTTP error! status: ${status}`);
-        }
-        
-        let data = await response.json();
-        this.data = this.processData(data);
-        this.isLoading = false;
-        this._loadPromise = null;
-        this.autoDiscoverColumns();
-        this.render();
-        return this.data;
-      } catch (error) {
-        clearTimeout(timeoutId);
-        this.isLoading = false;
-        this._loadPromise = null;
-        if (error.name === 'AbortError') {
-          console.error('TableCrafter: Fetch timed out after 10 seconds');
-          error.message = 'Request timed out. Please check your data source speed or connectivity.';
-        }
-        console.error('TableCrafter: Data fetch failed:', error);
-
-        this.container.innerHTML = `
-          <div class="tc-error-state" style="padding: 40px; text-align: center; border: 1px solid #fee2e2; background: #fef2f2; border-radius: 8px;">
-            <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
-            <h3 style="margin: 0 0 10px 0; color: #991b1b;">Unable to load data</h3>
-            <p style="margin: 0 0 20px 0; color: #b91c1c; font-size: 14px;">${error.message || 'Check your internet connection or data source URL.'}</p>
-            <button class="tc-retry-button" style="background: #991b1b; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">
-              Retry Loading
-            </button>
-          </div>
-        `;
-
-        const retryBtn = this.container.querySelector('.tc-retry-button');
-        if (retryBtn) {
-          retryBtn.addEventListener('click', () => {
-            this.container.innerHTML = '<div class="tc-loading">Retrying...</div>';
-            this.loadData();
-          });
-        }
-
-        throw error;
-      }
-    })();
-
-    return this._loadPromise;
+      const data = await response.json();
+      this.data = this.processData(data); // Using processData for consistency
+      
+      this.autoDiscoverColumns();
+      this.render();
+    } catch (error) {
+      console.error('TableCrafter: Load failed', error);
+      this.renderError('Unable to load data. The source may be unavailable.');
+      throw error;
+    } finally {
+      this.isLoading = false;
+    }
   }
+
+  renderLoading() {
+      if (this.container) {
+          this.container.innerHTML = '<div class="tc-loading">Loading...</div>';
+      }
+  }
+
+  renderError(message) {
+      this.container.innerHTML = `
+        <div class="tc-error-container">
+          <div class="tc-error-message">${message}</div>
+          <button class="tc-retry-button">Retry</button>
+        </div>
+      `;
+      
+      const retryBtn = this.container.querySelector('.tc-retry-button');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+          this.renderLoading();
+          this.loadData().catch(err => {
+               console.error('TableCrafter: Retry failed', err);
+               this.renderError('Retry failed. Please try again later.');
+          });
+        });
+      }
+        }
+
+
 
   /**
    * Process and normalize data based on configuration (root path, etc.)
