@@ -321,7 +321,7 @@ class TableCrafter {
 
     // If SSR mode is enabled and content exists, handle hydration logic
     if (this.container.dataset.ssr === "true") {
-      this.render();
+      // this.render(); // <-- REMOVED: Do not wipe server content yet!
       if (this.data && this.data.length > 0) {
         this.container.dataset.ssr = "false";
         this.render();
