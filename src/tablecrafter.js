@@ -323,11 +323,16 @@ class TableCrafter {
     if (this.container.dataset.ssr === "true") {
       // this.render(); // <-- REMOVED: Do not wipe server content yet!
       if (this.data && this.data.length > 0) {
-        this.container.dataset.ssr = "false";
-        this.hydrateListeners(); // Attach listeners to existing DOM
-        this.isLoading = false;
-        return Promise.resolve(this.data);
-      }
+      // Vital: Initialize internal state so future renders (sorting/filtering) work!
+      this.data = this.processData(this.data);
+      this.autoDiscoverColumns();
+      this.detectFilterTypes();
+      
+      this.container.dataset.ssr = "false";
+      this.hydrateListeners(); // Attach listeners to existing DOM
+      this.isLoading = false;
+      return Promise.resolve(this.data);
+    }
       if (this.dataUrl) {
          try {
            const response = await fetch(this.dataUrl);
