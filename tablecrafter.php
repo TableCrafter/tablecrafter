@@ -80,6 +80,11 @@ if (file_exists(TABLECRAFTER_PATH . 'includes/class-tc-performance-optimizer.php
     require_once TABLECRAFTER_PATH . 'includes/class-tc-performance-optimizer.php';
 }
 
+// Real-time collaboration system
+if (file_exists(TABLECRAFTER_PATH . 'includes/class-tc-collaboration.php')) {
+    require_once TABLECRAFTER_PATH . 'includes/class-tc-collaboration.php';
+}
+
 // Load Elementor widget only when Elementor is available
 add_action('elementor/loaded', function () {
     if (file_exists(TABLECRAFTER_PATH . 'includes/class-tc-elementor-widget.php')) {
@@ -481,6 +486,14 @@ class TableCrafter
             'tablecrafter-style',
             TABLECRAFTER_URL . 'assets/css/tablecrafter.css',
             array(),
+            TABLECRAFTER_VERSION
+        );
+
+        // Collaboration styles (loaded separately for modularity)
+        wp_register_style(
+            'tablecrafter-collaboration',
+            TABLECRAFTER_URL . 'assets/css/collaboration.css',
+            array('tablecrafter-style'),
             TABLECRAFTER_VERSION
         );
 

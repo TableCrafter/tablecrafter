@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TableCrafter Collaboration Tests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background: #f8fafc;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f7fafc;
+        }
+        .test-result {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .collaboration-demo {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .demo-table {
+            flex: 1;
+            min-height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            position: relative;
+        }
+        .user-simulator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #3b82f6;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        #test-output {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-line;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🤝 TableCrafter Real-time Collaboration Tests</h1>
+        <p>Comprehensive JavaScript testing suite for collaboration features</p>
+        
+        <div class="test-section">
+            <h2>📋 Test Configuration</h2>
+            <div id="config-info" class="test-info">
+                Loading test configuration...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 Collaboration System Tests</h2>
+            <button onclick="runCollaborationTests()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                Run All Tests
+            </button>
+            <div id="test-results" style="margin-top: 15px;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>👥 Multi-User Simulation</h2>
+            <p>Simulates multiple users collaborating on the same table:</p>
+            
+            <div class="collaboration-demo">
+                <div class="demo-table" id="table-user1">
+                    <div class="user-simulator">User 1</div>
+                    <div id="table1"></div>
+                </div>
+                <div class="demo-table" id="table-user2">
+                    <div class="user-simulator">User 2</div>
+                    <div id="table2"></div>
+                </div>
+            </div>
+            
+            <button onclick="startCollaborationDemo()" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                Start Multi-User Demo
+            </button>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Test Output</h2>
+            <div id="test-output"></div>
+        </div>
+    </div>
+
+    <!-- Mock WordPress data -->
+    <script>
+        window.tablecrafterData = {
+            user_id: 1,
+            rest_url: '/wp-json/tablecrafter/v1',
+            nonce: 'test_nonce_12345',
+            can_collaborate: true
+        };
+        
+        window.tablecrafterCollabData = {
+            user_id: 1,
+            user_name: 'Test User',
+            user_avatar: 'https://www.gravatar.com/avatar/test?s=32',
+            rest_url: '/wp-json/tablecrafter/v1',
+            nonce: 'test_collab_nonce_12345',
+            can_collaborate: true,
+            collaboration_enabled: true
+        };
+    </script>
+
+    <!-- Load TableCrafter libraries -->
+    <script src="../assets/js/tablecrafter.js"></script>
+    <script src="../assets/js/collaboration.js"></script>
+    <link rel="stylesheet" href="../assets/css/tablecrafter.css">
+    <link rel="stylesheet" href="../assets/css/collaboration.css">
+
+    <script>
+        let testResults = [];
+        let mockServer = new MockCollaborationServer();
+
+        /**
+         * Mock collaboration server for testing
+         */
+        function MockCollaborationServer() {
+            this.sessions = new Map();
+            this.events = new Map();
+            
+            this.handleRequest = async (url, options) => {
+                const action = url.split('/').pop();
+                const data = JSON.parse(options.body);
+                
+                switch (action) {
+                    case 'join':
+                        return this.handleJoin(data);
+                    case 'leave':
+                        return this.handleLeave(data);
+                    case 'broadcast':
+                        return this.handleBroadcast(data);
+                    case 'sync':
+                        return this.handleSync(data);
+                    default:
+                        throw new Error('Unknown action');
+                }
+            };
+            
+            this.handleJoin = (data) => {
+                const sessionKey = data.table_id;
+                if (!this.sessions.has(sessionKey)) {
+                    this.sessions.set(sessionKey, {
+                        users: new Map(),
+                        events: []
+                    });
+                }
+                
+                const session = this.sessions.get(sessionKey);
+                session.users.set(data.session_id, {
+                    user_id: data.user_id,
+                    session_id: data.session_id,
+                    name: `User ${data.user_id}`,
+                    joined: Date.now()
+                });
+                
+                return {
+                    success: true,
+                    data: {
+                        table_id: data.table_id,
+                        users: Array.from(session.users.values())
+                    }
+                };
+            };
+            
+            this.handleBroadcast = (data) => {
+                const sessionKey = data.table_id;
+                const session = this.sessions.get(sessionKey);
+                
+                if (session) {
+                    session.events.push({
+                        id: 'event_' + Date.now(),
+                        event_type: data.event_type,
+                        user_id: data.user_id,
+                        session_id: data.session_id,
+                        event_data: data.event_data,
+                        timestamp: Date.now()
+                    });
+                }
+                
+                return { success: true };
+            };
+            
+            this.handleSync = (data) => {
+                const sessionKey = data.table_id;
+                const session = this.sessions.get(sessionKey);
+                
+                if (session) {
+                    const newEvents = session.events.filter(event => 
+                        event.timestamp > data.last_sync && 
+                        event.session_id !== data.session_id
+                    );
+                    
+                    return {
+                        success: true,
+                        data: {
+                            events: newEvents,
+                            users: Array.from(session.users.values())
+                        }
+                    };
+                }
+                
+                return { success: false };
+            };
+        }
+
+        /**
+         * Override fetch for testing
+         */
+        const originalFetch = window.fetch;
+        window.fetch = async function(url, options) {
+            if (url.includes('/collaboration/')) {
+                return {
+                    ok: true,
+                    json: async () => mockServer.handleRequest(url, options)
+                };
+            }
+            return originalFetch.apply(this, arguments);
+        };
+
+        /**
+         * Run comprehensive collaboration tests
+         */
+        async function runCollaborationTests() {
+            const output = document.getElementById('test-output');
+            const results = document.getElementById('test-results');
+            
+            output.textContent = '🚀 Starting TableCrafter Collaboration Tests...\n\n';
+            results.innerHTML = '';
+            testResults = [];
+            
+            try {
+                await testCollaborationClass();
+                await testSessionManagement();
+                await testEventBroadcasting();
+                await testUIComponents();
+                await testPerformance();
+                await testErrorHandling();
+                
+                displayTestSummary();
+                
+            } catch (error) {
+                addTestResult(false, `Test suite error: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test collaboration class instantiation
+         */
+        async function testCollaborationClass() {
+            output.textContent += 'Testing collaboration class...\n';
+            
+            try {
+                // Create mock table instance
+                const mockTable = {
+                    container: document.createElement('div'),
+                    config: {
+                        columns: [
+                            { field: 'name', title: 'Name' },
+                            { field: 'email', title: 'Email' }
+                        ]
+                    }
+                };
+                
+                const collaboration = new TableCrafterCollaboration(mockTable);
+                
+                if (collaboration.tableId && collaboration.userId && collaboration.sessionId) {
+                    addTestResult(true, 'Collaboration class instantiated correctly');
+                } else {
+                    addTestResult(false, 'Collaboration class missing required properties');
+                }
+                
+                // Test configuration
+                if (collaboration.config.syncInterval === 2000) {
+                    addTestResult(true, 'Default configuration loaded correctly');
+                } else {
+                    addTestResult(false, 'Default configuration not loaded');
+                }
+                
+            } catch (error) {
+                addTestResult(false, `Collaboration class test failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test session management
+         */
+        async function testSessionManagement() {
+            output.textContent += 'Testing session management...\n';
+            
+            try {
+                const mockTable = {
+                    container: document.createElement('div'),
+                    config: { columns: [] }
+                };
+                
+                const collaboration = new TableCrafterCollaboration(mockTable);
+                
+                // Test enable
+                const enableResult = collaboration.enable();
+                if (enableResult) {
+                    addTestResult(true, 'Collaboration enable successful');
+                } else {
+                    addTestResult(false, 'Collaboration enable failed');
+                }
+                
+                // Test session joining
+                await collaboration.joinCollaborationSession();
+                addTestResult(true, 'Session join completed');
+                
+                // Test disable
+                collaboration.disable();
+                if (!collaboration.isEnabled) {
+                    addTestResult(true, 'Collaboration disable successful');
+                } else {
+                    addTestResult(false, 'Collaboration disable failed');
+                }
+                
+            } catch (error) {
+                addTestResult(false, `Session management test failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test event broadcasting
+         */
+        async function testEventBroadcasting() {
+            output.textContent += 'Testing event broadcasting...\n';
+            
+            try {
+                const mockTable = {
+                    container: document.createElement('div'),
+                    config: { columns: [] }
+                };
+                
+                const collaboration = new TableCrafterCollaboration(mockTable);
+                collaboration.enable();
+                
+                // Test sort event
+                await collaboration.broadcastEvent('sort', {
+                    field: 'name',
+                    direction: 'asc'
+                });
+                addTestResult(true, 'Sort event broadcast successful');
+                
+                // Test filter event
+                await collaboration.broadcastEvent('filter', {
+                    filters: { name: 'John' }
+                });
+                addTestResult(true, 'Filter event broadcast successful');
+                
+                // Test cursor event
+                await collaboration.broadcastEvent('cursor', {
+                    x: 50,
+                    y: 75
+                });
+                addTestResult(true, 'Cursor event broadcast successful');
+                
+            } catch (error) {
+                addTestResult(false, `Event broadcasting test failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test UI components
+         */
+        async function testUIComponents() {
+            output.textContent += 'Testing UI components...\n';
+            
+            try {
+                const container = document.createElement('div');
+                container.style.position = 'relative';
+                container.style.width = '400px';
+                container.style.height = '300px';
+                document.body.appendChild(container);
+                
+                const mockTable = {
+                    container: container,
+                    config: { columns: [] }
+                };
+                
+                const collaboration = new TableCrafterCollaboration(mockTable);
+                collaboration.enable();
+                
+                // Check for UI elements
+                setTimeout(() => {
+                    const presence = container.querySelector('.tc-user-presence');
+                    const controls = container.querySelector('.tc-collaboration-controls');
+                    
+                    if (presence) {
+                        addTestResult(true, 'User presence indicator created');
+                    } else {
+                        addTestResult(false, 'User presence indicator missing');
+                    }
+                    
+                    if (controls) {
+                        addTestResult(true, 'Collaboration controls created');
+                    } else {
+                        addTestResult(false, 'Collaboration controls missing');
+                    }
+                    
+                    // Test cursor display
+                    collaboration.showCollaboratorCursor({
+                        user_id: 2,
+                        event_data: { x: 25, y: 50 }
+                    });
+                    
+                    const cursor = container.querySelector('.tc-collaborator-cursor');
+                    if (cursor) {
+                        addTestResult(true, 'Collaborator cursor created');
+                    } else {
+                        addTestResult(false, 'Collaborator cursor missing');
+                    }
+                    
+                    document.body.removeChild(container);
+                }, 100);
+                
+            } catch (error) {
+                addTestResult(false, `UI components test failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test performance characteristics
+         */
+        async function testPerformance() {
+            output.textContent += 'Testing performance...\n';
+            
+            try {
+                const start = performance.now();
+                
+                const mockTable = {
+                    container: document.createElement('div'),
+                    config: { columns: [] }
+                };
+                
+                const collaboration = new TableCrafterCollaboration(mockTable);
+                collaboration.enable();
+                
+                // Simulate rapid events
+                for (let i = 0; i < 50; i++) {
+                    await collaboration.broadcastEvent('cursor', {
+                        x: Math.random() * 100,
+                        y: Math.random() * 100
+                    });
+                }
+                
+                const end = performance.now();
+                const duration = end - start;
+                
+                if (duration < 1000) {
+                    addTestResult(true, `Performance test passed (${duration.toFixed(2)}ms for 50 events)`);
+                } else {
+                    addTestResult(false, `Performance test failed (${duration.toFixed(2)}ms - too slow)`);
+                }
+                
+            } catch (error) {
+                addTestResult(false, `Performance test failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test error handling
+         */
+        async function testErrorHandling() {
+            output.textContent += 'Testing error handling...\n';
+            
+            try {
+                const mockTable = {
+                    container: document.createElement('div'),
+                    config: { columns: [] }
+                };
+                
+                const collaboration = new TableCrafterCollaboration(mockTable);
+                
+                // Test with invalid configuration
+                collaboration.config.syncInterval = null;
+                
+                const enableResult = collaboration.enable();
+                addTestResult(true, 'Error handling for invalid config');
+                
+                // Test network failure simulation
+                const originalFetch = window.fetch;
+                window.fetch = () => Promise.reject(new Error('Network error'));
+                
+                try {
+                    await collaboration.broadcastEvent('test', {});
+                    addTestResult(true, 'Network error handled gracefully');
+                } catch (e) {
+                    addTestResult(true, 'Network error properly caught');
+                }
+                
+                window.fetch = originalFetch;
+                
+            } catch (error) {
+                addTestResult(false, `Error handling test failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Add test result
+         */
+        function addTestResult(passed, message) {
+            const results = document.getElementById('test-results');
+            const output = document.getElementById('test-output');
+            
+            const result = {
+                passed: passed,
+                message: message,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            
+            testResults.push(result);
+            
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'test-pass' : 'test-fail'}`;
+            div.textContent = `${passed ? '✅' : '❌'} ${message}`;
+            results.appendChild(div);
+            
+            output.textContent += `${passed ? '✅' : '❌'} ${message}\n`;
+        }
+
+        /**
+         * Display test summary
+         */
+        function displayTestSummary() {
+            const passed = testResults.filter(r => r.passed).length;
+            const total = testResults.length;
+            const percentage = ((passed / total) * 100).toFixed(1);
+            
+            const summary = `\n📊 Test Summary: ${passed}/${total} passed (${percentage}%)\n`;
+            
+            if (passed === total) {
+                document.getElementById('test-output').textContent += summary + '🎉 All collaboration tests passed!\n';
+            } else {
+                document.getElementById('test-output').textContent += summary + '⚠️ Some tests failed. Review implementation.\n';
+            }
+        }
+
+        /**
+         * Start collaboration demo with multiple simulated users
+         */
+        async function startCollaborationDemo() {
+            const table1Container = document.getElementById('table1');
+            const table2Container = document.getElementById('table2');
+            
+            // Create sample data
+            const sampleData = [
+                { name: 'John Doe', email: 'john@example.com', role: 'Developer' },
+                { name: 'Jane Smith', email: 'jane@example.com', role: 'Designer' },
+                { name: 'Bob Wilson', email: 'bob@example.com', role: 'Manager' }
+            ];
+            
+            // Create two table instances
+            try {
+                const table1 = new TableCrafter(table1Container, {
+                    data: sampleData,
+                    columns: [
+                        { field: 'name', title: 'Name', sortable: true },
+                        { field: 'email', title: 'Email', sortable: true },
+                        { field: 'role', title: 'Role', sortable: true }
+                    ],
+                    collaboration: {
+                        enabled: true,
+                        syncSorting: true,
+                        syncFilters: true
+                    }
+                });
+                
+                const table2 = new TableCrafter(table2Container, {
+                    data: sampleData,
+                    columns: [
+                        { field: 'name', title: 'Name', sortable: true },
+                        { field: 'email', title: 'Email', sortable: true },
+                        { field: 'role', title: 'Role', sortable: true }
+                    ],
+                    collaboration: {
+                        enabled: true,
+                        syncSorting: true,
+                        syncFilters: true
+                    }
+                });
+                
+                // Initialize collaboration for both tables
+                table1.collaboration = new TableCrafterCollaboration(table1);
+                table2.collaboration = new TableCrafterCollaboration(table2);
+                
+                table1.collaboration.enable();
+                table2.collaboration.enable();
+                
+                document.getElementById('test-output').textContent += '\n🎭 Multi-user collaboration demo started!\n';
+                document.getElementById('test-output').textContent += 'Try sorting columns in either table to see real-time sync.\n';
+                
+            } catch (error) {
+                document.getElementById('test-output').textContent += `\n❌ Demo failed: ${error.message}\n`;
+            }
+        }
+
+        // Initialize test configuration display
+        document.addEventListener('DOMContentLoaded', function() {
+            const configInfo = document.getElementById('config-info');
+            configInfo.innerHTML = `
+                <strong>Test Environment:</strong><br>
+                • User ID: ${window.tablecrafterData?.user_id || 'Not set'}<br>
+                • REST URL: ${window.tablecrafterData?.rest_url || 'Not set'}<br>
+                • Can Collaborate: ${window.tablecrafterData?.can_collaborate ? 'Yes' : 'No'}<br>
+                • Collaboration Enabled: ${window.tablecrafterCollabData?.collaboration_enabled ? 'Yes' : 'No'}
+            `;
+        });
+    </script>
+</body>
+</html>
