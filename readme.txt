@@ -2,10 +2,11 @@
 Contributors: fahdi
 Tags: table, json, api, accessibility, wcag
 Requires at least: 5.0
-Tested up to: 6.9
-Stable tag: 3.5.3
+Tested up to: 6.7
+Stable tag: 3.5.4
 Requires PHP: 8.0
 License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 
 Transform JSON APIs, Google Sheets & CSV into accessible WordPress tables. Mobile-first design with touch gestures and WCAG 2.1 compliance.
@@ -281,6 +282,10 @@ Yes! If you need specific features, deep integrations, or custom designs, I am a
 4. **Reactive Gutenberg Block** - Visual block editor with proxy-supported live previews. Settings for Search, Export, and Filters trigger instant updates without coding.
 
 == Changelog ==
+
+= 3.5.4 =
+* **Maintenance**: Maintenance release with latest WordPress compatibility testing.
+* **Update**: Confirmed compatibility with WordPress 6.7.
 
 = 3.5.3 - January 26, 2026 =
 🎯 **MAJOR: Export Functionality Overhaul**
