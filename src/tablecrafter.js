@@ -2602,6 +2602,98 @@ class TableCrafter {
   }
 
   /**
+   * Row-level CRUD API
+   *
+   * Public methods documented in the README. Each method:
+   *   - validates permissions (when enabled)
+   *   - delegates to the API-aware *Entry helpers when api.baseUrl is set
+   *   - mutates this.data
+   *   - fires the matching lifecycle callback
+   *   - re-renders
+   */
+
+  async addRow(rowData) {
+    if (!this.hasPermission('create')) {
+      throw new Error('TableCrafter: permission denied for create');
+    }
+
+    let row;
+    if (this.config.api && this.config.api.baseUrl) {
+      row = await this.createEntry(rowData);
+    } else {
+      row = rowData;
+      this.data.push(row);
+    }
+
+    const index = this.data.length - 1;
+
+    if (typeof this.config.onAdd === 'function') {
+      this.config.onAdd({ row, index });
+    }
+
+    this.render();
+    return row;
+  }
+
+  async updateRow(index, rowData) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.data.length) {
+      throw new RangeError(`TableCrafter: row index ${index} out of range`);
+    }
+
+    const previous = { ...this.data[index] };
+
+    if (!this.hasPermission('edit', this.data[index])) {
+      throw new Error('TableCrafter: permission denied for edit');
+    }
+
+    let row;
+    if (this.config.api && this.config.api.baseUrl) {
+      row = await this.updateEntry(index, rowData);
+    } else {
+      row = { ...previous, ...rowData };
+      this.data[index] = row;
+    }
+
+    if (typeof this.config.onUpdate === 'function') {
+      this.config.onUpdate({ row, index, previous });
+    }
+
+    this.render();
+    return row;
+  }
+
+  async removeRow(index, options = {}) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.data.length) {
+      throw new RangeError(`TableCrafter: row index ${index} out of range`);
+    }
+
+    const row = this.data[index];
+
+    if (!this.hasPermission('delete', row)) {
+      throw new Error('TableCrafter: permission denied for delete');
+    }
+
+    if (options.confirm && typeof window !== 'undefined' && typeof window.confirm === 'function') {
+      if (!window.confirm('Are you sure you want to delete this row?')) {
+        return false;
+      }
+    }
+
+    if (this.config.api && this.config.api.baseUrl) {
+      await this.deleteEntry(index);
+    } else {
+      this.data.splice(index, 1);
+    }
+
+    if (typeof this.config.onDelete === 'function') {
+      this.config.onDelete({ row, index });
+    }
+
+    this.render();
+    return true;
+  }
+
+  /**
    * Lookup Fields System
    */
 
