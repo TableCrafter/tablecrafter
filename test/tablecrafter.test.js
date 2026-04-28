@@ -115,6 +115,35 @@ describe('TableCrafter Data Loading', () => {
 
     await expect(table.loadData()).rejects.toThrow('Network error');
   });
+
+  test('should abort an in-flight load when a new loadData() is started', async () => {
+    fetch.mockImplementation((url, opts) => new Promise((resolve, reject) => {
+      if (opts && opts.signal) {
+        opts.signal.addEventListener('abort', () => {
+          const err = new Error('aborted');
+          err.name = 'AbortError';
+          reject(err);
+        });
+      }
+      // Never resolve — caller must abort to settle.
+    }));
+
+    table = new TableCrafter('#table-container', {
+      data: 'https://api.example.com/data'
+    });
+
+    const first = table.loadData();
+    const firstSignal = fetch.mock.calls[fetch.mock.calls.length - 1][1].signal;
+    expect(firstSignal.aborted).toBe(false);
+
+    // Start a second load — this should abort the first.
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => [{ id: 1 }] });
+    const second = table.loadData();
+
+    await first; // AbortError is swallowed and resolves with current data.
+    expect(firstSignal.aborted).toBe(true);
+    await second;
+  });
 });
 
 describe('TableCrafter Rendering', () => {

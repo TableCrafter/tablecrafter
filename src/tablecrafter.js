@@ -327,59 +327,68 @@ class TableCrafter {
    * Load data from URL
    */
   async loadData() {
+    if (this._loadController) {
+      this._loadController.abort();
+    }
+    const controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    this._loadController = controller;
+    const signal = controller ? controller.signal : undefined;
+
     this.isLoading = true;
     this.renderLoading();
 
-    // If SSR mode is enabled and content exists, handle hydration logic
     if (this.container.dataset.ssr === "true") {
-      // this.render(); // <-- REMOVED: Do not wipe server content yet!
       if (this.data && this.data.length > 0) {
-      // Vital: Initialize internal state so future renders (sorting/filtering) work!
-      this.data = this.processData(this.data);
-      this.autoDiscoverColumns();
-      this.detectFilterTypes();
-      
-      this.container.dataset.ssr = "false";
-      this.hydrateListeners(); // Attach listeners to existing DOM
-      this.isLoading = false;
-      return Promise.resolve(this.data);
-    }
+        this.data = this.processData(this.data);
+        this.autoDiscoverColumns();
+        this.detectFilterTypes();
+        this.container.dataset.ssr = "false";
+        this.hydrateListeners();
+        this.isLoading = false;
+        return Promise.resolve(this.data);
+      }
       if (this.dataUrl) {
-         try {
-           const response = await fetch(this.dataUrl);
-           if (!response.ok) throw new Error(`HTTP ${response.status}`);
-           const data = await response.json();
-           this.data = this.processData(data);
-           this.autoDiscoverColumns();
-           this.detectFilterTypes();
-           this.container.dataset.ssr = "false";
-           this.render();
-         } catch (e) {
-           console.error('TableCrafter: Hydration failed', e);
-           // Silent fail for hydration is okay, user sees SSR content
-         }
+        try {
+          const response = await fetch(this.dataUrl, { signal });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          this.data = this.processData(data);
+          this.autoDiscoverColumns();
+          this.detectFilterTypes();
+          this.container.dataset.ssr = "false";
+          this.render();
+        } catch (e) {
+          if (e && e.name === 'AbortError') {
+            return this.data;
+          }
+          console.error('TableCrafter: Hydration failed', e);
+        }
       }
       this.isLoading = false;
       return this.data;
     }
 
-    // Standard Client-Side Load
     try {
-      const response = await fetch(this.dataUrl);
+      const response = await fetch(this.dataUrl, { signal });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      this.data = this.processData(data); // Using processData for consistency
-      
+      this.data = this.processData(data);
       this.autoDiscoverColumns();
       this.render();
     } catch (error) {
+      if (error && error.name === 'AbortError') {
+        return this.data;
+      }
       console.error('TableCrafter: Load failed', error);
       this.renderError('Unable to load data. The source may be unavailable.');
       throw error;
     } finally {
-      this.isLoading = false;
+      if (this._loadController === controller) {
+        this.isLoading = false;
+        this._loadController = null;
+      }
     }
   }
 
