@@ -144,6 +144,19 @@ class TableCrafter {
     this.validationRules = new Map(); // Compiled validation rules
     this.cellTypeRegistry = new Map(); // Rich cell type handlers
     this.activeEditors = new Map(); // Track active rich editors
+    this._plugins = []; // Plugin registry — populated via use() / config.plugins
+
+    // Auto-register plugins declared in config.plugins (in order, before any
+    // render). Each entry is either a plugin object or [plugin, options].
+    if (Array.isArray(this.config.plugins)) {
+      for (const entry of this.config.plugins) {
+        if (Array.isArray(entry)) {
+          this.use(entry[0], entry[1]);
+        } else {
+          this.use(entry);
+        }
+      }
+    }
 
     // Load state if persistence enabled
     this.loadState();
@@ -2705,6 +2718,53 @@ class TableCrafter {
   /**
    * Permission System
    */
+
+  /**
+   * Register a plugin. Calls `plugin.install(table, options)` and stores it
+   * in the registry under `plugin.name`. Re-registering the same name throws.
+   */
+  use(plugin, options) {
+    if (!plugin || !plugin.name || typeof plugin.name !== 'string') {
+      throw new Error('TableCrafter: plugin must have a string `name`');
+    }
+    if (this._plugins.some(p => p.plugin.name === plugin.name)) {
+      throw new Error(`TableCrafter: plugin "${plugin.name}" is already registered`);
+    }
+
+    const record = { plugin, options: options };
+    if (typeof plugin.install === 'function') {
+      plugin.install(this, options);
+    }
+    this._plugins.push(record);
+    return record;
+  }
+
+  /**
+   * Remove a plugin by name. Calls plugin.uninstall(table) when defined.
+   * Returns true on success, false when no plugin matches.
+   */
+  unuse(name) {
+    const idx = this._plugins.findIndex(p => p.plugin.name === name);
+    if (idx === -1) return false;
+    const { plugin } = this._plugins[idx];
+    if (typeof plugin.uninstall === 'function') {
+      plugin.uninstall(this);
+    }
+    this._plugins.splice(idx, 1);
+    return true;
+  }
+
+  /**
+   * Defensive snapshot of the plugin registry. Mutating the returned array
+   * does not affect internal state.
+   */
+  getPlugins() {
+    return this._plugins.map(p => ({
+      name: p.plugin.name,
+      version: p.plugin.version,
+      options: p.options
+    }));
+  }
 
   /**
    * Set current user context
