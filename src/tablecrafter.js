@@ -330,6 +330,13 @@ class TableCrafter {
     this.isLoading = true;
     this.renderLoading();
 
+    if (this._loadController) {
+      this._loadController.abort();
+    }
+    const controller = new AbortController();
+    this._loadController = controller;
+    const signal = controller.signal;
+
     // If SSR mode is enabled and content exists, handle hydration logic
     if (this.container.dataset.ssr === "true") {
       // this.render(); // <-- REMOVED: Do not wipe server content yet!
@@ -338,7 +345,7 @@ class TableCrafter {
       this.data = this.processData(this.data);
       this.autoDiscoverColumns();
       this.detectFilterTypes();
-      
+
       this.container.dataset.ssr = "false";
       this.hydrateListeners(); // Attach listeners to existing DOM
       this.isLoading = false;
@@ -346,7 +353,7 @@ class TableCrafter {
     }
       if (this.dataUrl) {
          try {
-           const response = await fetch(this.dataUrl);
+           const response = await fetch(this.dataUrl, { signal });
            if (!response.ok) throw new Error(`HTTP ${response.status}`);
            const data = await response.json();
            this.data = this.processData(data);
@@ -355,6 +362,10 @@ class TableCrafter {
            this.container.dataset.ssr = "false";
            this.render();
          } catch (e) {
+           if (e && e.name === 'AbortError') {
+             // Superseded by a newer loadData() — leave SSR content alone.
+             return this.data;
+           }
            console.error('TableCrafter: Hydration failed', e);
            // Silent fail for hydration is okay, user sees SSR content
          }
@@ -365,16 +376,20 @@ class TableCrafter {
 
     // Standard Client-Side Load
     try {
-      const response = await fetch(this.dataUrl);
+      const response = await fetch(this.dataUrl, { signal });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
       this.data = this.processData(data); // Using processData for consistency
-      
+
       this.autoDiscoverColumns();
       this.render();
     } catch (error) {
+      if (error && error.name === 'AbortError') {
+        // Cancelled by a newer loadData() call — benign, do not surface.
+        return this.data;
+      }
       console.error('TableCrafter: Load failed', error);
       this.renderError('Unable to load data. The source may be unavailable.');
       throw error;
