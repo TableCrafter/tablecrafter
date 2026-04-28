@@ -115,6 +115,62 @@ describe('TableCrafter Data Loading', () => {
 
     await expect(table.loadData()).rejects.toThrow('Network error');
   });
+
+  test('should abort in-flight loadData when a new one starts', async () => {
+    // Construct without a URL so we control fetch call ordering ourselves.
+    table = new TableCrafter('#table-container', { data: [] });
+    table.dataUrl = 'https://api.example.com/data';
+
+    let firstSignal;
+    let secondSignal;
+    let resolveFirst;
+
+    fetch
+      .mockImplementationOnce((url, opts) => {
+        firstSignal = opts && opts.signal;
+        return new Promise((resolve) => {
+          resolveFirst = resolve;
+        });
+      })
+      .mockImplementationOnce((url, opts) => {
+        secondSignal = opts && opts.signal;
+        return Promise.resolve({
+          ok: true,
+          json: async () => [{ id: 99 }]
+        });
+      });
+
+    const first = table.loadData();
+    const second = table.loadData();
+
+    expect(firstSignal).toBeDefined();
+    expect(firstSignal.aborted).toBe(true);
+    expect(secondSignal).toBeDefined();
+    expect(secondSignal.aborted).toBe(false);
+
+    // Resolve the first (now-stale) fetch — its late resolution should not
+    // overwrite the newer load's data.
+    resolveFirst({ ok: true, json: async () => [{ id: 1 }] });
+
+    await second;
+    await first.catch(() => {});
+
+    expect(table.getData()).toEqual([{ id: 99 }]);
+  });
+
+  test('should not surface AbortError from a cancelled load as renderError', async () => {
+    table = new TableCrafter('#table-container', { data: [] });
+    table.dataUrl = 'https://api.example.com/data';
+
+    const abortErr = new Error('The operation was aborted');
+    abortErr.name = 'AbortError';
+    fetch.mockRejectedValueOnce(abortErr);
+
+    const renderErrorSpy = jest.spyOn(table, 'renderError');
+
+    await expect(table.loadData()).resolves.toBeUndefined();
+    expect(renderErrorSpy).not.toHaveBeenCalled();
+  });
 });
 
 describe('TableCrafter Rendering', () => {
