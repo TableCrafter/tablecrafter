@@ -786,6 +786,12 @@ class TableCrafter {
         const tr = document.createElement('tr');
         tr.dataset.rowIndex = actualRowIndex;
 
+        // Apply row-scoped conditional formatting (className-only on tr).
+        if (typeof this.getMatchingRules === 'function') {
+          const rowRules = this.getMatchingRules('*', row, row).filter(r => r.scope === 'row');
+          this._applyConditionalFormatting(tr, rowRules);
+        }
+
         const columnPromises = this.config.columns.map(async (column) => {
           const td = document.createElement('td');
 
@@ -816,6 +822,13 @@ class TableCrafter {
           if (this.config.editable && column.editable && this.hasPermission('edit', row)) {
             td.className = 'tc-editable';
             td.addEventListener('click', (e) => this.startEdit(e, actualRowIndex, column.field));
+          }
+
+          // Apply cell-scoped conditional formatting.
+          if (typeof this.getMatchingRules === 'function') {
+            const cellRules = this.getMatchingRules(column.field, row[column.field], row)
+              .filter(r => r.scope !== 'row');
+            this._applyConditionalFormatting(td, cellRules);
           }
 
           tr.appendChild(td);
@@ -2802,6 +2815,29 @@ class TableCrafter {
     }
     this.config.conditionalFormatting.rules = Array.isArray(rules) ? rules.slice() : [];
     this.render();
+  }
+
+  /**
+   * Apply matching conditional-formatting rules to a target element. Iterates
+   * matches from low to high priority so higher priority style props overwrite
+   * lower; classNames are unioned. Caller controls scope by choosing which
+   * rules to pass in.
+   */
+  _applyConditionalFormatting(target, rules) {
+    if (!target || !Array.isArray(rules) || rules.length === 0) return;
+    // Reverse so iteration runs low → high priority and last write wins.
+    const ordered = rules.slice().reverse();
+    for (const rule of ordered) {
+      if (rule.className) {
+        const classes = Array.isArray(rule.className) ? rule.className : [rule.className];
+        for (const cls of classes) {
+          if (typeof cls === 'string' && cls) target.classList.add(cls);
+        }
+      }
+      if (rule.style && typeof rule.style === 'object') {
+        Object.assign(target.style, rule.style);
+      }
+    }
   }
 
   /**
