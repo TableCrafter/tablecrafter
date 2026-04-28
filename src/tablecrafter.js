@@ -2602,6 +2602,125 @@ class TableCrafter {
   }
 
   /**
+   * Row-level CRUD methods
+   *
+   * Public, Promise-based API for programmatic row mutation. They sit on top
+   * of `createEntry` / `updateEntry` / `deleteEntry` so that REST delegation
+   * still works when `config.api.baseUrl` is set.
+   */
+
+  /**
+   * Append a row to the table.
+   *
+   * Resolves to the persisted row (server response when API is configured,
+   * otherwise the local payload). Fires `config.onAdd({ row, index })`.
+   */
+  async addRow(rowData) {
+    if (this.config.permissions && this.config.permissions.enabled &&
+        !this.hasPermission('create')) {
+      throw new Error('Permission denied: cannot create row');
+    }
+
+    const beforeLen = this.data.length;
+    let persisted;
+
+    if (this.config.api && this.config.api.baseUrl) {
+      // createEntry pushes the server response into this.data
+      persisted = await this.createEntry(rowData);
+    } else {
+      this.data.push(rowData);
+      persisted = rowData;
+    }
+
+    const index = beforeLen;
+
+    this.render();
+
+    if (typeof this.config.onAdd === 'function') {
+      this.config.onAdd({ row: persisted, index });
+    }
+
+    return persisted;
+  }
+
+  /**
+   * Update fields on a single row.
+   *
+   * Resolves to the updated row. Fires
+   * `config.onUpdate({ row, index, previous })`. Throws `RangeError` if the
+   * index is out of range.
+   */
+  async updateRow(index, rowData) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.data.length) {
+      throw new RangeError(`updateRow: index ${index} is out of range`);
+    }
+
+    if (this.config.permissions && this.config.permissions.enabled &&
+        !this.hasPermission('edit', this.data[index])) {
+      throw new Error('Permission denied: cannot edit row');
+    }
+
+    const previous = { ...this.data[index] };
+    let updated;
+
+    if (this.config.api && this.config.api.baseUrl) {
+      updated = await this.updateEntry(index, rowData);
+    } else {
+      this.data[index] = { ...this.data[index], ...rowData };
+      updated = this.data[index];
+    }
+
+    this.render();
+
+    if (typeof this.config.onUpdate === 'function') {
+      this.config.onUpdate({ row: updated, index, previous });
+    }
+
+    return updated;
+  }
+
+  /**
+   * Remove a single row.
+   *
+   * Resolves to `true` on success. With `{ confirm: true }`, prompts via
+   * `window.confirm()` and resolves `false` if the user cancels — no API
+   * call, callback, or re-render in that case.
+   */
+  async removeRow(index, options = {}) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.data.length) {
+      throw new RangeError(`removeRow: index ${index} is out of range`);
+    }
+
+    if (this.config.permissions && this.config.permissions.enabled &&
+        !this.hasPermission('delete', this.data[index])) {
+      throw new Error('Permission denied: cannot delete row');
+    }
+
+    if (options.confirm === true) {
+      // Parity with bulkDelete: bail out without side effects on cancel.
+      if (!confirm('Are you sure you want to delete this row?')) {
+        return false;
+      }
+    }
+
+    const target = this.data[index];
+
+    if (this.config.api && this.config.api.baseUrl) {
+      await this.deleteEntry(index);
+    } else {
+      this.data.splice(index, 1);
+    }
+
+    this.render();
+
+    if (typeof this.config.onDelete === 'function') {
+      this.config.onDelete({ row: target, index });
+    }
+
+    return true;
+  }
+
+  /**
    * Lookup Fields System
    */
 
