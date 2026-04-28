@@ -2602,6 +2602,94 @@ class TableCrafter {
   }
 
   /**
+   * Public row-level CRUD API (issue #66)
+   * Thin lifecycle-aware wrappers around create/update/deleteEntry that
+   * the README has long advertised.
+   */
+  async addRow(rowData) {
+    if (this.config.permissions && this.config.permissions.enabled && !this.hasPermission('create')) {
+      throw new Error('Permission denied: cannot create entries');
+    }
+
+    const created = await this.createEntry(rowData || {});
+    const index = this.data.length - 1;
+
+    this.render();
+
+    if (typeof this.config.onAdd === 'function') {
+      this.config.onAdd({
+        row: created,
+        index,
+        // Backwards-compat keys for the existing modal-driven onAdd consumers.
+        newEntry: created,
+        totalEntries: this.data.length
+      });
+    }
+
+    return created;
+  }
+
+  async updateRow(index, rowData) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.data.length) {
+      throw new RangeError(`updateRow: index ${index} is out of range`);
+    }
+
+    if (this.config.permissions && this.config.permissions.enabled && !this.hasPermission('edit', this.data[index])) {
+      throw new Error('Permission denied: cannot edit this entry');
+    }
+
+    const previous = { ...this.data[index] };
+    const merged = { ...previous, ...(rowData || {}) };
+
+    let updated;
+    if (this.config.api && this.config.api.baseUrl) {
+      updated = await this.updateEntry(index, merged);
+    } else {
+      this.data[index] = merged;
+      updated = this.data[index];
+    }
+
+    this.render();
+
+    if (typeof this.config.onUpdate === 'function') {
+      this.config.onUpdate({ row: updated, index, previous });
+    }
+
+    return updated;
+  }
+
+  async removeRow(index, options = {}) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.data.length) {
+      throw new RangeError(`removeRow: index ${index} is out of range`);
+    }
+
+    if (this.config.permissions && this.config.permissions.enabled && !this.hasPermission('delete', this.data[index])) {
+      throw new Error('Permission denied: cannot delete this entry');
+    }
+
+    if (options && options.confirm === true) {
+      const proceed = typeof window !== 'undefined' && typeof window.confirm === 'function'
+        ? window.confirm('Are you sure you want to delete this row?')
+        : true;
+      if (!proceed) {
+        return false;
+      }
+    }
+
+    const removed = { ...this.data[index] };
+
+    await this.deleteEntry(index);
+
+    this.render();
+
+    if (typeof this.config.onDelete === 'function') {
+      this.config.onDelete({ row: removed, index });
+    }
+
+    return true;
+  }
+
+  /**
    * Lookup Fields System
    */
 
