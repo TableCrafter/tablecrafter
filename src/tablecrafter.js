@@ -107,6 +107,14 @@ class TableCrafter {
         headers: {},
         authentication: null
       },
+      // i18n configuration (foundation only — pluralisation, RTL,
+      // formatNumber/Date are tracked in follow-ups for #40)
+      i18n: {
+        locale: null,            // null = resolve from document at construction time
+        fallbackLocale: 'en',
+        messages: {},
+        formats: {}
+      },
       // Permission system configuration
       permissions: {
         enabled: false,
@@ -2705,6 +2713,49 @@ class TableCrafter {
   /**
    * Permission System
    */
+
+  /**
+   * Translate a message key against the configured i18n catalogue.
+   * Lookup order: active locale → fallback locale → key itself (with one warn).
+   * Variable substitution: {name} placeholders read from `vars`. Missing vars
+   * leave the placeholder intact so the bug is visible rather than silently empty.
+   */
+  t(key, vars) {
+    const i18n = (this.config && this.config.i18n) || {};
+    const messages = i18n.messages || {};
+    const locale = this._resolveLocale();
+    const fallback = i18n.fallbackLocale || 'en';
+
+    let template;
+    if (messages[locale] && Object.prototype.hasOwnProperty.call(messages[locale], key)) {
+      template = messages[locale][key];
+    } else if (messages[fallback] && Object.prototype.hasOwnProperty.call(messages[fallback], key)) {
+      template = messages[fallback][key];
+    } else {
+      if (!this._missingI18nKeys) this._missingI18nKeys = new Set();
+      if (!this._missingI18nKeys.has(key)) {
+        this._missingI18nKeys.add(key);
+        console.warn(`TableCrafter i18n: missing translation for "${key}"`);
+      }
+      template = key;
+    }
+
+    if (typeof template !== 'string' || !vars) {
+      return template;
+    }
+    return template.replace(/\{(\w+)\}/g, (m, name) => {
+      return Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : m;
+    });
+  }
+
+  _resolveLocale() {
+    const i18n = (this.config && this.config.i18n) || {};
+    if (i18n.locale) return i18n.locale;
+    if (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) {
+      return document.documentElement.lang;
+    }
+    return 'en';
+  }
 
   /**
    * Set current user context
