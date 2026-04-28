@@ -59,6 +59,9 @@ class TableCrafter {
         messages: {
           required: 'This field is required',
           email: 'Please enter a valid email address',
+          url: 'Please enter a valid URL',
+          oneOf: 'Value must be one of {allowed}',
+          notOneOf: 'Value is not allowed',
           minLength: 'Minimum length is {min} characters',
           maxLength: 'Maximum length is {max} characters',
           min: 'Minimum value is {min}',
@@ -3264,9 +3267,13 @@ class TableCrafter {
       errors.push(this.getValidationMessage('required', rules));
     }
 
-    // Skip other validations if empty and not required
-    if (!rules.required && (value === null || value === undefined || value === '')) {
-      return { isValid: true };
+    // Skip format-style validations when value is empty.
+    // Required errors (collected above) are returned as-is; non-required+empty resolves clean.
+    if (value === null || value === undefined || value === '') {
+      return {
+        isValid: errors.length === 0,
+        errors: errors
+      };
     }
 
     // Email validation
@@ -3297,6 +3304,22 @@ class TableCrafter {
       if (!isNaN(numValue) && numValue > rules.max) {
         errors.push(this.getValidationMessage('max', rules));
       }
+    }
+
+    // URL validation
+    if (rules.url) {
+      const urlRegex = /^https?:\/\/[^\s.]+\.[^\s]+$/;
+      if (!urlRegex.test(value)) {
+        errors.push(this.getValidationMessage('url', rules));
+      }
+    }
+
+    // oneOf / notOneOf membership validation
+    if (Array.isArray(rules.oneOf) && !rules.oneOf.includes(value)) {
+      errors.push(this.getValidationMessage('oneOf', rules));
+    }
+    if (Array.isArray(rules.notOneOf) && rules.notOneOf.includes(value)) {
+      errors.push(this.getValidationMessage('notOneOf', rules));
     }
 
     // Pattern validation
@@ -3336,6 +3359,8 @@ class TableCrafter {
     if (rules.maxLength) message = message.replace('{max}', rules.maxLength);
     if (rules.min !== undefined) message = message.replace('{min}', rules.min);
     if (rules.max !== undefined) message = message.replace('{max}', rules.max);
+    if (Array.isArray(rules.oneOf)) message = message.replace('{allowed}', rules.oneOf.join(', '));
+    if (Array.isArray(rules.notOneOf)) message = message.replace('{disallowed}', rules.notOneOf.join(', '));
 
     return message;
   }
