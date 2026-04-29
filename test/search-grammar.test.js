@@ -1,12 +1,4 @@
-/**
- * parseQuery() — search grammar foundation (slice 1 of #59).
- *
- * This PR lands only the parser producing a normalised AST for the basic
- * grammar: whitespace AND, OR, -negation, "quoted phrase", field:value,
- * bare terms. Comparison operators (>, <, =), regex literals, wildcards,
- * the search builder modal, suggestions, and presets are deferred to
- * follow-up PRs and remain tracked in #59.
- */
+// parseQuery + evaluator tests for enhanced search grammar (#59)
 
 const TableCrafter = require('../src/tablecrafter');
 
@@ -156,5 +148,218 @@ describe('parseQuery: combinations', () => {
         { type: 'phrase', value: 'exact phrase' }
       ]
     });
+  });
+});
+
+// ── Comparison operators ──────────────────────────────────────────────────────
+
+describe('parseQuery: comparison operators', () => {
+  test('field:>10 produces op:gt', () => {
+    const t = makeTable();
+    expect(t.parseQuery('age:>10')).toEqual({
+      type: 'and',
+      children: [{ type: 'field', field: 'age', op: 'gt', value: '10' }]
+    });
+  });
+
+  test('field:>=10 produces op:gte', () => {
+    const t = makeTable();
+    expect(t.parseQuery('age:>=10')).toEqual({
+      type: 'and',
+      children: [{ type: 'field', field: 'age', op: 'gte', value: '10' }]
+    });
+  });
+
+  test('field:<5 produces op:lt', () => {
+    const t = makeTable();
+    expect(t.parseQuery('age:<5')).toEqual({
+      type: 'and',
+      children: [{ type: 'field', field: 'age', op: 'lt', value: '5' }]
+    });
+  });
+
+  test('field:<=5 produces op:lte', () => {
+    const t = makeTable();
+    expect(t.parseQuery('age:<=5')).toEqual({
+      type: 'and',
+      children: [{ type: 'field', field: 'age', op: 'lte', value: '5' }]
+    });
+  });
+});
+
+// ── Regex literals ────────────────────────────────────────────────────────────
+
+describe('parseQuery: regex literals', () => {
+  test('field:/pattern/ produces op:regex', () => {
+    const t = makeTable();
+    expect(t.parseQuery('name:/^foo/')).toEqual({
+      type: 'and',
+      children: [{ type: 'field', field: 'name', op: 'regex', value: '/^foo/' }]
+    });
+  });
+
+  test('field:/pattern/i preserves flags', () => {
+    const t = makeTable();
+    expect(t.parseQuery('name:/bar/i')).toEqual({
+      type: 'and',
+      children: [{ type: 'field', field: 'name', op: 'regex', value: '/bar/i' }]
+    });
+  });
+});
+
+// ── Evaluator: basic matching ─────────────────────────────────────────────────
+
+const ROWS = [
+  { name: 'Alice',   age: 30, status: 'active' },
+  { name: 'Bob',     age: 25, status: 'inactive' },
+  { name: 'Charlie', age: 35, status: 'active' },
+  { name: 'Delta',   age: 28, status: 'archived' },
+];
+
+function filtered(t, query) {
+  t.data = ROWS;
+  t.searchTerm = query;
+  return t.getFilteredData();
+}
+
+describe('evaluator: bare term and phrase', () => {
+  test('bare term matches any column substring', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    const result = filtered(t, 'ali');
+    expect(result.map(r => r.name)).toEqual(['Alice']);
+  });
+
+  test('AND of two terms narrows results', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    const result = filtered(t, 'active alice');
+    expect(result.map(r => r.name)).toEqual(['Alice']);
+  });
+
+  test('quoted phrase matches literal substring', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    const result = filtered(t, '"li"');
+    expect(result.map(r => r.name)).toEqual(['Alice', 'Charlie']);
+  });
+});
+
+describe('evaluator: OR and negation', () => {
+  test('OR returns rows matching either side', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    const result = filtered(t, 'alice OR bob');
+    expect(result.map(r => r.name).sort()).toEqual(['Alice', 'Bob']);
+  });
+
+  test('negation excludes matching rows', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    const result = filtered(t, '-inactive -archived');
+    expect(result.map(r => r.name).sort()).toEqual(['Alice', 'Charlie']);
+  });
+});
+
+describe('evaluator: field:value', () => {
+  test('field:value scopes match to that column (substring)', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    // 'archived' only appears in Delta's status column, not in any name/age
+    const result = filtered(t, 'status:archived');
+    expect(result.map(r => r.name)).toEqual(['Delta']);
+  });
+
+  test('field:>N numeric comparison', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    const result = filtered(t, 'age:>28');
+    expect(result.map(r => r.name).sort()).toEqual(['Alice', 'Charlie']);
+  });
+
+  test('field:<=N numeric comparison', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    const result = filtered(t, 'age:<=25');
+    expect(result.map(r => r.name)).toEqual(['Bob']);
+  });
+
+  test('non-numeric cell skipped for numeric comparison', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    t.data = [{ name: 'X', age: 'N/A' }, { name: 'Y', age: 40 }];
+    t.searchTerm = 'age:>30';
+    expect(t.getFilteredData().map(r => r.name)).toEqual(['Y']);
+  });
+
+  test('field:/regex/i matches via regex', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    const result = filtered(t, 'name:/^(alice|bob)$/i');
+    expect(result.map(r => r.name).sort()).toEqual(['Alice', 'Bob']);
+  });
+});
+
+describe('evaluator: wildcards', () => {
+  test('* wildcard in bare term matches prefix', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    t.data = [{ name: 'gold' }, { name: 'golden' }, { name: 'goldfish' }, { name: 'silver' }];
+    t.searchTerm = 'gold*';
+    expect(t.getFilteredData().map(r => r.name).sort()).toEqual(['gold', 'golden', 'goldfish']);
+  });
+
+  test('? wildcard matches a single character', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    t.data = [{ name: 'cat' }, { name: 'bat' }, { name: 'cart' }];
+    t.searchTerm = '?at';
+    expect(t.getFilteredData().map(r => r.name).sort()).toEqual(['bat', 'cat']);
+  });
+});
+
+// ── setQuery public API ───────────────────────────────────────────────────────
+
+describe('setQuery()', () => {
+  test('setQuery updates searchTerm and re-renders', () => {
+    const t = makeTable();
+    t.config.globalSearch = true;
+    t.data = ROWS;
+    const renderSpy = jest.spyOn(t, 'render').mockImplementation(() => {});
+    t.setQuery('alice');
+    expect(t.searchTerm).toBe('alice');
+    expect(renderSpy).toHaveBeenCalled();
+  });
+
+  test('setQuery(null) clears search', () => {
+    const t = makeTable();
+    t.setQuery(null);
+    expect(t.searchTerm).toBe('');
+  });
+});
+
+// ── Presets API ───────────────────────────────────────────────────────────────
+
+describe('savePreset / removePreset', () => {
+  test('savePreset stores current searchTerm in config.search.presets', () => {
+    const t = makeTable();
+    t.searchTerm = 'status:active';
+    const preset = t.savePreset('Active users');
+    expect(t.config.search.presets).toHaveLength(1);
+    expect(t.config.search.presets[0]).toMatchObject({ label: 'Active users', query: 'status:active' });
+    expect(preset.id).toBeTruthy();
+  });
+
+  test('removePreset deletes the preset by id', () => {
+    const t = makeTable();
+    t.searchTerm = 'foo';
+    const preset = t.savePreset('Foo');
+    t.removePreset(preset.id);
+    expect(t.config.search.presets).toHaveLength(0);
+  });
+
+  test('removePreset is a no-op when no presets exist', () => {
+    const t = makeTable();
+    expect(() => t.removePreset('nonexistent')).not.toThrow();
   });
 });

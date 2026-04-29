@@ -1386,13 +1386,8 @@ class TableCrafter {
 
     // Apply global search filter
     if (this.config.globalSearch && this.searchTerm) {
-      const searchLower = this.searchTerm.toLowerCase();
-      data = data.filter(row => {
-        return Object.values(row).some(val => {
-          if (val === null || val === undefined) return false;
-          return val.toString().toLowerCase().includes(searchLower);
-        });
-      });
+      const ast = this.parseQuery(this.searchTerm);
+      data = data.filter(row => this._evalQueryAst(ast, row));
     }
 
     // Apply column filters
@@ -3397,7 +3392,7 @@ class TableCrafter {
     }
     if (tok.type === 'field') {
       return {
-        node: { type: 'field', field: tok.field, op: 'eq', value: tok.value },
+        node: { type: 'field', field: tok.field, op: tok.op || 'eq', value: tok.value },
         next: i + 1
       };
     }
@@ -3444,16 +3439,38 @@ class TableCrafter {
       if (i < s.length && s[i] === ':') {
         i++; // consume colon
         let value = '';
+        let op = 'eq';
+
+        // comparison operators: >, >=, <, <=, =
+        if (i < s.length) {
+          if (s[i] === '>' && s[i + 1] === '=') { op = 'gte'; i += 2; }
+          else if (s[i] === '<' && s[i + 1] === '=') { op = 'lte'; i += 2; }
+          else if (s[i] === '>') { op = 'gt'; i++; }
+          else if (s[i] === '<') { op = 'lt'; i++; }
+          else if (s[i] === '=') { op = 'eq'; i++; }
+        }
+
         if (i < s.length && s[i] === '"') {
           const q = readQuoted(i);
           value = q.value;
           i = q.next;
+        } else if (i < s.length && s[i] === '/') {
+          // regex literal: /pattern/flags
+          op = 'regex';
+          const regexStart = i;
+          i++; // skip opening /
+          while (i < s.length && s[i] !== '/' && s[i] !== ' ') i++;
+          if (i < s.length && s[i] === '/') {
+            i++; // skip closing /
+            while (i < s.length && /[gimsuy]/.test(s[i])) i++;
+          }
+          value = s.slice(regexStart, i);
         } else {
           const valueStart = i;
           while (i < s.length && !/\s/.test(s[i])) i++;
           value = s.slice(valueStart, i);
         }
-        tokens.push({ type: 'field', field: word, value });
+        tokens.push({ type: 'field', field: word, op, value });
         continue;
       }
 
@@ -3462,6 +3479,101 @@ class TableCrafter {
       }
     }
     return tokens;
+  }
+
+  setQuery(query) {
+    this.searchTerm = query == null ? '' : String(query);
+    this.currentPage = 1;
+    this.render();
+  }
+
+  savePreset(label) {
+    if (!this.config.search) this.config.search = {};
+    if (!Array.isArray(this.config.search.presets)) this.config.search.presets = [];
+    const id = 'preset_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const preset = { id, label, query: this.searchTerm };
+    this.config.search.presets.push(preset);
+    if (this.config.statePersistence) this.saveState();
+    return preset;
+  }
+
+  removePreset(id) {
+    if (!this.config.search || !Array.isArray(this.config.search.presets)) return;
+    this.config.search.presets = this.config.search.presets.filter(p => p.id !== id);
+    if (this.config.statePersistence) this.saveState();
+  }
+
+  _evalQueryAst(node, row) {
+    switch (node.type) {
+      case 'and':
+        return node.children.every(c => this._evalQueryAst(c, row));
+      case 'or':
+        return node.children.some(c => this._evalQueryAst(c, row));
+      case 'not':
+        return !this._evalQueryAst(node.child, row);
+      case 'phrase': {
+        const needle = node.value.toLowerCase();
+        return Object.values(row).some(v => v != null && String(v).toLowerCase().includes(needle));
+      }
+      case 'term': {
+        const pattern = node.value;
+        if (pattern.includes('*') || pattern.includes('?')) {
+          const re = this._wildcardToRegex(pattern);
+          return Object.values(row).some(v => v != null && re.test(String(v)));
+        }
+        const needle = pattern.toLowerCase();
+        return Object.values(row).some(v => v != null && String(v).toLowerCase().includes(needle));
+      }
+      case 'field': {
+        const raw = row[node.field];
+        return this._evalFieldNode(node, raw);
+      }
+      default:
+        return true;
+    }
+  }
+
+  _evalFieldNode(node, raw) {
+    const { op, value } = node;
+
+    if (op === 'regex') {
+      try {
+        const m = value.match(/^\/(.*)\/([gimsuy]*)$/);
+        const re = m ? new RegExp(m[1], m[2]) : new RegExp(value, 'i');
+        return re.test(String(raw == null ? '' : raw));
+      } catch (_) {
+        return String(raw == null ? '' : raw).toLowerCase().includes(value.toLowerCase());
+      }
+    }
+
+    if (op === 'gt' || op === 'gte' || op === 'lt' || op === 'lte') {
+      const num = parseFloat(raw);
+      const cmp = parseFloat(value);
+      if (isNaN(num) || isNaN(cmp)) return false;
+      if (op === 'gt')  return num > cmp;
+      if (op === 'gte') return num >= cmp;
+      if (op === 'lt')  return num < cmp;
+      if (op === 'lte') return num <= cmp;
+    }
+
+    const cellStr = String(raw == null ? '' : raw);
+    const valStr = String(value);
+
+    if (op === 'eq') {
+      if (valStr.includes('*') || valStr.includes('?')) {
+        return this._wildcardToRegex(valStr).test(cellStr);
+      }
+      return cellStr.toLowerCase().includes(valStr.toLowerCase());
+    }
+
+    return cellStr.toLowerCase().includes(valStr.toLowerCase());
+  }
+
+  _wildcardToRegex(pattern) {
+    const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*/g, '.*')
+      .replace(/\?/g, '.');
+    return new RegExp('^' + escaped + '$', 'i');
   }
 
   parseCSV(text, options) {
