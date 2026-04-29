@@ -107,6 +107,13 @@ class TableCrafter {
         headers: {},
         authentication: null
       },
+      // Context menu configuration (foundation only — event-listener wiring,
+      // keyboard navigation, touch long-press, and viewport-flip positioning
+      // are tracked in #44 follow-ups)
+      contextMenu: {
+        enabled: false,
+        items: []
+      },
       // Permission system configuration
       permissions: {
         enabled: false,
@@ -2705,6 +2712,83 @@ class TableCrafter {
   /**
    * Permission System
    */
+
+  /**
+   * Open a context menu at the document level (positioning is the caller's
+   * responsibility for now — viewport-flip + click coordinates land in a
+   * follow-up). Resolves item visibility / disabled per the supplied context
+   * and supports per-item `scope` filtering.
+   *
+   * No-op when contextMenu.enabled is false.
+   */
+  openContextMenu(scope, context) {
+    const cfg = this.config && this.config.contextMenu;
+    if (!cfg || !cfg.enabled) return;
+    this.closeContextMenu();
+
+    const fullContext = Object.assign({ scope }, context || {});
+    const items = (cfg.items || []).filter(item => {
+      if (item === 'separator') return true;
+      if (!item) return false;
+      if (item.scope && item.scope !== 'all' && item.scope !== scope) return false;
+      if (typeof item.visible === 'function') {
+        try {
+          if (item.visible({ context: fullContext }) === false) return false;
+        } catch (e) {
+          return false;
+        }
+      }
+      return true;
+    });
+    if (items.length === 0) return;
+
+    const menu = document.createElement('ul');
+    menu.className = 'tc-context-menu';
+    menu.setAttribute('role', 'menu');
+
+    for (const item of items) {
+      if (item === 'separator') {
+        const sep = document.createElement('li');
+        sep.setAttribute('role', 'separator');
+        menu.appendChild(sep);
+        continue;
+      }
+      const li = document.createElement('li');
+      li.setAttribute('role', 'menuitem');
+      li.textContent = item.label || '';
+      let disabled = false;
+      if (typeof item.disabled === 'function') {
+        try {
+          disabled = item.disabled({ context: fullContext }) === true;
+        } catch (e) {
+          disabled = true;
+        }
+      }
+      if (disabled) li.setAttribute('aria-disabled', 'true');
+      li.addEventListener('click', () => {
+        if (disabled) return;
+        try {
+          if (typeof item.onClick === 'function') {
+            item.onClick({ context: fullContext });
+          }
+        } catch (e) {
+          console.warn('TableCrafter contextMenu: onClick threw', e);
+        }
+        this.closeContextMenu();
+      });
+      menu.appendChild(li);
+    }
+
+    document.body.appendChild(menu);
+    this._contextMenu = menu;
+  }
+
+  closeContextMenu() {
+    if (this._contextMenu && this._contextMenu.parentNode) {
+      this._contextMenu.parentNode.removeChild(this._contextMenu);
+    }
+    this._contextMenu = null;
+  }
 
   /**
    * Set current user context
