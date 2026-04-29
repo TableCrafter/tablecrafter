@@ -776,14 +776,16 @@ class TableCrafter {
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
 
-    this.config.columns.filter(col => col.hidden !== true).forEach(column => {
+    this._orderedColumns().forEach(column => {
       const th = document.createElement('th');
       th.setAttribute('scope', 'col');
+      if (column.pinned === 'left') th.classList.add('tc-pinned-left');
+      else if (column.pinned === 'right') th.classList.add('tc-pinned-right');
       th.textContent = column.label;
       th.dataset.field = column.field;
 
       if (this.config.sortable && column.sortable !== false) {
-        th.className = 'tc-sortable';
+        th.classList.add('tc-sortable');
         th.tabIndex = 0; // Make focusable
 
         // Determine this column's role in the current sort.
@@ -846,8 +848,10 @@ class TableCrafter {
         const tr = document.createElement('tr');
         tr.dataset.rowIndex = actualRowIndex;
 
-        const columnPromises = this.config.columns.filter(col => col.hidden !== true).map(async (column) => {
+        const columnPromises = this._orderedColumns().map(async (column) => {
           const td = document.createElement('td');
+          if (column.pinned === 'left') td.classList.add('tc-pinned-left');
+          else if (column.pinned === 'right') td.classList.add('tc-pinned-right');
 
           // Format lookup values
           let displayValue = row[column.field];
@@ -3403,6 +3407,35 @@ class TableCrafter {
       }
     }
     return tokens;
+  }
+
+  _orderedColumns() {
+    const cols = (this.config.columns || []).filter(c => c.hidden !== true);
+    const left = cols.filter(c => c.pinned === 'left');
+    const middle = cols.filter(c => c.pinned !== 'left' && c.pinned !== 'right');
+    const right = cols.filter(c => c.pinned === 'right');
+    return [...left, ...middle, ...right];
+  }
+
+  pinColumn(field, side) {
+    const column = (this.config.columns || []).find(c => c.field === field);
+    if (!column) {
+      throw new Error(`TableCrafter: pinColumn — unknown field "${field}"`);
+    }
+    if (side === 'left' || side === 'right') {
+      column.pinned = side;
+    } else {
+      delete column.pinned;
+    }
+    this.render();
+  }
+
+  getPinnedColumns() {
+    const cols = (this.config.columns || []).filter(c => c.hidden !== true);
+    return {
+      left: cols.filter(c => c.pinned === 'left').map(c => ({ ...c })),
+      right: cols.filter(c => c.pinned === 'right').map(c => ({ ...c }))
+    };
   }
 
   setColumnVisibility(field, visible) {
