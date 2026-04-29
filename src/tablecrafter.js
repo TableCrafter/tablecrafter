@@ -153,6 +153,7 @@ class TableCrafter {
     this.currentPage = this.config.currentPage || 1;
     this.sortField = null;
     this.sortOrder = 'asc';
+    this.sortKeys = [];
     this.filters = {};
     this.searchTerm = '';
     this.isLoading = false;
@@ -780,23 +781,34 @@ class TableCrafter {
       if (this.config.sortable && column.sortable !== false) {
         th.className = 'tc-sortable';
         th.tabIndex = 0; // Make focusable
-        
-        // helper to get aria-sort state
+
+        // Determine this column's role in the current sort.
+        const sortKeyIndex = this.sortKeys.findIndex(k => k.field === column.field);
         let sortState = 'none';
-        if (this.sortField === column.field) {
-            sortState = this.sortOrder === 'asc' ? 'ascending' : 'descending';
+        if (sortKeyIndex === 0) {
+          sortState = this.sortKeys[0].direction === 'asc' ? 'ascending' : 'descending';
+        } else if (sortKeyIndex > 0) {
+          sortState = 'other';
         }
         th.setAttribute('aria-sort', sortState);
 
-        // Click handler
-        th.addEventListener('click', () => this.sort(column.field));
-        
-        // Keyboard handler (Enter/Space)
+        // Priority badge for multi-sort.
+        if (sortKeyIndex >= 0 && this.sortKeys.length > 1) {
+          const badge = document.createElement('span');
+          badge.className = 'tc-sort-priority';
+          badge.textContent = String(sortKeyIndex + 1);
+          th.appendChild(badge);
+        }
+
+        th.addEventListener('click', (e) => {
+          this.sort(column.field, { append: !!e.shiftKey });
+        });
+
         th.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this.sort(column.field);
-            }
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.sort(column.field, { append: !!e.shiftKey });
+          }
         });
       }
 
@@ -2131,27 +2143,96 @@ class TableCrafter {
   }
 
   /**
-   * Sort data
+   * Sort data by one or more columns.
+   *
+   * sort(field)                                — replace sort with single key (toggles direction on repeat).
+   * sort(field, { append: true })              — append/toggle key in multi-sort list.
+   * sort(field, { direction: 'asc' | 'desc' }) — set explicit direction.
    */
-  sort(field) {
-    if (this.sortField === field) {
-      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+  sort(field, options = {}) {
+    const append = options.append === true;
+    const explicitDirection = options.direction;
+
+    if (append) {
+      const existing = this.sortKeys.find(k => k.field === field);
+      if (existing) {
+        existing.direction = explicitDirection
+          ? explicitDirection
+          : (existing.direction === 'asc' ? 'desc' : 'asc');
+      } else {
+        this.sortKeys.push({ field, direction: explicitDirection || 'asc' });
+      }
     } else {
-      this.sortField = field;
-      this.sortOrder = 'asc';
+      const current = this.sortKeys[0];
+      if (!explicitDirection && current && current.field === field && this.sortKeys.length === 1) {
+        this.sortKeys = [{ field, direction: current.direction === 'asc' ? 'desc' : 'asc' }];
+      } else {
+        this.sortKeys = [{ field, direction: explicitDirection || 'asc' }];
+      }
     }
 
-    this.data.sort((a, b) => {
-      const aVal = a[field];
-      const bVal = b[field];
+    this._applySortKeys();
+  }
 
-      if (aVal === bVal) return 0;
+  /**
+   * Set the entire sort key list at once.
+   */
+  multiSort(keys) {
+    if (!Array.isArray(keys)) {
+      throw new TypeError('multiSort: keys must be an array');
+    }
+    this.sortKeys = keys.map(k => ({
+      field: k.field,
+      direction: k.direction === 'desc' ? 'desc' : 'asc'
+    }));
+    this._applySortKeys();
+  }
 
-      const result = aVal < bVal ? -1 : 1;
-      return this.sortOrder === 'asc' ? result : -result;
-    });
+  /**
+   * Apply current sortKeys to this.data with a stable composite comparator,
+   * sync legacy sortField/sortOrder, persist state, and re-render.
+   */
+  _applySortKeys() {
+    const primary = this.sortKeys[0];
+    this.sortField = primary ? primary.field : null;
+    this.sortOrder = primary ? primary.direction : 'asc';
 
-    // Reset to first page after sorting
+    if (this.sortKeys.length > 0) {
+      const columnsByField = {};
+      (this.config.columns || []).forEach(col => { columnsByField[col.field] = col; });
+
+      // Stamp original index for guaranteed stability.
+      const indexed = this.data.map((row, idx) => ({ row, idx }));
+
+      indexed.sort((a, b) => {
+        for (const key of this.sortKeys) {
+          const col = columnsByField[key.field];
+          let cmp;
+          if (col && typeof col.compare === 'function') {
+            cmp = col.compare(a.row[key.field], b.row[key.field], a.row, b.row);
+          } else {
+            const aVal = a.row[key.field];
+            const bVal = b.row[key.field];
+            if (aVal === bVal) {
+              cmp = 0;
+            } else if (aVal === null || aVal === undefined) {
+              cmp = 1;
+            } else if (bVal === null || bVal === undefined) {
+              cmp = -1;
+            } else {
+              cmp = aVal < bVal ? -1 : 1;
+            }
+          }
+          if (cmp !== 0) {
+            return key.direction === 'desc' ? -cmp : cmp;
+          }
+        }
+        return a.idx - b.idx;
+      });
+
+      this.data = indexed.map(entry => entry.row);
+    }
+
     this.currentPage = 1;
     this.saveState();
     this.render();
@@ -3313,6 +3394,7 @@ class TableCrafter {
       filters: this.filters,
       sortField: this.sortField,
       sortOrder: this.sortOrder,
+      sortKeys: this.sortKeys,
       currentPage: this.currentPage,
       selectedRows: Array.from(this.selectedRows),
       timestamp: Date.now()
@@ -3344,8 +3426,19 @@ class TableCrafter {
 
       // Restore state
       this.filters = state.filters || {};
-      this.sortField = state.sortField;
-      this.sortOrder = state.sortOrder || 'asc';
+      if (Array.isArray(state.sortKeys) && state.sortKeys.length > 0) {
+        this.sortKeys = state.sortKeys.map(k => ({
+          field: k.field,
+          direction: k.direction === 'desc' ? 'desc' : 'asc'
+        }));
+      } else if (state.sortField) {
+        // Legacy state migration.
+        this.sortKeys = [{ field: state.sortField, direction: state.sortOrder || 'asc' }];
+      } else {
+        this.sortKeys = [];
+      }
+      this.sortField = this.sortKeys[0] ? this.sortKeys[0].field : null;
+      this.sortOrder = this.sortKeys[0] ? this.sortKeys[0].direction : 'asc';
       this.currentPage = state.currentPage || 1;
       this.selectedRows = new Set(state.selectedRows || []);
 
