@@ -2789,6 +2789,47 @@ class TableCrafter {
   }
 
   /**
+   * Format a number with Intl.NumberFormat using the active locale.
+   * - null / undefined → ''
+   * - non-numeric input → returned unchanged so callers can pass through
+   *   already-formatted strings without an explicit type guard.
+   * Per-call options merge over `config.i18n.formats.number` defaults.
+   */
+  formatNumber(value, options) {
+    if (value === null || value === undefined) return '';
+    const num = typeof value === 'number' ? value : Number(value);
+    if (Number.isNaN(num)) return String(value);
+
+    const i18n = (this.config && this.config.i18n) || {};
+    const defaults = (i18n.formats && i18n.formats.number) || {};
+    const merged = Object.assign({}, defaults, options || {});
+    try {
+      return new Intl.NumberFormat(this._resolveLocale(), merged).format(num);
+    } catch (e) {
+      return String(num);
+    }
+  }
+
+  /**
+   * Format a Date / ISO string / epoch ms with Intl.DateTimeFormat using the
+   * active locale. Invalid / null / undefined input returns ''.
+   */
+  formatDate(value, options) {
+    if (value === null || value === undefined) return '';
+    const date = (value instanceof Date) ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const i18n = (this.config && this.config.i18n) || {};
+    const defaults = (i18n.formats && i18n.formats.date) || {};
+    const merged = Object.assign({}, defaults, options || {});
+    try {
+      return new Intl.DateTimeFormat(this._resolveLocale(), merged).format(date);
+    } catch (e) {
+      return date.toISOString();
+    }
+  }
+
+  /**
    * Merge translations into the catalogue at runtime. Existing keys for the
    * given locale are overwritten by the supplied messages; new locales are
    * created on demand.
