@@ -4041,6 +4041,77 @@ class TableCrafter {
   }
 
   /**
+   * Validate the entire dataset and return an aggregated result without
+   * mutating tooltip DOM. Errors are keyed by rowIndex; each row's value is
+   * an object of { field: errors[] } for the fields that failed.
+   */
+  async validate() {
+    if (!this.config.validation || !this.config.validation.enabled) {
+      return { isValid: true, errors: {} };
+    }
+    const errors = {};
+    let isValid = true;
+    for (let rowIndex = 0; rowIndex < this.data.length; rowIndex++) {
+      const row = this.data[rowIndex];
+      const rowErrors = {};
+      let rowValid = true;
+      for (const column of this.config.columns || []) {
+        const result = this.validateField(column.field, row[column.field], row);
+        if (result && !result.isValid) {
+          rowErrors[column.field] = result.errors;
+          rowValid = false;
+        }
+      }
+      if (!rowValid) {
+        errors[rowIndex] = rowErrors;
+        isValid = false;
+      }
+    }
+    return { isValid, errors };
+  }
+
+  /**
+   * Defensive snapshot of the validationErrors map.
+   * - getErrors() → { [rowIndex]: { [field]: errors[] } } across all rows.
+   * - getErrors(rowIndex) → { [field]: errors[] } for one row (no rowIndex key).
+   * Both forms deep-clone arrays so callers can mutate without leaking back.
+   */
+  getErrors(rowIndex) {
+    const all = {};
+    for (const [key, errs] of this.validationErrors.entries()) {
+      const sep = key.indexOf('_');
+      if (sep === -1) continue;
+      const idx = Number(key.slice(0, sep));
+      const field = key.slice(sep + 1);
+      if (!all[idx]) all[idx] = {};
+      all[idx][field] = (errs || []).slice();
+    }
+    if (rowIndex === undefined) return all;
+    return all[rowIndex] || {};
+  }
+
+  /**
+   * Clear validation errors at the given scope.
+   * - clearErrors() → wipes every entry.
+   * - clearErrors(rowIndex) → wipes every field on that row.
+   * - clearErrors(rowIndex, field) → wipes only that field on that row.
+   */
+  clearErrors(rowIndex, field) {
+    if (rowIndex === undefined) {
+      this.validationErrors.clear();
+      return;
+    }
+    if (field !== undefined) {
+      this.validationErrors.delete(`${rowIndex}_${field}`);
+      return;
+    }
+    const prefix = `${rowIndex}_`;
+    for (const key of Array.from(this.validationErrors.keys())) {
+      if (key.startsWith(prefix)) this.validationErrors.delete(key);
+    }
+  }
+
+  /**
    * Clear all validation errors
    */
   clearAllValidationErrors() {
