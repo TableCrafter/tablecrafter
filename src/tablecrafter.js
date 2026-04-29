@@ -2855,6 +2855,71 @@ class TableCrafter {
   }
 
   /**
+   * Defensive snapshot of the configured search presets.
+   */
+  getPresets() {
+    const presets = (this.config && this.config.search && this.config.search.presets) || [];
+    return presets.map(p => ({ ...p }));
+  }
+
+  /**
+   * Persist a preset. Three call shapes:
+   *   - savePreset(label) — uses the current query (this.searchTerm).
+   *   - savePreset(label, query) — explicit query string.
+   *   - savePreset({ id, label, query }) — full record. If `id` matches an
+   *     existing preset, that entry is replaced rather than appended.
+   * Throws on empty label.
+   */
+  savePreset(labelOrRecord, query) {
+    const search = this._ensureSearchConfig();
+    let record;
+    if (labelOrRecord && typeof labelOrRecord === 'object') {
+      record = { ...labelOrRecord };
+    } else {
+      record = {
+        label: labelOrRecord,
+        query: typeof query === 'string' ? query : (this.searchTerm || '')
+      };
+    }
+    if (!record.label || typeof record.label !== 'string') {
+      throw new Error('TableCrafter: savePreset requires a non-empty label');
+    }
+    if (!record.id) {
+      record.id = `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    const idx = search.presets.findIndex(p => p.id === record.id);
+    if (idx !== -1) {
+      search.presets[idx] = record;
+    } else {
+      search.presets.push(record);
+    }
+    return record;
+  }
+
+  removePreset(id) {
+    const search = this._ensureSearchConfig();
+    const before = search.presets.length;
+    search.presets = search.presets.filter(p => p.id !== id);
+    return search.presets.length < before;
+  }
+
+  applyPreset(id) {
+    const presets = (this.config && this.config.search && this.config.search.presets) || [];
+    const preset = presets.find(p => p.id === id);
+    if (!preset) return false;
+    this.setQuery(preset.query || '');
+    return true;
+  }
+
+  _ensureSearchConfig() {
+    if (!this.config) this.config = {};
+    if (!this.config.search) this.config.search = {};
+    if (!Array.isArray(this.config.search.presets)) this.config.search.presets = [];
+    return this.config.search;
+  }
+
+  /**
    * Programmatically apply a search query string. Empty / falsy clears the
    * active query. Triggers a re-render so the filtered set is visible.
    */
