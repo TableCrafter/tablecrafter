@@ -2535,6 +2535,99 @@ class TableCrafter {
   }
 
   /**
+   * Append a row, fire the onAdd lifecycle, re-render.
+   * Delegates to createEntry so API-backed tables go through the configured
+   * endpoint; falls back to a plain push when no API is configured.
+   */
+  async addRow(rowData) {
+    if (this.config.permissions && this.config.permissions.enabled && !this.hasPermission('create')) {
+      throw new Error('TableCrafter: permission denied for create');
+    }
+
+    const result = await this.createEntry(rowData);
+    const row = result || rowData;
+
+    // Reconcile in case createEntry was stubbed and did not mutate data.
+    if (this.data[this.data.length - 1] !== row) {
+      this.data.push(row);
+    }
+    const index = this.data.length - 1;
+
+    this.render();
+
+    if (typeof this.config.onAdd === 'function') {
+      this.config.onAdd({ row, index });
+    }
+    return row;
+  }
+
+  /**
+   * Merge new fields into an existing row, fire onUpdate, re-render.
+   */
+  async updateRow(index, rowData) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.data.length) {
+      throw new RangeError(`TableCrafter: updateRow index ${index} out of range`);
+    }
+
+    const previous = { ...this.data[index] };
+
+    if (this.config.permissions && this.config.permissions.enabled && !this.hasPermission('edit', previous)) {
+      throw new Error('TableCrafter: permission denied for edit');
+    }
+
+    const result = await this.updateEntry(index, rowData);
+    const row = result || this.data[index];
+
+    if (this.data[index] !== row) {
+      this.data[index] = row;
+    }
+
+    this.render();
+
+    if (typeof this.config.onUpdate === 'function') {
+      this.config.onUpdate({ row, index, previous });
+    }
+    return row;
+  }
+
+  /**
+   * Remove a row, fire onDelete, re-render.
+   * options.confirm === true triggers window.confirm; cancellation is a no-op
+   * that resolves false without API call, callback, or re-render.
+   */
+  async removeRow(index, options = {}) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.data.length) {
+      throw new RangeError(`TableCrafter: removeRow index ${index} out of range`);
+    }
+
+    const row = this.data[index];
+
+    if (this.config.permissions && this.config.permissions.enabled && !this.hasPermission('delete', row)) {
+      throw new Error('TableCrafter: permission denied for delete');
+    }
+
+    if (options && options.confirm === true) {
+      if (!window.confirm('Delete this row?')) {
+        return false;
+      }
+    }
+
+    const before = this.data.length;
+    await this.deleteEntry(index);
+
+    if (this.data.length === before && this.data[index] === row) {
+      this.data.splice(index, 1);
+    }
+
+    this.render();
+
+    if (typeof this.config.onDelete === 'function') {
+      this.config.onDelete({ row, index });
+    }
+    return true;
+  }
+
+  /**
    * Create new entry via API
    */
   async createEntry(entryData) {
