@@ -669,6 +669,10 @@ class TableCrafter {
       this.container.appendChild(wrapper);
     }
 
+    if (typeof this._applyTheme === 'function') {
+      this._applyTheme(wrapper);
+    }
+
     // Add global search if enabled
     if (this.config.globalSearch) {
       const searchContainer = this.renderGlobalSearch();
@@ -3412,6 +3416,35 @@ class TableCrafter {
       }
     }
     return tokens;
+  }
+
+  _applyTheme(wrapper) {
+    if (!wrapper) return;
+    const theme = this.config && this.config.theme;
+    if (typeof theme === 'string' && theme) {
+      wrapper.setAttribute('data-tc-theme', theme);
+    } else {
+      wrapper.removeAttribute('data-tc-theme');
+    }
+
+    const vars = this.config && this.config.themeVariables;
+    if (vars && typeof vars === 'object') {
+      for (const [name, value] of Object.entries(vars)) {
+        if (typeof name === 'string' && name.startsWith('--')) {
+          wrapper.style.setProperty(name, value);
+        }
+      }
+    }
+  }
+
+  getTheme() {
+    return (this.config && this.config.theme) || 'light';
+  }
+
+  setTheme(name) {
+    if (!this.config) this.config = {};
+    this.config.theme = name;
+    this.render();
   }
 
   evaluateFormula(formula, row) {
