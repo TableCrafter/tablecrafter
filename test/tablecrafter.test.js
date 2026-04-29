@@ -115,6 +115,73 @@ describe('TableCrafter Data Loading', () => {
 
     await expect(table.loadData()).rejects.toThrow('Network error');
   });
+
+  test('should abort the previous in-flight loadData when a new one starts', async () => {
+    const mockData = [{ id: 1, name: 'A' }];
+    const capturedSignals = [];
+
+    fetch.mockImplementation((url, options = {}) => {
+      capturedSignals.push(options.signal);
+      return new Promise((resolve, reject) => {
+        if (options.signal) {
+          options.signal.addEventListener('abort', () => {
+            const err = new Error('Aborted');
+            err.name = 'AbortError';
+            reject(err);
+          });
+        }
+        setTimeout(() => resolve({ ok: true, json: async () => mockData }), 50);
+      });
+    });
+
+    table = new TableCrafter('#table-container', {
+      data: 'https://api.example.com/data'
+    });
+
+    const first = table.loadData();
+    first.catch(() => {});
+    const second = table.loadData();
+    await second;
+
+    expect(capturedSignals.length).toBeGreaterThanOrEqual(2);
+    const firstSignal = capturedSignals[capturedSignals.length - 2];
+    const secondSignal = capturedSignals[capturedSignals.length - 1];
+    expect(firstSignal).toBeDefined();
+    expect(firstSignal.aborted).toBe(true);
+    expect(secondSignal.aborted).toBe(false);
+  });
+
+  test('should not surface AbortError as a render error', async () => {
+    const renderErrorSpy = jest.fn();
+
+    fetch.mockImplementation((url, options = {}) => {
+      return new Promise((_resolve, reject) => {
+        if (options.signal) {
+          options.signal.addEventListener('abort', () => {
+            const err = new Error('Aborted');
+            err.name = 'AbortError';
+            reject(err);
+          });
+        }
+      });
+    });
+
+    table = new TableCrafter('#table-container', {
+      data: 'https://api.example.com/data'
+    });
+    table.renderError = renderErrorSpy;
+
+    const first = table.loadData();
+    first.catch(() => {});
+    const second = table.loadData().catch(() => {});
+
+    // Force-abort the second call so the test does not hang
+    if (table._loadController) table._loadController.abort();
+    await first.catch(() => {});
+    await second;
+
+    expect(renderErrorSpy).not.toHaveBeenCalled();
+  });
 });
 
 describe('TableCrafter Rendering', () => {
