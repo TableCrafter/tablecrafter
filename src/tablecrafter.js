@@ -828,7 +828,7 @@ class TableCrafter {
           if (typeof this.getMatchingRules === 'function') {
             const cellRules = this.getMatchingRules(column.field, row[column.field], row)
               .filter(r => r.scope !== 'row');
-            this._applyConditionalFormatting(td, cellRules, row[column.field], column.field);
+            this._applyConditionalFormatting(td, cellRules, row[column.field], column.field, row);
           }
 
           tr.appendChild(td);
@@ -2823,7 +2823,7 @@ class TableCrafter {
    * lower; classNames are unioned. Caller controls scope by choosing which
    * rules to pass in.
    */
-  _applyConditionalFormatting(target, rules, value, field) {
+  _applyConditionalFormatting(target, rules, value, field, row) {
     if (!target || !Array.isArray(rules) || rules.length === 0) return;
     // Reverse so iteration runs low → high priority and last write wins.
     const ordered = rules.slice().reverse();
@@ -2859,6 +2859,7 @@ class TableCrafter {
         const range = this._dataBarRange(scaleRule, field);
         const colour = this._colorScaleAt(num, range.min, range.max, scaleRule);
         if (colour) target.style.backgroundColor = colour;
+        this._applyConditionalAriaLabel(target, scaleRule, value, field, row);
       }
     }
 
@@ -2875,7 +2876,26 @@ class TableCrafter {
         span.className = 'tc-cf-databar';
         span.style.width = `${this._dataBarPercent(num, range.min, range.max)}%`;
         target.appendChild(span);
+        this._applyConditionalAriaLabel(target, barRule, value, field, row);
       }
+    }
+  }
+
+  _applyConditionalAriaLabel(target, rule, value, field, row) {
+    if (!target || target.tagName !== 'TD') return;
+    if (target.hasAttribute('aria-label')) return; // first-write wins
+    let label;
+    if (typeof rule.ariaLabel === 'function') {
+      try {
+        label = rule.ariaLabel(value, row);
+      } catch (e) {
+        label = null;
+      }
+    } else {
+      label = `${field}: ${value}`;
+    }
+    if (typeof label === 'string' && label) {
+      target.setAttribute('aria-label', label);
     }
   }
 
