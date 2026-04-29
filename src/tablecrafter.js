@@ -3122,6 +3122,132 @@ class TableCrafter {
   }
 
   /**
+   * Parse a search query string into a normalised AST.
+   *
+   * Supports: whitespace AND, OR (case-insensitive), -negation,
+   * "quoted phrase", field:value (value may be quoted).
+   *
+   * Comparison operators (>, <, =), regex literals, and wildcards are
+   * tracked for follow-up PRs in #59.
+   *
+   * AST node shapes:
+   *   { type: 'and',    children: Node[] }
+   *   { type: 'or',     children: Node[] }
+   *   { type: 'not',    child: Node }
+   *   { type: 'term',   value: string }
+   *   { type: 'phrase', value: string }
+   *   { type: 'field',  field: string, op: 'eq', value: string }
+   */
+  parseQuery(input) {
+    const tokens = this._tokenizeQuery(String(input == null ? '' : input));
+    const children = [];
+    let i = 0;
+    while (i < tokens.length) {
+      const tok = tokens[i];
+      if (tok.type === 'or') {
+        const prev = children.pop();
+        i++;
+        if (i >= tokens.length) {
+          if (prev) children.push(prev);
+          break;
+        }
+        const consumed = this._consumeQueryNode(tokens, i);
+        i = consumed.next;
+        const orNode = (prev && prev.type === 'or')
+          ? { type: 'or', children: [...prev.children, consumed.node] }
+          : { type: 'or', children: [prev || { type: 'term', value: '' }, consumed.node] };
+        children.push(orNode);
+      } else {
+        const consumed = this._consumeQueryNode(tokens, i);
+        i = consumed.next;
+        children.push(consumed.node);
+      }
+    }
+    return { type: 'and', children };
+  }
+
+  _consumeQueryNode(tokens, i) {
+    const tok = tokens[i];
+    if (tok.type === 'not') {
+      if (i + 1 >= tokens.length) {
+        return { node: { type: 'term', value: '' }, next: i + 1 };
+      }
+      const inner = this._consumeQueryNode(tokens, i + 1);
+      return { node: { type: 'not', child: inner.node }, next: inner.next };
+    }
+    if (tok.type === 'phrase') {
+      return { node: { type: 'phrase', value: tok.value }, next: i + 1 };
+    }
+    if (tok.type === 'field') {
+      return {
+        node: { type: 'field', field: tok.field, op: 'eq', value: tok.value },
+        next: i + 1
+      };
+    }
+    return { node: { type: 'term', value: tok.value }, next: i + 1 };
+  }
+
+  _tokenizeQuery(s) {
+    const tokens = [];
+    let i = 0;
+
+    const readQuoted = startIdx => {
+      const end = s.indexOf('"', startIdx + 1);
+      if (end === -1) return { value: s.slice(startIdx + 1), next: s.length };
+      return { value: s.slice(startIdx + 1, end), next: end + 1 };
+    };
+
+    while (i < s.length) {
+      const ch = s[i];
+
+      if (/\s/.test(ch)) { i++; continue; }
+
+      if (ch === '-' && i + 1 < s.length && !/\s/.test(s[i + 1])) {
+        tokens.push({ type: 'not' });
+        i++;
+        continue;
+      }
+
+      if (ch === '"') {
+        const q = readQuoted(i);
+        tokens.push({ type: 'phrase', value: q.value });
+        i = q.next;
+        continue;
+      }
+
+      const wordStart = i;
+      while (i < s.length && !/[\s":]/.test(s[i])) i++;
+      const word = s.slice(wordStart, i);
+
+      if (word.toUpperCase() === 'OR') {
+        tokens.push({ type: 'or' });
+        continue;
+      }
+
+      if (i < s.length && s[i] === ':') {
+        i++; // consume colon
+        let value = '';
+        if (i < s.length && s[i] === '"') {
+          const q = readQuoted(i);
+          value = q.value;
+          i = q.next;
+        } else {
+          const valueStart = i;
+          while (i < s.length && !/\s/.test(s[i])) i++;
+          value = s.slice(valueStart, i);
+        }
+        tokens.push({ type: 'field', field: word, value });
+        continue;
+      }
+
+      if (word.length > 0) {
+        tokens.push({ type: 'term', value: word });
+      }
+    }
+    return tokens;
+  }
+
+  /**
    * Set current user context
    */
   setCurrentUser(user) {
