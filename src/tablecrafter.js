@@ -118,6 +118,13 @@ class TableCrafter {
         messages: {},
         formats: {}
       },
+      // Conditional formatting configuration (foundation only — render-loop
+      // wiring, dataBar / colorScale / icon kinds, and aria-label parity
+      // are tracked in #51 follow-ups)
+      conditionalFormatting: {
+        enabled: false,
+        rules: []
+      },
       // Permission system configuration
       permissions: {
         enabled: false,
@@ -2915,6 +2922,97 @@ class TableCrafter {
       return document.documentElement.lang;
     }
     return 'en';
+  }
+
+  /**
+   * Conditional formatting — pure rule evaluator.
+   * Accepts either a function predicate `(value, row, ctx) => boolean` or a
+   * declarative `{ op, value }` predicate. Unknown ops resolve to `false`
+   * rather than throw, so a single bad rule cannot break the render.
+   */
+  evaluateRule(rule, value, row) {
+    if (!rule || rule.when == null) return false;
+
+    if (typeof rule.when === 'function') {
+      try {
+        return Boolean(rule.when(value, row, { table: this, field: rule.field }));
+      } catch (e) {
+        console.warn('TableCrafter: conditional-formatting predicate threw', e);
+        return false;
+      }
+    }
+
+    const { op, value: target } = rule.when;
+    switch (op) {
+      case 'gt':       return Number(value) > Number(target);
+      case 'lt':       return Number(value) < Number(target);
+      case 'gte':      return Number(value) >= Number(target);
+      case 'lte':      return Number(value) <= Number(target);
+      case 'eq':       return value === target;
+      case 'neq':      return value !== target;
+      case 'between': {
+        if (!Array.isArray(target) || target.length !== 2) return false;
+        const n = Number(value);
+        return n >= Number(target[0]) && n <= Number(target[1]);
+      }
+      case 'contains': return String(value ?? '').includes(String(target ?? ''));
+      case 'empty':    return value === null || value === undefined || value === '';
+      case 'regex': {
+        try {
+          return new RegExp(target).test(String(value ?? ''));
+        } catch (e) {
+          return false;
+        }
+      }
+      default:         return false;
+    }
+  }
+
+  /**
+   * Return the rules that apply to a given (field, value, row) tuple, sorted
+   * by descending priority (default 0). Wildcard rules (`field: '*'`) match
+   * every field. Returns [] when conditional formatting is disabled.
+   */
+  getMatchingRules(field, value, row) {
+    const cfg = this.config && this.config.conditionalFormatting;
+    if (!cfg || !cfg.enabled || !Array.isArray(cfg.rules)) return [];
+
+    const candidates = cfg.rules.filter(r => r.field === field || r.field === '*');
+    const matches = candidates.filter(r => this.evaluateRule(r, value, row));
+    return matches.slice().sort((a, b) => (b.priority || 0) - (a.priority || 0));
+  }
+
+  /**
+   * Append a conditional-formatting rule and re-render.
+   */
+  addRule(rule) {
+    if (!this.config.conditionalFormatting) {
+      this.config.conditionalFormatting = { enabled: true, rules: [] };
+    }
+    if (!Array.isArray(this.config.conditionalFormatting.rules)) {
+      this.config.conditionalFormatting.rules = [];
+    }
+    this.config.conditionalFormatting.rules.push(rule);
+    this.render();
+    return rule;
+  }
+
+  removeRule(id) {
+    const rules = this.config.conditionalFormatting && this.config.conditionalFormatting.rules;
+    if (!Array.isArray(rules)) return false;
+    const before = rules.length;
+    this.config.conditionalFormatting.rules = rules.filter(r => r.id !== id);
+    const removed = this.config.conditionalFormatting.rules.length < before;
+    if (removed) this.render();
+    return removed;
+  }
+
+  setRules(rules) {
+    if (!this.config.conditionalFormatting) {
+      this.config.conditionalFormatting = { enabled: true, rules: [] };
+    }
+    this.config.conditionalFormatting.rules = Array.isArray(rules) ? rules.slice() : [];
+    this.render();
   }
 
   /**
