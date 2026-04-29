@@ -2808,6 +2808,76 @@ class TableCrafter {
   }
 
   /**
+   * Parse JSON input into rows. Mirrors the parseCSV API:
+   * returns `{ rows, errors }` rather than throwing.
+   *
+   * Accepted shapes:
+   *   - top-level array of row objects: `[{...}, {...}]`
+   *   - envelope object with a `data` array: `{ data: [{...}] }`
+   *   - already-parsed JS array (skips JSON.parse)
+   *
+   * Non-object array entries are dropped with an error each so a partially
+   * malformed payload still yields the valid rows. Top-level shapes other
+   * than the two above (e.g. `{ foo: 'bar' }`) return rows: [] with one
+   * error.
+   */
+  parseJSON(input) {
+    if (input === null || input === undefined || input === '') {
+      return { rows: [], errors: [] };
+    }
+
+    let parsed;
+    if (typeof input === 'string') {
+      try {
+        parsed = JSON.parse(input);
+      } catch (e) {
+        return { rows: [], errors: [{ message: `json parse: ${e.message}` }] };
+      }
+    } else {
+      parsed = input;
+    }
+
+    let candidates;
+    if (Array.isArray(parsed)) {
+      candidates = parsed;
+    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.data)) {
+      candidates = parsed.data;
+    } else {
+      return {
+        rows: [],
+        errors: [{ message: 'json import: expected an array or { data: [...] } envelope' }]
+      };
+    }
+
+    const rows = [];
+    const errors = [];
+    for (let i = 0; i < candidates.length; i++) {
+      const entry = candidates[i];
+      if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+        rows.push(entry);
+      } else {
+        errors.push({ index: i, message: 'json import: row is not an object' });
+      }
+    }
+    return { rows, errors };
+  }
+
+  /**
+   * Parse + apply JSON. Same options shape as importCSV.
+   */
+  importJSON(input, options) {
+    const opts = options || {};
+    const result = this.parseJSON(input);
+    if (opts.append) {
+      this.data = (Array.isArray(this.data) ? this.data : []).concat(result.rows);
+    } else {
+      this.data = result.rows;
+    }
+    if (typeof this.render === 'function') this.render();
+    return result;
+  }
+
+  /**
    * Parse + apply CSV. Replaces `this.data` by default; pass
    * `{ append: true }` to extend instead. Returns the same shape as
    * `parseCSV` so callers can inspect errors after import.
