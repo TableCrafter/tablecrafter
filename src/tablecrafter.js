@@ -3460,6 +3460,56 @@ class TableCrafter {
     return tokens;
   }
 
+  computeVirtualWindow(args) {
+    const a = args || {};
+    const totalRows = Number.isFinite(a.totalRows) && a.totalRows > 0 ? Math.floor(a.totalRows) : 0;
+    const rowHeight = Number.isFinite(a.rowHeight) && a.rowHeight > 0 ? a.rowHeight : 40;
+    const viewportHeight = Number.isFinite(a.viewportHeight) && a.viewportHeight >= 0
+      ? a.viewportHeight
+      : 0;
+    const scrollTop = Number.isFinite(a.scrollTop) && a.scrollTop > 0 ? a.scrollTop : 0;
+    const overscan = Number.isFinite(a.overscan) && a.overscan >= 0 ? Math.floor(a.overscan) : 5;
+
+    if (totalRows === 0) {
+      return { startIndex: 0, endIndex: 0, topPadding: 0, bottomPadding: 0 };
+    }
+
+    const visibleCount = viewportHeight > 0 ? Math.ceil(viewportHeight / rowHeight) : 0;
+    const firstVisible = Math.floor(scrollTop / rowHeight);
+
+    let startIndex = firstVisible - overscan;
+    if (startIndex < 0) startIndex = 0;
+    if (startIndex > totalRows) startIndex = totalRows;
+
+    let endIndex = firstVisible + visibleCount + overscan;
+    if (endIndex > totalRows) endIndex = totalRows;
+    if (endIndex < startIndex) endIndex = startIndex;
+
+    return {
+      startIndex,
+      endIndex,
+      topPadding: startIndex * rowHeight,
+      bottomPadding: (totalRows - endIndex) * rowHeight
+    };
+  }
+
+  enableVirtualScroll(options) {
+    const opts = options || {};
+    this._virtualScroll = {
+      rowHeight: Number.isFinite(opts.rowHeight) && opts.rowHeight > 0 ? opts.rowHeight : 40,
+      viewportHeight: Number.isFinite(opts.viewportHeight) && opts.viewportHeight >= 0 ? opts.viewportHeight : 400,
+      overscan: Number.isFinite(opts.overscan) && opts.overscan >= 0 ? Math.floor(opts.overscan) : 5
+    };
+  }
+
+  disableVirtualScroll() {
+    this._virtualScroll = null;
+  }
+
+  isVirtualScrolling() {
+    return Boolean(this._virtualScroll);
+  }
+
   async bench(label, fn, options) {
     const opts = options || {};
     const runs = typeof opts.runs === 'number' ? opts.runs : 50;
