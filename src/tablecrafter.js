@@ -776,7 +776,7 @@ class TableCrafter {
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
 
-    this.config.columns.forEach(column => {
+    this.config.columns.filter(col => col.hidden !== true).forEach(column => {
       const th = document.createElement('th');
       th.setAttribute('scope', 'col');
       th.textContent = column.label;
@@ -846,7 +846,7 @@ class TableCrafter {
         const tr = document.createElement('tr');
         tr.dataset.rowIndex = actualRowIndex;
 
-        const columnPromises = this.config.columns.map(async (column) => {
+        const columnPromises = this.config.columns.filter(col => col.hidden !== true).map(async (column) => {
           const td = document.createElement('td');
 
           // Format lookup values
@@ -916,20 +916,21 @@ class TableCrafter {
   getVisibleFields(breakpoint) {
     const visibility = this.config.responsive.fieldVisibility || {};
     const breakpointConfig = visibility[breakpoint];
+    const cols = this.config.columns.filter(col => col.hidden !== true);
 
     if (!breakpointConfig) {
-      return this.config.columns;
+      return cols;
     }
 
     if (breakpointConfig.showFields) {
-      return this.config.columns.filter(col => breakpointConfig.showFields.includes(col.field));
+      return cols.filter(col => breakpointConfig.showFields.includes(col.field));
     }
 
     if (breakpointConfig.hideFields) {
-      return this.config.columns.filter(col => !breakpointConfig.hideFields.includes(col.field));
+      return cols.filter(col => !breakpointConfig.hideFields.includes(col.field));
     }
 
-    return this.config.columns;
+    return cols;
   }
 
   /**
@@ -3402,6 +3403,41 @@ class TableCrafter {
       }
     }
     return tokens;
+  }
+
+  setColumnVisibility(field, visible) {
+    const column = (this.config.columns || []).find(c => c.field === field);
+    if (!column) {
+      throw new Error(`TableCrafter: setColumnVisibility — unknown field "${field}"`);
+    }
+    column.hidden = !visible;
+    this.render();
+  }
+
+  setColumnOrder(fields) {
+    if (!Array.isArray(fields)) return;
+    const cols = this.config.columns || [];
+    const byField = new Map(cols.map(c => [c.field, c]));
+    const used = new Set();
+    const reordered = [];
+
+    for (const field of fields) {
+      const col = byField.get(field);
+      if (col && !used.has(field)) {
+        reordered.push(col);
+        used.add(field);
+      }
+    }
+    for (const col of cols) {
+      if (!used.has(col.field)) reordered.push(col);
+    }
+
+    this.config.columns = reordered;
+    this.render();
+  }
+
+  getVisibleColumns() {
+    return (this.config.columns || []).filter(col => col.hidden !== true).slice();
   }
 
   /**
