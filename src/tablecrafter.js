@@ -861,6 +861,13 @@ class TableCrafter {
           if (column.pinned === 'left') td.classList.add('tc-pinned-left');
           else if (column.pinned === 'right') td.classList.add('tc-pinned-right');
 
+          if (column.cellType === 'badge' || column.cellType === 'progress' || column.cellType === 'link') {
+            this._renderRichCell(td, column, row[column.field], row);
+            td.dataset.field = column.field;
+            tr.appendChild(td);
+            return;
+          }
+
           if (column.cellType === 'sparkline') {
             const svg = this.renderSparkline(row[column.field], column.sparkline);
             if (svg) td.appendChild(svg);
@@ -3436,6 +3443,72 @@ class TableCrafter {
       }
     }
     return tokens;
+  }
+
+  _renderRichCell(td, column, value, row) {
+    if (value === null || value === undefined) return false;
+
+    if (column.cellType === 'badge') {
+      const badge = document.createElement('span');
+      badge.classList.add('tc-badge');
+      const rawStatus = (column.badge && typeof column.badge.statusFor === 'function')
+        ? column.badge.statusFor(value, row)
+        : String(value).toLowerCase();
+      const status = typeof rawStatus === 'string' ? rawStatus : '';
+      if (/^[a-zA-Z0-9_-]+$/.test(status)) {
+        badge.classList.add(`tc-badge-${status}`);
+      }
+      badge.textContent = String(value);
+      td.appendChild(badge);
+      return true;
+    }
+
+    if (column.cellType === 'progress') {
+      const num = Number(value);
+      if (Number.isNaN(num)) return false;
+      const max = (column.progress && typeof column.progress.max === 'number') ? column.progress.max : 100;
+      let pct = max > 0 ? (num / max) * 100 : 0;
+      if (pct < 0) pct = 0;
+      if (pct > 100) pct = 100;
+      const wrap = document.createElement('div');
+      wrap.className = 'tc-progress';
+      const fill = document.createElement('div');
+      fill.className = 'tc-progress-fill';
+      fill.style.width = `${pct}%`;
+      wrap.appendChild(fill);
+      td.appendChild(wrap);
+      return true;
+    }
+
+    if (column.cellType === 'link') {
+      const href = (column.link && typeof column.link.hrefFor === 'function')
+        ? column.link.hrefFor(value, row)
+        : String(value);
+      const labelFrom = column.link && column.link.labelFrom;
+      const label = labelFrom ? row[labelFrom] : value;
+
+      if (!this._isSafeUrl(href)) {
+        const span = document.createElement('span');
+        span.textContent = String(value);
+        td.appendChild(span);
+        return true;
+      }
+      const a = document.createElement('a');
+      a.className = 'tc-link';
+      a.setAttribute('href', String(href));
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+      a.textContent = String(label);
+      td.appendChild(a);
+      return true;
+    }
+
+    return false;
+  }
+
+  _isSafeUrl(href) {
+    if (typeof href !== 'string' || !href) return false;
+    return /^(https?:|mailto:|tel:|\/|#|\?)/i.test(href);
   }
 
   getStats() {
