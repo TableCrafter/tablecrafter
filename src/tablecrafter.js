@@ -1211,6 +1211,11 @@ class TableCrafter {
       }
     }
 
+    // Plugin lifecycle: beforeEdit. A handler returning false cancels.
+    if (this._fireHook && this._fireHook('beforeEdit', { rowIndex, field, value: newValue }) === false) {
+      return;
+    }
+
     // Update data
     this.data[rowIndex][field] = newValue;
 
@@ -1235,6 +1240,11 @@ class TableCrafter {
         oldValue: oldValue,
         newValue: newValue
       });
+    }
+
+    // Plugin lifecycle: afterEdit. Return value is ignored.
+    if (this._fireHook) {
+      this._fireHook('afterEdit', { rowIndex, field, oldValue, newValue });
     }
 
     // Update display with formatted value
