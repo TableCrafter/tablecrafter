@@ -2743,15 +2743,32 @@ class TableCrafter {
       return null;
     }
 
-    // Resolve placeholders to numeric values up front so the parser only sees
-    // numbers, ops, parens, commas, and function names.
+    // Resolve placeholders, preserving type so string-functions like CONCAT /
+    // LENGTH / UPPER / LOWER can read text values directly. Arithmetic /
+    // comparison branches still coerce via Number(); a non-numeric value used
+    // there flows through to NaN and the outer guard turns it into null.
     const resolved = [];
     for (const tok of tokens) {
       if (tok.type === 'placeholder') {
         if (!row || !(tok.name in row)) return null;
-        const num = Number(row[tok.name]);
-        if (Number.isNaN(num)) return null;
-        resolved.push({ type: 'number', value: num });
+        const v = row[tok.name];
+        if (typeof v === 'number') {
+          resolved.push({ type: 'number', value: v });
+        } else if (typeof v === 'string') {
+          resolved.push({ type: 'string', value: v });
+        } else if (typeof v === 'boolean') {
+          resolved.push({ type: 'number', value: v ? 1 : 0 });
+        } else if (v === null || v === undefined) {
+          return null;
+        } else {
+          // Try numeric coercion first; otherwise fall back to string.
+          const num = Number(v);
+          if (!Number.isNaN(num)) {
+            resolved.push({ type: 'number', value: num });
+          } else {
+            resolved.push({ type: 'string', value: String(v) });
+          }
+        }
       } else {
         resolved.push(tok);
       }
@@ -2763,7 +2780,8 @@ class TableCrafter {
       warnOnce(ctx.error || 'parse error');
       return null;
     }
-    if (result === null || !Number.isFinite(result)) return null;
+    if (result === null) return null;
+    if (typeof result === 'number' && !Number.isFinite(result)) return null;
     return result;
   }
 
@@ -2827,6 +2845,10 @@ class TableCrafter {
     const tok = ctx.tokens[ctx.pos];
 
     if (tok.type === 'number') {
+      ctx.pos++;
+      return tok.value;
+    }
+    if (tok.type === 'string') {
       ctx.pos++;
       return tok.value;
     }
@@ -2894,6 +2916,17 @@ class TableCrafter {
       case 'MIN':   return args.length >= 1 ? Math.min(...args) : null;
       case 'MAX':   return args.length >= 1 ? Math.max(...args) : null;
       case 'IF':    return args.length === 3 ? (args[0] ? args[1] : args[2]) : null;
+      case 'CONCAT':
+        return args.map(a => a == null ? '' : String(a)).join('');
+      case 'LENGTH':
+        if (args.length !== 1) return null;
+        return String(args[0] == null ? '' : args[0]).length;
+      case 'UPPER':
+        if (args.length !== 1) return null;
+        return String(args[0] == null ? '' : args[0]).toUpperCase();
+      case 'LOWER':
+        if (args.length !== 1) return null;
+        return String(args[0] == null ? '' : args[0]).toLowerCase();
       default:      return null;
     }
   }
@@ -2938,6 +2971,14 @@ class TableCrafter {
         const name = s.slice(i + 1, end);
         if (!/^[a-zA-Z_][\w]*$/.test(name)) return null;
         tokens.push({ type: 'placeholder', name });
+        i = end + 1;
+        continue;
+      }
+      if (ch === '"' || ch === "'") {
+        const quote = ch;
+        const end = s.indexOf(quote, i + 1);
+        if (end === -1) return null;
+        tokens.push({ type: 'string', value: s.slice(i + 1, end) });
         i = end + 1;
         continue;
       }
