@@ -2772,8 +2772,13 @@ class TableCrafter {
       case 'not':
         return !this.evaluateQuery(node.child, row);
       case 'term': {
-        const needle = String(node.value || '').toLowerCase();
-        if (!needle) return true;
+        const raw = String(node.value || '');
+        if (!raw) return true;
+        const re = this._wildcardRegex(raw);
+        if (re) {
+          return Object.values(row).some(v => v != null && re.test(String(v)));
+        }
+        const needle = raw.toLowerCase();
         return Object.values(row).some(v => v != null && String(v).toLowerCase().includes(needle));
       }
       case 'phrase': {
@@ -2797,12 +2802,36 @@ class TableCrafter {
           if (op === 'gte') return cellNum >= valNum;
           if (op === 'lte') return cellNum <= valNum;
         }
+        const re = this._wildcardRegex(String(node.value || ''));
+        if (re) return re.test(String(cell));
         const haystack = String(cell).toLowerCase();
         const needle = String(node.value || '').toLowerCase();
         return haystack.includes(needle);
       }
       default:
         return true;
+    }
+  }
+
+  /**
+   * Build a case-insensitive anchored regex from a wildcard expression.
+   * `*` -> `.*`, `?` -> `.`, all other regex metacharacters are escaped.
+   * Returns null when the input contains no wildcard characters so the
+   * caller can fall back to a plain substring match.
+   */
+  _wildcardRegex(value) {
+    if (!/[*?]/.test(value)) return null;
+    let pattern = '^';
+    for (const ch of value) {
+      if (ch === '*') pattern += '.*';
+      else if (ch === '?') pattern += '.';
+      else pattern += ch.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+    }
+    pattern += '$';
+    try {
+      return new RegExp(pattern, 'i');
+    } catch (e) {
+      return null;
     }
   }
 
