@@ -372,9 +372,6 @@ class TableCrafter {
     if (this._loadController) {
       this._loadController.abort();
     }
-    this._loadController = new AbortController();
-    const signal = this._loadController.signal;
-
     this.isLoading = true;
     this.renderLoading();
 
