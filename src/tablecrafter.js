@@ -3491,6 +3491,63 @@ class TableCrafter {
       this.dropdowns = [];
     }
   }
+
+  /**
+   * Auto-instantiate TableCrafter on every `[data-tc-bootstrap]` element
+   * inside the supplied scope (or the whole document when no scope is given).
+   * The bootstrap config is read from each element's `data-tc-config`
+   * attribute as JSON.
+   *
+   * Idempotent: re-running over the same DOM returns the existing instance
+   * for already-bootstrapped elements rather than constructing a duplicate.
+   * Malformed config emits a single console.warn per element and is
+   * skipped — one bad embed cannot break a page with several tables.
+   *
+   * Returns Map<HTMLElement, TableCrafter>.
+   */
+  static bootstrap(scope) {
+    if (typeof document === 'undefined') return new Map();
+    if (!TableCrafter._bootstrapped) TableCrafter._bootstrapped = new WeakMap();
+
+    let root = document;
+    if (typeof scope === 'string' && scope) {
+      root = document.querySelector(scope);
+      if (!root) return new Map();
+    } else if (scope && scope.querySelectorAll) {
+      root = scope;
+    }
+
+    const elements = root.querySelectorAll('[data-tc-bootstrap]');
+    const map = new Map();
+    for (const el of elements) {
+      // Idempotency: already bootstrapped → return the existing instance.
+      const prior = TableCrafter._bootstrapped.get(el);
+      if (prior) {
+        map.set(el, prior);
+        continue;
+      }
+
+      const raw = el.getAttribute('data-tc-config') || '';
+      let cfg = {};
+      if (raw) {
+        try {
+          cfg = JSON.parse(raw);
+        } catch (e) {
+          console.warn(`TableCrafter.bootstrap: invalid data-tc-config on element`, el);
+          continue;
+        }
+      }
+
+      try {
+        const instance = new TableCrafter(el, cfg);
+        TableCrafter._bootstrapped.set(el, instance);
+        map.set(el, instance);
+      } catch (e) {
+        console.warn('TableCrafter.bootstrap: failed to instantiate', e);
+      }
+    }
+    return map;
+  }
 }
 
 // Export for different module systems
