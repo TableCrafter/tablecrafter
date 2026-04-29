@@ -868,6 +868,7 @@ class TableCrafter {
           if (column.cellType === 'badge' || column.cellType === 'progress' || column.cellType === 'link') {
             this._renderRichCell(td, column, row[column.field], row);
             td.dataset.field = column.field;
+            this.applyConditionalFormatting(td, column.field, row[column.field], row);
             tr.appendChild(td);
             return;
           }
@@ -876,6 +877,7 @@ class TableCrafter {
             const svg = this.renderSparkline(row[column.field], column.sparkline);
             if (svg) td.appendChild(svg);
             td.dataset.field = column.field;
+            this.applyConditionalFormatting(td, column.field, row[column.field], row);
             tr.appendChild(td);
             return;
           }
@@ -907,6 +909,7 @@ class TableCrafter {
              }
           }
           td.dataset.field = column.field;
+          this.applyConditionalFormatting(td, column.field, row[column.field], row);
 
           // Make cell editable if configured and user has permission
           if (this.config.editable && column.editable && this.hasPermission('edit', row)) {
@@ -932,8 +935,7 @@ class TableCrafter {
           tr.appendChild(td);
         });
 
-        // We don't necessarily need to await them all here since they append to tr
-        // but it's cleaner to handle them.
+        this._applyRowConditionalFormatting(tr, row);
         tbody.appendChild(tr);
       });
     }
@@ -3190,6 +3192,114 @@ class TableCrafter {
     }
     this.config.conditionalFormatting.rules = Array.isArray(rules) ? rules.slice() : [];
     this.render();
+  }
+
+  applyConditionalFormatting(td, field, value, row) {
+    const rules = this.getMatchingRules(field, value, row).filter(r => r.scope !== 'row');
+    if (!rules.length) return;
+    const mergedStyle = {};
+    const mergedClasses = new Set();
+    for (const rule of [...rules].reverse()) {
+      if (rule.style) Object.assign(mergedStyle, rule.style);
+      const cls = rule.className;
+      if (cls) (Array.isArray(cls) ? cls : [cls]).forEach(c => mergedClasses.add(c));
+    }
+    Object.assign(td.style, mergedStyle);
+    mergedClasses.forEach(c => td.classList.add(c));
+    rules.filter(r => r.kind).forEach(r => this._applyConditionalKind(td, r, value));
+  }
+
+  _applyRowConditionalFormatting(tr, row) {
+    const cfg = this.config && this.config.conditionalFormatting;
+    if (!cfg || !cfg.enabled || !Array.isArray(cfg.rules)) return;
+    const rowRules = cfg.rules.filter(r => r.scope === 'row');
+    if (!rowRules.length) return;
+    const matching = rowRules.filter(r => {
+      const val = r.field === '*' ? undefined : row[r.field];
+      return this.evaluateRule(r, val, row);
+    }).sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    if (!matching.length) return;
+    const mergedStyle = {};
+    const mergedClasses = new Set();
+    for (const rule of [...matching].reverse()) {
+      if (rule.style) Object.assign(mergedStyle, rule.style);
+      const cls = rule.className;
+      if (cls) (Array.isArray(cls) ? cls : [cls]).forEach(c => mergedClasses.add(c));
+    }
+    Object.assign(tr.style, mergedStyle);
+    mergedClasses.forEach(c => tr.classList.add(c));
+  }
+
+  _applyConditionalKind(td, rule, value) {
+    const kind = rule.kind;
+    if (kind === 'icon') {
+      const icon = rule.icon || '•';
+      const span = document.createElement('span');
+      span.textContent = icon + ' ';
+      span.className = 'tc-cf-icon';
+      td.insertBefore(span, td.firstChild);
+      return;
+    }
+    const numVal = parseFloat(value);
+    if (isNaN(numVal)) return;
+    if (kind === 'dataBar') {
+      const min = rule.min != null ? rule.min : this._cfColumnMin(rule.field);
+      const max = rule.max != null ? rule.max : this._cfColumnMax(rule.field);
+      const range = max - min;
+      const pct = range === 0 ? 0 : Math.min(100, Math.max(0, ((numVal - min) / range) * 100));
+      const color = rule.color || '#4caf50';
+      const bar = document.createElement('div');
+      bar.className = 'tc-databar';
+      bar.style.cssText = `width:${pct}%;background:${color};height:4px;margin-top:2px;border-radius:2px`;
+      td.appendChild(bar);
+      return;
+    }
+    if (kind === 'colorScale') {
+      const min = rule.min != null ? rule.min : this._cfColumnMin(rule.field);
+      const max = rule.max != null ? rule.max : this._cfColumnMax(rule.field);
+      const minColor = rule.minColor || '#ff4444';
+      const maxColor = rule.maxColor || '#44bb44';
+      const midColor = rule.midColor || null;
+      const range = max - min;
+      const t = range === 0 ? 0.5 : Math.min(1, Math.max(0, (numVal - min) / range));
+      let bg;
+      if (midColor) {
+        const mid = 0.5;
+        bg = t < mid
+          ? this._interpolateColor(minColor, midColor, t / mid)
+          : this._interpolateColor(midColor, maxColor, (t - mid) / (1 - mid));
+      } else {
+        bg = this._interpolateColor(minColor, maxColor, t);
+      }
+      td.style.backgroundColor = bg;
+      const ariaField = rule.field || td.dataset.field || '';
+      if (!td.hasAttribute('aria-label')) {
+        td.setAttribute('aria-label', `${ariaField}: ${value}`);
+      }
+    }
+  }
+
+  _cfColumnMin(field) {
+    const vals = (this.data || []).map(r => parseFloat(r[field])).filter(v => !isNaN(v));
+    return vals.length ? Math.min(...vals) : 0;
+  }
+
+  _cfColumnMax(field) {
+    const vals = (this.data || []).map(r => parseFloat(r[field])).filter(v => !isNaN(v));
+    return vals.length ? Math.max(...vals) : 1;
+  }
+
+  _interpolateColor(c1, c2, t) {
+    const parse = hex => {
+      const n = parseInt(hex.replace('#', ''), 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    };
+    const [r1, g1, b1] = parse(c1);
+    const [r2, g2, b2] = parse(c2);
+    const r = Math.round(r1 + (r2 - r1) * t);
+    const g = Math.round(g1 + (g2 - g1) * t);
+    const b = Math.round(b1 + (b2 - b1) * t);
+    return `rgb(${r},${g},${b})`;
   }
 
   /**

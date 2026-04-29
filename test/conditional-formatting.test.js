@@ -1,15 +1,4 @@
-/**
- * Conditional formatting foundation (slice of #51).
- *
- * This PR lands only:
- *   - the config.conditionalFormatting surface
- *   - addRule / removeRule / setRules public API
- *   - evaluateRule(rule, value, row) pure evaluator (function + core ops)
- *   - getMatchingRules(field, value, row) lookup helper
- *
- * Render-loop wiring (className / style / dataBar / colorScale / aria-label)
- * is intentionally deferred to follow-up PRs and remains tracked in #51.
- */
+// Conditional formatting — evaluator, API, and render-loop wiring (#51)
 
 const TableCrafter = require('../src/tablecrafter');
 
@@ -139,5 +128,124 @@ describe('Conditional formatting: rule state API', () => {
 
     expect(matches.map(r => r.id).sort()).toEqual(['specific', 'wildcard']);
     expect(otherField.map(r => r.id)).toEqual(['wildcard']);
+  });
+});
+
+// ── Render-loop wiring ────────────────────────────────────────────────────────
+
+function rendered(cfg = {}) {
+  document.body.innerHTML = '<div id="t"></div>';
+  const t = new (require('../src/tablecrafter'))('#t', {
+    columns: [{ field: 'score', label: 'Score' }, { field: 'name', label: 'Name' }],
+    data: [{ score: 10, name: 'Alpha' }, { score: 50, name: 'Beta' }, { score: 90, name: 'Gamma' }],
+    ...cfg
+  });
+  t.render();
+  return t;
+}
+
+describe('Conditional formatting: render-loop wiring', () => {
+  test('disabled by default — no extra classes on cells', () => {
+    const t = rendered();
+    const tds = document.querySelectorAll('td[data-field="score"]');
+    tds.forEach(td => expect(td.className).toBe(''));
+  });
+
+  test('className applied to matching cells', () => {
+    const t = rendered({
+      conditionalFormatting: {
+        enabled: true,
+        rules: [{ id: 'hi', field: 'score', when: { op: 'gt', value: 80 }, className: 'tc-high' }]
+      }
+    });
+    const tds = [...document.querySelectorAll('td[data-field="score"]')];
+    const withClass = tds.filter(td => td.classList.contains('tc-high'));
+    expect(withClass).toHaveLength(1); // only Gamma (90)
+  });
+
+  test('style applied to matching cells', () => {
+    const t = rendered({
+      conditionalFormatting: {
+        enabled: true,
+        rules: [{ id: 'r', field: 'score', when: { op: 'lt', value: 20 }, style: { color: 'red' } }]
+      }
+    });
+    const tds = [...document.querySelectorAll('td[data-field="score"]')];
+    const styled = tds.filter(td => td.style.color === 'red');
+    expect(styled).toHaveLength(1); // only Alpha (10)
+  });
+
+  test('higher priority rule wins on conflicting style props', () => {
+    const t = rendered({
+      conditionalFormatting: {
+        enabled: true,
+        rules: [
+          { id: 'lo', field: 'score', when: () => true, style: { color: 'blue' }, priority: 0 },
+          { id: 'hi', field: 'score', when: { op: 'gt', value: 80 }, style: { color: 'red' }, priority: 5 }
+        ]
+      }
+    });
+    const tds = [...document.querySelectorAll('td[data-field="score"]')];
+    const gamma = tds[2]; // Gamma = 90, matches both
+    expect(gamma.style.color).toBe('red'); // priority 5 wins
+    const alpha = tds[0]; // Alpha = 10, only 'lo' matches
+    expect(alpha.style.color).toBe('blue');
+  });
+
+  test('scope:row applies className to <tr>', () => {
+    const t = rendered({
+      conditionalFormatting: {
+        enabled: true,
+        rules: [{ id: 'row', field: 'score', when: { op: 'gt', value: 80 }, className: 'tc-row-hi', scope: 'row' }]
+      }
+    });
+    const rows = [...document.querySelectorAll('tr[data-row-index]')];
+    const highlighted = rows.filter(tr => tr.classList.contains('tc-row-hi'));
+    expect(highlighted).toHaveLength(1); // Gamma row
+  });
+
+  test('kind:icon prepends icon span to matching cell', () => {
+    const t = rendered({
+      conditionalFormatting: {
+        enabled: true,
+        rules: [{ id: 'ico', field: 'score', when: { op: 'gt', value: 80 }, kind: 'icon', icon: '✓' }]
+      }
+    });
+    const tds = [...document.querySelectorAll('td[data-field="score"]')];
+    const gamma = tds[2];
+    expect(gamma.querySelector('.tc-cf-icon')).not.toBeNull();
+    expect(gamma.querySelector('.tc-cf-icon').textContent).toMatch('✓');
+  });
+
+  test('kind:dataBar appends bar element with correct approximate width', () => {
+    const t = rendered({
+      conditionalFormatting: {
+        enabled: true,
+        rules: [{ id: 'bar', field: 'score', kind: 'dataBar', when: () => true, min: 0, max: 100 }]
+      }
+    });
+    const tds = [...document.querySelectorAll('td[data-field="score"]')];
+    // Beta = 50, should be ~50% wide
+    const betaBar = tds[1].querySelector('.tc-databar');
+    expect(betaBar).not.toBeNull();
+    expect(betaBar.style.width).toBe('50%');
+  });
+
+  test('kind:colorScale sets background-color and aria-label on matching cell', () => {
+    const t = rendered({
+      conditionalFormatting: {
+        enabled: true,
+        rules: [{
+          id: 'scale', field: 'score', kind: 'colorScale', when: () => true,
+          min: 0, max: 100, minColor: '#ff0000', maxColor: '#00ff00'
+        }]
+      }
+    });
+    const tds = [...document.querySelectorAll('td[data-field="score"]')];
+    // All three cells should have background-color set
+    tds.forEach(td => expect(td.style.backgroundColor).toBeTruthy());
+    // Gamma (90) should be close to maxColor (green)
+    const gamma = tds[2];
+    expect(gamma.getAttribute('aria-label')).toMatch('score');
   });
 });
