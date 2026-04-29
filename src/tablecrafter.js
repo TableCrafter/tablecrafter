@@ -910,6 +910,21 @@ class TableCrafter {
             td.addEventListener('click', (e) => this.startEdit(e, actualRowIndex, column.field));
           }
 
+          if (this._selection) {
+            const sel = this._selection;
+            const allFields = (this.config.columns || []).map(c => c.field);
+            const startCol = allFields.indexOf(sel.startCol);
+            const endCol = allFields.indexOf(sel.endCol);
+            const colIdx = allFields.indexOf(column.field);
+            if (actualRowIndex >= sel.startRow && actualRowIndex <= sel.endRow
+                && colIdx >= startCol && colIdx <= endCol) {
+              td.classList.add('tc-selected');
+              if (actualRowIndex === sel.anchor.row && column.field === sel.anchor.field) {
+                td.classList.add('tc-selected-anchor');
+              }
+            }
+          }
+
           tr.appendChild(td);
         });
 
@@ -3443,6 +3458,63 @@ class TableCrafter {
       }
     }
     return tokens;
+  }
+
+  selectRange(anchor, focus) {
+    const fields = (this.config.columns || []).map(c => c.field);
+    const aIdx = fields.indexOf(anchor && anchor.field);
+    const fIdx = fields.indexOf(focus && focus.field);
+    if (aIdx === -1 || fIdx === -1) return;
+
+    const startRow = Math.min(anchor.row, focus.row);
+    const endRow = Math.max(anchor.row, focus.row);
+    const startColIdx = Math.min(aIdx, fIdx);
+    const endColIdx = Math.max(aIdx, fIdx);
+
+    this._selection = {
+      startRow,
+      endRow,
+      startCol: fields[startColIdx],
+      endCol: fields[endColIdx],
+      anchor: { row: anchor.row, field: anchor.field },
+      focus: { row: focus.row, field: focus.field }
+    };
+    this.render();
+  }
+
+  getSelection() {
+    if (!this._selection) return null;
+    return {
+      startRow: this._selection.startRow,
+      endRow: this._selection.endRow,
+      startCol: this._selection.startCol,
+      endCol: this._selection.endCol,
+      anchor: { ...this._selection.anchor },
+      focus: { ...this._selection.focus }
+    };
+  }
+
+  clearSelection() {
+    this._selection = null;
+    this.render();
+  }
+
+  copySelectionAsTSV() {
+    if (!this._selection) return '';
+    const sel = this._selection;
+    const fields = (this.config.columns || []).map(c => c.field);
+    const startColIdx = fields.indexOf(sel.startCol);
+    const endColIdx = fields.indexOf(sel.endCol);
+    if (startColIdx === -1 || endColIdx === -1) return '';
+
+    const cols = fields.slice(startColIdx, endColIdx + 1);
+    const lines = [];
+    for (let r = sel.startRow; r <= sel.endRow; r++) {
+      const row = this.data && this.data[r];
+      if (!row) continue;
+      lines.push(cols.map(f => row[f] != null ? String(row[f]) : '').join('\t'));
+    }
+    return lines.join('\n');
   }
 
   addColumn(column, options) {
