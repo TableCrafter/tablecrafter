@@ -3434,19 +3434,44 @@ class TableCrafter {
     if (!this.config.validation || !this.config.validation.enabled) {
       return { isValid: true, errors: {} };
     }
+    const rowRules = Array.isArray(this.config.validation.rowRules)
+      ? this.config.validation.rowRules
+      : [];
+
     const errors = {};
     let isValid = true;
     for (let rowIndex = 0; rowIndex < this.data.length; rowIndex++) {
       const row = this.data[rowIndex];
       const rowErrors = {};
       let rowValid = true;
+
+      // Per-field rules first.
       for (const column of this.config.columns || []) {
         const result = this.validateField(column.field, row[column.field], row);
         if (result && !result.isValid) {
-          rowErrors[column.field] = result.errors;
+          rowErrors[column.field] = (rowErrors[column.field] || []).concat(result.errors);
           rowValid = false;
         }
       }
+
+      // Cross-field row rules. Errors append to per-field rule errors so
+      // both error types are visible on the same cell when both fire.
+      for (const rule of rowRules) {
+        let produced = [];
+        try {
+          produced = rule({ row, rowIndex }) || [];
+        } catch (e) {
+          console.warn('TableCrafter validation: rowRule threw', e);
+          continue;
+        }
+        if (!Array.isArray(produced)) continue;
+        for (const entry of produced) {
+          if (!entry || !entry.field || typeof entry.message !== 'string') continue;
+          rowErrors[entry.field] = (rowErrors[entry.field] || []).concat([entry.message]);
+          rowValid = false;
+        }
+      }
+
       if (!rowValid) {
         errors[rowIndex] = rowErrors;
         isValid = false;
