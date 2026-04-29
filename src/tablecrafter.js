@@ -3491,6 +3491,43 @@ class TableCrafter {
       this.dropdowns = [];
     }
   }
+
+  /**
+   * Read-only probe of the runtime's Web Platform features. Consumers can
+   * pair this with `minimumBrowserSupportNotice()` to render a graceful
+   * "your browser is too old" banner when `requiredFeaturesAvailable` is
+   * `false`. Never mutates global state and never throws — every probe is
+   * wrapped so a missing `CSS` / `ResizeObserver` / etc. is just `false`.
+   */
+  static getBrowserSupport() {
+    const probe = (fn) => { try { return Boolean(fn()); } catch (_) { return false; } };
+
+    const intl = probe(() => typeof Intl !== 'undefined' && typeof Intl.NumberFormat === 'function' && typeof Intl.DateTimeFormat === 'function');
+    const intlPluralRules = probe(() => typeof Intl !== 'undefined' && typeof Intl.PluralRules === 'function');
+    const resizeObserver = probe(() => typeof ResizeObserver !== 'undefined');
+    const performanceNow = probe(() => typeof performance !== 'undefined' && typeof performance.now === 'function');
+    const svgInHtml = probe(() => typeof SVGElement !== 'undefined' && typeof document !== 'undefined' && typeof document.createElementNS === 'function');
+    const abortController = probe(() => typeof AbortController !== 'undefined');
+    const cssCustomProperties = probe(() => typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('--x', '0'));
+
+    // Required features: the bare minimum the engine relies on.
+    const requiredFeaturesAvailable = intl && performanceNow && abortController;
+
+    return {
+      intl,
+      intlPluralRules,
+      resizeObserver,
+      performanceNow,
+      svgInHtml,
+      abortController,
+      cssCustomProperties,
+      requiredFeaturesAvailable
+    };
+  }
+
+  static minimumBrowserSupportNotice() {
+    return 'TableCrafter requires Chrome 88+, Firefox 89+, Safari 15+, or Edge 88+. Older browsers may render the table but will be missing internationalisation, abortable loads, and high-resolution timing.';
+  }
 }
 
 // Export for different module systems
