@@ -621,6 +621,18 @@ class TableCrafter {
       this.container.appendChild(wrapper);
     }
 
+    // i18n: apply dir="rtl" + tc-rtl class when the active locale resolves
+    // to an RTL language. Strip them otherwise so a setLocale flip cleans up.
+    if (typeof this.isRTL === 'function') {
+      if (this.isRTL()) {
+        wrapper.setAttribute('dir', 'rtl');
+        wrapper.classList.add('tc-rtl');
+      } else {
+        wrapper.removeAttribute('dir');
+        wrapper.classList.remove('tc-rtl');
+      }
+    }
+
     // Add global search if enabled
     if (this.config.globalSearch) {
       const searchContainer = this.renderGlobalSearch();
@@ -2786,6 +2798,20 @@ class TableCrafter {
     if (this.config.i18n.locale === locale) return;
     this.config.i18n.locale = locale;
     this.render();
+  }
+
+  /**
+   * True when the active locale is an RTL language. Driven by the language
+   * subtag (the part before the first '-'), so 'ar', 'ar-EG', and 'ARA' all
+   * resolve to true. Recognises ar / arc / dv / fa / ha / he / khw / ks /
+   * ku / ps / sd / ur / uz_AL / yi.
+   */
+  isRTL() {
+    const locale = this._resolveLocale();
+    if (!locale) return false;
+    const lang = String(locale).toLowerCase().split(/[-_]/)[0];
+    const rtlLangs = new Set(['ar', 'arc', 'dv', 'fa', 'ha', 'he', 'khw', 'ks', 'ku', 'ps', 'sd', 'ur', 'yi']);
+    return rtlLangs.has(lang);
   }
 
   /**
