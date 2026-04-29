@@ -792,6 +792,16 @@ class TableCrafter {
             return;
           }
 
+          // Bars cell: same contract as sparkline but produces an SVG
+          // column-chart of <rect> bars instead of a polyline.
+          if (column.cellType === 'bars') {
+            const svg = this.renderBars(row[column.field], column.bars);
+            if (svg) td.appendChild(svg);
+            td.dataset.field = column.field;
+            tr.appendChild(td);
+            return;
+          }
+
           // Format lookup values
           let displayValue = row[column.field];
 
@@ -2715,6 +2725,56 @@ class TableCrafter {
   /**
    * Permission System
    */
+
+  /**
+   * Render an inline SVG column-bar chart from a values array. Returns the
+   * <svg> element or null when the input is empty / non-array / lacks any
+   * numeric values. Bars share the sparkline's dependency-free /
+   * consumer-inserts-into-DOM contract.
+   */
+  renderBars(values, options) {
+    if (!Array.isArray(values) || values.length === 0) return null;
+    const numeric = values.filter(v => typeof v === 'number' && Number.isFinite(v));
+    if (numeric.length === 0) return null;
+
+    const opts = options || {};
+    const width = typeof opts.width === 'number' ? opts.width : 80;
+    const height = typeof opts.height === 'number' ? opts.height : 24;
+    const gap = typeof opts.gap === 'number' ? opts.gap : 1;
+    const fill = typeof opts.fill === 'string' ? opts.fill : 'currentColor';
+
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'tc-bars');
+    svg.setAttribute('width', String(width));
+    svg.setAttribute('height', String(height));
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.setAttribute('preserveAspectRatio', 'none');
+
+    const n = numeric.length;
+    const max = Math.max.apply(null, numeric);
+    const totalGap = gap * (n - 1);
+    const barWidth = (width - totalGap) / n;
+
+    for (let i = 0; i < n; i++) {
+      const v = numeric[i];
+      // Scale 0 -> max so bars anchor visually at the baseline. All-zero
+      // series render a flat row of zero-height bars rather than NaN.
+      const ratio = max === 0 ? 0 : v / max;
+      const h = ratio * height;
+      const x = i * (barWidth + gap);
+      const y = height - h;
+
+      const rect = document.createElementNS(ns, 'rect');
+      rect.setAttribute('x', String(x));
+      rect.setAttribute('y', String(y));
+      rect.setAttribute('width', String(barWidth));
+      rect.setAttribute('height', String(h));
+      rect.setAttribute('fill', fill);
+      svg.appendChild(rect);
+    }
+    return svg;
+  }
 
   /**
    * Render an inline SVG sparkline for a values array. Returns the <svg>
