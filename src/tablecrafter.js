@@ -62,6 +62,8 @@ class TableCrafter {
           url: 'Please enter a valid URL',
           oneOf: 'Value must be one of {allowed}',
           notOneOf: 'Value is not allowed',
+          phone: 'Please enter a valid phone number',
+          unique: 'Value must be unique',
           minLength: 'Minimum length is {min} characters',
           maxLength: 'Maximum length is {max} characters',
           min: 'Minimum value is {min}',
@@ -3574,7 +3576,7 @@ class TableCrafter {
     }
 
     // Skip format-style validations when value is empty.
-    // Required errors (collected above) are returned as-is; non-required+empty resolves clean.
+    // Required errors collected above are returned as-is; non-required+empty resolves clean.
     if (value === null || value === undefined || value === '') {
       return {
         isValid: errors.length === 0,
@@ -3626,6 +3628,35 @@ class TableCrafter {
     }
     if (Array.isArray(rules.notOneOf) && rules.notOneOf.includes(value)) {
       errors.push(this.getValidationMessage('notOneOf', rules));
+    }
+
+    // Phone validation (E.164 by default; "permissive" for human-formatted)
+    if (rules.phone) {
+      const variant = rules.phone === 'permissive' ? 'permissive' : 'E.164';
+      let ok;
+      if (variant === 'permissive') {
+        // Strip separators, then require 7-15 digits with optional leading +.
+        const digits = String(value).replace(/[\s().+\-]/g, '');
+        ok = /^\d{7,15}$/.test(digits);
+      } else {
+        // E.164: optional +, leading non-zero digit, total 2-15 digits.
+        ok = /^\+?[1-9]\d{1,14}$/.test(String(value));
+      }
+      if (!ok) {
+        errors.push(this.getValidationMessage('phone', rules));
+      }
+    }
+
+    // Unique validation (within this.data, excluding the row being edited)
+    if (rules.unique) {
+      const opts = typeof rules.unique === 'object' ? rules.unique : {};
+      const ci = opts.caseInsensitive === true;
+      const norm = v => (ci && typeof v === 'string') ? v.toLowerCase() : v;
+      const target = norm(value);
+      const dupe = this.data.some(other => other !== rowData && norm(other[field]) === target);
+      if (dupe) {
+        errors.push(this.getValidationMessage('unique', rules));
+      }
     }
 
     // Pattern validation
