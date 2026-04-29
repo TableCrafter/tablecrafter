@@ -2790,6 +2790,25 @@ class TableCrafter {
         const cell = row[node.field];
         if (cell === undefined || cell === null) return false;
         const op = node.op || 'eq';
+        if (op === 'regex') {
+          const key = `${node.value}|${node.flags || ''}`;
+          if (!this._regexCache) this._regexCache = new Map();
+          if (!this._badRegexWarned) this._badRegexWarned = new Set();
+          let re = this._regexCache.get(key);
+          if (!re) {
+            try {
+              re = new RegExp(node.value, node.flags || '');
+              this._regexCache.set(key, re);
+            } catch (e) {
+              if (!this._badRegexWarned.has(key)) {
+                this._badRegexWarned.add(key);
+                console.warn(`TableCrafter search: invalid regex /${node.value}/${node.flags || ''}`);
+              }
+              return false;
+            }
+          }
+          return re.test(String(cell));
+        }
         if (op === 'eq_strict') {
           return String(cell) === String(node.value);
         }
@@ -2864,10 +2883,9 @@ class TableCrafter {
       return { node: { type: 'phrase', value: tok.value }, next: i + 1 };
     }
     if (tok.type === 'field') {
-      return {
-        node: { type: 'field', field: tok.field, op: tok.op || 'eq', value: tok.value },
-        next: i + 1
-      };
+      const node = { type: 'field', field: tok.field, op: tok.op || 'eq', value: tok.value };
+      if (tok.op === 'regex') node.flags = tok.flags || '';
+      return { node, next: i + 1 };
     }
     return { node: { type: 'term', value: tok.value }, next: i + 1 };
   }
@@ -2911,6 +2929,28 @@ class TableCrafter {
 
       if (i < s.length && s[i] === ':') {
         i++; // consume colon
+
+        // Regex literal: /pattern/flags
+        if (s[i] === '/') {
+          const patternStart = i + 1;
+          let p = patternStart;
+          while (p < s.length && s[p] !== '/') {
+            if (s[p] === '\\' && p + 1 < s.length) p += 2; // skip escaped char
+            else p++;
+          }
+          const pattern = s.slice(patternStart, p);
+          let flags = '';
+          if (p < s.length && s[p] === '/') {
+            p++; // consume closing slash
+            const flagsStart = p;
+            while (p < s.length && /[a-z]/i.test(s[p])) p++;
+            flags = s.slice(flagsStart, p);
+          }
+          i = p;
+          tokens.push({ type: 'field', field: word, op: 'regex', value: pattern, flags });
+          continue;
+        }
+
         let op = 'eq';
         if (s[i] === '>' && s[i + 1] === '=') { op = 'gte'; i += 2; }
         else if (s[i] === '<' && s[i + 1] === '=') { op = 'lte'; i += 2; }
