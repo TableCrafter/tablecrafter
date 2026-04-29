@@ -2909,8 +2909,27 @@ class TableCrafter {
       template = key;
     }
 
+    // Pluralisation: if the catalogue entry is a {one, other, few, ...} object
+    // and vars.count is set, pick the matching form via Intl.PluralRules.
+    if (template && typeof template === 'object' && vars && typeof vars.count === 'number') {
+      const locale = this._resolveLocale();
+      let form = 'other';
+      try {
+        form = new Intl.PluralRules(locale).select(vars.count);
+      } catch (e) {
+        // Locale unsupported by Intl.PluralRules — keep 'other'.
+      }
+      if (Object.prototype.hasOwnProperty.call(template, form)) {
+        template = template[form];
+      } else if (Object.prototype.hasOwnProperty.call(template, 'other')) {
+        template = template.other;
+      } else {
+        template = key; // No usable plural form — fall back to the key.
+      }
+    }
+
     if (typeof template !== 'string' || !vars) {
-      return template;
+      return typeof template === 'string' ? template : key;
     }
     return template.replace(/\{(\w+)\}/g, (m, name) => {
       return Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : m;
@@ -2927,6 +2946,7 @@ class TableCrafter {
   }
 
   /**
+<<<<<<< HEAD
    * Conditional formatting — pure rule evaluator.
    * Accepts either a function predicate `(value, row, ctx) => boolean` or a
    * declarative `{ op, value }` predicate. Unknown ops resolve to `false`
@@ -3015,6 +3035,31 @@ class TableCrafter {
     }
     this.config.conditionalFormatting.rules = Array.isArray(rules) ? rules.slice() : [];
     this.render();
+  }
+
+  /**
+   * Switch the active locale and re-render. No-op (no render) when the locale
+   * is already current — avoids needless DOM rebuilds.
+   */
+  setLocale(locale) {
+    if (!this.config) this.config = {};
+    if (!this.config.i18n) this.config.i18n = { fallbackLocale: 'en', messages: {} };
+    if (this.config.i18n.locale === locale) return;
+    this.config.i18n.locale = locale;
+    this.render();
+  }
+
+  /**
+   * Merge translations into the catalogue at runtime. Existing keys for the
+   * given locale are overwritten by the supplied messages; new locales are
+   * created on demand.
+   */
+  addMessages(locale, messages) {
+    if (!this.config) this.config = {};
+    if (!this.config.i18n) this.config.i18n = { fallbackLocale: 'en', messages: {} };
+    if (!this.config.i18n.messages) this.config.i18n.messages = {};
+    const bucket = this.config.i18n.messages[locale] || {};
+    this.config.i18n.messages[locale] = Object.assign(bucket, messages || {});
   }
 
   /**
