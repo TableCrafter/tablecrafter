@@ -5,17 +5,20 @@
   "main": "dist/tablecrafter.cjs.js",
   "module": "dist/tablecrafter.esm.mjs",
   "unpkg": "dist/tablecrafter.umd.min.js",
+  "types": "src/tablecrafter.d.ts",
   "exports": {
     ".": {
       "import": "./dist/tablecrafter.esm.mjs",
-      "require": "./dist/tablecrafter.cjs.js"
+      "require": "./dist/tablecrafter.cjs.js",
+      "types": "./src/tablecrafter.d.ts"
     },
     "./dist/tablecrafter.css": "./dist/tablecrafter.css"
   },
   "files": [
     "dist",
     "src/tablecrafter.js",
-    "src/tablecrafter.css"
+    "src/tablecrafter.css",
+    "src/tablecrafter.d.ts"
   ],
   "sideEffects": false,
   "scripts": {
