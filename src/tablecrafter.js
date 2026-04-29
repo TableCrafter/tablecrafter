@@ -2040,6 +2040,55 @@ class TableCrafter {
   }
 
   /**
+   * Export data to JSON. Output is the array of rows as objects, restricted
+   * to the exportable columns. Honours exportFiltered.
+   */
+  exportToJSON() {
+    const exportableColumns = this.getExportableColumns();
+    const exportableData = this.getExportableData();
+
+    const projected = exportableData.map(row => {
+      const out = {};
+      for (const column of exportableColumns) {
+        out[column.field] = row[column.field];
+      }
+      return out;
+    });
+
+    const jsonContent = JSON.stringify(projected);
+
+    if (this.config.onExport) {
+      this.config.onExport({
+        format: 'json',
+        data: projected,
+        jsonData: jsonContent
+      });
+    }
+
+    return jsonContent;
+  }
+
+  /**
+   * Format-dispatching export entry point.
+   * Returns a Promise resolving to the serialized output (string for csv/json)
+   * or rejecting with a clear error for unsupported / not-yet-available formats.
+   */
+  async exportData(format) {
+    switch (format) {
+      case 'csv':
+        return this.exportToCSV();
+      case 'json':
+        return this.exportToJSON();
+      case 'xlsx':
+        throw new Error('xlsx export is not available yet — install the xlsx peer dep when implemented');
+      case 'pdf':
+        throw new Error('pdf export is not available yet — install jspdf + jspdf-autotable when implemented');
+      default:
+        throw new Error(`Unsupported export format: ${format}`);
+    }
+  }
+
+  /**
    * Download CSV file
    */
   downloadCSV() {
