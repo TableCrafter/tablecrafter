@@ -2707,6 +2707,55 @@ class TableCrafter {
    */
 
   /**
+   * Compute aggregates for every column that declared `column.aggregate`.
+   * Defaults to running over getFilteredData(); pass an explicit rows array
+   * for custom scopes (e.g. this.data for an unfiltered total).
+   */
+  getAggregates(rows) {
+    const source = Array.isArray(rows) ? rows : this.getFilteredData();
+    const out = {};
+    for (const column of (this.config.columns || [])) {
+      if (column.aggregate == null) continue;
+      out[column.field] = this._computeAggregate(column.aggregate, column.field, source);
+    }
+    return out;
+  }
+
+  /**
+   * One-shot aggregate. fn defaults to the column's declared aggregate.
+   * Returns null when no aggregate is configured and no fn is passed.
+   */
+  aggregate(field, fn, rows) {
+    const column = (this.config.columns || []).find(c => c.field === field);
+    const op = fn != null ? fn : (column && column.aggregate);
+    if (op == null) return null;
+    const source = Array.isArray(rows) ? rows : this.getFilteredData();
+    return this._computeAggregate(op, field, source);
+  }
+
+  _computeAggregate(op, field, source) {
+    if (typeof op === 'function') {
+      const values = source.map(r => r[field]);
+      return op(values, source);
+    }
+    if (op === 'count') {
+      return source.filter(r => r[field] != null).length;
+    }
+    const numeric = source
+      .filter(r => r[field] != null)
+      .map(r => Number(r[field]))
+      .filter(n => !Number.isNaN(n));
+    if (numeric.length === 0) return null;
+    switch (op) {
+      case 'sum': return numeric.reduce((a, b) => a + b, 0);
+      case 'avg': return numeric.reduce((a, b) => a + b, 0) / numeric.length;
+      case 'min': return Math.min(...numeric);
+      case 'max': return Math.max(...numeric);
+      default:    return null;
+    }
+  }
+
+  /**
    * Set current user context
    */
   setCurrentUser(user) {
