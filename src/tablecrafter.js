@@ -3590,6 +3590,13 @@ class TableCrafter {
    * Destroy the table instance
    */
   destroy() {
+    // Plugin lifecycle: destroy. Fired before any teardown so handlers can
+    // observe final state. Errors are isolated by _fireHook so a noisy plugin
+    // cannot stop the rest of the teardown from running.
+    if (this._fireHook) {
+      this._fireHook('destroy', { table: this });
+    }
+
     // Save final state
     this.saveState();
 
