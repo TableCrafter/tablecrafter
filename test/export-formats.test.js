@@ -1,8 +1,4 @@
-/**
- * Export-format dispatcher (slice of #46) — exportData(format) entry point.
- * Covers csv pass-through and json output. xlsx, pdf, downloadExport, and
- * the UI dropdown are deferred to follow-up PRs.
- */
+// Advanced export formats — exportData, downloadExport, xlsx/pdf, UI dropdown (#46)
 
 const TableCrafter = require('../src/tablecrafter');
 
@@ -78,5 +74,129 @@ describe('exportData(format)', () => {
       format: 'json',
       data: expect.any(Array)
     }));
+  });
+});
+
+// ── xlsx via mocked peer dep ─────────────────────────────────────────────────
+
+describe('exportData("xlsx") with mocked xlsx peer dep', () => {
+  beforeEach(() => {
+    jest.resetModules();
+    jest.mock('xlsx', () => ({
+      utils: {
+        json_to_sheet: jest.fn(() => ({})),
+        book_new: jest.fn(() => ({})),
+        book_append_sheet: jest.fn()
+      },
+      write: jest.fn(() => new Uint8Array([1, 2, 3]))
+    }), { virtual: true });
+  });
+
+  afterEach(() => jest.resetModules());
+
+  test('returns a Blob with xlsx MIME type', async () => {
+    const TC = require('../src/tablecrafter');
+    document.body.innerHTML = '<div id="t"></div>';
+    const t = new TC('#t', { data, columns });
+    const blob = await t.exportData('xlsx');
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.type).toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  });
+});
+
+// ── pdf via mocked peer deps ─────────────────────────────────────────────────
+
+describe('exportData("pdf") with mocked jspdf peer deps', () => {
+  beforeEach(() => {
+    jest.resetModules();
+    const mockDoc = { output: jest.fn(() => new ArrayBuffer(4)) };
+    jest.mock('jspdf', () => ({ jsPDF: jest.fn(() => mockDoc) }), { virtual: true });
+    jest.mock('jspdf-autotable', () => jest.fn(), { virtual: true });
+  });
+
+  afterEach(() => jest.resetModules());
+
+  test('returns a Blob with pdf MIME type', async () => {
+    const TC = require('../src/tablecrafter');
+    document.body.innerHTML = '<div id="t"></div>';
+    const t = new TC('#t', { data, columns });
+    const blob = await t.exportData('pdf');
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.type).toBe('application/pdf');
+  });
+});
+
+// ── downloadExport ────────────────────────────────────────────────────────────
+
+describe('downloadExport()', () => {
+  let createObjectURL, revokeObjectURL, clickSpy;
+
+  beforeEach(() => {
+    createObjectURL = jest.fn(() => 'blob:mock');
+    revokeObjectURL = jest.fn();
+    global.URL.createObjectURL = createObjectURL;
+    global.URL.revokeObjectURL = revokeObjectURL;
+    clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  test('triggers a download for csv', async () => {
+    const table = makeTable();
+    await table.downloadExport('csv');
+    expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+    expect(clickSpy).toHaveBeenCalled();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock');
+  });
+
+  test('triggers a download for json', async () => {
+    const table = makeTable();
+    await table.downloadExport('json');
+    expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+    expect(clickSpy).toHaveBeenCalled();
+  });
+
+  test('uses custom filename when provided', async () => {
+    const table = makeTable();
+    await table.downloadExport('csv', 'my-report.csv');
+    const anchor = document.querySelector('a[download]');
+    if (anchor) expect(anchor.download).toBe('my-report.csv');
+  });
+});
+
+// ── UI: multi-format dropdown ─────────────────────────────────────────────────
+
+describe('renderExportControls(): multi-format dropdown', () => {
+  test('single csv format renders button, no select', () => {
+    document.body.innerHTML = '<div id="t"></div>';
+    const t = new (require('../src/tablecrafter'))('#t', {
+      data, columns, exportable: true
+    });
+    t.render();
+    expect(document.querySelector('.tc-export-format')).toBeNull();
+    expect(document.querySelector('.tc-export-csv')).not.toBeNull();
+  });
+
+  test('multiple formats renders a <select.tc-export-format> with correct options', () => {
+    document.body.innerHTML = '<div id="t"></div>';
+    const t = new (require('../src/tablecrafter'))('#t', {
+      data, columns,
+      export: { formats: ['csv', 'json'] }
+    });
+    t.render();
+    const sel = document.querySelector('.tc-export-format');
+    expect(sel).not.toBeNull();
+    const opts = [...sel.querySelectorAll('option')].map(o => o.value);
+    expect(opts).toEqual(['csv', 'json']);
+  });
+
+  test('exportable:true is backwards-compat — still renders single CSV button', () => {
+    document.body.innerHTML = '<div id="t"></div>';
+    const t = new (require('../src/tablecrafter'))('#t', {
+      data, columns, exportable: true
+    });
+    t.render();
+    expect(document.querySelector('.tc-export-csv')).not.toBeNull();
+    expect(document.querySelector('.tc-export-format')).toBeNull();
   });
 });

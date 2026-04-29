@@ -712,7 +712,7 @@ class TableCrafter {
     }
 
     // Add export controls if enabled
-    if (this.config.exportable) {
+    if (this._getExportFormats().length > 0) {
       const exportTools = this.renderExportControls();
       if (isHydrating) {
         // Find existing tools area or insert after table/cards
@@ -1991,11 +1991,32 @@ class TableCrafter {
     const exportContainer = document.createElement('div');
     exportContainer.className = 'tc-export-controls';
 
-    const exportCsvBtn = document.createElement('button');
-    exportCsvBtn.className = 'tc-export-csv';
-    exportCsvBtn.textContent = 'Export CSV';
-    exportCsvBtn.addEventListener('click', () => this.downloadCSV());
-    exportContainer.appendChild(exportCsvBtn);
+    const formats = this._getExportFormats();
+
+    if (formats.length > 1) {
+      const select = document.createElement('select');
+      select.className = 'tc-export-format';
+      formats.forEach(fmt => {
+        const opt = document.createElement('option');
+        opt.value = fmt;
+        opt.textContent = fmt.toUpperCase();
+        select.appendChild(opt);
+      });
+      exportContainer.appendChild(select);
+
+      const exportBtn = document.createElement('button');
+      exportBtn.className = 'tc-export-btn';
+      exportBtn.textContent = 'Export';
+      exportBtn.style.marginLeft = '4px';
+      exportBtn.addEventListener('click', () => this.downloadExport(select.value));
+      exportContainer.appendChild(exportBtn);
+    } else {
+      const exportCsvBtn = document.createElement('button');
+      exportCsvBtn.className = 'tc-export-csv';
+      exportCsvBtn.textContent = 'Export CSV';
+      exportCsvBtn.addEventListener('click', () => this.downloadCSV());
+      exportContainer.appendChild(exportCsvBtn);
+    }
 
     const copyBtn = document.createElement('button');
     copyBtn.className = 'tc-copy-clipboard';
@@ -2177,13 +2198,77 @@ class TableCrafter {
         return this.exportToCSV();
       case 'json':
         return this.exportToJSON();
-      case 'xlsx':
-        throw new Error('xlsx export is not available yet — install the xlsx peer dep when implemented');
-      case 'pdf':
-        throw new Error('pdf export is not available yet — install jspdf + jspdf-autotable when implemented');
+      case 'xlsx': {
+        let xlsx;
+        try { xlsx = require('xlsx'); } catch (_) {
+          throw new Error('xlsx not available — install the xlsx peer dep');
+        }
+        return this._buildXlsx(xlsx);
+      }
+      case 'pdf': {
+        let jsPDF, autoTable;
+        try {
+          const jspdfMod = require('jspdf');
+          jsPDF = jspdfMod.jsPDF || jspdfMod;
+          const atMod = require('jspdf-autotable');
+          autoTable = atMod.default || atMod;
+        } catch (_) {
+          throw new Error('pdf not available — install jspdf + jspdf-autotable peer deps');
+        }
+        return this._buildPdf(jsPDF, autoTable);
+      }
       default:
         throw new Error(`Unsupported export format: ${format}`);
     }
+  }
+
+  _buildXlsx(xlsx) {
+    const cols = this.getExportableColumns();
+    const rows = this.getExportableData().map(row => {
+      const obj = {};
+      cols.forEach(col => { obj[col.label] = row[col.field] ?? ''; });
+      return obj;
+    });
+    const ws = xlsx.utils.json_to_sheet(rows);
+    const wb = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(wb, ws, 'Sheet1');
+    const buf = xlsx.write(wb, { type: 'array', bookType: 'xlsx' });
+    return new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+
+  _buildPdf(jsPDF, autoTable) {
+    const cols = this.getExportableColumns();
+    const rows = this.getExportableData();
+    const doc = new jsPDF();
+    autoTable(doc, {
+      head: [cols.map(c => c.label)],
+      body: rows.map(row => cols.map(c => String(row[c.field] ?? '')))
+    });
+    const buf = doc.output('arraybuffer');
+    return new Blob([buf], { type: 'application/pdf' });
+  }
+
+  _getExportFormats() {
+    if (this.config.export && Array.isArray(this.config.export.formats) && this.config.export.formats.length) {
+      return this.config.export.formats;
+    }
+    return this.config.exportable ? ['csv'] : [];
+  }
+
+  async downloadExport(format, filename) {
+    const data = await this.exportData(format);
+    const extMap = { csv: 'csv', json: 'json', xlsx: 'xlsx', pdf: 'pdf' };
+    const ext = extMap[format] || format;
+    const name = filename || `${this.config.exportFilename || 'export'}.${ext}`;
+    const blob = data instanceof Blob
+      ? data
+      : new Blob([data], { type: format === 'json' ? 'application/json' : 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   /**
