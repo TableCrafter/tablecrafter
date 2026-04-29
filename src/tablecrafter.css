@@ -3,19 +3,141 @@
  * Complete styling for advanced features
  */
 
+/* === CSS Custom Property Catalogue (#49) === */
+
+:root {
+  /* Typography */
+  --tc-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --tc-font-size: 14px;
+  --tc-line-height: 1.5;
+
+  /* Layout */
+  --tc-radius: 8px;
+  --tc-radius-sm: 4px;
+  --tc-cell-padding: 12px 16px;
+
+  /* Colours — light theme */
+  --tc-bg: #ffffff;
+  --tc-bg-alt: #f8f9fa;
+  --tc-bg-hover: #f8f9fa;
+  --tc-text: #333333;
+  --tc-text-muted: #6c757d;
+  --tc-border: #e1e5e9;
+  --tc-border-focus: #4a90e2;
+
+  /* Header */
+  --tc-header-bg: #f8f9fa;
+  --tc-header-text: #495057;
+  --tc-header-hover: #e9ecef;
+
+  /* Accent / interactive */
+  --tc-accent: #4a90e2;
+  --tc-accent-hover: #357abd;
+  --tc-accent-text: #ffffff;
+
+  /* Inputs */
+  --tc-input-bg: #ffffff;
+  --tc-input-border: #ced4da;
+  --tc-input-text: #495057;
+
+  /* Badges */
+  --tc-badge-success-bg: #d4edda;
+  --tc-badge-success-text: #155724;
+  --tc-badge-warning-bg: #fff3cd;
+  --tc-badge-warning-text: #856404;
+  --tc-badge-danger-bg: #f8d7da;
+  --tc-badge-danger-text: #721c24;
+  --tc-badge-info-bg: #d1ecf1;
+  --tc-badge-info-text: #0c5460;
+
+  /* Shadow */
+  --tc-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --tc-shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+
+  /* Loading / skeleton */
+  --tc-skeleton-bg: #e2e8f0;
+  --tc-skeleton-shine: #f8fafc;
+}
+
+/* === Dark theme === */
+
+.tc-wrapper[data-tc-theme="dark"],
+[data-tc-theme="dark"] .tc-wrapper {
+  --tc-bg: #1a1a2e;
+  --tc-bg-alt: #16213e;
+  --tc-bg-hover: #0f3460;
+  --tc-text: #e0e0e0;
+  --tc-text-muted: #a0a0b0;
+  --tc-border: #2d3748;
+  --tc-border-focus: #63b3ed;
+  --tc-header-bg: #16213e;
+  --tc-header-text: #e0e0e0;
+  --tc-header-hover: #0f3460;
+  --tc-accent: #63b3ed;
+  --tc-accent-hover: #4299e1;
+  --tc-accent-text: #1a202c;
+  --tc-input-bg: #2d3748;
+  --tc-input-border: #4a5568;
+  --tc-input-text: #e2e8f0;
+  --tc-badge-success-bg: #1c4532;
+  --tc-badge-success-text: #9ae6b4;
+  --tc-badge-warning-bg: #744210;
+  --tc-badge-warning-text: #fbd38d;
+  --tc-badge-danger-bg: #742a2a;
+  --tc-badge-danger-text: #fc8181;
+  --tc-badge-info-bg: #1a365d;
+  --tc-badge-info-text: #90cdf4;
+  --tc-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  --tc-shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --tc-skeleton-bg: #2d3748;
+  --tc-skeleton-shine: #4a5568;
+}
+
+/* === High-contrast theme === */
+
+.tc-wrapper[data-tc-theme="high-contrast"],
+[data-tc-theme="high-contrast"] .tc-wrapper {
+  --tc-bg: #000000;
+  --tc-bg-alt: #000000;
+  --tc-bg-hover: #1a1a1a;
+  --tc-text: #ffffff;
+  --tc-text-muted: #cccccc;
+  --tc-border: #ffffff;
+  --tc-border-focus: #ffff00;
+  --tc-header-bg: #000000;
+  --tc-header-text: #ffffff;
+  --tc-header-hover: #1a1a1a;
+  --tc-accent: #ffff00;
+  --tc-accent-hover: #e6e600;
+  --tc-accent-text: #000000;
+  --tc-input-bg: #000000;
+  --tc-input-border: #ffffff;
+  --tc-input-text: #ffffff;
+  --tc-badge-success-bg: #000000;
+  --tc-badge-success-text: #00ff00;
+  --tc-badge-warning-bg: #000000;
+  --tc-badge-warning-text: #ffff00;
+  --tc-badge-danger-bg: #000000;
+  --tc-badge-danger-text: #ff4444;
+  --tc-badge-info-bg: #000000;
+  --tc-badge-info-text: #00ffff;
+  --tc-shadow: none;
+  --tc-shadow-md: none;
+}
+
 /* === Base Table Styles === */
 .tc-wrapper {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #333;
+  font-family: var(--tc-font-family);
+  font-size: var(--tc-font-size);
+  line-height: var(--tc-line-height);
+  color: var(--tc-text);
 }
 
 .tc-table-container {
   overflow-x: auto;
-  border: 1px solid #e1e5e9;
-  border-radius: 8px;
-  background: white;
+  border: 1px solid var(--tc-border);
+  border-radius: var(--tc-radius);
+  background: var(--tc-bg);
 }
 
 .tc-table {
@@ -26,22 +148,22 @@
 
 .tc-table th,
 .tc-table td {
-  padding: 12px 16px;
+  padding: var(--tc-cell-padding);
   text-align: left;
-  border-bottom: 1px solid #e1e5e9;
+  border-bottom: 1px solid var(--tc-border);
 }
 
 .tc-table th {
-  background-color: #f8f9fa;
+  background-color: var(--tc-header-bg);
   font-weight: 600;
-  color: #495057;
+  color: var(--tc-header-text);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .tc-table tr:hover {
-  background-color: #f8f9fa;
+  background-color: var(--tc-bg-hover);
 }
 
 .tc-sortable {
@@ -51,7 +173,7 @@
 }
 
 .tc-sortable:hover {
-  background-color: #e9ecef;
+  background-color: var(--tc-header-hover);
 }
 
 .tc-sortable::after {
@@ -1357,21 +1479,32 @@
 }
 
 .tc-badge-success {
-  color: #fff;
-  background-color: #28a745;
+  color: var(--tc-badge-success-text);
+  background-color: var(--tc-badge-success-bg);
 }
 
 .tc-badge-error {
-  color: #fff;
-  background-color: #dc3545;
+  color: var(--tc-badge-danger-text);
+  background-color: var(--tc-badge-danger-bg);
+}
+
+.tc-badge-warning {
+  color: var(--tc-badge-warning-text);
+  background-color: var(--tc-badge-warning-bg);
+}
+
+.tc-badge-info {
+  color: var(--tc-badge-info-text);
+  background-color: var(--tc-badge-info-bg);
 }
 
 .tc-link {
-  color: #007bff;
+  color: var(--tc-accent);
   text-decoration: none;
 }
 
 .tc-link:hover {
+  color: var(--tc-accent-hover);
   text-decoration: underline;
 }
 
@@ -1420,17 +1553,17 @@
   flex: 1;
 }
 
-/* Dark mode support for skeleton */
+/* Dark mode support for skeleton — uses CSS vars when dark theme is applied */
 @media (prefers-color-scheme: dark) {
   .tc-skeleton {
-    background: linear-gradient(to right, #374151 8%, #4b5563 18%, #374151 33%);
+    background: linear-gradient(to right, var(--tc-skeleton-bg, #374151) 8%, var(--tc-skeleton-shine, #4b5563) 18%, var(--tc-skeleton-bg, #374151) 33%);
   }
 
   .tc-skeleton-cell {
-    background: #374151;
+    background: var(--tc-skeleton-bg, #374151);
   }
 
   .tc-skeleton-row {
-    border-color: #374151;
+    border-color: var(--tc-border, #374151);
   }
 }
