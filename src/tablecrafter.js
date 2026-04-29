@@ -2850,6 +2850,18 @@ class TableCrafter {
       target.insertBefore(span, target.firstChild);
     }
 
+    // colorScale shorthand: interpolate backgroundColor between min/[mid]/max
+    // colours based on the numeric value's position. Non-numeric values skip.
+    const scaleRule = rules.find(r => r.kind === 'colorScale');
+    if (scaleRule && target.tagName === 'TD') {
+      const num = (typeof value === 'number') ? value : Number(value);
+      if (!Number.isNaN(num)) {
+        const range = this._dataBarRange(scaleRule, field);
+        const colour = this._colorScaleAt(num, range.min, range.max, scaleRule);
+        if (colour) target.style.backgroundColor = colour;
+      }
+    }
+
     // dataBar shorthand: pick the highest-priority rule with kind:'dataBar'
     // and append a single .tc-cf-databar span whose width % is the value's
     // position in [min, max]. Out-of-range values clamp to 0%/100%; zero
@@ -2885,6 +2897,54 @@ class TableCrafter {
       min: typeof rule.min === 'number' ? rule.min : min,
       max: typeof rule.max === 'number' ? rule.max : max
     };
+  }
+
+  _colorScaleAt(value, min, max, rule) {
+    const minColor = this._parseHexColor(rule.minColor);
+    const maxColor = this._parseHexColor(rule.maxColor);
+    if (!minColor || !maxColor) return null;
+
+    if (max <= min || value <= min) return this._formatRgb(minColor);
+    if (value >= max) return this._formatRgb(maxColor);
+
+    const midColor = rule.midColor ? this._parseHexColor(rule.midColor) : null;
+    const midPoint = (typeof rule.mid === 'number') ? rule.mid : (min + max) / 2;
+
+    if (midColor) {
+      if (value <= midPoint) {
+        const t = (value - min) / (midPoint - min);
+        return this._formatRgb(this._lerpColor(minColor, midColor, t));
+      }
+      const t = (value - midPoint) / (max - midPoint);
+      return this._formatRgb(this._lerpColor(midColor, maxColor, t));
+    }
+
+    const t = (value - min) / (max - min);
+    return this._formatRgb(this._lerpColor(minColor, maxColor, t));
+  }
+
+  _parseHexColor(hex) {
+    if (typeof hex !== 'string') return null;
+    let s = hex.trim().replace(/^#/, '');
+    if (s.length === 3) s = s.split('').map(c => c + c).join('');
+    if (s.length !== 6 || !/^[0-9a-f]{6}$/i.test(s)) return null;
+    return {
+      r: parseInt(s.slice(0, 2), 16),
+      g: parseInt(s.slice(2, 4), 16),
+      b: parseInt(s.slice(4, 6), 16)
+    };
+  }
+
+  _lerpColor(a, b, t) {
+    return {
+      r: Math.round(a.r + (b.r - a.r) * t),
+      g: Math.round(a.g + (b.g - a.g) * t),
+      b: Math.round(a.b + (b.b - a.b) * t)
+    };
+  }
+
+  _formatRgb({ r, g, b }) {
+    return `rgb(${r}, ${g}, ${b})`;
   }
 
   _dataBarPercent(value, min, max) {
