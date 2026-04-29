@@ -3445,6 +3445,53 @@ class TableCrafter {
     return tokens;
   }
 
+  addColumn(column, options) {
+    if (!column || typeof column.field !== 'string' || !column.field) {
+      throw new Error('TableCrafter: addColumn requires a non-empty `field`');
+    }
+    if (!Array.isArray(this.config.columns)) this.config.columns = [];
+    if (this.config.columns.some(c => c.field === column.field)) {
+      throw new Error(`TableCrafter: addColumn — field "${column.field}" already exists`);
+    }
+
+    const before = options && options.before;
+    if (before) {
+      const idx = this.config.columns.findIndex(c => c.field === before);
+      if (idx !== -1) {
+        this.config.columns.splice(idx, 0, column);
+        this.render();
+        return column;
+      }
+    }
+    this.config.columns.push(column);
+    this.render();
+    return column;
+  }
+
+  removeColumn(field) {
+    if (!Array.isArray(this.config.columns)) return false;
+    const before = this.config.columns.length;
+    this.config.columns = this.config.columns.filter(c => c.field !== field);
+    const removed = this.config.columns.length < before;
+    if (removed) this.render();
+    return removed;
+  }
+
+  updateColumn(field, patch) {
+    const column = (this.config.columns || []).find(c => c.field === field);
+    if (!column) {
+      throw new Error(`TableCrafter: updateColumn — unknown field "${field}"`);
+    }
+    Object.assign(column, patch || {});
+    this.render();
+    return column;
+  }
+
+  getColumn(field) {
+    const column = (this.config.columns || []).find(c => c.field === field);
+    return column ? { ...column } : null;
+  }
+
   _renderRichCell(td, column, value, row) {
     if (value === null || value === undefined) return false;
 
