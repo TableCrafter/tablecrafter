@@ -2722,6 +2722,40 @@ class TableCrafter {
   }
 
   /**
+   * Group rows by a field. Returns Map<groupKey, rows[]> with insertion order
+   * matching the first-seen order of each group key. Honours an explicit
+   * rows argument (e.g. getFilteredData()) so callers can group only what
+   * they're showing rather than the whole dataset.
+   */
+  groupBy(field, rows) {
+    const source = Array.isArray(rows) ? rows : (this.data || []);
+    const groups = new Map();
+    for (const row of source) {
+      const key = row ? row[field] : undefined;
+      let bucket = groups.get(key);
+      if (!bucket) {
+        bucket = [];
+        groups.set(key, bucket);
+      }
+      bucket.push(row);
+    }
+    return groups;
+  }
+
+  /**
+   * Run every column.aggregate over each group. Returns Map<groupKey,
+   * { [aggField]: value }> with the same key ordering as groupBy().
+   */
+  getGroupAggregates(field, rows) {
+    const groups = this.groupBy(field, rows);
+    const out = new Map();
+    for (const [key, bucket] of groups.entries()) {
+      out.set(key, this.getAggregates(bucket));
+    }
+    return out;
+  }
+
+  /**
    * One-shot aggregate. fn defaults to the column's declared aggregate.
    * Returns null when no aggregate is configured and no fn is passed.
    */
