@@ -802,6 +802,15 @@ class TableCrafter {
             return;
           }
 
+          // Heatmap cell: same contract; intensity-coloured cell strip.
+          if (column.cellType === 'heatmap') {
+            const svg = this.renderHeatmap(row[column.field], column.heatmap);
+            if (svg) td.appendChild(svg);
+            td.dataset.field = column.field;
+            tr.appendChild(td);
+            return;
+          }
+
           // Format lookup values
           let displayValue = row[column.field];
 
@@ -2725,6 +2734,71 @@ class TableCrafter {
   /**
    * Permission System
    */
+
+  /**
+   * Render an inline SVG heatmap from a values array. Returns the <svg>
+   * element or null when the input is empty / non-array / lacks any
+   * numeric values. Each value lands as one rect; the fill colour is
+   * interpolated between minColor and maxColor based on the value's
+   * position in [min, max].
+   */
+  renderHeatmap(values, options) {
+    if (!Array.isArray(values) || values.length === 0) return null;
+    const numeric = values.filter(v => typeof v === 'number' && Number.isFinite(v));
+    if (numeric.length === 0) return null;
+
+    const opts = options || {};
+    const width = typeof opts.width === 'number' ? opts.width : 80;
+    const height = typeof opts.height === 'number' ? opts.height : 16;
+    const minColor = this._parseHexRgb(opts.minColor || '#ffffff') || { r: 255, g: 255, b: 255 };
+    const maxColor = this._parseHexRgb(opts.maxColor || '#000000') || { r: 0, g: 0, b: 0 };
+
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'tc-heatmap');
+    svg.setAttribute('width', String(width));
+    svg.setAttribute('height', String(height));
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.setAttribute('preserveAspectRatio', 'none');
+
+    const n = numeric.length;
+    const cellWidth = width / n;
+    const min = Math.min.apply(null, numeric);
+    const max = Math.max.apply(null, numeric);
+    const range = max - min;
+
+    for (let i = 0; i < n; i++) {
+      const v = numeric[i];
+      // All-equal series renders maxColor — `1` ratio is a sensible default
+      // because consumers expect the heatmap to read as "saturated" rather
+      // than "blank" when every reading is the same.
+      const t = range === 0 ? 1 : (v - min) / range;
+      const r = Math.round(minColor.r + (maxColor.r - minColor.r) * t);
+      const g = Math.round(minColor.g + (maxColor.g - minColor.g) * t);
+      const b = Math.round(minColor.b + (maxColor.b - minColor.b) * t);
+
+      const rect = document.createElementNS(ns, 'rect');
+      rect.setAttribute('x', String(i * cellWidth));
+      rect.setAttribute('y', '0');
+      rect.setAttribute('width', String(cellWidth));
+      rect.setAttribute('height', String(height));
+      rect.setAttribute('fill', `rgb(${r}, ${g}, ${b})`);
+      svg.appendChild(rect);
+    }
+    return svg;
+  }
+
+  _parseHexRgb(hex) {
+    if (typeof hex !== 'string') return null;
+    let s = hex.trim().replace(/^#/, '');
+    if (s.length === 3) s = s.split('').map(c => c + c).join('');
+    if (s.length !== 6 || !/^[0-9a-f]{6}$/i.test(s)) return null;
+    return {
+      r: parseInt(s.slice(0, 2), 16),
+      g: parseInt(s.slice(2, 4), 16),
+      b: parseInt(s.slice(4, 6), 16)
+    };
+  }
 
   /**
    * Render an inline SVG column-bar chart from a values array. Returns the
