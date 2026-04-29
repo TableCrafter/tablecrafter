@@ -828,7 +828,7 @@ class TableCrafter {
           if (typeof this.getMatchingRules === 'function') {
             const cellRules = this.getMatchingRules(column.field, row[column.field], row)
               .filter(r => r.scope !== 'row');
-            this._applyConditionalFormatting(td, cellRules);
+            this._applyConditionalFormatting(td, cellRules, row[column.field], column.field);
           }
 
           tr.appendChild(td);
@@ -2823,7 +2823,7 @@ class TableCrafter {
    * lower; classNames are unioned. Caller controls scope by choosing which
    * rules to pass in.
    */
-  _applyConditionalFormatting(target, rules) {
+  _applyConditionalFormatting(target, rules, value, field) {
     if (!target || !Array.isArray(rules) || rules.length === 0) return;
     // Reverse so iteration runs low → high priority and last write wins.
     const ordered = rules.slice().reverse();
@@ -2849,6 +2849,49 @@ class TableCrafter {
       span.textContent = iconRule.icon;
       target.insertBefore(span, target.firstChild);
     }
+
+    // dataBar shorthand: pick the highest-priority rule with kind:'dataBar'
+    // and append a single .tc-cf-databar span whose width % is the value's
+    // position in [min, max]. Out-of-range values clamp to 0%/100%; zero
+    // range and non-numeric values skip the bar entirely.
+    const barRule = rules.find(r => r.kind === 'dataBar');
+    if (barRule && target.tagName === 'TD') {
+      const num = (typeof value === 'number') ? value : Number(value);
+      if (!Number.isNaN(num)) {
+        const range = this._dataBarRange(barRule, field);
+        const span = document.createElement('span');
+        span.className = 'tc-cf-databar';
+        span.style.width = `${this._dataBarPercent(num, range.min, range.max)}%`;
+        target.appendChild(span);
+      }
+    }
+  }
+
+  _dataBarRange(rule, field) {
+    if (typeof rule.min === 'number' && typeof rule.max === 'number') {
+      return { min: rule.min, max: rule.max };
+    }
+    let min = Infinity;
+    let max = -Infinity;
+    for (const row of this.data) {
+      const v = Number(row[field]);
+      if (!Number.isNaN(v)) {
+        if (v < min) min = v;
+        if (v > max) max = v;
+      }
+    }
+    if (min === Infinity || max === -Infinity) return { min: 0, max: 0 };
+    return {
+      min: typeof rule.min === 'number' ? rule.min : min,
+      max: typeof rule.max === 'number' ? rule.max : max
+    };
+  }
+
+  _dataBarPercent(value, min, max) {
+    if (max <= min) return 0;
+    if (value <= min) return 0;
+    if (value >= max) return 100;
+    return Math.round(((value - min) / (max - min)) * 100);
   }
 
   /**
