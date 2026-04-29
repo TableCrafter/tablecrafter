@@ -2707,6 +2707,80 @@ class TableCrafter {
    */
 
   /**
+   * Render the current DOM as a deterministic HTML string. Two snapshots of
+   * the same logical state produce byte-identical output so consumers can
+   * pair this with Jest's toMatchSnapshot() to catch unintended visual
+   * regressions in CI without a real browser.
+   *
+   * Normalisation:
+   *   - Attributes alphabetised per element.
+   *   - Inline `width: N%` styles rounded to 1 decimal place so floating-
+   *     point drift across browsers does not break snapshots.
+   *
+   * options.scope:
+   *   - 'table' (default) returns just the `<table>` markup.
+   *   - 'wrapper' returns the full `.tc-wrapper` markup.
+   *
+   * Pure read — never triggers a render.
+   */
+  snapshotHTML(options) {
+    const opts = options || {};
+    const scope = opts.scope || 'table';
+    const wrapper = this.container && this.container.querySelector('.tc-wrapper');
+    if (!wrapper) return '';
+    const root = scope === 'wrapper' ? wrapper : (wrapper.querySelector('table') || wrapper);
+    return this._serialiseSnapshot(root);
+  }
+
+  _serialiseSnapshot(node) {
+    if (!node) return '';
+    if (node.nodeType === 3) return node.nodeValue;
+    if (node.nodeType !== 1) return '';
+
+    const tag = node.tagName.toLowerCase();
+    const attrs = Array.from(node.attributes || []).slice();
+    attrs.sort((a, b) => a.name.localeCompare(b.name));
+
+    const parts = [`<${tag}`];
+    for (const attr of attrs) {
+      let value = attr.value;
+      if (attr.name === 'style' && value) {
+        value = this._normaliseStyleString(value);
+      }
+      parts.push(` ${attr.name}="${this._escapeSnapshotAttr(value)}"`);
+    }
+
+    const voidTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+                      'link', 'meta', 'source', 'track', 'wbr'];
+    if (voidTags.indexOf(tag) !== -1) {
+      parts.push('/>');
+      return parts.join('');
+    }
+
+    parts.push('>');
+    for (const child of node.childNodes) {
+      parts.push(this._serialiseSnapshot(child));
+    }
+    parts.push(`</${tag}>`);
+    return parts.join('');
+  }
+
+  _normaliseStyleString(style) {
+    return style
+      .split(';')
+      .map(part => part.trim())
+      .filter(Boolean)
+      .map(part => part.replace(/(\d+\.\d+)%/g, (m, num) => `${parseFloat(parseFloat(num).toFixed(1))}%`))
+      .join('; ');
+  }
+
+  _escapeSnapshotAttr(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /**
    * Set current user context
    */
   setCurrentUser(user) {
