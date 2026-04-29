@@ -1257,8 +1257,12 @@ class TableCrafter {
       return data;
     }
 
-    // Apply global search filter
-    if (this.config.globalSearch && this.searchTerm) {
+    // Apply global search filter. setQuery() routes through the parsed AST;
+    // direct searchTerm assignment continues to use the legacy substring path
+    // for backwards compatibility.
+    if (this._queryAst) {
+      data = data.filter(row => this.evaluateQuery(this._queryAst, row));
+    } else if (this.config.globalSearch && this.searchTerm) {
       const searchLower = this.searchTerm.toLowerCase();
       data = data.filter(row => {
         return Object.values(row).some(val => {
@@ -2749,6 +2753,60 @@ class TableCrafter {
       }
     }
     return { type: 'and', children };
+  }
+
+  /**
+   * Evaluate a parsed AST against a single row.
+   * Substring matching is case-insensitive. Term matches scan all string-
+   * coerced row values; field matches scope to the named column. An empty
+   * AND (the result of an empty query) returns true so empty queries match
+   * every row.
+   */
+  evaluateQuery(node, row) {
+    if (!node || !node.type) return true;
+    switch (node.type) {
+      case 'and':
+        return (node.children || []).every(c => this.evaluateQuery(c, row));
+      case 'or':
+        return (node.children || []).some(c => this.evaluateQuery(c, row));
+      case 'not':
+        return !this.evaluateQuery(node.child, row);
+      case 'term': {
+        const needle = String(node.value || '').toLowerCase();
+        if (!needle) return true;
+        return Object.values(row).some(v => v != null && String(v).toLowerCase().includes(needle));
+      }
+      case 'phrase': {
+        const needle = String(node.value || '').toLowerCase();
+        if (!needle) return true;
+        return Object.values(row).some(v => v != null && String(v).toLowerCase().includes(needle));
+      }
+      case 'field': {
+        const cell = row[node.field];
+        if (cell === undefined || cell === null) return false;
+        const haystack = String(cell).toLowerCase();
+        const needle = String(node.value || '').toLowerCase();
+        return haystack.includes(needle);
+      }
+      default:
+        return true;
+    }
+  }
+
+  /**
+   * Programmatically apply a search query string. Empty / falsy clears the
+   * active query. Triggers a re-render so the filtered set is visible.
+   */
+  setQuery(queryString) {
+    const q = queryString == null ? '' : String(queryString);
+    if (q === '') {
+      this._queryAst = null;
+      this.searchTerm = '';
+    } else {
+      this._queryAst = this.parseQuery(q);
+      this.searchTerm = q;
+    }
+    this.render();
   }
 
   _consumeQueryNode(tokens, i) {
