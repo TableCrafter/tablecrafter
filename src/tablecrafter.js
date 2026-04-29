@@ -638,6 +638,7 @@ class TableCrafter {
   }
 
   render() {
+    const _renderStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
     // Check if we are hydrating (SSR content already present)
     const isHydrating = this.container.dataset.ssr === "true" &&
       (this.container.querySelector('table') || this.container.querySelector('.tc-cards-container') || this.container.querySelector('.tc-loading') || this.container.querySelector('.tc-wrapper'));
@@ -731,6 +732,9 @@ class TableCrafter {
     if (this.config.pagination && this.shouldShowPagination()) {
       wrapper.appendChild(this.renderPagination());
     }
+
+    const _renderEnd = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    this._lastRenderMs = _renderEnd - _renderStart;
   }
 
   /**
@@ -1339,6 +1343,14 @@ class TableCrafter {
    * Get filtered data with advanced filtering support
    */
   getFilteredData() {
+    const _start = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const result = this._computeFilteredData();
+    const _end = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    this._lastFilterMs = _end - _start;
+    return result;
+  }
+
+  _computeFilteredData() {
     // Apply permission filtering first
     let data = this.getPermissionFilteredData();
 
@@ -3424,6 +3436,36 @@ class TableCrafter {
       }
     }
     return tokens;
+  }
+
+  getStats() {
+    const cols = (this.config && this.config.columns) || [];
+    const visible = cols.filter(c => c.hidden !== true);
+    const pinnedLeft = cols.filter(c => c.pinned === 'left').length;
+    const pinnedRight = cols.filter(c => c.pinned === 'right').length;
+    const filteredCount = this._computeFilteredData
+      ? this._computeFilteredData().length
+      : (this.data ? this.data.length : 0);
+    const pageSize = (this.config && this.config.pageSize) || filteredCount;
+    const renderedRows = this.config && this.config.pagination
+      ? Math.min(pageSize, filteredCount)
+      : filteredCount;
+
+    return {
+      totalRows: this.data ? this.data.length : 0,
+      visibleRows: filteredCount,
+      renderedRows,
+      columnCount: cols.length,
+      hiddenColumnCount: cols.length - visible.length,
+      pinnedColumns: { left: pinnedLeft, right: pinnedRight },
+      pluginCount: Array.isArray(this._plugins) ? this._plugins.length : 0,
+      sortField: this.sortField || null,
+      sortOrder: this.sortOrder || null,
+      searchTerm: this.searchTerm || '',
+      filters: { ...(this.filters || {}) },
+      lastRenderMs: typeof this._lastRenderMs === 'number' ? this._lastRenderMs : null,
+      lastFilterMs: typeof this._lastFilterMs === 'number' ? this._lastFilterMs : null
+    };
   }
 
   renderSparkline(values, options) {
