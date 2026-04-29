@@ -368,6 +368,13 @@ class TableCrafter {
    * Load data from URL
    */
   async loadData() {
+    // Cancel any in-flight request before starting a new one
+    if (this._loadController) {
+      this._loadController.abort();
+    }
+    this._loadController = new AbortController();
+    const signal = this._loadController.signal;
+
     this.isLoading = true;
     this.renderLoading();
 
