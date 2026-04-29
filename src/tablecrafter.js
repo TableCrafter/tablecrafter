@@ -340,6 +340,12 @@ class TableCrafter {
    * Load data from URL
    */
   async loadData() {
+    // Plugin lifecycle: beforeLoad. Cancel-on-false aborts before any fetch
+    // is issued and before the loading skeleton is shown.
+    if (this._fireHook && this._fireHook('beforeLoad', { source: this.dataUrl }) === false) {
+      return this.data;
+    }
+
     this.isLoading = true;
     this.renderLoading();
 
@@ -367,6 +373,7 @@ class TableCrafter {
            this.detectFilterTypes();
            this.container.dataset.ssr = "false";
            this.render();
+           if (this._fireHook) this._fireHook('afterLoad', { data: this.data });
          } catch (e) {
            console.error('TableCrafter: Hydration failed', e);
            // Silent fail for hydration is okay, user sees SSR content
@@ -384,9 +391,10 @@ class TableCrafter {
       }
       const data = await response.json();
       this.data = this.processData(data); // Using processData for consistency
-      
+
       this.autoDiscoverColumns();
       this.render();
+      if (this._fireHook) this._fireHook('afterLoad', { data: this.data });
     } catch (error) {
       console.error('TableCrafter: Load failed', error);
       this.renderError('Unable to load data. The source may be unavailable.');
