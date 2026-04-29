@@ -3,11 +3,11 @@
  * Adds: setLocale(), addMessages(), and {one, other} plural forms.
  */
 
-const TableCrafter = require('../src/tablecrafter');
+const TC = require('../src/tablecrafter');
 
 function makeTable(i18n) {
   document.body.innerHTML = '<div id="t"></div>';
-  return new TableCrafter('#t', { columns: [{ field: 'id' }], i18n });
+  return new TC('#t', { columns: [{ field: 'id' }], i18n });
 }
 
 describe('i18n: setLocale()', () => {
@@ -102,5 +102,79 @@ describe('i18n: pluralisation', () => {
     });
     // No 'one' or 'other' — fall back to the raw key for visibility.
     expect(table.t('weird', { count: 1 })).toBe('weird');
+  });
+});
+
+// ── Built-in locale packs (#190) ──────────────────────────────────────────────
+
+describe('TC.locales', () => {
+  const PACKS = ['en', 'es', 'fr', 'de', 'ar', 'ur'];
+  const REQUIRED_KEYS = [
+    'toolbar.search', 'pagination.previous', 'pagination.next',
+    'table.noResults', 'table.loading', 'validation.required'
+  ];
+
+  test.each(PACKS)('locale pack "%s" exists and has required keys', (locale) => {
+    expect(TC.locales[locale]).toBeDefined();
+    REQUIRED_KEYS.forEach(key => {
+      expect(TC.locales[locale][key]).toBeTruthy();
+    });
+  });
+
+  test('addMessages with a built-in pack makes translations available', () => {
+    const table = makeTable({ locale: 'fr', messages: {} });
+    table.addMessages('fr', TC.locales.fr);
+    expect(table.t('toolbar.search')).toBe('Rechercher...');
+    expect(table.t('pagination.previous')).toBe('Précédent');
+  });
+
+  test('ar and ur packs include _dir: rtl', () => {
+    expect(TC.locales.ar._dir).toBe('rtl');
+    expect(TC.locales.ur._dir).toBe('rtl');
+  });
+
+  test('en and es packs do not include _dir', () => {
+    expect(TC.locales.en._dir).toBeUndefined();
+    expect(TC.locales.es._dir).toBeUndefined();
+  });
+});
+
+// ── RTL support (#189) ────────────────────────────────────────────────────────
+
+describe('RTL: dir attribute on wrapper', () => {
+  test('wrapper gets dir="rtl" when active locale pack has _dir:rtl', () => {
+    document.body.innerHTML = '<div id="t"></div>';
+    const t = new TC('#t', {
+      columns: [{ field: 'id' }],
+      data: [{ id: 1 }],
+      i18n: {
+        locale: 'ar',
+        messages: { ar: { ...TC.locales.ar } }
+      }
+    });
+    t.render();
+    expect(document.querySelector('.tc-wrapper').getAttribute('dir')).toBe('rtl');
+  });
+
+  test('wrapper has no dir attribute for LTR locales', () => {
+    document.body.innerHTML = '<div id="t"></div>';
+    const t = new TC('#t', {
+      columns: [{ field: 'id' }],
+      data: [{ id: 1 }],
+      i18n: { locale: 'en', messages: { en: TC.locales.en } }
+    });
+    t.render();
+    expect(document.querySelector('.tc-wrapper').getAttribute('dir')).toBeNull();
+  });
+
+  test('config.dir:"rtl" forces RTL regardless of locale', () => {
+    document.body.innerHTML = '<div id="t"></div>';
+    const t = new TC('#t', {
+      columns: [{ field: 'id' }],
+      data: [{ id: 1 }],
+      dir: 'rtl'
+    });
+    t.render();
+    expect(document.querySelector('.tc-wrapper').getAttribute('dir')).toBe('rtl');
   });
 });
