@@ -2788,9 +2788,51 @@ class TableCrafter {
     document.body.appendChild(menu);
     this._contextMenu = menu;
 
-    // Dismissal: Escape + outside-click. Attached lazily; torn down in close.
+    // Make menuitems focusable and put initial focus on the first enabled one.
+    const menuItems = menu.querySelectorAll('li[role="menuitem"]');
+    menuItems.forEach(li => li.setAttribute('tabindex', '-1'));
+    const firstEnabled = Array.from(menuItems).find(li => li.getAttribute('aria-disabled') !== 'true');
+    if (firstEnabled) firstEnabled.focus();
+
+    const focusableItems = () =>
+      Array.from(menu.querySelectorAll('li[role="menuitem"]'))
+        .filter(li => li.getAttribute('aria-disabled') !== 'true');
+
+    const moveFocus = (dir) => {
+      const list = focusableItems();
+      if (list.length === 0) return;
+      const cur = list.indexOf(document.activeElement);
+      let next;
+      if (cur === -1) next = 0;
+      else next = (cur + dir + list.length) % list.length;
+      list[next].focus();
+    };
+
+    // Dismissal: Escape + outside-click + keyboard navigation. Attached
+    // lazily; torn down in close.
     const onKeyDown = (ev) => {
-      if (ev.key === 'Escape') this.closeContextMenu();
+      if (ev.key === 'Escape') {
+        this.closeContextMenu();
+        return;
+      }
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        moveFocus(1);
+        return;
+      }
+      if (ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        moveFocus(-1);
+        return;
+      }
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        const focused = document.activeElement;
+        if (focused && menu.contains(focused) && focused.getAttribute('role') === 'menuitem'
+            && focused.getAttribute('aria-disabled') !== 'true') {
+          ev.preventDefault();
+          focused.click();
+        }
+      }
     };
     const onDocClick = (ev) => {
       if (this._contextMenu && !this._contextMenu.contains(ev.target)) {
