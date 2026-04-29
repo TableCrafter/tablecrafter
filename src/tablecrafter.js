@@ -2743,6 +2743,8 @@ class TableCrafter {
       return null;
     }
 
+    // Resolve placeholders to numeric values up front so the parser only sees
+    // numbers, ops, parens, commas, and function names.
     const resolved = [];
     for (const tok of tokens) {
       if (tok.type === 'placeholder') {
@@ -2755,15 +2757,124 @@ class TableCrafter {
       }
     }
 
-    const postfix = this._toPostfix(resolved);
-    if (!postfix) {
-      warnOnce('mismatched parentheses');
+    const ctx = { tokens: resolved, pos: 0, error: false };
+    const result = this._parseFormulaExpression(ctx);
+    if (ctx.error || ctx.pos !== resolved.length) {
+      warnOnce(ctx.error || 'parse error');
       return null;
     }
-
-    const result = this._evaluatePostfix(postfix);
     if (result === null || !Number.isFinite(result)) return null;
     return result;
+  }
+
+  _parseFormulaExpression(ctx) {
+    let left = this._parseFormulaTerm(ctx);
+    if (left === null) return null;
+    while (!ctx.error && ctx.pos < ctx.tokens.length) {
+      const tok = ctx.tokens[ctx.pos];
+      if (tok.type === 'op' && (tok.value === '+' || tok.value === '-')) {
+        ctx.pos++;
+        const right = this._parseFormulaTerm(ctx);
+        if (right === null) return null;
+        left = tok.value === '+' ? left + right : left - right;
+      } else break;
+    }
+    return left;
+  }
+
+  _parseFormulaTerm(ctx) {
+    let left = this._parseFormulaFactor(ctx);
+    if (left === null) return null;
+    while (!ctx.error && ctx.pos < ctx.tokens.length) {
+      const tok = ctx.tokens[ctx.pos];
+      if (tok.type === 'op' && (tok.value === '*' || tok.value === '/')) {
+        ctx.pos++;
+        const right = this._parseFormulaFactor(ctx);
+        if (right === null) return null;
+        if (tok.value === '/') {
+          if (right === 0) { ctx.error = 'division by zero'; return null; }
+          left = left / right;
+        } else {
+          left = left * right;
+        }
+      } else break;
+    }
+    return left;
+  }
+
+  _parseFormulaFactor(ctx) {
+    if (ctx.pos >= ctx.tokens.length) { ctx.error = 'unexpected end of input'; return null; }
+    const tok = ctx.tokens[ctx.pos];
+
+    if (tok.type === 'number') {
+      ctx.pos++;
+      return tok.value;
+    }
+    if (tok.type === 'lparen') {
+      ctx.pos++;
+      const inner = this._parseFormulaExpression(ctx);
+      if (inner === null) return null;
+      if (ctx.tokens[ctx.pos] && ctx.tokens[ctx.pos].type === 'rparen') {
+        ctx.pos++;
+        return inner;
+      }
+      ctx.error = 'mismatched parentheses';
+      return null;
+    }
+    if (tok.type === 'function') {
+      ctx.pos++;
+      // Function must be immediately followed by '('.
+      if (!(ctx.tokens[ctx.pos] && ctx.tokens[ctx.pos].type === 'lparen')) {
+        ctx.error = `expected ( after ${tok.name}`;
+        return null;
+      }
+      ctx.pos++;
+      const args = [];
+      if (!(ctx.tokens[ctx.pos] && ctx.tokens[ctx.pos].type === 'rparen')) {
+        const first = this._parseFormulaExpression(ctx);
+        if (first === null) return null;
+        args.push(first);
+        while (ctx.tokens[ctx.pos] && ctx.tokens[ctx.pos].type === 'comma') {
+          ctx.pos++;
+          const next = this._parseFormulaExpression(ctx);
+          if (next === null) return null;
+          args.push(next);
+        }
+      }
+      if (!(ctx.tokens[ctx.pos] && ctx.tokens[ctx.pos].type === 'rparen')) {
+        ctx.error = `mismatched parentheses in ${tok.name}`;
+        return null;
+      }
+      ctx.pos++;
+      const result = this._callFormulaFunction(tok.name, args);
+      if (result === null) {
+        ctx.error = `function ${tok.name} failed`;
+        return null;
+      }
+      return result;
+    }
+    ctx.error = `unexpected token ${tok.type}`;
+    return null;
+  }
+
+  _callFormulaFunction(name, args) {
+    switch (name) {
+      case 'ROUND': {
+        if (args.length === 1) return Math.round(args[0]);
+        if (args.length === 2) {
+          const v = args[0], d = args[1];
+          // Avoid 1.005 * 100 floating-point quirks via string-based round.
+          return +(Math.round(v + 'e' + d) + 'e-' + d);
+        }
+        return null;
+      }
+      case 'FLOOR': return args.length === 1 ? Math.floor(args[0]) : null;
+      case 'CEIL':  return args.length === 1 ? Math.ceil(args[0])  : null;
+      case 'ABS':   return args.length === 1 ? Math.abs(args[0])   : null;
+      case 'MIN':   return args.length >= 1 ? Math.min(...args) : null;
+      case 'MAX':   return args.length >= 1 ? Math.max(...args) : null;
+      default:      return null;
+    }
   }
 
   _tokenizeFormula(s) {
@@ -2779,6 +2890,7 @@ class TableCrafter {
       }
       if (ch === '(') { tokens.push({ type: 'lparen' }); i++; continue; }
       if (ch === ')') { tokens.push({ type: 'rparen' }); i++; continue; }
+      if (ch === ',') { tokens.push({ type: 'comma' }); i++; continue; }
       if (ch === '{') {
         const end = s.indexOf('}', i + 1);
         if (end === -1) return null;
@@ -2796,70 +2908,15 @@ class TableCrafter {
         tokens.push({ type: 'number', value: num });
         continue;
       }
+      if (/[a-zA-Z_]/.test(ch)) {
+        const start = i;
+        while (i < s.length && /[a-zA-Z_]/.test(s[i])) i++;
+        tokens.push({ type: 'function', name: s.slice(start, i) });
+        continue;
+      }
       return null;
     }
     return tokens;
-  }
-
-  _toPostfix(tokens) {
-    const out = [];
-    const ops = [];
-    const prec = { '+': 1, '-': 1, '*': 2, '/': 2 };
-    for (const tok of tokens) {
-      if (tok.type === 'number') {
-        out.push(tok);
-      } else if (tok.type === 'op') {
-        while (ops.length) {
-          const top = ops[ops.length - 1];
-          if (top.type === 'op' && prec[top.value] >= prec[tok.value]) {
-            out.push(ops.pop());
-          } else break;
-        }
-        ops.push(tok);
-      } else if (tok.type === 'lparen') {
-        ops.push(tok);
-      } else if (tok.type === 'rparen') {
-        let matched = false;
-        while (ops.length) {
-          const top = ops.pop();
-          if (top.type === 'lparen') { matched = true; break; }
-          out.push(top);
-        }
-        if (!matched) return null;
-      }
-    }
-    while (ops.length) {
-      const top = ops.pop();
-      if (top.type === 'lparen') return null;
-      out.push(top);
-    }
-    return out;
-  }
-
-  _evaluatePostfix(tokens) {
-    const stack = [];
-    for (const tok of tokens) {
-      if (tok.type === 'number') {
-        stack.push(tok.value);
-      } else if (tok.type === 'op') {
-        if (stack.length < 2) return null;
-        const b = stack.pop();
-        const a = stack.pop();
-        let r;
-        switch (tok.value) {
-          case '+': r = a + b; break;
-          case '-': r = a - b; break;
-          case '*': r = a * b; break;
-          case '/':
-            if (b === 0) return null;
-            r = a / b;
-            break;
-          default: return null;
-        }
-        stack.push(r);
-      }
-    }
-    return stack.length === 1 ? stack[0] : null;
   }
 
   /**
