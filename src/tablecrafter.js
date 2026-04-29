@@ -2838,6 +2838,17 @@ class TableCrafter {
         Object.assign(target.style, rule.style);
       }
     }
+
+    // Icon shorthand: pick the highest-priority rule with kind:'icon' + icon
+    // and prepend a single .tc-cf-icon span. Only one icon ever wins so the
+    // cell does not collect a stack of conflicting markers.
+    const iconRule = rules.find(r => r.kind === 'icon' && typeof r.icon === 'string' && r.icon);
+    if (iconRule && target.tagName === 'TD') {
+      const span = document.createElement('span');
+      span.className = 'tc-cf-icon';
+      span.textContent = iconRule.icon;
+      target.insertBefore(span, target.firstChild);
+    }
   }
 
   /**
