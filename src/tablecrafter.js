@@ -2707,6 +2707,124 @@ class TableCrafter {
    */
 
   /**
+   * Parse a CSV / TSV string into rows. RFC-4180-flavoured: quoted fields
+   * may contain commas, newlines, and embedded `""` for a literal quote.
+   *
+   * Returns `{ rows, errors }` rather than throwing — a malformed line
+   * surfaces in `errors` and subsequent valid lines still parse.
+   *
+   * Options:
+   *   - delimiter (default ',')
+   *   - header (default true): first row names the columns and the rest
+   *     become objects keyed by those names. With header: false, every row
+   *     is returned as an array.
+   */
+  parseCSV(text, options) {
+    const opts = options || {};
+    const delimiter = opts.delimiter || ',';
+    const useHeader = opts.header !== false;
+
+    const normalised = String(text == null ? '' : text).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    if (!normalised || !normalised.trim()) {
+      return { rows: [], errors: [] };
+    }
+
+    // First pass: tokenise into rows of raw field strings.
+    const rawRows = [];
+    let row = [];
+    let field = '';
+    let inQuotes = false;
+    let i = 0;
+    while (i < normalised.length) {
+      const ch = normalised[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (normalised[i + 1] === '"') {
+            field += '"';
+            i += 2;
+            continue;
+          }
+          inQuotes = false;
+          i++;
+          continue;
+        }
+        field += ch;
+        i++;
+        continue;
+      }
+      if (ch === '"' && field === '') {
+        inQuotes = true;
+        i++;
+        continue;
+      }
+      if (ch === delimiter) {
+        row.push(field);
+        field = '';
+        i++;
+        continue;
+      }
+      if (ch === '\n') {
+        row.push(field);
+        rawRows.push(row);
+        row = [];
+        field = '';
+        i++;
+        continue;
+      }
+      field += ch;
+      i++;
+    }
+    if (field !== '' || row.length > 0) {
+      row.push(field);
+      rawRows.push(row);
+    }
+
+    const errors = [];
+    if (rawRows.length === 0) return { rows: [], errors };
+
+    if (!useHeader) {
+      return { rows: rawRows, errors };
+    }
+
+    const header = rawRows[0];
+    const dataRows = rawRows.slice(1);
+    const out = [];
+    for (let r = 0; r < dataRows.length; r++) {
+      const fields = dataRows[r];
+      if (fields.length !== header.length) {
+        errors.push({
+          line: r + 2,
+          message: `expected ${header.length} fields, got ${fields.length}`
+        });
+        continue;
+      }
+      const obj = {};
+      for (let h = 0; h < header.length; h++) {
+        obj[header[h]] = fields[h];
+      }
+      out.push(obj);
+    }
+    return { rows: out, errors };
+  }
+
+  /**
+   * Parse + apply CSV. Replaces `this.data` by default; pass
+   * `{ append: true }` to extend instead. Returns the same shape as
+   * `parseCSV` so callers can inspect errors after import.
+   */
+  importCSV(text, options) {
+    const opts = options || {};
+    const result = this.parseCSV(text, opts);
+    if (opts.append) {
+      this.data = (Array.isArray(this.data) ? this.data : []).concat(result.rows);
+    } else {
+      this.data = result.rows;
+    }
+    if (typeof this.render === 'function') this.render();
+    return result;
+  }
+
+  /**
    * Set current user context
    */
   setCurrentUser(user) {
