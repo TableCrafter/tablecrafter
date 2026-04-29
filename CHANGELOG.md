@@ -1,0 +1,54 @@
+# Changelog
+
+## [1.5.0](https://github.com/TableCrafter/tablecrafter/compare/v1.4.2...v1.5.0) (2026-04-29)
+
+
+### Features
+
+* **a11y:** implement ADA compliance (scope, aria-labels, aria-sort, keyboard nav) ([b61f95e](https://github.com/TableCrafter/tablecrafter/commit/b61f95e3a9a7fd395c96f3b222f8ddf73efab04c))
+* **aggregation:** column.aggregate config + getAggregates / aggregate API ([#111](https://github.com/TableCrafter/tablecrafter/issues/111)) ([b388e7a](https://github.com/TableCrafter/tablecrafter/commit/b388e7ac58f7baddfe253667c20cb28c2df091e5))
+* **api:** add row-level CRUD methods with lifecycle callbacks ([#76](https://github.com/TableCrafter/tablecrafter/issues/76)) ([0f2b592](https://github.com/TableCrafter/tablecrafter/commit/0f2b5923689db016d25280832a42a5f059e67bec)), closes [#66](https://github.com/TableCrafter/tablecrafter/issues/66)
+* **cell-types:** badge / progress / link rich cell types ([#118](https://github.com/TableCrafter/tablecrafter/issues/118)) ([7d4d2c3](https://github.com/TableCrafter/tablecrafter/commit/7d4d2c39155a63bca6bc0a05206eed5951373c05))
+* **columns:** hidden flag + setColumnVisibility / setColumnOrder / getVisibleColumns ([#109](https://github.com/TableCrafter/tablecrafter/issues/109)) ([8e5640b](https://github.com/TableCrafter/tablecrafter/commit/8e5640b3f709802f0d03c0e9bcf8b03cea571887))
+* **columns:** pinned-column foundation (column.pinned + pinColumn API) ([#110](https://github.com/TableCrafter/tablecrafter/issues/110)) ([5dc9107](https://github.com/TableCrafter/tablecrafter/commit/5dc91079a548367594911cd2929815358605d25d))
+* **columns:** programmatic column CRUD (add / remove / update / get) ([#119](https://github.com/TableCrafter/tablecrafter/issues/119)) ([5ef6539](https://github.com/TableCrafter/tablecrafter/commit/5ef65397ad303a32a38da7356daaae1ccdac0214))
+* **conditional-formatting:** render-loop wiring, dataBar/colorScale/icon kinds ([#51](https://github.com/TableCrafter/tablecrafter/issues/51)) ([34786ef](https://github.com/TableCrafter/tablecrafter/commit/34786efc3b1a329bbc3a4faf6a35b3467e4c780f))
+* **conditional-formatting:** rule evaluator + state API foundation ([#80](https://github.com/TableCrafter/tablecrafter/issues/80)) ([46fff7f](https://github.com/TableCrafter/tablecrafter/commit/46fff7f07f59c52e81028bbdd35d53538fd4ee87)), closes [#51](https://github.com/TableCrafter/tablecrafter/issues/51)
+* **context-menu:** programmatic openContextMenu / closeContextMenu ([#105](https://github.com/TableCrafter/tablecrafter/issues/105)) ([3afd4de](https://github.com/TableCrafter/tablecrafter/commit/3afd4debcd660f594534b72287c4cb3ce8f8f4c6)), closes [#44](https://github.com/TableCrafter/tablecrafter/issues/44)
+* **devtools:** getStats() table introspection helper ([#117](https://github.com/TableCrafter/tablecrafter/issues/117)) ([00b65f2](https://github.com/TableCrafter/tablecrafter/commit/00b65f2392cfcd7a22455d837c8af54673a19e6d))
+* **export:** add exportData(format) dispatcher with JSON support ([#79](https://github.com/TableCrafter/tablecrafter/issues/79)) ([82827c1](https://github.com/TableCrafter/tablecrafter/commit/82827c19a9ff2eb58e293a4379392a9952178a2c)), closes [#46](https://github.com/TableCrafter/tablecrafter/issues/46)
+* **export:** xlsx/pdf lazy imports, downloadExport, multi-format dropdown ([#46](https://github.com/TableCrafter/tablecrafter/issues/46)) ([075d218](https://github.com/TableCrafter/tablecrafter/commit/075d2182770d8ebc975095d8d62f3c073939f83c))
+* **formulas:** function library — math, text, logic, aggregates ([#47](https://github.com/TableCrafter/tablecrafter/issues/47)) ([2d749c3](https://github.com/TableCrafter/tablecrafter/commit/2d749c3df3c25bace2d3c900f35195eb72209bfd))
+* **formulas:** safe expression evaluator (column.formula) ([#112](https://github.com/TableCrafter/tablecrafter/issues/112)) ([3b9c468](https://github.com/TableCrafter/tablecrafter/commit/3b9c468484e0034caf40a8063491ca82211668a9))
+* **i18n:** add setLocale, addMessages, and {one, other} plural forms ([#136](https://github.com/TableCrafter/tablecrafter/issues/136)) ([020410c](https://github.com/TableCrafter/tablecrafter/commit/020410cdac050b63caf4ea0f89ff2aeb2732ddc2)), closes [#40](https://github.com/TableCrafter/tablecrafter/issues/40)
+* **i18n:** add t(key, vars?) translation helper with locale fallback ([#78](https://github.com/TableCrafter/tablecrafter/issues/78)) ([688f9cf](https://github.com/TableCrafter/tablecrafter/commit/688f9cf9ccafa48d5f239e8af2d38a74e3fe6189)), closes [#40](https://github.com/TableCrafter/tablecrafter/issues/40)
+* **i18n:** built-in locale packs + RTL support ([#40](https://github.com/TableCrafter/tablecrafter/issues/40) / [#189](https://github.com/TableCrafter/tablecrafter/issues/189) / [#190](https://github.com/TableCrafter/tablecrafter/issues/190)) ([7cb5d1b](https://github.com/TableCrafter/tablecrafter/commit/7cb5d1b80bee15304b2c22662d8c41a8cb647db5))
+* Implement graceful error handling with retry (v1.6.2) ([d27e430](https://github.com/TableCrafter/tablecrafter/commit/d27e430f6329b9a97ca01435689b02befc7f9029))
+* Implement Skeleton Loading (CSS/JS/Tests) ([f484b11](https://github.com/TableCrafter/tablecrafter/commit/f484b113a74c8e05ef52f81854e7065042762d5c))
+* **import:** RFC-4180 CSV parser + importCSV / parseCSV ([#124](https://github.com/TableCrafter/tablecrafter/issues/124)) ([9e74a55](https://github.com/TableCrafter/tablecrafter/commit/9e74a5511aa2623ad5d1a043363fbb75aafa272d))
+* **memory:** clearCaches + getMemoryFootprint helpers ([#123](https://github.com/TableCrafter/tablecrafter/issues/123)) ([ab47887](https://github.com/TableCrafter/tablecrafter/commit/ab478873d38737871578d37a9cb4e2632698b644))
+* **perf:** bench() micro-benchmark helper + benchRender / benchFilter ([#121](https://github.com/TableCrafter/tablecrafter/issues/121)) ([6b918a4](https://github.com/TableCrafter/tablecrafter/commit/6b918a4283d6c81608ffc791fcc1110aa177835a))
+* **perf:** virtual-scroll viewport math + state toggle ([#122](https://github.com/TableCrafter/tablecrafter/issues/122)) ([7b0f9cd](https://github.com/TableCrafter/tablecrafter/commit/7b0f9cd43686fb652184edffdabaaa6b99a2b586))
+* **plugins:** plugin registry foundation (use / unuse / getPlugins) ([#83](https://github.com/TableCrafter/tablecrafter/issues/83)) ([37c1cc4](https://github.com/TableCrafter/tablecrafter/commit/37c1cc4cdb483ac0ba01a10af7fcd2181ebaf9dc)), closes [#38](https://github.com/TableCrafter/tablecrafter/issues/38)
+* **search:** enhanced grammar — comparison ops, wildcards, regex, AST evaluator ([#59](https://github.com/TableCrafter/tablecrafter/issues/59)) ([cf4a359](https://github.com/TableCrafter/tablecrafter/commit/cf4a359f01394e290af12f68cacc2d51892ef53a))
+* **search:** parseQuery() — search grammar parser foundation ([#87](https://github.com/TableCrafter/tablecrafter/issues/87)) ([1ea84ae](https://github.com/TableCrafter/tablecrafter/commit/1ea84ae60e10912b569f7763286cb0094317aa29)), closes [#59](https://github.com/TableCrafter/tablecrafter/issues/59)
+* **selection:** cell range selection foundation ([#120](https://github.com/TableCrafter/tablecrafter/issues/120)) ([1ab2d80](https://github.com/TableCrafter/tablecrafter/commit/1ab2d80dac684e23475fe72e0e88322f5cdbfc63))
+* **sort:** Multi-column sorting with priority indicators ([#45](https://github.com/TableCrafter/tablecrafter/issues/45)) ([#70](https://github.com/TableCrafter/tablecrafter/issues/70)) ([edea7a0](https://github.com/TableCrafter/tablecrafter/commit/edea7a0420175ef5a01a441947934532e2840cbb))
+* sync Rich Data Presentation from plugin (v1.6.0) ([e7c3f80](https://github.com/TableCrafter/tablecrafter/commit/e7c3f80f4a3b2ba15d628802f1221f37ecc08a61))
+* **theming:** config.theme + themeVariables + setTheme / getTheme ([#115](https://github.com/TableCrafter/tablecrafter/issues/115)) ([973a432](https://github.com/TableCrafter/tablecrafter/commit/973a43220051c16fc4571a69a92cfcb0358b3215))
+* **theming:** CSS custom property catalogue, dark and high-contrast themes ([#49](https://github.com/TableCrafter/tablecrafter/issues/49)) ([a04792a](https://github.com/TableCrafter/tablecrafter/commit/a04792a2e843875f7747967ef647df265d23ccf4))
+* **types:** add comprehensive TypeScript declaration file ([#33](https://github.com/TableCrafter/tablecrafter/issues/33)) ([d2665cb](https://github.com/TableCrafter/tablecrafter/commit/d2665cb429250b053b063295aa6ec2ca25728da2))
+* **validation:** add date built-in rule with min / max bounds ([#102](https://github.com/TableCrafter/tablecrafter/issues/102)) ([55be552](https://github.com/TableCrafter/tablecrafter/commit/55be552c1777a6dec1c8edeabad070e130a075bd)), closes [#41](https://github.com/TableCrafter/tablecrafter/issues/41)
+* **validation:** add phone and unique built-in rules ([#81](https://github.com/TableCrafter/tablecrafter/issues/81)) ([360e9cd](https://github.com/TableCrafter/tablecrafter/commit/360e9cde1fb8716bbc7a5710b12ff3cc406dff27)), closes [#41](https://github.com/TableCrafter/tablecrafter/issues/41)
+* **validation:** add url, oneOf, notOneOf built-in rules ([#77](https://github.com/TableCrafter/tablecrafter/issues/77)) ([799d171](https://github.com/TableCrafter/tablecrafter/commit/799d1713903cc4fbac1e78f4b1a1f588078ca5b0))
+* **validation:** add validate / getErrors / clearErrors public API ([#103](https://github.com/TableCrafter/tablecrafter/issues/103)) ([b1365e0](https://github.com/TableCrafter/tablecrafter/commit/b1365e00e1f0dc90f97f81220a387e26e32f2e4a)), closes [#41](https://github.com/TableCrafter/tablecrafter/issues/41)
+* **viz:** inline SVG sparkline cell type (foundation for [#58](https://github.com/TableCrafter/tablecrafter/issues/58)) ([#116](https://github.com/TableCrafter/tablecrafter/issues/116)) ([337d63f](https://github.com/TableCrafter/tablecrafter/commit/337d63f407fab82c36bebb0f1a3b55d8e2073e75))
+
+
+### Bug Fixes
+
+* **api:** pass AbortSignal to fetch and cancel overlapping loadData calls ([#75](https://github.com/TableCrafter/tablecrafter/issues/75)) ([ae3852a](https://github.com/TableCrafter/tablecrafter/commit/ae3852a8936e3591caab808f62fc40e441ecbf1d)), closes [#71](https://github.com/TableCrafter/tablecrafter/issues/71)
+* **hydration:** Ensure hydration pipeline runs for embedded data initialization ([99603a2](https://github.com/TableCrafter/tablecrafter/commit/99603a21b935b8e862b64a86b28a70ae1cda1ee3))
+* **hydration:** Initialize internal state (columns/processData) for interaction support ([0fecddc](https://github.com/TableCrafter/tablecrafter/commit/0fecddce4a9a681bf233f5513f4cff9d77e3e9f7))
+* remove duplicate AbortController signal declaration after rebase ([e6b279b](https://github.com/TableCrafter/tablecrafter/commit/e6b279b7dd3e37577a69c5bb3fd8877aaa25ab80))
+* Restore frontend sorting (hydration events) ([eb54b13](https://github.com/TableCrafter/tablecrafter/commit/eb54b136e350295b3769cf38f27a5fa831bf1a52))
