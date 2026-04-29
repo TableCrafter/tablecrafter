@@ -857,6 +857,14 @@ class TableCrafter {
           if (column.pinned === 'left') td.classList.add('tc-pinned-left');
           else if (column.pinned === 'right') td.classList.add('tc-pinned-right');
 
+          if (column.cellType === 'sparkline') {
+            const svg = this.renderSparkline(row[column.field], column.sparkline);
+            if (svg) td.appendChild(svg);
+            td.dataset.field = column.field;
+            tr.appendChild(td);
+            return;
+          }
+
           let displayValue;
           if (column.formula) {
             const computed = this.evaluateFormula(column.formula, row);
@@ -3416,6 +3424,49 @@ class TableCrafter {
       }
     }
     return tokens;
+  }
+
+  renderSparkline(values, options) {
+    if (!Array.isArray(values) || values.length === 0) return null;
+
+    const numeric = values.filter(v => typeof v === 'number' && Number.isFinite(v));
+    if (numeric.length === 0) return null;
+
+    const opts = options || {};
+    const width = typeof opts.width === 'number' ? opts.width : 80;
+    const height = typeof opts.height === 'number' ? opts.height : 24;
+    const stroke = typeof opts.stroke === 'string' ? opts.stroke : 'currentColor';
+
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'tc-sparkline');
+    svg.setAttribute('width', String(width));
+    svg.setAttribute('height', String(height));
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.setAttribute('preserveAspectRatio', 'none');
+
+    let min = Infinity;
+    let max = -Infinity;
+    for (const v of numeric) {
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+
+    const n = numeric.length;
+    const range = max - min;
+    const points = numeric.map((v, i) => {
+      const x = n === 1 ? 0 : (i / (n - 1)) * width;
+      const y = range === 0 ? height / 2 : height - ((v - min) / range) * height;
+      return `${x},${y}`;
+    }).join(' ');
+
+    const poly = document.createElementNS(ns, 'polyline');
+    poly.setAttribute('fill', 'none');
+    poly.setAttribute('stroke', stroke);
+    poly.setAttribute('stroke-width', '1');
+    poly.setAttribute('points', points);
+    svg.appendChild(poly);
+    return svg;
   }
 
   _applyTheme(wrapper) {
