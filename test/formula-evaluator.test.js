@@ -1,13 +1,4 @@
-/**
- * Formula evaluator foundation (slice 1 of #47).
- *
- * Lands a safe expression evaluator that resolves `{field}` placeholders,
- * supports +, -, *, /, parentheses, and numeric literals, and rejects
- * anything outside that allowlist (no eval / Function).
- *
- * Function library, formula bar UI, dependency tracking, and SUM/AVG
- * cross-row references remain queued under #47.
- */
+// Formula evaluator — arithmetic + function library (#47)
 
 const TableCrafter = require('../src/tablecrafter');
 
@@ -112,5 +103,113 @@ describe('Render integration', () => {
 
     const total = document.querySelector('td[data-field="total"]');
     expect(total.textContent).toBe('');
+  });
+});
+
+// ── Math functions ────────────────────────────────────────────────────────────
+
+describe('evaluateFormula: math functions', () => {
+  test('ROUND', () => {
+    expect(makeTable().evaluateFormula('ROUND({a}, 1)', { a: 2.567 })).toBeCloseTo(2.6);
+    expect(makeTable().evaluateFormula('ROUND({a}, 0)', { a: 2.5 })).toBe(3);
+  });
+
+  test('ABS', () => {
+    expect(makeTable().evaluateFormula('ABS({a})', { a: -5 })).toBe(5);
+    expect(makeTable().evaluateFormula('ABS({a})', { a: 3 })).toBe(3);
+  });
+
+  test('CEIL and FLOOR', () => {
+    expect(makeTable().evaluateFormula('CEIL({a})', { a: 2.1 })).toBe(3);
+    expect(makeTable().evaluateFormula('FLOOR({a})', { a: 2.9 })).toBe(2);
+  });
+
+  test('SQRT', () => {
+    expect(makeTable().evaluateFormula('SQRT({a})', { a: 9 })).toBe(3);
+    expect(makeTable().evaluateFormula('SQRT({a})', { a: -1 })).toBeNull();
+  });
+
+  test('POWER', () => {
+    expect(makeTable().evaluateFormula('POWER({a}, 3)', { a: 2 })).toBe(8);
+  });
+
+  test('MIN and MAX', () => {
+    expect(makeTable().evaluateFormula('MIN({a}, {b})', { a: 3, b: 7 })).toBe(3);
+    expect(makeTable().evaluateFormula('MAX({a}, {b})', { a: 3, b: 7 })).toBe(7);
+  });
+
+  test('MOD', () => {
+    expect(makeTable().evaluateFormula('MOD({a}, {b})', { a: 10, b: 3 })).toBe(1);
+    expect(makeTable().evaluateFormula('MOD({a}, 0)', { a: 5 })).toBeNull();
+  });
+
+  test('composed: ROUND(expr)', () => {
+    expect(makeTable().evaluateFormula('ROUND({a} * 1.1, 2)', { a: 10 })).toBeCloseTo(11);
+  });
+});
+
+// ── Text functions ────────────────────────────────────────────────────────────
+
+describe('evaluateFormula: text functions', () => {
+  test('CONCAT', () => {
+    expect(makeTable().evaluateFormula('CONCAT({a}, "-", {b})', { a: 'foo', b: 'bar' })).toBe('foo-bar');
+  });
+
+  test('UPPER and LOWER', () => {
+    expect(makeTable().evaluateFormula('UPPER({a})', { a: 'hello' })).toBe('HELLO');
+    expect(makeTable().evaluateFormula('LOWER({a})', { a: 'HELLO' })).toBe('hello');
+  });
+
+  test('TRIM', () => {
+    expect(makeTable().evaluateFormula('TRIM({a})', { a: '  hi  ' })).toBe('hi');
+  });
+
+  test('LEN', () => {
+    expect(makeTable().evaluateFormula('LEN({a})', { a: 'hello' })).toBe(5);
+  });
+
+  test('LEFT and RIGHT', () => {
+    expect(makeTable().evaluateFormula('LEFT({a}, 3)', { a: 'abcdef' })).toBe('abc');
+    expect(makeTable().evaluateFormula('RIGHT({a}, 2)', { a: 'abcdef' })).toBe('ef');
+  });
+});
+
+// ── Aggregate functions (cross-row) ──────────────────────────────────────────
+
+describe('evaluateFormula: aggregate functions', () => {
+  function makeMultiRow() {
+    document.body.innerHTML = '<div id="t"></div>';
+    const TC = require('../src/tablecrafter');
+    return new TC('#t', {
+      columns: [{ field: 'price' }, { field: 'qty' }],
+      data: [{ price: 10, qty: 2 }, { price: 20, qty: 5 }, { price: 30, qty: 1 }]
+    });
+  }
+
+  test('SUM aggregates a column across all rows', () => {
+    const t = makeMultiRow();
+    expect(t.evaluateFormula('SUM(price)', {})).toBe(60);
+  });
+
+  test('AVG aggregates average across rows', () => {
+    const t = makeMultiRow();
+    expect(t.evaluateFormula('AVG(qty)', {})).toBeCloseTo(2.667, 2);
+  });
+
+  test('COUNT counts non-empty cells', () => {
+    const t = makeMultiRow();
+    expect(t.evaluateFormula('COUNT(price)', {})).toBe(3);
+  });
+});
+
+// ── Logic ─────────────────────────────────────────────────────────────────────
+
+describe('evaluateFormula: IF function', () => {
+  test('IF returns true branch when condition is truthy', () => {
+    expect(makeTable().evaluateFormula('IF(1, 42, 0)', {})).toBe(42);
+  });
+
+  test('IF returns false branch when condition is falsy', () => {
+    expect(makeTable().evaluateFormula('IF(0, 42, 99)', {})).toBe(99);
   });
 });

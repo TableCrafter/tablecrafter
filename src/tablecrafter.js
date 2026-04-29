@@ -4287,7 +4287,22 @@ class TableCrafter {
       }
     };
 
-    const tokens = this._tokenizeFormula(formula);
+    // Pre-process: reduce function calls to scalar values
+    let processed;
+    try {
+      processed = this._reduceFunctions(formula, row);
+    } catch (_) {
+      return null;
+    }
+    if (processed === null) return null;
+
+    // If a string function (CONCAT, UPPER, etc.) reduced to a JSON-quoted literal, return it
+    const trimmed = String(processed).trim();
+    if (/^".*"$/.test(trimmed)) {
+      return trimmed.slice(1, -1);
+    }
+
+    const tokens = this._tokenizeFormula(String(processed));
     if (!tokens) {
       warnOnce('disallowed token');
       return null;
@@ -4314,6 +4329,111 @@ class TableCrafter {
     const result = this._evaluatePostfix(postfix);
     if (result === null || !Number.isFinite(result)) return null;
     return result;
+  }
+
+  _reduceFunctions(expr, row) {
+    let s = String(expr);
+    let iteration = 0;
+    // Repeatedly reduce innermost function calls (no nested parens inside args)
+    while (iteration++ < 50) {
+      const match = s.match(/([A-Z_][A-Z0-9_]*)\(([^()]*)\)/);
+      if (!match) break;
+      const [full, name, rawArgs] = match;
+      // Resolve {field} placeholders inside args before calling the function
+      const resolvedArgStr = rawArgs.replace(/\{([a-zA-Z_][\w]*)\}/g, (_, field) => {
+        if (!row || !(field in row)) throw new Error('missing');
+        const v = row[field];
+        return typeof v === 'string' ? JSON.stringify(v) : String(v);
+      });
+      const args = this._splitFormulaArgs(resolvedArgStr);
+      const evaled = this._applyFormulaFunction(name, args, row);
+      if (evaled === null) return null;
+      s = s.slice(0, match.index) + JSON.stringify(evaled) + s.slice(match.index + full.length);
+    }
+    // Resolve remaining {field} placeholders (for arithmetic)
+    s = s.replace(/\{([a-zA-Z_][\w]*)\}/g, (_, field) => {
+      if (!row || !(field in row)) throw new Error('missing');
+      return String(row[field]);
+    });
+    return s;
+  }
+
+  _splitFormulaArgs(s) {
+    const args = [];
+    let depth = 0, start = 0;
+    for (let i = 0; i < s.length; i++) {
+      if (s[i] === '(') depth++;
+      else if (s[i] === ')') depth--;
+      else if (s[i] === ',' && depth === 0) {
+        args.push(s.slice(start, i).trim());
+        start = i + 1;
+      }
+    }
+    args.push(s.slice(start).trim());
+    return args.filter(a => a !== '');
+  }
+
+  _resolveFormulaArg(arg, row) {
+    if (/^".*"$/.test(arg)) return arg.slice(1, -1);
+    const n = Number(arg);
+    if (!isNaN(n)) return n;
+    // Try evaluating as arithmetic (handles "10 * 1.1" style expressions)
+    const tokens = this._tokenizeFormula(arg);
+    if (tokens && tokens.every(t => t.type !== 'placeholder')) {
+      const postfix = this._toPostfix(tokens);
+      if (postfix) {
+        const result = this._evaluatePostfix(postfix);
+        if (result !== null && Number.isFinite(result)) return result;
+      }
+    }
+    return arg;
+  }
+
+  _applyFormulaFunction(name, rawArgs, row) {
+    const args = rawArgs.map(a => this._resolveFormulaArg(a, row));
+    const nums = args.map(Number);
+    switch (name) {
+      // Math
+      case 'ROUND':    return isNaN(nums[0]) ? null : Math.round(nums[0] * Math.pow(10, nums[1] || 0)) / Math.pow(10, nums[1] || 0);
+      case 'ABS':      return isNaN(nums[0]) ? null : Math.abs(nums[0]);
+      case 'CEIL':     return isNaN(nums[0]) ? null : Math.ceil(nums[0]);
+      case 'FLOOR':    return isNaN(nums[0]) ? null : Math.floor(nums[0]);
+      case 'SQRT':     return isNaN(nums[0]) || nums[0] < 0 ? null : Math.sqrt(nums[0]);
+      case 'POWER':    return isNaN(nums[0]) || isNaN(nums[1]) ? null : Math.pow(nums[0], nums[1]);
+      case 'MIN':      return nums.some(isNaN) ? null : Math.min(...nums);
+      case 'MAX':      return nums.some(isNaN) ? null : Math.max(...nums);
+      case 'MOD':      return isNaN(nums[0]) || isNaN(nums[1]) || nums[1] === 0 ? null : nums[0] % nums[1];
+      // Text
+      case 'CONCAT':   return args.join('');
+      case 'UPPER':    return String(args[0]).toUpperCase();
+      case 'LOWER':    return String(args[0]).toLowerCase();
+      case 'TRIM':     return String(args[0]).trim();
+      case 'LEN':      return String(args[0]).length;
+      case 'LEFT':     return String(args[0]).slice(0, nums[1] || 0);
+      case 'RIGHT':    return String(args[0]).slice(-(nums[1] || 0));
+      case 'MID':      return String(args[0]).slice(nums[1] - 1, (nums[1] - 1) + nums[2]);
+      // Logic
+      case 'IF': {
+        let cond;
+        try { cond = !!Function('"use strict"; return (' + rawArgs[0] + ')')(); } catch (_) { cond = !!args[0]; }
+        return cond ? this._resolveFormulaArg(rawArgs[1], row) : this._resolveFormulaArg(rawArgs[2], row);
+      }
+      // Aggregates (cross-row)
+      case 'SUM': {
+        const field = String(args[0]);
+        return (this.data || []).reduce((acc, r) => acc + (Number(r[field]) || 0), 0);
+      }
+      case 'AVG': {
+        const field = String(args[0]);
+        const vals = (this.data || []).map(r => Number(r[field])).filter(v => !isNaN(v));
+        return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+      }
+      case 'COUNT': {
+        const field = String(args[0]);
+        return (this.data || []).filter(r => r[field] != null && r[field] !== '').length;
+      }
+      default: return null;
+    }
   }
 
   _tokenizeFormula(s) {
