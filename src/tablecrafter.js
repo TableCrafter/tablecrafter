@@ -2063,6 +2063,35 @@ class TableCrafter {
   }
 
   /**
+   * Format-aware browser download. Resolves once the link has been clicked,
+   * or rejects with the same error exportData would surface (e.g. xlsx not
+   * yet available, unsupported format). On reject, no download is triggered.
+   */
+  async downloadExport(format, filename) {
+    const content = await this.exportData(format);
+
+    const mime = format === 'json'
+      ? 'application/json;charset=utf-8;'
+      : 'text/csv;charset=utf-8;';
+    const blob = (content instanceof Blob) ? content : new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename || this._exportFilename(format);
+    link.click();
+
+    URL.revokeObjectURL(url);
+  }
+
+  _exportFilename(format) {
+    const configured = this.config.exportFilename || 'table-export';
+    // Strip an existing extension and append the format-appropriate one.
+    const base = String(configured).replace(/\.[^./\\]+$/, '');
+    return `${base}.${format}`;
+  }
+
+  /**
    * Download CSV file
    */
   downloadCSV() {
