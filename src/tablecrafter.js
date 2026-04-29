@@ -2065,12 +2065,19 @@ class TableCrafter {
    * Sort data
    */
   sort(field) {
-    if (this.sortField === field) {
-      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortField = field;
-      this.sortOrder = 'asc';
+    const nextOrder = (this.sortField === field)
+      ? (this.sortOrder === 'asc' ? 'desc' : 'asc')
+      : 'asc';
+
+    // Plugin lifecycle: beforeSort. Cancel-on-false aborts the sort entirely
+    // — sortField / sortOrder are not mutated, data order is preserved, and
+    // afterSort does not fire.
+    if (this._fireHook && this._fireHook('beforeSort', { field, order: nextOrder }) === false) {
+      return;
     }
+
+    this.sortField = field;
+    this.sortOrder = nextOrder;
 
     this.data.sort((a, b) => {
       const aVal = a[field];
@@ -2086,6 +2093,11 @@ class TableCrafter {
     this.currentPage = 1;
     this.saveState();
     this.render();
+
+    // Plugin lifecycle: afterSort. Return value is ignored.
+    if (this._fireHook) {
+      this._fireHook('afterSort', { field: this.sortField, order: this.sortOrder });
+    }
   }
 
   /**
