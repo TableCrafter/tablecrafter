@@ -3460,6 +3460,60 @@ class TableCrafter {
     return tokens;
   }
 
+  async bench(label, fn, options) {
+    const opts = options || {};
+    const runs = typeof opts.runs === 'number' ? opts.runs : 50;
+    const warmup = typeof opts.warmup === 'number' ? opts.warmup : 5;
+    const now = (typeof performance !== 'undefined' && performance.now)
+      ? () => performance.now()
+      : () => Date.now();
+
+    for (let i = 0; i < warmup; i++) {
+      await fn();
+    }
+
+    const timings = [];
+    for (let i = 0; i < runs; i++) {
+      const start = now();
+      await fn();
+      timings.push(now() - start);
+    }
+
+    const sorted = timings.slice().sort((a, b) => a - b);
+    const total = timings.reduce((a, b) => a + b, 0);
+    const pick = q => {
+      if (sorted.length === 0) return 0;
+      if (sorted.length === 1) return sorted[0];
+      const idx = Math.min(sorted.length - 1, Math.floor(q * (sorted.length - 1)));
+      return sorted[idx];
+    };
+
+    return {
+      label,
+      runs,
+      min: sorted[0] || 0,
+      max: sorted[sorted.length - 1] || 0,
+      mean: runs ? total / runs : 0,
+      median: pick(0.5),
+      p95: pick(0.95),
+      totalMs: total
+    };
+  }
+
+  benchRender(options) {
+    return this.bench('render', () => this.render(), options);
+  }
+
+  async benchFilter(query, options) {
+    const previous = this.searchTerm;
+    try {
+      this.searchTerm = query == null ? '' : String(query);
+      return await this.bench('filter', () => this.getFilteredData(), options);
+    } finally {
+      this.searchTerm = previous;
+    }
+  }
+
   selectRange(anchor, focus) {
     const fields = (this.config.columns || []).map(c => c.field);
     const aIdx = fields.indexOf(anchor && anchor.field);
