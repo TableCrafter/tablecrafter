@@ -2784,6 +2784,19 @@ class TableCrafter {
       case 'field': {
         const cell = row[node.field];
         if (cell === undefined || cell === null) return false;
+        const op = node.op || 'eq';
+        if (op === 'eq_strict') {
+          return String(cell) === String(node.value);
+        }
+        if (op === 'gt' || op === 'lt' || op === 'gte' || op === 'lte') {
+          const cellNum = Number(cell);
+          const valNum = Number(node.value);
+          if (Number.isNaN(cellNum) || Number.isNaN(valNum)) return false;
+          if (op === 'gt')  return cellNum >  valNum;
+          if (op === 'lt')  return cellNum <  valNum;
+          if (op === 'gte') return cellNum >= valNum;
+          if (op === 'lte') return cellNum <= valNum;
+        }
         const haystack = String(cell).toLowerCase();
         const needle = String(node.value || '').toLowerCase();
         return haystack.includes(needle);
@@ -2823,7 +2836,7 @@ class TableCrafter {
     }
     if (tok.type === 'field') {
       return {
-        node: { type: 'field', field: tok.field, op: 'eq', value: tok.value },
+        node: { type: 'field', field: tok.field, op: tok.op || 'eq', value: tok.value },
         next: i + 1
       };
     }
@@ -2869,6 +2882,13 @@ class TableCrafter {
 
       if (i < s.length && s[i] === ':') {
         i++; // consume colon
+        let op = 'eq';
+        if (s[i] === '>' && s[i + 1] === '=') { op = 'gte'; i += 2; }
+        else if (s[i] === '<' && s[i + 1] === '=') { op = 'lte'; i += 2; }
+        else if (s[i] === '>') { op = 'gt'; i += 1; }
+        else if (s[i] === '<') { op = 'lt'; i += 1; }
+        else if (s[i] === '=') { op = 'eq_strict'; i += 1; }
+
         let value = '';
         if (i < s.length && s[i] === '"') {
           const q = readQuoted(i);
@@ -2879,7 +2899,7 @@ class TableCrafter {
           while (i < s.length && !/\s/.test(s[i])) i++;
           value = s.slice(valueStart, i);
         }
-        tokens.push({ type: 'field', field: word, value });
+        tokens.push({ type: 'field', field: word, op, value });
         continue;
       }
 
