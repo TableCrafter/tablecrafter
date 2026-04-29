@@ -2,7 +2,25 @@
   "name": "tablecrafter",
   "version": "1.6.5",
   "description": "A lightweight, mobile-responsive data table library with inline editing",
-  "main": "src/tablecrafter.js",
+  "main": "dist/tablecrafter.umd.js",
+  "module": "src/tablecrafter.js",
+  "unpkg": "dist/tablecrafter.umd.min.js",
+  "jsdelivr": "dist/tablecrafter.umd.min.js",
+  "exports": {
+    ".": {
+      "import": "./src/tablecrafter.js",
+      "require": "./dist/tablecrafter.umd.js",
+      "default": "./dist/tablecrafter.umd.js"
+    },
+    "./src/*": "./src/*",
+    "./dist/*": "./dist/*"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "directories": {
     "example": "examples",
     "test": "test"
