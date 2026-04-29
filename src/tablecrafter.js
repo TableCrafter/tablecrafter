@@ -830,6 +830,12 @@ class TableCrafter {
     table.appendChild(tbody);
     tableContainer.appendChild(table);
 
+    // Wire contextmenu listener once per render — delegates to openContextMenu
+    // by scope (header / row / cell) when contextMenu.enabled is true.
+    if (typeof this._wireContextMenuEvents === 'function') {
+      this._wireContextMenuEvents(table);
+    }
+
     return tableContainer;
   }
 
@@ -2781,6 +2787,19 @@ class TableCrafter {
 
     document.body.appendChild(menu);
     this._contextMenu = menu;
+
+    // Dismissal: Escape + outside-click. Attached lazily; torn down in close.
+    const onKeyDown = (ev) => {
+      if (ev.key === 'Escape') this.closeContextMenu();
+    };
+    const onDocClick = (ev) => {
+      if (this._contextMenu && !this._contextMenu.contains(ev.target)) {
+        this.closeContextMenu();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('click', onDocClick);
+    this._contextMenuListeners = { onKeyDown, onDocClick };
   }
 
   closeContextMenu() {
@@ -2788,6 +2807,56 @@ class TableCrafter {
       this._contextMenu.parentNode.removeChild(this._contextMenu);
     }
     this._contextMenu = null;
+    if (this._contextMenuListeners) {
+      document.removeEventListener('keydown', this._contextMenuListeners.onKeyDown);
+      document.removeEventListener('click', this._contextMenuListeners.onDocClick);
+      this._contextMenuListeners = null;
+    }
+  }
+
+  /**
+   * Attach a contextmenu listener to the rendered table that delegates by
+   * scope (header / row / cell) and supplies the context payload. Called
+   * once per render after the table DOM is in place.
+   */
+  _wireContextMenuEvents(tableEl) {
+    if (!tableEl || !this.config.contextMenu || !this.config.contextMenu.enabled) return;
+    if (tableEl._tcContextMenuWired) return;
+    tableEl._tcContextMenuWired = true;
+
+    tableEl.addEventListener('contextmenu', (ev) => {
+      const target = ev.target;
+      const td = target.closest && target.closest('td');
+      const th = target.closest && target.closest('th');
+      const tr = target.closest && target.closest('tr');
+
+      if (th) {
+        ev.preventDefault();
+        this.openContextMenu('header', { field: th.dataset.field || null });
+        return;
+      }
+      if (td) {
+        ev.preventDefault();
+        const rowIndex = tr ? Number(tr.dataset.rowIndex) : null;
+        const field = td.dataset.field || null;
+        const row = (rowIndex != null && this.data[rowIndex]) || null;
+        this.openContextMenu('cell', {
+          rowIndex,
+          field,
+          row,
+          value: row && field ? row[field] : undefined
+        });
+        return;
+      }
+      if (tr) {
+        ev.preventDefault();
+        const rowIndex = Number(tr.dataset.rowIndex);
+        this.openContextMenu('row', {
+          rowIndex,
+          row: this.data[rowIndex] || null
+        });
+      }
+    });
   }
 
   /**
