@@ -853,9 +853,14 @@ class TableCrafter {
           if (column.pinned === 'left') td.classList.add('tc-pinned-left');
           else if (column.pinned === 'right') td.classList.add('tc-pinned-right');
 
-          // Format lookup values
-          let displayValue = row[column.field];
-          
+          let displayValue;
+          if (column.formula) {
+            const computed = this.evaluateFormula(column.formula, row);
+            displayValue = computed === null ? '' : computed;
+          } else {
+            displayValue = row[column.field];
+          }
+
           if (displayValue === null || displayValue === undefined) {
              displayValue = '';
           }
@@ -3407,6 +3412,143 @@ class TableCrafter {
       }
     }
     return tokens;
+  }
+
+  evaluateFormula(formula, row) {
+    if (typeof formula !== 'string') return null;
+    if (!this._formulaWarned) this._formulaWarned = new Set();
+
+    const warnOnce = reason => {
+      const key = `${formula}|${reason}`;
+      if (!this._formulaWarned.has(key)) {
+        this._formulaWarned.add(key);
+        console.warn(`TableCrafter formula: ${reason} in "${formula}"`);
+      }
+    };
+
+    const tokens = this._tokenizeFormula(formula);
+    if (!tokens) {
+      warnOnce('disallowed token');
+      return null;
+    }
+
+    const resolved = [];
+    for (const tok of tokens) {
+      if (tok.type === 'placeholder') {
+        if (!row || !(tok.name in row)) return null;
+        const num = Number(row[tok.name]);
+        if (Number.isNaN(num)) return null;
+        resolved.push({ type: 'number', value: num });
+      } else {
+        resolved.push(tok);
+      }
+    }
+
+    const postfix = this._toPostfix(resolved);
+    if (!postfix) {
+      warnOnce('mismatched parentheses');
+      return null;
+    }
+
+    const result = this._evaluatePostfix(postfix);
+    if (result === null || !Number.isFinite(result)) return null;
+    return result;
+  }
+
+  _tokenizeFormula(s) {
+    const tokens = [];
+    let i = 0;
+    while (i < s.length) {
+      const ch = s[i];
+      if (/\s/.test(ch)) { i++; continue; }
+      if (ch === '+' || ch === '-' || ch === '*' || ch === '/') {
+        tokens.push({ type: 'op', value: ch });
+        i++;
+        continue;
+      }
+      if (ch === '(') { tokens.push({ type: 'lparen' }); i++; continue; }
+      if (ch === ')') { tokens.push({ type: 'rparen' }); i++; continue; }
+      if (ch === '{') {
+        const end = s.indexOf('}', i + 1);
+        if (end === -1) return null;
+        const name = s.slice(i + 1, end);
+        if (!/^[a-zA-Z_][\w]*$/.test(name)) return null;
+        tokens.push({ type: 'placeholder', name });
+        i = end + 1;
+        continue;
+      }
+      if (/[0-9.]/.test(ch)) {
+        const start = i;
+        while (i < s.length && /[0-9.]/.test(s[i])) i++;
+        const num = parseFloat(s.slice(start, i));
+        if (Number.isNaN(num)) return null;
+        tokens.push({ type: 'number', value: num });
+        continue;
+      }
+      return null;
+    }
+    return tokens;
+  }
+
+  _toPostfix(tokens) {
+    const out = [];
+    const ops = [];
+    const prec = { '+': 1, '-': 1, '*': 2, '/': 2 };
+    for (const tok of tokens) {
+      if (tok.type === 'number') {
+        out.push(tok);
+      } else if (tok.type === 'op') {
+        while (ops.length) {
+          const top = ops[ops.length - 1];
+          if (top.type === 'op' && prec[top.value] >= prec[tok.value]) {
+            out.push(ops.pop());
+          } else break;
+        }
+        ops.push(tok);
+      } else if (tok.type === 'lparen') {
+        ops.push(tok);
+      } else if (tok.type === 'rparen') {
+        let matched = false;
+        while (ops.length) {
+          const top = ops.pop();
+          if (top.type === 'lparen') { matched = true; break; }
+          out.push(top);
+        }
+        if (!matched) return null;
+      }
+    }
+    while (ops.length) {
+      const top = ops.pop();
+      if (top.type === 'lparen') return null;
+      out.push(top);
+    }
+    return out;
+  }
+
+  _evaluatePostfix(tokens) {
+    const stack = [];
+    for (const tok of tokens) {
+      if (tok.type === 'number') {
+        stack.push(tok.value);
+      } else if (tok.type === 'op') {
+        if (stack.length < 2) return null;
+        const b = stack.pop();
+        const a = stack.pop();
+        let r;
+        switch (tok.value) {
+          case '+': r = a + b; break;
+          case '-': r = a - b; break;
+          case '*': r = a * b; break;
+          case '/':
+            if (b === 0) return null;
+            r = a / b;
+            break;
+          default: return null;
+        }
+        stack.push(r);
+      }
+    }
+    return stack.length === 1 ? stack[0] : null;
   }
 
   getAggregates(rows) {
