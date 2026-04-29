@@ -64,6 +64,9 @@ class TableCrafter {
           notOneOf: 'Value is not allowed',
           phone: 'Please enter a valid phone number',
           unique: 'Value must be unique',
+          date: 'Please enter a valid date',
+          dateMin: 'Date must be on or after {min}',
+          dateMax: 'Date must be on or before {max}',
           minLength: 'Minimum length is {min} characters',
           maxLength: 'Maximum length is {max} characters',
           min: 'Minimum value is {min}',
@@ -3865,11 +3868,9 @@ class TableCrafter {
       const variant = rules.phone === 'permissive' ? 'permissive' : 'E.164';
       let ok;
       if (variant === 'permissive') {
-        // Strip separators, then require 7-15 digits with optional leading +.
         const digits = String(value).replace(/[\s().+\-]/g, '');
         ok = /^\d{7,15}$/.test(digits);
       } else {
-        // E.164: optional +, leading non-zero digit, total 2-15 digits.
         ok = /^\+?[1-9]\d{1,14}$/.test(String(value));
       }
       if (!ok) {
@@ -3886,6 +3887,28 @@ class TableCrafter {
       const dupe = this.data.some(other => other !== rowData && norm(other[field]) === target);
       if (dupe) {
         errors.push(this.getValidationMessage('unique', rules));
+      }
+    }
+
+    // Date validation: parses Date / ISO strings and checks min / max bounds.
+    if (rules.date) {
+      const opts = (typeof rules.date === 'object') ? rules.date : {};
+      const date = (value instanceof Date) ? value : new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        errors.push(this.getValidationMessage('date', rules));
+      } else {
+        if (opts.min) {
+          const min = new Date(opts.min);
+          if (!Number.isNaN(min.getTime()) && date < min) {
+            errors.push(this.getValidationMessage('dateMin', rules).replace('{min}', opts.min));
+          }
+        }
+        if (opts.max) {
+          const max = new Date(opts.max);
+          if (!Number.isNaN(max.getTime()) && date > max) {
+            errors.push(this.getValidationMessage('dateMax', rules).replace('{max}', opts.max));
+          }
+        }
       }
     }
 
