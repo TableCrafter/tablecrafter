@@ -3460,6 +3460,35 @@ class TableCrafter {
     return tokens;
   }
 
+  clearCaches() {
+    if (this.lookupCache && typeof this.lookupCache.clear === 'function') {
+      this.lookupCache.clear();
+    }
+    if (this._regexCache && typeof this._regexCache.clear === 'function') {
+      this._regexCache.clear();
+    }
+    if (this._badRegexWarned && typeof this._badRegexWarned.clear === 'function') {
+      this._badRegexWarned.clear();
+    }
+    if (this._missingI18nKeys && typeof this._missingI18nKeys.clear === 'function') {
+      this._missingI18nKeys.clear();
+    }
+    if (this._formulaWarned && typeof this._formulaWarned.clear === 'function') {
+      this._formulaWarned.clear();
+    }
+  }
+
+  getMemoryFootprint() {
+    return {
+      rows: Array.isArray(this.data) ? this.data.length : 0,
+      columns: Array.isArray(this.config && this.config.columns) ? this.config.columns.length : 0,
+      lookupCacheSize: this.lookupCache && typeof this.lookupCache.size === 'number' ? this.lookupCache.size : 0,
+      regexCacheSize: this._regexCache && typeof this._regexCache.size === 'number' ? this._regexCache.size : 0,
+      validationErrorsSize: this.validationErrors && typeof this.validationErrors.size === 'number' ? this.validationErrors.size : 0,
+      pluginsSize: Array.isArray(this._plugins) ? this._plugins.length : 0
+    };
+  }
+
   computeVirtualWindow(args) {
     const a = args || {};
     const totalRows = Number.isFinite(a.totalRows) && a.totalRows > 0 ? Math.floor(a.totalRows) : 0;
