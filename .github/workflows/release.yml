@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for changelog)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Resolve previous tag
+        id: prev_tag
+        run: |
+          PREV=$(git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^${GITHUB_REF_NAME}$" | head -n1 || echo "")
+          echo "previous=${PREV}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV="${{ steps.prev_tag.outputs.previous }}"
+          if [ -n "$PREV" ]; then
+            RANGE="${PREV}..${GITHUB_REF_NAME}"
+          else
+            RANGE="${GITHUB_REF_NAME}"
+          fi
+
+          {
+            echo "## ${GITHUB_REF_NAME}"
+            echo
+            for type in feat fix perf refactor docs test build ci; do
+              section=$(git log $RANGE --format='%s' | grep -E "^${type}(\(|:|!)" || true)
+              if [ -n "$section" ]; then
+                case "$type" in
+                  feat)     heading="### Features" ;;
+                  fix)      heading="### Bug fixes" ;;
+                  perf)     heading="### Performance" ;;
+                  refactor) heading="### Refactors" ;;
+                  docs)     heading="### Documentation" ;;
+                  test)     heading="### Tests" ;;
+                  build)    heading="### Build" ;;
+                  ci)       heading="### CI" ;;
+                esac
+                echo "$heading"
+                echo
+                echo "$section" | sed 's/^/- /'
+                echo
+              fi
+            done
+
+            other=$(git log $RANGE --format='%s' | grep -vE '^(feat|fix|perf|refactor|docs|test|build|ci)(\(|:|!)' || true)
+            if [ -n "$other" ]; then
+              echo "### Other changes"
+              echo
+              echo "$other" | sed 's/^/- /'
+              echo
+            fi
+          } > RELEASE_NOTES.md
+
+          {
+            echo 'notes<<NOTES_EOF'
+            cat RELEASE_NOTES.md
+            echo 'NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.notes }}
+          files: |
+            dist/**
