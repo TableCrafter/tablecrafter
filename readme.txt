@@ -2,8 +2,8 @@
 Contributors: fahdi
 Tags: table, json, api, accessibility, wcag
 Requires at least: 5.0
-Tested up to: 6.7
-Stable tag: 3.5.4
+Tested up to: 7.0
+Stable tag: 3.5.5
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -282,6 +282,10 @@ Yes! If you need specific features, deep integrations, or custom designs, I am a
 4. **Reactive Gutenberg Block** - Visual block editor with proxy-supported live previews. Settings for Search, Export, and Filters trigger instant updates without coding.
 
 == Changelog ==
+
+= 3.5.5 =
+* **COMPATIBILITY**: Tested with WordPress 7.0.
+* **MAINTENANCE**: Bumped supported WordPress version.
 
 = 3.5.4 =
 * **Maintenance**: Maintenance release with latest WordPress compatibility testing.
