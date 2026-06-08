@@ -3,7 +3,7 @@
  * Plugin Name: TableCrafter – Data to Beautiful Tables
  * Plugin URI: https://github.com/TableCrafter/wp-data-tables
  * Description: Transform any data source into responsive WordPress tables. WCAG 2.1 compliant, advanced export (Excel/PDF), keyboard navigation, screen readers.
- * Version: 3.5.3
+ * Version: 3.5.4
  * Author: TableCrafter Team
  * Author URI: https://github.com/fahdi
  * License: GPLv2 or later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
  * Check PHP version compatibility
  */
 if (version_compare(PHP_VERSION, '8.0.0', '<')) {
-    add_action('admin_notices', function() {
+    add_action('admin_notices', function () {
         echo '<div class="notice notice-error"><p>';
         echo '<strong>TableCrafter Error:</strong> This plugin requires PHP 8.0 or higher. ';
         echo 'You are running PHP ' . PHP_VERSION . '. Please upgrade your PHP version.';
@@ -31,7 +31,7 @@ if (version_compare(PHP_VERSION, '8.0.0', '<')) {
 /**
  * Global Constants
  */
-define('TABLECRAFTER_VERSION', '3.5.3');
+define('TABLECRAFTER_VERSION', '3.5.4');
 define('TABLECRAFTER_URL', plugin_dir_url(__FILE__));
 define('TABLECRAFTER_PATH', plugin_dir_path(__FILE__));
 
@@ -78,6 +78,11 @@ if (file_exists(TABLECRAFTER_PATH . 'includes/class-tc-export-handler-enhanced.p
 
 if (file_exists(TABLECRAFTER_PATH . 'includes/class-tc-performance-optimizer.php')) {
     require_once TABLECRAFTER_PATH . 'includes/class-tc-performance-optimizer.php';
+}
+
+// Real-time collaboration system
+if (file_exists(TABLECRAFTER_PATH . 'includes/class-tc-collaboration.php')) {
+    require_once TABLECRAFTER_PATH . 'includes/class-tc-collaboration.php';
 }
 
 // Load Elementor widget only when Elementor is available
@@ -473,7 +478,7 @@ class TableCrafter
             'downloadNonce' => wp_create_nonce('tc_download_nonce'),
             'i18n' => $this->get_js_i18n_strings()
         ));
-        
+
         // Make export nonce globally available for enhanced export functionality
         wp_add_inline_script('tablecrafter-frontend', 'window.tcExportNonce = "' . wp_create_nonce('tc_export_nonce') . '";', 'before');
 
@@ -481,6 +486,14 @@ class TableCrafter
             'tablecrafter-style',
             TABLECRAFTER_URL . 'assets/css/tablecrafter.css',
             array(),
+            TABLECRAFTER_VERSION
+        );
+
+        // Collaboration styles (loaded separately for modularity)
+        wp_register_style(
+            'tablecrafter-collaboration',
+            TABLECRAFTER_URL . 'assets/css/collaboration.css',
+            array('tablecrafter-style'),
             TABLECRAFTER_VERSION
         );
 
@@ -1594,12 +1607,12 @@ class TableCrafter
     public function automated_cache_refresh(): void
     {
         $urls = get_option('tc_tracked_urls', array());
-        
+
         // Initialize HTTP handler if not already done
         if (!$this->http && class_exists('TC_HTTP_Request')) {
             $this->http = TC_HTTP_Request::get_instance();
         }
-        
+
         foreach ($urls as $url) {
             if ($this->http) {
                 $result = $this->http->request($url, TC_HTTP_Request::TYPE_CACHE_WARMUP);
