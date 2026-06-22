@@ -1,6 +1,6 @@
 {
   "name": "tablecrafter-wp-data-tables",
-  "version": "3.5.3",
+  "version": "3.5.6",
   "description": "Transform any JSON API or CSV into beautiful, responsive WordPress data tables with live search, pagination, sorting, and SEO-friendly server-side rendering.",
   "main": "index.js",
   "directories": {

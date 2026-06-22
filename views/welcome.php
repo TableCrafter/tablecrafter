@@ -141,10 +141,10 @@ if (!defined('ABSPATH')) {
                 style="max-width: none; border-left: 4px solid #dc2626; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); padding: 24px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);">
                 <div style="text-align: center; margin-bottom: 20px;">
                     <div style="font-size: 32px; margin-bottom: 12px; line-height: 1;">🚀</div>
-                    <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #dc2626;">50+ Premium Data Sources</h3>
-                    <p style="margin: 0; font-size: 14px; color: #7f1d1d; line-height: 1.4; font-weight: 500;">APIs, CSVs & Google Sheets - Ready to Use!</p>
+                    <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #dc2626;">Free Guide: 50+ Data Source Ideas</h3>
+                    <p style="margin: 0; font-size: 14px; color: #7f1d1d; line-height: 1.4; font-weight: 500;">Public APIs, CSVs &amp; Google Sheets you can connect with TableCrafter</p>
                 </div>
-                
+
                 <!-- Value Props -->
                 <div style="margin-bottom: 20px; font-size: 13px; color: #991b1b;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
@@ -153,11 +153,11 @@ if (!defined('ABSPATH')) {
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                         <span style="color: #16a34a; font-weight: bold;">✓</span>
-                        <span>E-commerce data sources</span>
+                        <span>E-commerce &amp; product data examples</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="color: #16a34a; font-weight: bold;">✓</span>
-                        <span>SaaS metrics & analytics</span>
+                        <span>SaaS metrics &amp; analytics sources</span>
                     </div>
                 </div>
                 

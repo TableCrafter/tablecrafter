@@ -87,7 +87,7 @@ Unlock the full potential of your data with **[Advanced Data Tables for Gravity 
 - 📥 **Pro Export:** Export filtered views to Excel, CSV, or PDF.
 - ♾️ **Unlimited Freedom:** No limits on tables, columns, or rows.
 
-**Start your 10-day free trial today! You can cancel anytime before the trial ends to avoid being charged, and we'll send you an email reminder 2 days before it expires.**
+**Start your 7-day free trial today! You can cancel anytime before the trial ends to avoid being charged, and we'll send you an email reminder 2 days before it expires.**
 
 ---
 

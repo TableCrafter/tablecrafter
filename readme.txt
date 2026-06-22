@@ -3,7 +3,7 @@ Contributors: fahdi
 Tags: table, json, api, accessibility, wcag
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 3.5.5
+Stable tag: 3.5.6
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -234,7 +234,7 @@ Unlock the full potential of your data with **[Advanced Data Tables for Gravity 
 *   📥 **Pro Export:** Export filtered views to Excel, CSV, or PDF.
 *   ♾️ **Unlimited Freedom:** No limits on tables, columns, or rows.
 
-**Start your 10-day free trial today! You can cancel anytime before the trial ends to avoid being charged, and we'll send you an email reminder 2 days before the trial ends.**
+**Start your 7-day free trial today! You can cancel anytime before the trial ends to avoid being charged, and we'll send you an email reminder 2 days before the trial ends.**
 
 ### 🛠️ Custom Customization
 Need a specific feature, a custom API integration, or a unique table layout? Contact me at **[info@fahdmurtaza.com](mailto:info@fahdmurtaza.com)** if you need to customise the plugin in any way for a fee. 
@@ -282,6 +282,15 @@ Yes! If you need specific features, deep integrations, or custom designs, I am a
 4. **Reactive Gutenberg Block** - Visual block editor with proxy-supported live previews. Settings for Search, Export, and Filters trigger instant updates without coding.
 
 == Changelog ==
+
+= 3.5.6 =
+🎯 **Export integrity, dist hygiene & honest copy**
+* **Export integrity:** Consolidated to a single canonical export handler. Removed the duplicate "enhanced" handler that wrote HTML disguised as .xlsx/.pdf.
+* **Real XLSX:** Excel export now produces a genuine OOXML (.xlsx) workbook (validated as a real, openable spreadsheet), not a renamed CSV or HTML file.
+* **Honest PDF:** PDF export now produces a structurally valid PDF 1.4 document (correct objects and cross-reference table) instead of HTML mislabeled as a PDF.
+* **Hygiene:** Removed stray `.backup` and dead test files; hardened `.distignore`/`.svnignore` so the built package contains only runtime files (no tests, vendor, node_modules, or backups).
+* **Honest copy:** Reframed the admin lead-magnet to accurately describe a free data-source guide instead of implying bundled premium sources.
+* **Trial:** Updated trial copy from 10-day to 7-day.
 
 = 3.5.5 =
 * **COMPATIBILITY**: Tested with WordPress 7.0.
@@ -859,6 +868,9 @@ Yes! If you need specific features, deep integrations, or custom designs, I am a
 * Initial release.
 
 == Upgrade Notice ==
+
+= 3.5.6 =
+Export integrity fix: Excel and PDF exports now produce genuine .xlsx and .pdf files instead of mislabeled HTML. Recommended update for anyone using the export feature.
 
 = 3.2.2 =
 Critical fix for fatal error during Elementor activation. Resolves activation order dependency issues and updates deprecated Elementor APIs for full compatibility.

@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.5.6] - 2026-06-22
+
+### 🎯 Export integrity, dist hygiene & honest copy
+
+#### Fixed
+- **Single export handler:** Consolidated to one canonical `TC_Export_Handler`. Removed the duplicate `TC_Export_Handler_Enhanced` handler, which wrote HTML disguised as `.xlsx` and `.pdf` files and collided on the same AJAX action.
+- **Real XLSX:** Excel export now writes a genuine OOXML (`.xlsx`) workbook via `ZipArchive` — verified as a real, openable spreadsheet (recognized by libmagic as "Microsoft Excel 2007+", openable in Quick Look). No more CSV/HTML renamed to `.xlsx`.
+- **Honest PDF:** PDF export now emits a structurally valid PDF 1.4 document with correct object structure and a byte-accurate cross-reference table (recognized by libmagic as "PDF document, version 1.4"). No more HTML mislabeled as a PDF.
+- **CSV forward-compat:** Passed the explicit `$escape` argument to `fputcsv()` to silence the PHP 8.4+ deprecation.
+
+#### Changed
+- **Honest upsell copy:** Reframed the admin welcome lead-magnet from "50+ Premium Data Sources – Ready to Use!" to an accurate description of a free guide of data-source ideas you can connect.
+- **Trial copy:** Updated "10-day free trial" to "7-day free trial" in `readme.txt` and `README.md`.
+
+#### Removed
+- Deleted `includes/class-tc-elementor-widget.php.backup` and dead test scaffolding tied to the removed enhanced handler.
+
+#### Build / hygiene
+- Hardened `.distignore` and `.svnignore` so the distributed package ships only runtime files (excludes tests, vendor, node_modules, dev scripts, backups, screenshots). Verified the built zip is clean.
+
 ## [3.5.3] - 2026-01-25
 
 ### 🎯 MAJOR: Export Functionality Overhaul
