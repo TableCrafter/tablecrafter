@@ -7,3 +7,5 @@ vendor/
 playwright-report/
 test-results/
 .env
+.phpunit.result.cache
+tests/coverage/

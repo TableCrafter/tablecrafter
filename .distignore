@@ -1,18 +1,75 @@
-# Development and testing files
-tests/
-make_banner.php
-.DS_Store
+# =============================================================================
+# .distignore — files EXCLUDED from the distributed plugin (WordPress.org / zip)
+#
+# Keep ONLY runtime files in the build: tablecrafter.php, uninstall.php,
+# readme.txt, includes/, assets/, views/, demo-data/, languages/.
+# Everything below is development, test, build, or backup tooling.
+# =============================================================================
+
+# --- Version control / CI ---
 .git
 .gitignore
+.gitattributes
 .github
+.svnignore
+.distignore
+
+# --- OS / editor cruft ---
+.DS_Store
+.vscode
+.idea
+*.swp
+
+# --- Dependencies (dev only; plugin ships no Composer/npm runtime deps) ---
 node_modules
+vendor
+composer.json
+composer.lock
+package.json
+package-lock.json
+
+# --- Test harness & tooling ---
+tests
+.phpunit.cache
+.phpunit.result.cache
+phpunit.xml.dist
+playwright.config.js
+playwright-report
+test-results
+.eslintrc.js
+scripts
+reports
+
+# --- Standalone dev/test scripts at repo root ---
+test-*.php
+test-*.js
+test-*.html
+test_*.php
+run-*.php
+run-*.js
+validate-*.php
+simple-test.php
+tdd-demo.php
+run-tdd-green-test.php
+make_banner.php
+sync_svn.sh
+
+# --- Backup / dead / stray files ---
+*.backup
+*.bak
+*.orig
+*~
+
+# --- Documentation not shipped to WordPress.org (readme.txt IS shipped) ---
+docs
+README.md
+CHANGELOG.md
+IMPACT_REPORT.md
+
+# --- Marketing / capture assets not needed at runtime ---
+screenshot-*.png
+
+# --- Logs, archives, build artifacts ---
 *.log
 *.zip
-
-# Documentation (keep only readme.txt for WordPress.org)
-docs/
-IMPACT_REPORT.md
-README.md
-
-# Build artifacts
 *.map
