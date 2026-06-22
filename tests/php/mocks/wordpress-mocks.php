@@ -252,6 +252,104 @@ if (!function_exists('update_option')) {
 
 $GLOBALS['_tc_options'] = array();
 
+// --- Export handler support mocks ---------------------------------------
+
+if (!function_exists('wp_upload_dir')) {
+    function wp_upload_dir($time = null, $create_dir = true, $refresh_cache = false)
+    {
+        $base = sys_get_temp_dir() . '/tc-test-uploads';
+        return array(
+            'basedir' => $base,
+            'baseurl' => 'http://example.com/wp-content/uploads',
+            'path'    => $base,
+            'url'     => 'http://example.com/wp-content/uploads',
+            'error'   => false,
+        );
+    }
+}
+
+if (!function_exists('trailingslashit')) {
+    function trailingslashit($string)
+    {
+        return rtrim($string, '/\\') . '/';
+    }
+}
+
+if (!function_exists('wp_mkdir_p')) {
+    function wp_mkdir_p($target)
+    {
+        if (is_dir($target)) {
+            return true;
+        }
+        return mkdir($target, 0777, true);
+    }
+}
+
+if (!function_exists('wp_generate_uuid4')) {
+    function wp_generate_uuid4()
+    {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            random_int(0, 0xffff),
+            random_int(0, 0xffff),
+            random_int(0, 0xffff),
+            random_int(0, 0x0fff) | 0x4000,
+            random_int(0, 0x3fff) | 0x8000,
+            random_int(0, 0xffff),
+            random_int(0, 0xffff),
+            random_int(0, 0xffff)
+        );
+    }
+}
+
+if (!function_exists('wp_parse_args')) {
+    function wp_parse_args($args, $defaults = array())
+    {
+        if (is_object($args)) {
+            $args = get_object_vars($args);
+        } elseif (!is_array($args)) {
+            parse_str((string) $args, $args);
+        }
+        return array_merge($defaults, $args);
+    }
+}
+
+if (!function_exists('sanitize_file_name')) {
+    function sanitize_file_name($filename)
+    {
+        $filename = preg_replace('/[^a-zA-Z0-9._-]/', '-', (string) $filename);
+        return trim($filename, '-') ?: 'export';
+    }
+}
+
+if (!function_exists('current_time')) {
+    function current_time($type, $gmt = 0)
+    {
+        if ($type === 'timestamp' || $type === 'U') {
+            return time();
+        }
+        return date('Y-m-d H:i:s');
+    }
+}
+
+if (!function_exists('esc_html')) {
+    function esc_html($text)
+    {
+        return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('wp_strip_all_tags')) {
+    function wp_strip_all_tags($string, $remove_breaks = false)
+    {
+        $string = strip_tags((string) $string);
+        if ($remove_breaks) {
+            $string = preg_replace('/[\r\n\t ]+/', ' ', $string);
+        }
+        return trim($string);
+    }
+}
+
 // Mock $wpdb for standalone tests
 if (!isset($GLOBALS['wpdb'])) {
     $GLOBALS['wpdb'] = new class {

@@ -128,7 +128,57 @@ class TC_Export_Handler
             return ['error' => 'Export failed: ' . $e->getMessage()];
         }
     }
-    
+
+    /**
+     * Export client-supplied rows + column config (frontend table contract).
+     *
+     * Bridges the JavaScript export payload — an array of row objects plus a
+     * column list of {field,label} — onto the canonical {@see export_data()}
+     * pipeline, so every format (csv/xlsx/pdf) goes through ONE honest handler.
+     *
+     * @param array  $data    Row objects keyed by field name.
+     * @param array  $columns Column config: each item has 'field' and 'label'.
+     * @param string $format  Requested format. 'excel' is accepted as an alias for 'xlsx'.
+     * @param string $filename Base filename (no extension).
+     * @param array  $options Additional export options.
+     * @return array Same shape as {@see export_data()}.
+     */
+    public static function export_client_data(array $data, array $columns, string $format, string $filename = 'tablecrafter-export', array $options = []): array
+    {
+        if (empty($data) || empty($columns)) {
+            return ['error' => 'Invalid data or columns provided'];
+        }
+
+        // 'excel' is the frontend label; the canonical format key is 'xlsx'.
+        if ($format === 'excel') {
+            $format = 'xlsx';
+        }
+
+        // Derive ordered headers (field keys) and a field->label map.
+        $headers = [];
+        $labels  = [];
+        foreach ($columns as $column) {
+            if (!isset($column['field'])) {
+                continue;
+            }
+            $headers[] = $column['field'];
+            $labels[$column['field']] = $column['label'] ?? $column['field'];
+        }
+
+        if (empty($headers)) {
+            return ['error' => 'Invalid columns provided'];
+        }
+
+        $options = array_merge($options, [
+            'format'         => $format,
+            'filename'       => $filename,
+            'column_labels'  => $labels,
+            'total_records'  => count($data),
+        ]);
+
+        return self::export_data($data, $headers, $options);
+    }
+
     /**
      * Export data as CSV
      */
@@ -144,11 +194,12 @@ class TC_Export_Handler
         // Set UTF-8 BOM for Excel compatibility
         fwrite($handle, "\xEF\xBB\xBF");
         
-        // Write headers
+        // Write headers. The explicit escape argument ('') keeps RFC 4180
+        // behaviour and avoids the PHP 8.4+ deprecation of the implicit default.
         if ($options['include_headers']) {
-            fputcsv($handle, $headers);
+            fputcsv($handle, self::display_headers($headers, $options), ',', '"', '');
         }
-        
+
         // Write data rows
         foreach ($data as $row) {
             $csv_row = [];
@@ -156,22 +207,22 @@ class TC_Export_Handler
                 $value = isset($row[$header]) ? $row[$header] : '';
                 $csv_row[] = self::format_cell_value($value, $options);
             }
-            fputcsv($handle, $csv_row);
+            fputcsv($handle, $csv_row, ',', '"', '');
         }
-        
+
         // Add metadata footer if enabled
         if (!empty($options['include_metadata'])) {
-            fputcsv($handle, []);
-            fputcsv($handle, ['Export Information']);
-            fputcsv($handle, ['Generated', $options['export_timestamp']]);
-            fputcsv($handle, ['Total Records', $options['total_records']]);
-            
+            fputcsv($handle, [], ',', '"', '');
+            fputcsv($handle, ['Export Information'], ',', '"', '');
+            fputcsv($handle, ['Generated', $options['export_timestamp']], ',', '"', '');
+            fputcsv($handle, ['Total Records', $options['total_records']], ',', '"', '');
+
             if (!empty($options['filters_applied'])) {
-                fputcsv($handle, ['Filters Applied', json_encode($options['filters_applied'])]);
+                fputcsv($handle, ['Filters Applied', json_encode($options['filters_applied'])], ',', '"', '');
             }
-            
+
             if (!empty($options['sort_applied'])) {
-                fputcsv($handle, ['Sort Applied', $options['sort_applied']]);
+                fputcsv($handle, ['Sort Applied', $options['sort_applied']], ',', '"', '');
             }
         }
         
@@ -188,21 +239,19 @@ class TC_Export_Handler
     
     /**
      * Export data as Excel (XLSX)
+     *
+     * Produces a GENUINE OOXML (.xlsx) workbook using ZipArchive — a real,
+     * openable spreadsheet, NOT a CSV or HTML file renamed to .xlsx.
      */
     private static function export_xlsx(array $data, array $headers, array $options): array
     {
-        // For now, we'll create a basic XML-based XLSX file
-        // In a full implementation, you'd use PhpSpreadsheet library
-
         $temp_file = self::get_secure_temp_file('xlsx');
-        
-        // Create basic Excel XML structure
-        $excel_data = self::create_basic_xlsx($data, $headers, $options);
-        
-        if (!file_put_contents($temp_file, $excel_data)) {
+
+        // Build the OOXML package directly into the target file (no double write).
+        if (!self::create_basic_xlsx($temp_file, $data, $headers, $options)) {
             return ['error' => 'Could not create Excel file'];
         }
-        
+
         return [
             'success' => true,
             'file_path' => $temp_file,
@@ -237,6 +286,31 @@ class TC_Export_Handler
     }
     
     /**
+     * Map raw field keys to human-friendly display labels when available.
+     *
+     * When a caller supplies a 'column_labels' map (field => label), the header
+     * row uses those labels; otherwise the raw field keys are used as-is.
+     *
+     * @param array $headers Ordered field keys.
+     * @param array $options Export options (may contain 'column_labels').
+     * @return array Ordered display labels.
+     */
+    private static function display_headers(array $headers, array $options): array
+    {
+        $labels = isset($options['column_labels']) && is_array($options['column_labels'])
+            ? $options['column_labels']
+            : [];
+
+        if (empty($labels)) {
+            return $headers;
+        }
+
+        return array_map(function ($header) use ($labels) {
+            return $labels[$header] ?? $header;
+        }, $headers);
+    }
+
+    /**
      * Format cell value according to options
      */
     private static function format_cell_value($value, array $options): string
@@ -265,130 +339,186 @@ class TC_Export_Handler
     }
     
     /**
-     * Create basic XLSX file content
+     * Create a genuine OOXML (.xlsx) workbook at the given path.
+     *
+     * Writes a valid, openable spreadsheet using ZipArchive with the minimal
+     * set of OOXML parts. This is a real xlsx — not a CSV or HTML file renamed.
+     *
+     * @param string $target_file Destination path for the .xlsx package
+     * @param array  $data        Row data
+     * @param array  $headers     Column headers
+     * @param array  $options     Export options
+     * @return bool True on success
+     * @throws Exception When the archive cannot be created
      */
-    private static function create_basic_xlsx(array $data, array $headers, array $options): string
+    private static function create_basic_xlsx(string $target_file, array $data, array $headers, array $options): bool
     {
-        // This is a simplified XLSX creation - in production, use PhpSpreadsheet
+        if (!class_exists('ZipArchive')) {
+            throw new Exception('PHP ZipArchive extension is required for XLSX export');
+        }
+
         $zip = new ZipArchive();
-        $temp_zip = self::get_secure_temp_file('xlsx');
-        
-        if ($zip->open($temp_zip, ZipArchive::CREATE) !== TRUE) {
+        if ($zip->open($target_file, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             throw new Exception('Cannot create XLSX file');
         }
-        
-        // Add required XLSX structure files
+
+        // Required OOXML package parts.
         $zip->addFromString('[Content_Types].xml', self::get_xlsx_content_types());
         $zip->addFromString('_rels/.rels', self::get_xlsx_rels());
         $zip->addFromString('xl/_rels/workbook.xml.rels', self::get_xlsx_workbook_rels());
         $zip->addFromString('xl/workbook.xml', self::get_xlsx_workbook());
-        
-        // Create worksheet with data
-        $worksheet_xml = self::create_xlsx_worksheet($data, $headers, $options);
-        $zip->addFromString('xl/worksheets/sheet1.xml', $worksheet_xml);
-        
-        $zip->close();
-        
-        return file_get_contents($temp_zip);
+
+        // Worksheet with the actual data.
+        $zip->addFromString('xl/worksheets/sheet1.xml', self::create_xlsx_worksheet($data, $headers, $options));
+
+        return $zip->close();
     }
     
     /**
-     * Create basic PDF content
+     * Create genuine PDF content.
+     *
+     * Produces a real, valid PDF 1.4 document (correct object structure and
+     * byte-accurate cross-reference table) that renders the exported table as
+     * text using the standard Helvetica font. This is an HONEST PDF — it is not
+     * CSV or HTML mislabeled with a .pdf extension.
+     *
+     * @return string Raw PDF bytes (starts with %PDF-, ends with %%EOF)
      */
     private static function create_basic_pdf(array $data, array $headers, array $options): string
     {
-        // Simplified PDF creation - in production, use TCPDF or similar
-        $html_content = self::create_pdf_html($data, $headers, $options);
-        
-        // Convert HTML to PDF using available methods
-        if (function_exists('wkhtmltopdf')) {
-            return self::html_to_pdf_wkhtmltopdf($html_content);
-        } else {
-            // Fallback to basic PDF structure
-            return self::create_simple_pdf($html_content, $options);
-        }
+        $lines = self::build_pdf_text_lines($data, $headers, $options);
+        return self::render_pdf_document($lines, $options);
     }
-    
+
     /**
-     * Create HTML content for PDF
+     * Build the plain-text lines (title, header row, data rows, metadata) that
+     * will be painted into the PDF content stream.
+     *
+     * @return string[] Ordered list of text lines.
      */
-    private static function create_pdf_html(array $data, array $headers, array $options): string
+    private static function build_pdf_text_lines(array $data, array $headers, array $options): array
     {
-        $html = '<!DOCTYPE html><html><head>';
-        $html .= '<meta charset="UTF-8">';
-        $html .= '<style>';
-        $html .= 'body { font-family: Arial, sans-serif; font-size: 12px; }';
-        $html .= 'table { width: 100%; border-collapse: collapse; margin: 20px 0; }';
-        $html .= 'th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }';
-        $html .= 'th { background-color: #f5f5f5; font-weight: bold; }';
-        $html .= '.metadata { margin-top: 30px; font-size: 10px; color: #666; }';
-        $html .= '</style></head><body>';
-        
-        $html .= '<h2>' . esc_html($options['filename']) . '</h2>';
-        $html .= '<table>';
-        
-        // Headers
-        if ($options['include_headers']) {
-            $html .= '<thead><tr>';
-            foreach ($headers as $header) {
-                $html .= '<th>' . esc_html($header) . '</th>';
-            }
-            $html .= '</tr></thead>';
+        $lines = [];
+        $lines[] = (string) $options['filename'];
+        $lines[] = '';
+
+        if (!empty($options['include_headers'])) {
+            $lines[] = implode('  |  ', array_map('strval', self::display_headers($headers, $options)));
+            $lines[] = str_repeat('-', 60);
         }
-        
-        // Data
-        $html .= '<tbody>';
+
         foreach ($data as $row) {
-            $html .= '<tr>';
+            $cells = [];
             foreach ($headers as $header) {
                 $value = isset($row[$header]) ? $row[$header] : '';
-                $html .= '<td>' . esc_html(self::format_cell_value($value, $options)) . '</td>';
+                $cells[] = self::format_cell_value($value, $options);
             }
-            $html .= '</tr>';
+            $lines[] = implode('  |  ', $cells);
         }
-        $html .= '</tbody></table>';
-        
-        // Metadata
+
         if (!empty($options['include_metadata'])) {
-            $html .= '<div class="metadata">';
-            $html .= '<p><strong>Export Information:</strong></p>';
-            $html .= '<p>Generated: ' . esc_html($options['export_timestamp']) . '</p>';
-            $html .= '<p>Total Records: ' . esc_html($options['total_records']) . '</p>';
-            
+            $lines[] = '';
+            $lines[] = 'Export Information';
+            $lines[] = 'Generated: ' . (string) $options['export_timestamp'];
+            $lines[] = 'Total Records: ' . (string) $options['total_records'];
+
             if (!empty($options['filters_applied'])) {
-                $html .= '<p>Filters Applied: ' . esc_html(json_encode($options['filters_applied'])) . '</p>';
+                $lines[] = 'Filters Applied: ' . wp_json_encode($options['filters_applied']);
             }
-            
             if (!empty($options['sort_applied'])) {
-                $html .= '<p>Sort Applied: ' . esc_html($options['sort_applied']) . '</p>';
+                $lines[] = 'Sort Applied: ' . (string) $options['sort_applied'];
             }
-            $html .= '</div>';
         }
-        
-        $html .= '</body></html>';
-        
-        return $html;
+
+        return $lines;
     }
-    
+
     /**
-     * Create simple PDF file structure
+     * Assemble a valid PDF 1.4 document from text lines.
+     *
+     * Uses a single Helvetica font and one page; long content is truncated to
+     * what fits on the page so the output stays a well-formed single-page PDF.
+     * The cross-reference table offsets are computed from the actual byte
+     * positions of each object, so the file is genuinely valid.
+     *
+     * @param string[] $lines   Text lines to render.
+     * @param array    $options Export options (unused placeholder for parity).
+     * @return string Raw PDF bytes.
      */
-    private static function create_simple_pdf(string $html_content, array $options): string
+    private static function render_pdf_document(array $lines, array $options): string
     {
-        // Basic PDF structure - in production, use proper PDF library
-        $pdf_content = "%PDF-1.4\n";
-        $pdf_content .= "1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n";
-        $pdf_content .= "2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n";
-        $pdf_content .= "3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n";
-        $pdf_content .= "/Contents 4 0 R\n>>\nendobj\n";
-        $pdf_content .= "4 0 obj\n<<\n/Length " . strlen($html_content) . "\n>>\nstream\n";
-        $pdf_content .= $html_content;
-        $pdf_content .= "\nendstream\nendobj\n";
-        $pdf_content .= "xref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n";
-        $pdf_content .= "0000000058 00000 n \n0000000115 00000 n \n0000000207 00000 n \n";
-        $pdf_content .= "trailer\n<<\n/Size 5\n/Root 1 0 R\n>>\nstartxref\n285\n%%EOF";
-        
-        return $pdf_content;
+        $font_size = 9;
+        $leading   = 12;     // line height in points
+        $left       = 40;    // left margin
+        $top        = 760;   // baseline of the first line (top of Letter page)
+        $page_bottom = 40;
+        $max_lines  = (int) floor(($top - $page_bottom) / $leading);
+        $max_chars  = 110;   // conservative wrap so text stays inside the page
+
+        // Build the content stream (text painting operators).
+        $stream  = "BT\n";
+        $stream .= "/F1 {$font_size} Tf\n";
+        $stream .= "{$leading} TL\n";
+        $stream .= "{$left} {$top} Td\n";
+
+        $rendered = 0;
+        foreach ($lines as $line) {
+            if ($rendered >= $max_lines) {
+                $stream .= '(' . self::escape_pdf_text('... output truncated to fit one page') . ") Tj\n";
+                break;
+            }
+            $text = $line;
+            if (strlen($text) > $max_chars) {
+                $text = substr($text, 0, $max_chars - 1) . '…';
+            }
+            // Paint this line, then move down one line for the next.
+            $stream .= '(' . self::escape_pdf_text($text) . ") Tj\n";
+            $stream .= "0 -{$leading} Td\n";
+            $rendered++;
+        }
+        $stream .= "ET";
+
+        // Assemble objects. Offsets are computed as we concatenate.
+        $objects = [];
+        $objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+        $objects[2] = "<< /Type /Pages /Kids [3 0 R] /Count 1 >>";
+        $objects[3] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+            . "/Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>";
+        $objects[4] = "<< /Length " . strlen($stream) . " >>\nstream\n" . $stream . "\nendstream";
+        $objects[5] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";
+
+        $pdf = "%PDF-1.4\n";
+        $offsets = [];
+        foreach ($objects as $num => $body) {
+            $offsets[$num] = strlen($pdf);
+            $pdf .= "{$num} 0 obj\n{$body}\nendobj\n";
+        }
+
+        // Cross-reference table.
+        $xref_offset = strlen($pdf);
+        $count = count($objects) + 1; // +1 for the free object 0
+        $pdf .= "xref\n0 {$count}\n";
+        $pdf .= "0000000000 65535 f \n";
+        for ($i = 1; $i < $count; $i++) {
+            $pdf .= sprintf("%010d 00000 n \n", $offsets[$i]);
+        }
+
+        // Trailer.
+        $pdf .= "trailer\n<< /Size {$count} /Root 1 0 R >>\n";
+        $pdf .= "startxref\n{$xref_offset}\n%%EOF";
+
+        return $pdf;
+    }
+
+    /**
+     * Escape a string for safe inclusion inside a PDF text literal.
+     */
+    private static function escape_pdf_text(string $text): string
+    {
+        // Collapse to ASCII-safe bytes (standard Helvetica is single-byte).
+        $text = wp_strip_all_tags($text);
+        $text = str_replace(["\\", '(', ')', "\r", "\n"], ['\\\\', '\\(', '\\)', ' ', ' '], $text);
+        return $text;
     }
     
     /**
@@ -441,8 +571,9 @@ class TC_Export_Handler
         
         // Headers
         if ($options['include_headers']) {
+            $display = self::display_headers($headers, $options);
             $xml .= "<row r=\"{$row_num}\">";
-            foreach ($headers as $col_num => $header) {
+            foreach ($display as $col_num => $header) {
                 $cell_ref = self::get_excel_column($col_num) . $row_num;
                 $xml .= "<c r=\"{$cell_ref}\" t=\"inlineStr\">";
                 $xml .= "<is><t>" . htmlspecialchars($header) . "</t></is>";

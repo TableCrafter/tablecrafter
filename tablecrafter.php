@@ -67,13 +67,9 @@ if (file_exists(TABLECRAFTER_PATH . 'includes/class-tc-data-fetcher.php')) {
 }
 
 // Feature handlers
+// Single canonical export handler — produces genuine CSV/XLSX/PDF files.
 if (file_exists(TABLECRAFTER_PATH . 'includes/class-tc-export-handler.php')) {
     require_once TABLECRAFTER_PATH . 'includes/class-tc-export-handler.php';
-}
-
-// Enhanced export handler (fixes export deception issue)
-if (file_exists(TABLECRAFTER_PATH . 'includes/class-tc-export-handler-enhanced.php')) {
-    require_once TABLECRAFTER_PATH . 'includes/class-tc-export-handler-enhanced.php';
 }
 
 if (file_exists(TABLECRAFTER_PATH . 'includes/class-tc-performance-optimizer.php')) {
@@ -147,11 +143,6 @@ class TableCrafter
      */
     private function __construct()
     {
-        // Initialize enhanced export handler
-        if (class_exists('TC_Export_Handler_Enhanced')) {
-            TC_Export_Handler_Enhanced::get_instance();
-        }
-
         add_action('init', array($this, 'register_assets'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         add_action('init', array($this, 'register_block'));
@@ -2038,6 +2029,15 @@ class TableCrafter
         $template = isset($_POST['template']) ? sanitize_text_field(wp_unslash($_POST['template'])) : 'default';
         $include_metadata = isset($_POST['include_metadata']) ? (bool) $_POST['include_metadata'] : false;
 
+        // Frontend table contract: client supplies the already-rendered rows and
+        // column config (no source fetch). Routed through the SAME canonical
+        // handler so every format is genuine. This replaces the former separate
+        // "enhanced" export handler.
+        if (empty($source) && isset($_POST['data'], $_POST['columns'])) {
+            $this->ajax_export_client_data($format, $filename);
+            return;
+        }
+
         // Validate required fields
         if (empty($source)) {
             wp_send_json_error('Source URL is required');
@@ -2110,10 +2110,54 @@ class TableCrafter
     }
 
     /**
+     * Handle export of client-supplied table data (frontend contract).
+     *
+     * Reads the JS payload (rows + column config) and routes it through the
+     * single canonical TC_Export_Handler, producing genuine CSV/XLSX/PDF files.
+     *
+     * @param string $format   Requested format (csv|excel|xlsx|pdf).
+     * @param string $filename Sanitized base filename.
+     * @return void
+     */
+    private function ajax_export_client_data(string $format, string $filename): void
+    {
+        $data = json_decode(wp_unslash($_POST['data'] ?? '[]'), true);
+        $columns = json_decode(wp_unslash($_POST['columns'] ?? '[]'), true);
+        $options = isset($_POST['options']) ? json_decode(wp_unslash($_POST['options']), true) : [];
+
+        if (!is_array($data) || !is_array($columns) || empty($data) || empty($columns)) {
+            wp_send_json_error('No data available for export');
+            return;
+        }
+
+        if (!is_array($options)) {
+            $options = [];
+        }
+
+        $export_result = TC_Export_Handler::export_client_data($data, $columns, $format, $filename, $options);
+
+        if (isset($export_result['error'])) {
+            wp_send_json_error('Export failed: ' . $export_result['error']);
+            return;
+        }
+
+        $export_id = uniqid('tc_export_', true);
+        set_transient('tc_export_' . $export_id, $export_result, 300); // 5 minutes
+
+        wp_send_json_success([
+            'export_id'    => $export_id,
+            'filename'     => $export_result['filename'],
+            'format'       => $format,
+            'size'         => $export_result['size'],
+            'download_url' => admin_url('admin-ajax.php?action=tc_download_export&export_id=' . $export_id . '&nonce=' . wp_create_nonce('tc_download_nonce')),
+        ]);
+    }
+
+    /**
      * Handle Export Download
-     * 
+     *
      * Serves the generated export file for download.
-     * 
+     *
      * @return void
      */
     public function ajax_download_export(): void
