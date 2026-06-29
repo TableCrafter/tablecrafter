@@ -681,6 +681,11 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.16 — Embed tables anywhere', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Embeddable public tables (#2133)', 'tc-data-tables'); ?></strong> — <?php _e('Each table has a "Copy embed code" button that gives you an iframe snippet to drop on any site. The embedded view is public and read-only, with a small "Made with TableCrafter" link (removed on Pro).', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.15 — Beautiful auto-formatted cells', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Rich auto-formatting (#2132)', 'tc-data-tables'); ?></strong> — <?php _e('External-source tables now format cells automatically: ISO dates become readable, large numbers get thousands separators, and URLs become clickable links. Conservative by design — 4-digit years and short IDs are left as-is.', 'tc-data-tables'); ?></li>

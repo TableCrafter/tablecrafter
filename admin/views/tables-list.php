@@ -425,6 +425,17 @@ foreach ($forms as $form) {
                                 <button type="button" class="button-link gt-copy-shortcode" data-clipboard-text="<?php echo esc_attr($table->shortcode); ?>">
                                     <?php _e('Copy', 'tc-data-tables'); ?>
                                 </button>
+                                <?php
+                                // #2133 — embeddable public table: offer the <iframe> snippet so
+                                // the table can be embedded on any external site.
+                                if (class_exists('TC_Embed')) :
+                                    $gt_embed_code = TC_Embed::embed_code($table->id);
+                                ?>
+                                    <br>
+                                    <button type="button" class="button-link gt-copy-shortcode" data-clipboard-text="<?php echo esc_attr($gt_embed_code); ?>" title="<?php esc_attr_e('Copy an <iframe> snippet to embed this table on another site', 'tc-data-tables'); ?>">
+                                        <?php _e('Copy embed code', 'tc-data-tables'); ?>
+                                    </button>
+                                <?php endif; ?>
                             </td>
                             <td class="date column-date" data-colname="<?php _e('Last Modified', 'tc-data-tables'); ?>">
                                 <?php echo date_i18n(get_option('date_format'), strtotime($table->updated_at)); ?>
