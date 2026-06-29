@@ -42,11 +42,63 @@ if (!defined('ABSPATH')) {
                 <li><a href="#mobile-responsiveness"><?php _e('Mobile Responsiveness', 'tc-data-tables'); ?></a></li>
                 <li><a href="#troubleshooting"><?php _e('Troubleshooting', 'tc-data-tables'); ?></a></li>
                 <li><a href="#permission-troubleshooting"><?php _e('Permission Troubleshooting', 'tc-data-tables'); ?></a></li>
+                <li><a href="#free-vs-pro"><?php _e('Plans: Free vs Pro', 'tc-data-tables'); ?></a></li>
                 <li><a href="#whats-new"><?php printf(esc_html__("What's New (v%s)", 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></a></li>
             </ul>
         </div>
 
         <div class="gt-docs-content">
+            <style>
+                .gt-tier-badge{display:inline-block;font-size:11px;font-weight:600;line-height:1;padding:3px 8px;border-radius:10px;vertical-align:middle;letter-spacing:.02em}
+                .gt-tier-free{background:#e6f4ea;color:#137333}
+                .gt-tier-pro{background:#fdecea;color:#b3261e}
+                .gt-tier-badge-link{text-decoration:none}
+                .gt-tier-table{width:100%;border-collapse:collapse;margin:12px 0}
+                .gt-tier-table th,.gt-tier-table td{text-align:left;padding:8px 10px;border-bottom:1px solid #eee}
+                .gt-tier-table th{font-weight:600}
+                .gt-tier-upsell{margin-top:8px;color:#555}
+            </style>
+            <div id="free-vs-pro" class="gt-docs-section">
+                <h2><?php _e('Plans: Free vs Pro', 'tc-data-tables'); ?></h2>
+                <p><?php _e('Everything below works in the free plugin unless marked Pro. The Pro items are where TableCrafter does the heavy lifting — pull this matrix as your upgrade checklist.', 'tc-data-tables'); ?></p>
+
+                <?php $tc_upgrade_url = (function_exists('wgt_fs') && wgt_fs()) ? wgt_fs()->get_upgrade_url() : ''; ?>
+
+                <h3><?php _e('Data sources', 'tc-data-tables'); ?></h3>
+                <table class="gt-tier-table">
+                    <thead><tr><th><?php _e('Source', 'tc-data-tables'); ?></th><th><?php _e('Plan', 'tc-data-tables'); ?></th></tr></thead>
+                    <tbody>
+                    <?php
+                    if (class_exists('TC_Source_Registry') && function_exists('tc_tier_badge')) {
+                        foreach (TC_Source_Registry::all() as $tc_src) {
+                            $tc_is_pro = !empty($tc_src['pro']);
+                            echo '<tr><td>' . esc_html((string) ($tc_src['label'] ?? '')) . '</td><td>'
+                                . tc_tier_badge($tc_is_pro, $tc_is_pro ? $tc_upgrade_url : null) . '</td></tr>';
+                        }
+                    }
+                    ?>
+                    </tbody>
+                </table>
+                <p class="gt-tier-upsell"><?php _e('Note: Airtable display is Free — you can show any Airtable base read-only. Two-way write-back to Airtable (and Notion) is Pro.', 'tc-data-tables'); ?></p>
+
+                <h3><?php _e('Features', 'tc-data-tables'); ?></h3>
+                <table class="gt-tier-table">
+                    <thead><tr><th><?php _e('Feature', 'tc-data-tables'); ?></th><th><?php _e('Plan', 'tc-data-tables'); ?></th></tr></thead>
+                    <tbody>
+                        <tr><td><?php _e('Inline shortcode tables (search, sort, paginate, export, auto-refresh)', 'tc-data-tables'); ?></td><td><?php echo tc_tier_badge(false); ?></td></tr>
+                        <tr><td><?php _e('Table builder, column config, filters, pagination, permissions', 'tc-data-tables'); ?></td><td><?php echo tc_tier_badge(false); ?></td></tr>
+                        <tr><td><?php _e('Gutenberg block + Elementor widget', 'tc-data-tables'); ?></td><td><?php echo tc_tier_badge(false); ?></td></tr>
+                        <tr><td><?php _e('Frontend inline editing &amp; bulk operations', 'tc-data-tables'); ?></td><td><?php echo tc_tier_badge(true, $tc_upgrade_url); ?></td></tr>
+                        <tr><td><?php _e('Two-way sync / write-back (Airtable, Notion)', 'tc-data-tables'); ?></td><td><?php echo tc_tier_badge(true, $tc_upgrade_url); ?></td></tr>
+                        <tr><td><?php _e('External database connections (MySQL / SQL Server)', 'tc-data-tables'); ?></td><td><?php echo tc_tier_badge(true, $tc_upgrade_url); ?></td></tr>
+                        <tr><td><?php _e('Scheduled exports, webhooks, revisions / audit log', 'tc-data-tables'); ?></td><td><?php echo tc_tier_badge(true, $tc_upgrade_url); ?></td></tr>
+                    </tbody>
+                </table>
+                <?php if ($tc_upgrade_url) : ?>
+                    <p><a class="button button-primary" href="<?php echo esc_url($tc_upgrade_url); ?>"><?php _e('See what Pro unlocks', 'tc-data-tables'); ?></a></p>
+                <?php endif; ?>
+            </div>
+
             <div id="getting-started" class="gt-docs-section">
                 <h2><?php _e('Getting Started', 'tc-data-tables'); ?></h2>
 
@@ -628,6 +680,12 @@ if (!defined('ABSPATH')) {
             <div id="whats-new" class="gt-docs-section">
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
+
+                <h3><?php _e('v8.0.14 — Free vs Pro clarity', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Plans: Free vs Pro section (#2162)', 'tc-data-tables'); ?></strong> — <?php _e('A new docs section badges every data source and feature as Free or Pro (sources are read live from the registry, so it is always accurate). Pro rows link straight to upgrade.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Contextual upsell in the builder (#2118)', 'tc-data-tables'); ?></strong> — <?php _e('Pick a Pro-only data source and an in-context note explains it is Pro, with an upgrade link — right at the moment of need.', 'tc-data-tables'); ?></li>
+                </ul>
 
                 <h3><?php _e('v8.0.12 — Inline upgrade back-compat (auto-refresh, Airtable, uninstall)', 'tc-data-tables'); ?></h3>
                 <ul>

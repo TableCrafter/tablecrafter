@@ -111,3 +111,27 @@ if (!function_exists('gt_mark_premium_seen')) {
         }
     }
 }
+
+if (!function_exists('tc_tier_badge')) {
+    /**
+     * #2162 — Render a small Free / Pro tier badge for docs and admin UI.
+     *
+     * Pressure-free upsell: a Pro badge optionally links to the upgrade URL so
+     * the reader sees exactly what upgrading unlocks, inline with the content.
+     *
+     * @param bool        $is_pro      True → "Pro" badge, false → "Free" badge.
+     * @param string|null $upgrade_url Optional checkout/trial URL (Pro only).
+     * @return string Escaped HTML span (anchor-wrapped when an upgrade URL is given).
+     */
+    function tc_tier_badge($is_pro, $upgrade_url = null) {
+        $is_pro = (bool) $is_pro;
+        $label  = $is_pro ? __('Pro', 'tc-data-tables') : __('Free', 'tc-data-tables');
+        $class  = 'gt-tier-badge ' . ($is_pro ? 'gt-tier-pro' : 'gt-tier-free');
+        $badge  = '<span class="' . esc_attr($class) . '">' . esc_html($label) . '</span>';
+
+        if ($is_pro && $upgrade_url) {
+            return '<a class="gt-tier-badge-link" href="' . esc_attr($upgrade_url) . '">' . $badge . '</a>';
+        }
+        return $badge;
+    }
+}

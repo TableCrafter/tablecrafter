@@ -77,6 +77,10 @@
                 var isGf = (val === 'gravity_forms');
                 $('.gt-gravity-forms-source-fields').toggle(isGf);
                 $('#gravity-form').prop('required', isGf);
+                // #2118 — contextual Pro upsell: show it the moment a free user
+                // selects a Pro source (the <option> carries data-pro="1").
+                var isPro = $(this).find('option:selected').attr('data-pro') === '1';
+                $('[data-gt-source-upsell]').toggle(isPro);
             });
 
             // #985 — Test connection button. Fires the gt_preview_json_source AJAX

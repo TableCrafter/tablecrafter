@@ -141,14 +141,40 @@ if ($table_id) {
                             // instead of a hardcoded list. New sources register once via the
                             // gravity_tables_source_types filter and appear here automatically.
                             $gt_current_source = isset($table_settings['data_source_type']) ? $table_settings['data_source_type'] : 'gravity_forms';
+                            $gt_is_free        = function_exists('gt_is_free_plan') ? gt_is_free_plan() : false;
                             foreach (TC_Source_Registry::for_builder() as $gt_src_key => $gt_src_def) :
+                                $gt_src_pro = !empty($gt_src_def['pro']);
+                                // #2118 — flag Pro sources in-context. Free users see "— Pro"
+                                // right in the option so the upsell lands at the moment of choosing.
+                                $gt_src_label = $gt_src_def['label'];
+                                if ($gt_src_pro) {
+                                    $gt_src_label .= ' — ' . __('Pro', 'tc-data-tables');
+                                }
                                 ?>
-                                <option value="<?php echo esc_attr($gt_src_key); ?>" <?php selected($gt_current_source, $gt_src_key); ?>>
-                                    <?php echo esc_html($gt_src_def['label']); ?>
+                                <option value="<?php echo esc_attr($gt_src_key); ?>" data-pro="<?php echo $gt_src_pro ? '1' : '0'; ?>" <?php selected($gt_current_source, $gt_src_key); ?>>
+                                    <?php echo esc_html($gt_src_label); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                         <p class="description"><?php _e('Choose the data source for this table. WooCommerce Products queries your product catalog live; JSON URL fetches from a remote endpoint with optional auth headers.', 'tc-data-tables'); ?></p>
+                        <?php
+                        // #2118 — contextual upsell shown (to free plans) at the moment a Pro
+                        // source is the active choice. JS in admin/bind-events.js toggles it on
+                        // change via the data-pro attribute; server-side it starts visible only
+                        // when the current source is Pro.
+                        $gt_upgrade_url      = (function_exists('wgt_fs') && wgt_fs()) ? wgt_fs()->get_upgrade_url() : '';
+                        $gt_current_is_pro   = (bool) (TC_Source_Registry::get($gt_current_source)['pro'] ?? false);
+                        $gt_upsell_visible   = $gt_is_free && $gt_current_is_pro;
+                        if ($gt_is_free) :
+                        ?>
+                        <p class="gt-source-pro-upsell" data-gt-source-upsell="1"
+                           style="<?php echo $gt_upsell_visible ? '' : 'display:none;'; ?>margin-top:6px;padding:8px 10px;background:#fdecea;border-radius:6px;color:#b3261e;">
+                            <?php _e('This data source is a Pro feature.', 'tc-data-tables'); ?>
+                            <?php if ($gt_upgrade_url) : ?>
+                                <a href="<?php echo esc_url($gt_upgrade_url); ?>"><?php _e('Upgrade to use it →', 'tc-data-tables'); ?></a>
+                            <?php endif; ?>
+                        </p>
+                        <?php endif; ?>
                     </div>
 
                     <!-- #2002 — Google Sheets data source fields (convergence #2006). -->

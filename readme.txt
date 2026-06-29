@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 8.0.13
+Stable tag: 8.0.14
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,10 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.14 =
+* New: a "Plans: Free vs Pro" section in the docs with a clear Free/Pro badge on every data source and feature, so you can see at a glance what's included and what Pro unlocks.
+* New: when you pick a Pro-only data source in the table builder, an in-context note now explains it's a Pro feature with an upgrade link — no more guessing.
 
 = 8.0.13 =
 * Fixed: the plugin's uninstall cleanup now runs through the licensing SDK's uninstall hook instead of a separate uninstall.php, so updates deploy cleanly. Same result — deleting the plugin removes its tables, options and scheduled tasks.
