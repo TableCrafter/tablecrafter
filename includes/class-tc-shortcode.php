@@ -1468,17 +1468,23 @@ class TC_Shortcode
     {
         $url = isset($atts['source']) ? trim((string) $atts['source']) : '';
 
+        $type        = TC_Inline_Shortcode_Compat::detect_source_type($url);
+        $rows        = array();
+        $column_keys = array();
+
         // SSRF guard — reuse the JSON service's allow-list (blocks loopback /
-        // private networks). Applies to every inline source type.
-        if (!TC_JSON_Source_Service::is_safe_url($url)) {
+        // private networks) for http(s) sources. Airtable (#2148) uses an
+        // airtable:// pseudo-URL whose real request always targets the fixed
+        // api.airtable.com host, so the http allow-list doesn't apply to it.
+        if ($type !== 'airtable' && !TC_JSON_Source_Service::is_safe_url($url)) {
             return '<p class="gt-inline-source-error">'
                 . esc_html__('TableCrafter: this source URL is not allowed.', 'tc-data-tables')
                 . '</p>';
         }
 
-        $type        = TC_Inline_Shortcode_Compat::detect_source_type($url);
-        $rows        = array();
-        $column_keys = array();
+        if ($type === 'airtable') {
+            return $this->render_inline_airtable($url, $atts);
+        }
 
         if ($type === 'google_sheets') {
             $sheets = TC_Google_Sheets::get_instance();
@@ -1551,8 +1557,135 @@ class TC_Shortcode
             '',
             0,
             $meta_format,
-            TC_Inline_Shortcode_Compat::build_view_opts($atts)
+            $this->inline_render_opts($atts)
         );
+    }
+
+    /**
+     * #2143 — Build the render opts for an inline source: the view toggles
+     * (#2142) plus the auto-refresh suite and the sanitized source atts the
+     * auto-refresh poller re-renders from.
+     */
+    private function inline_render_opts(array $atts): array
+    {
+        $opts            = TC_Inline_Shortcode_Compat::build_view_opts($atts);
+        $opts['refresh'] = TC_Inline_Shortcode_Compat::build_refresh_opts($atts);
+
+        // Whitelist the keys needed to reconstruct the inline shortcode on
+        // refresh. Secrets (e.g. an airtable:// token) ride inside `source`
+        // exactly as the page author wrote it — no extra exposure.
+        $keep = array('source', 'root', 'include', 'exclude', 'per_page', 'search', 'export', 'filters');
+        $payload = array();
+        foreach ($keep as $k) {
+            if (isset($atts[$k]) && $atts[$k] !== '') {
+                $payload[$k] = (string) $atts[$k];
+            }
+        }
+        $opts['refresh_atts'] = $payload;
+
+        return $opts;
+    }
+
+    /**
+     * #2148 — Render a legacy 3.5.x inline Airtable source
+     * ([tablecrafter source="airtable://base/table?token=..."]). Airtable read
+     * is a free source in v8 (registry pro => false), so this restores the
+     * upgrade path rather than gating it. Token precedence: URL query token,
+     * then v8 stored credentials, then the saved 3.5.x option.
+     */
+    private function render_inline_airtable(string $url, array $atts): string
+    {
+        $parsed = TC_Inline_Shortcode_Compat::parse_airtable_url($url);
+        $token  = $this->resolve_airtable_inline_token($parsed['token']);
+
+        if ($parsed['base_id'] === '' || $parsed['table'] === '' || $token === '') {
+            return '<p class="gt-airtable-source-error">'
+                . esc_html__('Airtable source error: missing base, table, or API token.', 'tc-data-tables')
+                . '</p>';
+        }
+
+        $opts   = array('page_size' => 100);
+        $result = TC_Airtable_Sync_Engine::fetch_records($parsed['base_id'], $parsed['table'], $token, $opts);
+
+        if (empty($result['ok'])) {
+            return '<p class="gt-airtable-source-error">'
+                . esc_html__('Airtable source error:', 'tc-data-tables') . ' '
+                . esc_html((string) ($result['error'] ?? 'request failed'))
+                . '</p>';
+        }
+
+        $rows = array();
+        foreach ((array) ($result['records'] ?? array()) as $record) {
+            $fields = (isset($record['fields']) && is_array($record['fields'])) ? $record['fields'] : array();
+            // Flatten any array/object field values so the cell renderer gets scalars.
+            foreach ($fields as $k => $v) {
+                if (is_array($v)) {
+                    $fields[$k] = implode(', ', array_map('strval', $v));
+                }
+            }
+            $rows[] = $fields;
+        }
+
+        if (empty($rows)) {
+            return '<p class="gt-airtable-source-empty">'
+                . esc_html__('No rows in the Airtable source.', 'tc-data-tables') . '</p>';
+        }
+
+        $column_keys = array();
+        foreach ($rows as $row) {
+            foreach (array_keys($row) as $key) {
+                if (!in_array($key, $column_keys, true)) {
+                    $column_keys[] = (string) $key;
+                }
+            }
+        }
+        $column_keys = TC_Inline_Shortcode_Compat::resolve_columns($column_keys, $atts);
+
+        return $this->render_external_source_table_html(
+            $rows,
+            $column_keys,
+            'airtable',
+            '',
+            0,
+            _n('%d row from Airtable source.', '%d rows from Airtable source.', count($rows), 'tc-data-tables'),
+            $this->inline_render_opts($atts)
+        );
+    }
+
+    /**
+     * Resolve the Airtable token for an inline source. Precedence: the token in
+     * the airtable:// URL, then v8's stored credential token, then the saved
+     * 3.5.x `tablecrafter_airtable_token` option (best-effort decrypt).
+     */
+    private function resolve_airtable_inline_token(string $url_token): string
+    {
+        if ($url_token !== '') {
+            return $url_token;
+        }
+
+        if (class_exists('TC_Airtable_Credential_Service')) {
+            $cred = TC_Airtable_Credential_Service::load();
+            if (is_array($cred) && !empty($cred['token'])) {
+                return (string) $cred['token'];
+            }
+        }
+
+        if (function_exists('get_option')) {
+            $saved = (string) get_option('tablecrafter_airtable_token', '');
+            if ($saved !== '') {
+                // 3.5.x stored this encrypted with its own scheme; try the v8
+                // secret helper, else fall back to the raw value.
+                if (function_exists('gt_decrypt_secret')) {
+                    $dec = gt_decrypt_secret($saved, 'gt_airtable_credentials');
+                    if ($dec !== '') {
+                        return $dec;
+                    }
+                }
+                return $saved;
+            }
+        }
+
+        return '';
     }
 
     private function render_json_source_table(int $table_id, array $settings): string
@@ -2035,6 +2168,10 @@ class TC_Shortcode
         $show_export  = !empty($opts['export']);
         $show_filters = !empty($opts['filters']);
 
+        // #2143 — legacy inline auto-refresh opts (empty for id-based sources).
+        $refresh      = isset($opts['refresh']) && is_array($opts['refresh']) ? $opts['refresh'] : array();
+        $auto_refresh = !empty($refresh['auto']);
+
         // #1960 — progressive enhancement: click-to-sort, pagination, search.
         if (function_exists('wp_enqueue_script')) {
             wp_enqueue_script(
@@ -2044,9 +2181,33 @@ class TC_Shortcode
                 TC_VERSION,
                 true
             );
+            // #2143 — the auto-refresh poller re-renders via admin-ajax; hand the
+            // script the endpoint + a nonce. Localized only when needed.
+            if ($auto_refresh && function_exists('wp_localize_script')) {
+                wp_localize_script('gt-external-interactive', 'gtExtRefresh', array(
+                    'ajaxurl' => function_exists('admin_url') ? admin_url('admin-ajax.php') : '/wp-admin/admin-ajax.php',
+                    'nonce'   => function_exists('wp_create_nonce') ? wp_create_nonce('gt_inline_refresh') : '',
+                ));
+            }
         }
 
-        $html  = '<div class="gt-' . $kind . '-source-wrapper" id="' . esc_attr($wrapper_id) . '">';
+        // #2143 — emit refresh data-attributes + the source atts needed to
+        // re-render. Only present when auto-refresh is enabled.
+        $refresh_attr = '';
+        if ($auto_refresh) {
+            $refresh_atts_json = wp_json_encode(isset($opts['refresh_atts']) && is_array($opts['refresh_atts']) ? $opts['refresh_atts'] : array());
+            $refresh_attr =
+                  ' data-auto-refresh="true"'
+                . ' data-refresh-interval="' . esc_attr((string) ($refresh['interval'] ?? 300000)) . '"'
+                . ' data-refresh-indicator="' . (!empty($refresh['indicator']) ? 'true' : 'false') . '"'
+                . ' data-refresh-countdown="' . (!empty($refresh['countdown']) ? 'true' : 'false') . '"'
+                . ' data-refresh-last-updated="' . (!empty($refresh['last_updated']) ? 'true' : 'false') . '"'
+                . " data-refresh-atts='" . esc_attr((string) $refresh_atts_json) . "'";
+        }
+
+        // #2147 — keep the 3.5.x wrapper class (`.tablecrafter-container`) so
+        // existing theme CSS that targets inline tables still applies.
+        $html  = '<div class="gt-' . $kind . '-source-wrapper tablecrafter-container" id="' . esc_attr($wrapper_id) . '"' . $refresh_attr . '>';
         if ($title !== '') {
             $html .= '<h3 class="gt-' . $kind . '-source-title">' . esc_html($title) . '</h3>';
         }

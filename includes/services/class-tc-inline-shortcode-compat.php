@@ -38,6 +38,10 @@ class TC_Inline_Shortcode_Compat {
      */
     public static function detect_source_type(string $url): string {
         $url = trim($url);
+        // #2148 — 3.5.x inline Airtable used an airtable:// protocol URL.
+        if (stripos($url, 'airtable://') === 0) {
+            return 'airtable';
+        }
         if (stripos($url, 'docs.google.com/spreadsheets') !== false) {
             return 'google_sheets';
         }
@@ -160,6 +164,74 @@ class TC_Inline_Shortcode_Compat {
         }
 
         return '[tablecrafter ' . implode(' ', $parts) . ']';
+    }
+
+    /**
+     * #2143 — Normalize the legacy 3.5.x inline auto-refresh params. Defaults
+     * mirror 3.5.x: interval 300000ms, indicator on, countdown off,
+     * last_updated on. A 5s floor avoids hammering the source.
+     *
+     * @return array{auto:bool,interval:int,indicator:bool,countdown:bool,last_updated:bool}
+     */
+    public static function build_refresh_opts(array $atts): array {
+        $interval = 300000;
+        if (isset($atts['refresh_interval']) && is_numeric($atts['refresh_interval'])) {
+            $interval = max(5000, (int) $atts['refresh_interval']);
+        }
+
+        return array(
+            'auto'         => self::is_truthy($atts['auto_refresh'] ?? ''),
+            'interval'     => $interval,
+            // indicator / last_updated default ON; only an explicit falsey disables.
+            'indicator'    => !self::is_falsey($atts['refresh_indicator'] ?? ''),
+            'countdown'    => self::is_truthy($atts['refresh_countdown'] ?? ''),
+            'last_updated' => !self::is_falsey($atts['refresh_last_updated'] ?? ''),
+        );
+    }
+
+    /**
+     * #2148 — Parse a legacy 3.5.x `airtable://` inline source URL into its
+     * Airtable coordinates. Mirrors the 3.5.x data-fetcher: base id = host,
+     * table = first path segment, token from the `token` (or `api_key`) query
+     * param. The token may be absent here — the caller falls back to the saved
+     * `tablecrafter_airtable_token` option / v8 stored credentials.
+     *
+     * @return array{base_id:string,table:string,token:string,params:array}
+     */
+    public static function parse_airtable_url(string $url): array {
+        $out = array('base_id' => '', 'table' => '', 'token' => '', 'params' => array());
+
+        $url = trim($url);
+        // parse_url() understands custom schemes, but the // authority is needed
+        // for it to treat the segment after airtable:// as the host.
+        $parts = parse_url($url);
+        if (!is_array($parts)) {
+            return $out;
+        }
+
+        $out['base_id'] = isset($parts['host']) ? (string) $parts['host'] : '';
+
+        $path = isset($parts['path']) ? trim((string) $parts['path'], '/') : '';
+        if ($path !== '') {
+            $segments     = explode('/', $path);
+            $out['table'] = rawurldecode((string) $segments[0]);
+        }
+
+        if (isset($parts['query']) && $parts['query'] !== '') {
+            parse_str((string) $parts['query'], $q);
+            if (is_array($q)) {
+                $out['params'] = $q;
+                if (isset($q['token']) && $q['token'] !== '') {
+                    $out['token'] = (string) $q['token'];
+                } elseif (isset($q['api_key']) && $q['api_key'] !== '') {
+                    $out['token'] = (string) $q['api_key'];
+                }
+                // Don't leave the secret duplicated in the public params bag.
+                unset($out['params']['token'], $out['params']['api_key']);
+            }
+        }
+
+        return $out;
     }
 
     private static function is_truthy($v): bool {

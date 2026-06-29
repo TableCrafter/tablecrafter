@@ -791,7 +791,9 @@ class TC_Admin
             return;
         }
         $legacy_map = array(
-            'gravity-tables-dashboard' => 'tablecrafter-dashboard',
+            'gravity-tables-dashboard'    => 'tablecrafter-dashboard',
+            // #2147 — 3.5.x free plugin's admin slug. Old bookmarks land here.
+            'tablecrafter-wp-data-tables' => 'gravity-tables',
         );
         if ( isset( $legacy_map[ $page ] ) ) {
             wp_safe_redirect( admin_url( 'admin.php?page=' . $legacy_map[ $page ] ) );

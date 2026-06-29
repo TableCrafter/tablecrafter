@@ -629,6 +629,14 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.12 — Inline upgrade back-compat (auto-refresh, Airtable, uninstall)', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Inline auto-refresh restored (#2143)', 'tc-data-tables'); ?></strong> — <?php _e('The classic auto_refresh / refresh_interval / refresh_indicator / refresh_countdown / refresh_last_updated settings work again: inline tables poll the source and update in place, with an indicator, countdown and last-updated status.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Inline Airtable restored (#2148)', 'tc-data-tables'); ?></strong> — <?php _e('Pages using source="airtable://base/table?token=..." render again. Airtable display stays a free source.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Admin slug + CSS class back-compat (#2147)', 'tc-data-tables'); ?></strong> — <?php _e('Old admin bookmarks redirect instead of 404ing, and inline tables keep the classic .tablecrafter-container wrapper class for existing theme CSS.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Clean uninstall (#2146)', 'tc-data-tables'); ?></strong> — <?php _e('Deleting the plugin now removes its tables, options and scheduled tasks (multisite-aware).', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.3 — Refreshed "What\'s new" notice', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Updated highlights notice (#2111)', 'tc-data-tables'); ?></strong> — <?php _e('The one-time admin notice now describes the v8 product instead of v7, and re-appears once for anyone who had dismissed the older v7 notice.', 'tc-data-tables'); ?></li>

@@ -151,9 +151,85 @@
         render();
     }
 
+    // #2143 — legacy inline auto-refresh. Re-fetch the source via admin-ajax on
+    // a timer and swap the rendered table in place, restoring 3.5.x behavior.
+    function setupAutoRefresh(wrapper) {
+        if (wrapper.__gtRefreshing) { return; }
+        var cfg = (typeof window !== 'undefined' && window.gtExtRefresh) ? window.gtExtRefresh : null;
+        if (!cfg || !cfg.ajaxurl) { return; }
+
+        var interval = parseInt(wrapper.getAttribute('data-refresh-interval'), 10) || 300000;
+        if (interval < 5000) { interval = 5000; }
+        var showIndicator   = wrapper.getAttribute('data-refresh-indicator') !== 'false';
+        var showCountdown   = wrapper.getAttribute('data-refresh-countdown') === 'true';
+        var showLastUpdated = wrapper.getAttribute('data-refresh-last-updated') !== 'false';
+        var attsJson        = wrapper.getAttribute('data-refresh-atts') || '{}';
+        wrapper.__gtRefreshing = true;
+
+        var status = document.createElement('div');
+        status.className = 'gt-ext-refresh-status';
+        wrapper.appendChild(status);
+
+        var remaining = Math.round(interval / 1000);
+        function paint(state) {
+            var bits = [];
+            if (showIndicator && state === 'loading') { bits.push('⟳ Refreshing…'); }
+            if (showLastUpdated && status.__last) { bits.push('Updated ' + status.__last); }
+            if (showCountdown && state !== 'loading') { bits.push('Next refresh in ' + remaining + 's'); }
+            status.textContent = bits.join('  ·  ');
+        }
+
+        function fetchOnce() {
+            paint('loading');
+            var body = new URLSearchParams();
+            body.set('action', 'gt_inline_refresh');
+            body.set('nonce', cfg.nonce || '');
+            body.set('atts', attsJson);
+            fetch(cfg.ajaxurl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: body.toString()
+            }).then(function (r) { return r.json(); }).then(function (json) {
+                if (!json || !json.success || !json.data || !json.data.html) { paint('idle'); return; }
+                var doc = document.createElement('div');
+                doc.innerHTML = json.data.html;
+                var fresh = doc.querySelector('table.gt-table[class*="-source-table"]');
+                var current = wrapper.querySelector('table.gt-table[class*="-source-table"]');
+                if (fresh && current) {
+                    // Drop the enhancement chrome the old table created, swap the
+                    // table node, then re-enhance the fresh one.
+                    var old = wrapper.querySelectorAll('.gt-ext-toolbar, .gt-ext-pager');
+                    Array.prototype.forEach.call(old, function (n) { n.parentNode.removeChild(n); });
+                    current.parentNode.replaceChild(fresh, current);
+                    enhance(fresh);
+                }
+                try {
+                    var d = new Date((json.data.updated ? json.data.updated * 1000 : Date.now()));
+                    status.__last = d.toLocaleTimeString();
+                } catch (e) { status.__last = ''; }
+                remaining = Math.round(interval / 1000);
+                paint('idle');
+            }).catch(function () { paint('idle'); });
+        }
+
+        setInterval(fetchOnce, interval);
+        if (showCountdown) {
+            setInterval(function () {
+                remaining -= 1;
+                if (remaining < 0) { remaining = Math.round(interval / 1000); }
+                paint('idle');
+            }, 1000);
+        }
+        paint('idle');
+    }
+
     function init() {
         var tables = document.querySelectorAll('table.gt-table[class*="-source-table"]');
         Array.prototype.forEach.call(tables, enhance);
+
+        var autoWrappers = document.querySelectorAll('[data-auto-refresh="true"]');
+        Array.prototype.forEach.call(autoWrappers, setupAutoRefresh);
     }
 
     if (document.readyState === 'loading') {

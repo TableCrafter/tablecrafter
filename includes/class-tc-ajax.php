@@ -116,6 +116,9 @@ class TC_Ajax
         add_action('wp_ajax_nopriv_gt_get_filter_suggestions', array($this, 'get_filter_suggestions'));
         add_action('wp_ajax_gt_update_entry', array($this, 'update_entry'));
         add_action('wp_ajax_nopriv_gt_update_entry', array($this, 'update_entry'));
+        // #2143 — legacy inline auto-refresh: re-render an inline source on a timer.
+        add_action('wp_ajax_gt_inline_refresh', array($this, 'inline_refresh'));
+        add_action('wp_ajax_nopriv_gt_inline_refresh', array($this, 'inline_refresh'));
 
         add_action('wp_ajax_gt_update_entry_fields', array($this, 'update_entry_fields'));
         add_action('wp_ajax_nopriv_gt_update_entry_fields', array($this, 'update_entry_fields'));
@@ -2919,6 +2922,51 @@ class TC_Ajax
         }
 
         return count($found) === count($ids);
+    }
+
+    /**
+     * #2143 — Re-render an inline external source for the auto-refresh poller.
+     *
+     * Receives the whitelisted inline shortcode atts (the same set the renderer
+     * emitted in data-refresh-atts), reconstructs the [tablecrafter source=...]
+     * shortcode, and returns its fresh HTML. Public (nopriv) because inline
+     * tables live on the frontend; the only state it touches is the read-only
+     * source fetch, which carries its own SSRF guard inside the shortcode.
+     */
+    public function inline_refresh(): void
+    {
+        check_ajax_referer('gt_inline_refresh', 'nonce');
+
+        $raw = isset($_POST['atts']) ? wp_unslash($_POST['atts']) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+        $atts = is_string($raw) ? json_decode($raw, true) : (array) $raw;
+        if (!is_array($atts)) {
+            wp_send_json_error(array('message' => __('Invalid refresh payload.', 'tc-data-tables')));
+        }
+
+        // Only the source-render keys are honored; everything else is dropped.
+        $allowed = array('source', 'root', 'include', 'exclude', 'per_page', 'search', 'export', 'filters');
+        $parts   = array();
+        foreach ($allowed as $key) {
+            if (!isset($atts[$key]) || $atts[$key] === '') {
+                continue;
+            }
+            // sanitize_text_field would mangle a URL's query string; esc_attr is
+            // enough here since the value is re-parsed by the shortcode and the
+            // fetch path re-applies its own validation (SSRF allow-list).
+            $val = esc_attr((string) $atts[$key]);
+            $parts[] = $key . '="' . $val . '"';
+        }
+
+        if (empty($parts) || strpos(implode(' ', $parts), 'source=') === false) {
+            wp_send_json_error(array('message' => __('No inline source to refresh.', 'tc-data-tables')));
+        }
+
+        $html = do_shortcode('[tablecrafter ' . implode(' ', $parts) . ']');
+
+        wp_send_json_success(array(
+            'html'    => $html,
+            'updated' => function_exists('current_time') ? current_time('timestamp') : time(),
+        ));
     }
 
     public function update_entry(): void

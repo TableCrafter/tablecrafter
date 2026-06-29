@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 8.0.11
+Stable tag: 8.0.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,16 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.12 =
+* New: inline tables can auto-refresh again — the classic `auto_refresh`, `refresh_interval`, `refresh_indicator`, `refresh_countdown` and `refresh_last_updated` settings now poll the source and update the table in place.
+* New: restored inline Airtable sources (`source="airtable://base/table?token=..."`) from the previous major version — Airtable display stays in the free version.
+* Fixed: old admin bookmarks (`?page=tablecrafter-wp-data-tables`) now redirect to the current screen instead of 404ing.
+* Fixed: inline tables again carry the classic `.tablecrafter-container` wrapper class, so theme CSS that targeted it keeps working.
+* Added: an `uninstall.php` so deleting the plugin fully removes its tables, options and scheduled tasks.
+
+= 8.0.11 =
+* Fixed: Elementor "TableCrafter Table" widgets built on an inline data-source URL (from the previous major version) render again — the inline Data Source URL / columns / toggles controls are back and take precedence over Table ID.
 
 = 8.0.10 =
 * Fixed: the free build now bundles the licensing SDK (it could be missing in some builds, causing a fatal error) and no longer ships internal development files. The SDK load is also guarded so it can never fatal.
