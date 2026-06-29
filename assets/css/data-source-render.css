@@ -1,0 +1,68 @@
+/**
+ * Data-source render styles (#1006 v4.179.0).
+ *
+ * Shared styles for the JSON / Airtable / Notion render methods in
+ * TC_Shortcode. Replaces the inline `style="..."` attributes that
+ * shipped in v4.170.0 / v4.174.0 / v4.178.0.
+ *
+ * Customers can override any selector via their theme's stylesheet.
+ *
+ * @since 4.179.0
+ */
+
+/* ---- Error box (admin-only; visitors see a plain <p>) ---- */
+.gt-json-source-error,
+.gt-airtable-source-error,
+.gt-notion-source-error {
+    border: 1px solid #d63638;
+    padding: 12px;
+    background: #fef1f1;
+    border-radius: 3px;
+}
+
+.gt-json-source-error code,
+.gt-airtable-source-error code,
+.gt-notion-source-error code {
+    background: rgba(214, 54, 56, 0.12);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+/* ---- Empty state ---- */
+.gt-json-source-empty,
+.gt-airtable-source-empty,
+.gt-notion-source-empty {
+    padding: 12px;
+    color: #555;
+    font-style: italic;
+}
+
+/* ---- Wrapper + title ---- */
+.gt-json-source-wrapper,
+.gt-airtable-source-wrapper,
+.gt-notion-source-wrapper {
+    margin: 16px 0;
+}
+
+.gt-json-source-title,
+.gt-airtable-source-title,
+.gt-notion-source-title {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* ---- Meta footer ('N rows from X source.') ---- */
+.gt-json-source-meta,
+.gt-airtable-source-meta,
+.gt-notion-source-meta {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+}
+
+/* ---- Source-specific accents (single line each so theme authors can target) ---- */
+.gt-json-source-wrapper { /* placeholder for future JSON-specific styles */ }
+.gt-airtable-source-wrapper { /* placeholder for future Airtable-specific styles */ }
+.gt-notion-source-wrapper { /* placeholder for future Notion-specific styles */ }

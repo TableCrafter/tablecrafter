@@ -1,0 +1,75 @@
+<svg width="772" height="250" viewBox="0 0 772 250" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2271b1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#135e96;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f0f6fc;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="772" height="250" fill="url(#bgGradient)"/>
+  
+  <!-- Grid pattern background -->
+  <g opacity="0.1">
+    <defs>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-width="1"/>
+      </pattern>
+    </defs>
+    <rect width="772" height="250" fill="url(#grid)" />
+  </g>
+  
+  <!-- Main icon -->
+  <g transform="translate(60, 50)">
+    <rect x="0" y="0" width="150" height="150" fill="none" stroke="#ffffff" stroke-width="6" rx="8"/>
+    
+    <!-- Grid lines -->
+    <line x1="0" y1="37.5" x2="150" y2="37.5" stroke="#ffffff" stroke-width="4"/>
+    <line x1="0" y1="75" x2="150" y2="75" stroke="#ffffff" stroke-width="3"/>
+    <line x1="0" y1="112.5" x2="150" y2="112.5" stroke="#ffffff" stroke-width="3"/>
+    
+    <line x1="37.5" y1="0" x2="37.5" y2="150" stroke="#ffffff" stroke-width="3"/>
+    <line x1="75" y1="0" x2="75" y2="150" stroke="#ffffff" stroke-width="3"/>
+    <line x1="112.5" y1="0" x2="112.5" y2="150" stroke="#ffffff" stroke-width="3"/>
+    
+    <!-- Header highlight -->
+    <rect x="0" y="0" width="150" height="37.5" fill="#ffffff" fill-opacity="0.2" rx="8"/>
+    
+    <!-- Gravity indicators -->
+    <circle cx="18.75" cy="18.75" r="4" fill="#ff6b35"/>
+    <circle cx="56.25" cy="18.75" r="4" fill="#ff6b35"/>
+    <circle cx="93.75" cy="18.75" r="4" fill="#ff6b35"/>
+    <circle cx="131.25" cy="18.75" r="4" fill="#ff6b35"/>
+  </g>
+  
+  <!-- Plugin title -->
+  <text x="280" y="90" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="url(#textGradient)">Gravity Tables</text>
+  
+  <!-- Subtitle -->
+  <text x="280" y="130" font-family="Arial, sans-serif" font-size="20" fill="#ffffff" opacity="0.9">Transform Gravity Forms into Powerful Tables</text>
+  
+  <!-- Feature bullets -->
+  <g transform="translate(280, 150)">
+    <circle cx="0" cy="10" r="3" fill="#4ade80"/>
+    <text x="15" y="15" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" opacity="0.8">Spreadsheet-like Editing</text>
+    
+    <circle cx="180" cy="10" r="3" fill="#4ade80"/>
+    <text x="195" y="15" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" opacity="0.8">Advanced Filtering</text>
+    
+    <circle cx="320" cy="10" r="3" fill="#4ade80"/>
+    <text x="335" y="15" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" opacity="0.8">Bulk Operations</text>
+  </g>
+  
+  <!-- Version/Author info -->
+  <text x="280" y="210" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" opacity="0.6">by Fahad Murtaza @ iSuperCoder.com</text>
+  
+  <!-- Decorative elements -->
+  <circle cx="680" cy="60" r="30" fill="#ffffff" fill-opacity="0.1"/>
+  <circle cx="720" cy="120" r="20" fill="#ffffff" fill-opacity="0.08"/>
+  <circle cx="700" cy="180" r="15" fill="#ffffff" fill-opacity="0.06"/>
+</svg>

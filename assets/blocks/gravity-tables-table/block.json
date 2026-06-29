@@ -1,0 +1,56 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "gravity-tables/table",
+    "version": "1.0.0",
+    "title": "Gravity Table",
+    "category": "widgets",
+    "icon": "list-view",
+    "description": "Embed a Gravity Forms data table in your content.",
+    "keywords": ["gravity forms", "table", "data"],
+    "textdomain": "tc-data-tables",
+    "editorScript": "file:./index.js",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "tableId": {
+            "type": "integer",
+            "default": 0
+        },
+        "showFilters": {
+            "type": "boolean",
+            "default": true
+        },
+        "showPagination": {
+            "type": "boolean",
+            "default": true
+        },
+        "showSearch": {
+            "type": "boolean",
+            "default": true
+        },
+        "showExport": {
+            "type": "boolean",
+            "default": false
+        },
+        "defaultSortColumn": {
+            "type": "string",
+            "default": ""
+        },
+        "defaultSortDirection": {
+            "type": "string",
+            "default": "asc",
+            "enum": ["asc", "desc"]
+        },
+        "pageSize": {
+            "type": "integer",
+            "default": 0
+        },
+        "editTableUrl": {
+            "type": "string",
+            "default": ""
+        }
+    }
+}

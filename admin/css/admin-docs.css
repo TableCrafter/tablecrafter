@@ -1,0 +1,332 @@
+/* TableCrafter — Admin Docs Page Styles (#1976) */
+:root {
+    --tc: #0d9488;
+    --tc-dark: #0f766e;
+    --tc-light: #f0fdfa;
+    --tc-border: #99f6e4;
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.gt-docs-hero {
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+    border-radius: 8px;
+    padding: 24px 30px;
+    margin: 16px 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 2px 10px rgba(13,148,136,.25);
+}
+.gt-docs-hero-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: rgba(255,255,255,.85);
+    flex-shrink: 0;
+}
+.gt-docs-hero h1 {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    padding: 0;
+    line-height: 1.2;
+    text-shadow: none;
+}
+.gt-docs-hero p {
+    color: rgba(255,255,255,.85);
+    font-size: 13px;
+    margin: 0;
+}
+.gt-docs-hero-badge {
+    margin-left: auto;
+    background: rgba(255,255,255,.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+/* ── Page Layout ─────────────────────────────────────────────────────────── */
+.gt-docs-container {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+.gt-docs-sidebar {
+    width: 210px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 32px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.gt-docs-sidebar::-webkit-scrollbar { width: 4px; }
+.gt-docs-sidebar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+
+/* ── Sidebar Nav ─────────────────────────────────────────────────────────── */
+.gt-docs-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.gt-docs-nav li a {
+    display: block;
+    padding: 6px 16px;
+    font-size: 12.5px;
+    color: #374151;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: background .12s ease, color .12s ease, border-color .12s ease;
+    line-height: 1.4;
+}
+.gt-docs-nav li a:hover {
+    background: #f0fdfa;
+    color: var(--tc);
+    border-left-color: var(--tc-border);
+}
+.gt-docs-nav li a.gt-docs-nav-active {
+    background: var(--tc-light);
+    color: var(--tc);
+    font-weight: 600;
+    border-left-color: var(--tc);
+}
+
+/* ── Content Area ────────────────────────────────────────────────────────── */
+.gt-docs-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── Collapsible Cards ───────────────────────────────────────────────────── */
+.gt-docs-section {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: box-shadow .15s ease;
+}
+.gt-docs-section:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,.07);
+}
+.gt-docs-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+    background: #fafafa;
+    border-bottom: 1px solid transparent;
+    transition: background .12s ease, border-color .12s ease;
+}
+.gt-docs-section-header:hover {
+    background: #f0fdfa;
+}
+.gt-docs-section.gt-docs-open > .gt-docs-section-header {
+    background: var(--tc-light);
+    border-bottom-color: var(--tc-border);
+}
+.gt-docs-section-header h2 {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    flex: 1;
+    line-height: 1.3;
+}
+.gt-docs-section.gt-docs-open > .gt-docs-section-header h2 {
+    color: var(--tc);
+}
+.gt-docs-section-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--tc);
+    flex-shrink: 0;
+}
+.gt-docs-section-chevron {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #9ca3af;
+    flex-shrink: 0;
+    transition: transform .2s ease;
+}
+.gt-docs-section.gt-docs-open > .gt-docs-section-header .gt-docs-section-chevron {
+    transform: rotate(180deg);
+    color: var(--tc);
+}
+
+/* ── Card Body ───────────────────────────────────────────────────────────── */
+.gt-docs-section-body {
+    display: none;
+    padding: 20px 22px;
+    border-top: 1px solid #f3f4f6;
+}
+.gt-docs-section.gt-docs-open > .gt-docs-section-body {
+    display: block;
+}
+.gt-docs-section-body h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tc);
+    margin: 18px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #f0fdfa;
+}
+.gt-docs-section-body h3:first-child {
+    margin-top: 0;
+}
+.gt-docs-section-body p {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.65;
+    margin: 0 0 12px;
+}
+.gt-docs-section-body ul,
+.gt-docs-section-body ol {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.65;
+    margin: 0 0 12px;
+    padding-left: 20px;
+}
+.gt-docs-section-body li {
+    margin-bottom: 4px;
+}
+.gt-docs-section-body code {
+    background: #f0fdfa;
+    color: var(--tc-dark);
+    border: 1px solid var(--tc-border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: monospace;
+}
+.gt-docs-section-body pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0 0 14px;
+}
+.gt-docs-section-body pre code {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+}
+.gt-docs-section-body strong {
+    color: #111827;
+}
+
+/* ── Getting Started: teal intro callout ────────────────────────────────── */
+.gt-docs-intro-callout {
+    background: linear-gradient(135deg, var(--tc) 0%, var(--tc-dark) 100%);
+    color: #fff;
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+}
+.gt-docs-intro-callout p {
+    margin: 0;
+    color: #fff;
+    font-size: 13.5px;
+    line-height: 1.65;
+}
+
+/* ── Feature card grid ───────────────────────────────────────────────────── */
+.gt-docs-features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 0 0 20px;
+}
+@media (max-width: 1300px) { .gt-docs-features-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 900px)  { .gt-docs-features-grid { grid-template-columns: 1fr; } }
+
+.gt-docs-feature-card {
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: box-shadow .15s ease, border-color .15s ease;
+}
+.gt-docs-feature-card:hover {
+    border-color: var(--tc);
+    box-shadow: 0 2px 6px rgba(13,148,136,.12);
+}
+.gt-docs-feature-card .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: var(--tc);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.gt-docs-feature-card-body strong {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 2px;
+}
+.gt-docs-feature-card-body p {
+    margin: 0;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* ── Prereqs list ────────────────────────────────────────────────────────── */
+.gt-docs-prereqs {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.gt-docs-prereqs li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #374151;
+}
+.gt-docs-prereqs li .dashicons {
+    color: var(--tc);
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* ── What's New: version entries ─────────────────────────────────────────── */
+.gt-docs-section-body h3[style],
+.gt-docs-section-body h3 + p {
+    margin-top: 0;
+}
+
+/* Suppress WP page h1 — our hero replaces it */
+.gravity-tables_page_gravity-tables-docs .wrap > h1:first-of-type {
+    display: none;
+}

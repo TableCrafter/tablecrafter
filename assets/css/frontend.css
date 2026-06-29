@@ -1,0 +1,6090 @@
+/* Gravity Tables Frontend Styles */
+
+/* When horizontal scroll is disabled in table settings, prevent layout breakage */
+.gt-table-wrapper.gt-no-scroll .gt-table-content {
+    overflow-x: hidden;
+}
+.gt-table-wrapper.gt-no-scroll table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* Horizontal scroll enabled — preserve natural cell widths (#343).
+   Override the desktop table-layout:fixed + width/min-width:100% rules so
+   the table only grows as wide as its content requires, keeping cells at
+   their natural/configured widths instead of inflating to fill the container. */
+.gt-table-wrapper.gt-horizontal-scroll .gt-table {
+    table-layout: auto;
+    width: max-content;
+    min-width: auto;
+}
+@media (min-width: 1024px) {
+    .gt-table-wrapper:not(.gt-horizontal-scroll) .gt-table {
+        width: 100%;
+        min-width: 100%;
+        table-layout: fixed;
+    }
+}
+
+/* Ensure Gravity Tables styles only affect elements within the wrapper */
+.gt-table-wrapper {
+    margin: 0 0 30px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    /* Ensure the wrapper doesn't affect page layout */
+    position: relative;
+    z-index: 1;
+}
+
+.gt-table-container {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Table content wrapper with horizontal scroll */
+.gt-table-content {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+    /* Add subtle border to indicate scrollable area */
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+}
+
+/* Toggle / switch boolean column type (#325) */
+.gt-toggle-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.gt-toggle-switch {
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    position: relative;
+    cursor: default;
+    transition: background 0.2s;
+    vertical-align: middle;
+}
+
+.gt-toggle-cell.gt-editable-cell .gt-toggle-switch {
+    cursor: pointer;
+}
+
+.gt-toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    top: 2px;
+    transition: left 0.2s;
+}
+
+.gt-toggle-on {
+    background: #4caf50;
+}
+
+.gt-toggle-on::after {
+    left: 18px;
+}
+
+.gt-toggle-off {
+    background: #bdbdbd;
+}
+
+.gt-toggle-off::after {
+    left: 2px;
+}
+
+/* Vertical scroll: fixed-height scrollable table body (#324) */
+.gt-vertical-scroll .gt-table-content {
+    overflow-y: auto;
+    /* max-height is applied inline from PHP so the per-table value wins */
+}
+
+.gt-vertical-scroll .gt-table-content thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: inherit;
+}
+
+/* Thin scrollbar for the vertical scroll container */
+.gt-vertical-scroll .gt-table-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.gt-vertical-scroll .gt-table-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+/* Show visual indication when table is scrollable */
+.gt-table-content::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Enhanced scroll indicators */
+.gt-table-content.can-scroll-left {
+    border-left-color: rgba(0, 115, 170, 0.3);
+}
+
+.gt-table-content.can-scroll-right {
+    border-right-color: rgba(0, 115, 170, 0.3);
+}
+
+/* Custom scrollbar for webkit browsers */
+.gt-table-content::-webkit-scrollbar {
+    height: 8px;
+}
+
+.gt-table-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.gt-table-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.gt-table-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Disable scroll shadows - they were causing vertical lines at page boundaries */
+/* 
+.gt-table-content.has-scroll {
+    position: relative;
+}
+*/
+
+/* Scroll hint indicator */
+.gt-scroll-hint {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #666;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+    opacity: 0.7;
+    z-index: 1;
+    animation: scrollHint 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* Animation for scroll hint */
+@keyframes scrollHint {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Fade out scroll hint after interaction */
+.gt-table-content.scroll-interacted .gt-scroll-hint {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+/* ============================================================
+ * Issue #564 — CLS (Cumulative Layout Shift) reservations.
+ * Mirrors a Ninja Tables defect where the server emits a bare
+ * <table> and JS adds toolbar / pagination above and below at
+ * hydration time, pushing all subsequent content down.
+ *
+ * The min-height declarations below RESERVE vertical space for
+ * the toolbar, pagination row, and loading-state tbody BEFORE
+ * JS runs. min-height only sets a floor — when content does
+ * render, the natural height takes over. CLS budget on a
+ * Lighthouse run drops from "Poor" to "Good" with these in place.
+ * ============================================================ */
+
+/* Table Controls */
+.gt-table-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    align-items: center;
+    /* #564 — reserve toolbar height (search input + length selector + filter chips
+     * collectively ~46px tall before padding). */
+    min-height: 76px;
+    box-sizing: border-box;
+}
+
+.gt-search-container {
+    display: flex;
+    gap: 5px;
+}
+
+.gt-search-input {
+    padding: 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    min-width: 200px;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.gt-search-input:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.gt-search-btn,
+.gt-bulk-action-btn,
+.gt-toggle-filters {
+    padding: 10px 16px;
+    background: #0073aa;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.gt-search-btn:hover,
+.gt-bulk-action-btn:hover,
+.gt-toggle-filters:hover {
+    background: #005a87;
+}
+
+.gt-bulk-actions select,
+.gt-bulk-action-select {
+    padding: 10px 30px 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    min-width: 140px;
+    background-color: white;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.gt-bulk-actions select:focus,
+.gt-bulk-action-select:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Row Selection and Inline Editing */
+.gt-row-selected {
+    background-color: #e3f2fd !important;
+    cursor: pointer;
+}
+
+.gt-row-selected:hover {
+    background-color: #bbdefb !important;
+}
+
+/* #613 phase 2 slice 7 (v4.202.0) — per-row push outcome states.
+ * Subtle tint that doesn't fight with .gt-row-selected. The browser's
+ * native title tooltip carries the error code text for failed rows. */
+.gt-push-success {
+    background-color: #e8f5e9 !important;
+    transition: background-color 0.4s ease-out;
+}
+.gt-push-failed {
+    background-color: #ffebee !important;
+    transition: background-color 0.4s ease-out;
+    cursor: help;
+}
+
+.gt-edit-indicator {
+    position: absolute;
+    z-index: 1000;
+    animation: slideInUp 0.3s ease-out;
+}
+
+.gt-edit-indicator-content {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+}
+
+.gt-edit-indicator-text {
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+}
+
+.gt-edit-row-btn {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.gt-edit-row-btn:hover {
+    background: linear-gradient(135deg, #005a87 0%, #004463 100%);
+    transform: translateY(-1px);
+}
+
+.gt-save-all-btn {
+    padding: 4px 8px;
+    background: #0073aa;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    margin-right: 4px;
+    transition: all 0.2s ease;
+}
+
+.gt-save-all-btn:hover {
+    background: #005a87;
+    transform: translateY(-1px);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Table row hover effects */
+.gt-table tbody tr {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.gt-table tbody tr:hover:not(.gt-row-selected) {
+    background-color: #f8f9fa;
+}
+
+/* Advanced Filters */
+.gt-advanced-filters {
+    margin-left: auto;
+}
+
+.gt-toggle-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 115, 170, 0.2);
+}
+
+.gt-toggle-filters:hover {
+    background: linear-gradient(135deg, #005a87 0%, #004463 100%);
+    box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+    transform: translateY(-1px);
+}
+
+.gt-toggle-filters.active {
+    background: #0073aa;
+}
+
+.gt-filter-icon {
+    font-size: 16px;
+}
+
+.gt-filter-text {
+    flex: 1;
+}
+
+.gt-filter-arrow {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.gt-filters-panel {
+    width: 100%;
+    margin-top: 0;
+    background: #f8f9fa;
+    border-top: 3px solid #0073aa;
+}
+
+.gt-filters-content {
+    padding: 24px;
+    background: white;
+    margin: 0;
+    border: 1px solid #e1e5e9;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+}
+
+.gt-filters-header {
+    margin-bottom: 24px;
+    text-align: center;
+    border-bottom: 2px solid #f1f3f4;
+    padding-bottom: 16px;
+}
+
+.gt-filters-header h4 {
+    margin: 0 0 8px 0;
+    color: #23282d;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.gt-filters-header p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.gt-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+    align-items: start;
+}
+
+.gt-filter-field {
+    background: #fff;
+    border: 1px solid #e1e5e9;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.gt-filter-field:hover {
+    border-color: #0073aa;
+    box-shadow: 0 4px 16px rgba(0, 115, 170, 0.12);
+    transform: translateY(-2px);
+}
+
+.gt-filter-field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.gt-filter-label {
+    font-weight: 600;
+    color: #23282d;
+    font-size: 14px;
+    margin: 0;
+}
+
+.gt-filter-type-badge {
+    background: #0073aa;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gt-filter-field-content {
+    width: 100%;
+}
+
+.gt-filter-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    background: #fafbfc;
+}
+
+.gt-filter-input:hover {
+    border-color: #c1c9d2;
+    background: #fff;
+}
+
+.gt-filter-input:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Consistent styling for filter select dropdowns */
+select.gt-filter-input,
+.gt-dropdown-filter:not([multiple]) {
+    width: 100%;
+    padding: 10px 35px 10px 12px;
+    /* Extra right padding for arrow */
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    background-color: #fafbfc;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6,9 12,15 18,9'></polyline></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+}
+
+select.gt-filter-input:hover,
+.gt-dropdown-filter:not([multiple]):hover {
+    border-color: #c1c9d2;
+    background-color: #fff;
+}
+
+select.gt-filter-input:focus,
+.gt-dropdown-filter:not([multiple]):focus {
+    outline: none;
+    border-color: #0073aa;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230073aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6,9 12,15 18,9'></polyline></svg>");
+}
+
+.gt-number-filter {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    position: relative;
+}
+
+.gt-number-filter::before {
+    content: '→';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    background: white;
+    padding: 2px 6px;
+    border-radius: 50%;
+    font-size: 12px;
+    color: #666;
+    border: 1px solid #e1e5e9;
+}
+
+.gt-date-filter input,
+.gt-number-filter input {
+    flex: 1;
+    padding: 12px 35px 12px 14px;
+    height: auto;
+    box-sizing: border-box;
+}
+
+.gt-date-filter {
+    position: relative;
+}
+
+.gt-date-filter::after {
+    content: '📅';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Hide calendar icon when date presets are present */
+.gt-date-filter:has(.gt-date-presets)::after {
+    display: none;
+}
+
+.gt-filter-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 2px solid #f1f3f4;
+}
+
+.gt-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+.gt-btn-primary {
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 115, 170, 0.2);
+}
+
+.gt-btn-primary:hover {
+    background: linear-gradient(135deg, #005a87 0%, #004463 100%);
+    box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+    transform: translateY(-1px);
+}
+
+.gt-btn-secondary {
+    background: #f8f9fa;
+    color: #495057;
+    border: 2px solid #e1e5e9;
+}
+
+.gt-btn-secondary:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.gt-no-filters {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-style: italic;
+    grid-column: 1 / -1;
+}
+
+.gt-no-filters p {
+    margin: 0;
+    font-size: 16px;
+}
+
+/* Table Styles */
+.gt-table {
+    width: 100%;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    table-layout: auto;
+    background: white;
+}
+
+.gt-table th,
+.gt-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e1e5e9;
+    border-right: 1px solid #e1e5e9;
+    word-wrap: break-word;
+}
+
+/* Ensure total & calculation columns are wide enough to show values (min 4 digits) */
+.gt-table th.gt-field-type-total,
+.gt-table td.gt-field-type-total,
+.gt-table th.gt-field-type-calculation,
+.gt-table td.gt-field-type-calculation {
+    width: 80px;
+}
+
+.gt-table th:last-child,
+.gt-table td:last-child {
+    border-right: none;
+}
+
+.gt-table th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    /* Remove default sticky positioning - only apply when .sticky-header class is present */
+}
+
+/* Override default header styling when sticky header is enabled */
+.gt-table-wrapper.sticky-header .gt-table th {
+    /* Dark background for all headers when sticky is enabled */
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: #ffffff;
+    font-weight: 600;
+    border-bottom: 2px solid #1a252f;
+}
+
+/* Ensure sticky header styles work in preview mode */
+.gt-table-wrapper.preview-mode.sticky-header .gt-table th {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: #ffffff;
+    font-weight: 600;
+    border-bottom: 2px solid #1a252f;
+}
+
+/* Preview Specific Table Styles */
+.gt-table-wrapper.preview-mode .gt-table th,
+.gt-table-wrapper.preview-mode .gt-table td {
+    padding: 10px 12px;
+}
+
+.gt-table-wrapper.preview-mode .gt-table th {
+    padding: 12px 12px;
+}
+
+/* Explicit first-body-row reset (#97)
+   Prevents any inherited or theme-applied header background from bleeding
+   into the first <tbody> row. Must use inherit/transparent so user-defined
+   alternating-row colours still apply via the nth-child rules below. */
+.gt-table tbody tr:first-child {
+    background-color: inherit;
+}
+
+/* Alternating row colors */
+.gt-table tbody tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.gt-table tbody tr:nth-child(odd) {
+    background: #ffffff;
+}
+
+.gt-table tbody tr:hover {
+    background: #e8f4f8 !important;
+    transition: background-color 0.2s ease;
+}
+
+/* Explicit cell background — overrides row stripe for merged (rowspan/colspan) cells.
+   Using !important ensures the inline style on .gt-cell-bg wins over the row's
+   background shorthand, which would otherwise reset background-color. */
+.gt-table tbody td.gt-cell-bg,
+.gt-table tbody td[style*="background-color"] {
+    background-color: var(--gt-cell-bg, transparent) !important;
+}
+
+/* Sortable headers */
+.gt-sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+/* Hover effect for regular table headers */
+.gt-table th:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    transition: all 0.2s ease;
+}
+
+/* Enhanced hover for sortable headers in regular tables */
+.gt-sortable:hover {
+    background: linear-gradient(135deg, #3498db 0%, #5dade2 100%) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+
+.gt-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.gt-header-label {
+    flex: 1;
+}
+
+/* Sort indicators */
+.gt-sort-indicator {
+    margin-left: 8px;
+    user-select: none;
+    color: #adb5bd;
+    flex-shrink: 0;
+}
+
+.gt-sortable:hover .gt-sort-indicator {
+    color: #ffffff;
+}
+
+.gt-sort-indicator.active {
+    color: #0073aa;
+}
+
+/* Visitor-side length selector ("Show N entries" dropdown) added in
+ * v4.9.15. Sits inside .gt-pagination-container before .gt-pagination-info
+ * and .gt-pagination-controls. Off by default — only renders when
+ * show_length_selector is on. */
+.gt-length-selector {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 12px;
+}
+.gt-length-selector label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #50575e;
+}
+.gt-length-select {
+    padding: 2px 6px;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    background: #fff;
+}
+
+/* TC_Collapsible_Service — whole-table collapse toggle button + body
+ * wrapper. Emitted before / around the .gt-table-wrapper when the per-table
+ * "Make whole table collapsible" toggle is on. Service emits the markup;
+ * these styles give the button + chevron a sensible default look without
+ * forcing a particular brand. */
+.gt-collapsible-header {
+    margin: 0 0 8px 0;
+}
+.gt-collapse-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #f6f6f6;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #1d2327;
+}
+.gt-collapse-toggle:hover {
+    background: #ececec;
+}
+.gt-collapse-title {
+    font-weight: 600;
+}
+.gt-chevron {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    transition: transform 0.18s ease;
+}
+.gt-chevron--down {
+    border-top: 6px solid currentColor;
+}
+.gt-chevron--up {
+    border-bottom: 6px solid currentColor;
+}
+.gt-collapsible-body[hidden] {
+    display: none;
+}
+.gt-collapsible-animating {
+    transition: opacity 0.2s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+    .gt-chevron, .gt-collapsible-animating { transition: none; }
+}
+
+/* #565 — multi-column sort: numbered badges next to sort arrows showing
+ * the active sort order (1 = primary, 2 = secondary, 3 = tertiary). Only
+ * rendered when the sort stack has 2+ entries; single-column sort doesn't
+ * render the badge so existing tables look unchanged. */
+.gt-sort-order-badge {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 0 5px;
+    min-width: 14px;
+    height: 14px;
+    line-height: 14px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffffff;
+    background: #0073aa;
+    border-radius: 7px;
+    text-align: center;
+    user-select: none;
+    vertical-align: middle;
+}
+
+/* Active/sorted column highlight for regular tables */
+.gt-table th.sorted-asc,
+.gt-table th.sorted-desc {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: #ffffff;
+}
+
+.gt-table th.sorted-asc .gt-sort-indicator,
+.gt-table th.sorted-desc .gt-sort-indicator {
+    color: #ffffff;
+}
+
+.gt-sort-asc,
+.gt-sort-desc {
+    display: inline-block;
+    font-size: 10px;
+    line-height: 1;
+}
+
+.gt-sort-asc {
+    margin-right: 2px;
+}
+
+/* Loading state */
+.gt-loading {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.gt-loading-row td {
+    background: #f8f9fa !important;
+}
+
+/* #1713 — layout-stable loading skeleton for the AJAX reload path.
+   Shimmer rows that mirror the real columns so sort/filter/paginate no
+   longer collapse ("squish") the table or flash a single "Loading…" row. */
+@keyframes gt-shimmer {
+    0%   { background-position: -468px 0; }
+    100% { background-position: 468px 0; }
+}
+.gt-skeleton-row > td.gt-skeleton-cell {
+    padding: 11px 12px;
+    border-bottom: 1px solid #f0f1f3;
+    background: #fff;
+}
+.gt-skeleton-bar {
+    display: block;
+    height: 13px;
+    width: 100%;
+    border-radius: 4px;
+    background: #e9eaed;
+    background-image: linear-gradient(90deg, #e9eaed 0px, #f4f5f7 40px, #e9eaed 80px);
+    background-size: 600px 100%;
+    background-repeat: no-repeat;
+    animation: gt-shimmer 1.3s ease-in-out infinite;
+}
+/* Stagger bar widths so it reads like real data, not a grid of identical blocks */
+.gt-skeleton-row > td:nth-child(3n+1) .gt-skeleton-bar { width: 88%; }
+.gt-skeleton-row > td:nth-child(3n+2) .gt-skeleton-bar { width: 62%; }
+.gt-skeleton-row > td:nth-child(3n)   .gt-skeleton-bar { width: 94%; }
+.gt-skeleton-row > td:first-child     .gt-skeleton-bar { width: 70%; }
+@media (prefers-reduced-motion: reduce) {
+    .gt-skeleton-bar { animation: none; background: #e9eaed; }
+}
+
+/* Loading state – block premature pagination clicks and indicate busy state (#92) */
+.gt-table-loading .gt-pagination-container {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.gt-table-loading .gt-prev-page,
+.gt-table-loading .gt-next-page {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.gt-table .gt-selection-header {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.gt-table .gt-actions-header,
+.gt-table .gt-actions-column {
+    min-width: 153px;
+    width: auto !important;
+    max-width: none !important;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.gt-table .gt-selection-header {
+    padding: 12px 15px;
+}
+
+/* Selection column cells */
+.gt-table td:has(.gt-entry-checkbox),
+.gt-table th:has(.gt-select-all) {
+    width: 50px;
+    min-width: 50px;
+    max-width: 50px;
+    text-align: center;
+    padding: 12px 15px;
+}
+
+/* For older browsers that don't support :has() */
+.gt-table .gt-checkbox-cell {
+    width: 50px;
+    min-width: 50px;
+    max-width: 50px;
+    text-align: center;
+    padding: 12px 15px;
+}
+
+/* Prevent date column from pushing out checkbox column */
+.gt-table .gt-column-date_created {
+    min-width: 120px;
+    max-width: 150px;
+}
+
+/* Table sizing - allow natural width with horizontal scroll when needed */
+.gt-table {
+    width: 100%;
+    min-width: max-content;
+    /* Allow table to grow beyond container width */
+    table-layout: auto;
+    /* Allow natural column sizing */
+}
+
+/* Desktop table: fit within container without horizontal scrolling.
+   Scoped to wrappers that do NOT have gt-horizontal-scroll (#343). */
+@media (min-width: 1024px) {
+    .gt-table-wrapper:not(.gt-horizontal-scroll) .gt-table th,
+    .gt-table-wrapper:not(.gt-horizontal-scroll) .gt-table td {
+        white-space: normal;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: none;
+    }
+}
+
+/* Column content handling */
+.gt-table th:not(.gt-filter-cell),
+.gt-table td:not(.gt-filter-cell) {
+    white-space: nowrap;
+    /* Prevent text wrapping to allow natural column width */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 100px;
+    /* Minimum usable column width */
+    max-width: 300px;
+    /* Maximum column width to prevent excessive stretching */
+    /* Keep original padding from base .gt-table th, .gt-table td rule */
+}
+
+/* Lock table layout when explicit widths are configured – colgroup <col> elements carry the widths */
+.gt-table.gt-has-widths {
+    table-layout: fixed;
+}
+
+/* colgroup col widths – the <col> element receives an inline style="width:X" from PHP */
+.gt-table colgroup col {
+    /* width is set via inline style on each <col>; no override needed here */
+}
+
+/* Per-column inline filter row */
+.gt-table .gt-filter-row .gt-filter-cell {
+    padding: 4px;
+    background: transparent;
+}
+.gt-table .gt-filter-row .gt-per-col-filter {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.85em;
+    padding: 2px 4px;
+}
+
+/* Custom column width handling - these override the default min/max widths */
+.gt-table th[data-width]:not(.gt-filter-cell),
+.gt-table td[data-width]:not(.gt-filter-cell) {
+    width: var(--column-width);
+    min-width: var(--column-width);
+    max-width: var(--column-width);
+}
+
+/* Compact columns for better space usage */
+.gt-table th.gt-compact:not(.gt-filter-cell),
+.gt-table td.gt-compact:not(.gt-filter-cell) {
+    min-width: 80px;
+}
+
+/* Actions column — width set to comfortably fit View + Delete + History (3 icons,
+   roughly 30-46px each + gaps). 4.7.61 widened from 80px to 130px because the
+   third icon was being clipped on narrow viewports / inside table-layout:fixed
+   contexts where the previous max-width forced ~104px content into a smaller
+   cell. */
+.gt-table th.gt-actions-header,
+.gt-table td.gt-actions-cell {
+    width: 153px;
+    min-width: 153px;
+    max-width: 200px;
+    text-align: center;
+    overflow: visible;
+    /* #1719 — under table-layout:fixed the column collapses to the equal-share
+       width (~101px), too narrow for the inline icons. Keep them on one line so
+       they never wrap to a second row; the tighter padding/margin below let the
+       current icon set fit inline within that width. !important overrides the
+       desktop "wrap cell text" rule (@media min-width:1024px), which is more
+       specific — actions must never wrap. */
+    white-space: nowrap !important;
+}
+
+/* #1719 — trim the actions-cell horizontal padding and per-icon margin so the
+   action icons fit inline even when the column is collapsed to its equal-share
+   width. */
+.gt-table td.gt-actions-cell {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+.gt-table td.gt-actions-cell .gt-action {
+    margin: 0 1px;
+}
+
+/* 4.7.59 — Sticky-right Actions column.
+   On wide tables (e.g. AJS Trucking's 16-column Admin Loads Hauled), the rightmost
+   actions column (View / History / Delete) was scrolling off-screen and required
+   horizontal scroll to access. Pinning it to the right edge keeps the buttons
+   reachable at any scroll position. */
+.gt-table th.gt-actions-header,
+.gt-table td.gt-actions-cell {
+    position: sticky;
+    right: 0;
+    /* Subtle left-edge shadow signals that this column floats over the rest. */
+    box-shadow: -2px 0 6px -2px rgba(0, 0, 0, 0.08);
+}
+.gt-table td.gt-actions-cell { z-index: 4; }
+.gt-table th.gt-actions-header { z-index: 6; }
+
+/* TD default background is transparent, so without these per-state rules the
+   content scrolling under the sticky column would show through. Mirror each row
+   state (odd / even / hover) so the visual stays seamless. */
+.gt-table tbody tr:nth-child(even) td.gt-actions-cell { background-color: #f9f9f9; }
+.gt-table tbody tr:nth-child(odd) td.gt-actions-cell { background-color: #ffffff; }
+.gt-table tbody tr:hover td.gt-actions-cell { background-color: #e8f4f8; }
+.gt-table tbody tr.gt-row-selected td.gt-actions-cell { background-color: #fff8e1; }
+
+/* Selection checkbox column should be minimal */
+.gt-table th.gt-checkbox-cell,
+.gt-table td.gt-checkbox-cell {
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    text-align: center;
+    padding: 8px 4px;
+}
+
+/* On tablet screens (481px-768px), allow horizontal scrolling for table view */
+@media (min-width: 481px) and (max-width: 768px) {
+    .gt-table {
+        min-width: 600px;
+        /* Ensure minimum table width for horizontal scrolling on tablets */
+    }
+
+    .gt-table th,
+    .gt-table td {
+        white-space: normal;
+        /* Allow wrapping on tablet */
+        min-width: 80px;
+        /* Smaller minimum width on tablet */
+        max-width: 200px;
+        /* Smaller maximum width on tablet */
+        min-height: 40px;
+    }
+}
+
+/* On mobile screens (480px and below), remove table constraints - card layout takes over */
+@media (max-width: 480px) {
+    .gt-table {
+        min-width: auto;
+        /* No minimum width constraint - let cards take over */
+        width: 100%;
+    }
+
+    .gt-table th,
+    .gt-table td {
+        white-space: normal;
+        min-width: auto;
+        /* No minimum width on mobile */
+        max-width: none;
+        /* No maximum width constraints */
+        min-height: 40px;
+    }
+
+    /* Prevent horizontal scrolling on mobile - card layout should be used instead */
+    .gt-table-content {
+        overflow-x: visible;
+        /* No horizontal scroll on mobile */
+        overflow-y: visible;
+    }
+
+    /* Hide table when cards are active on mobile */
+    .gt-table-wrapper[data-responsive-mode="enhanced"] .gt-table-content {
+        overflow: visible;
+    }
+}
+
+/* Checkbox column should not be constrained */
+.gt-table .gt-checkbox-cell {
+    max-width: 50px !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+}
+
+/* Preview Specific Styles */
+.gt-table-wrapper.preview-mode {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.gt-table-wrapper.preview-mode .gt-table th,
+.gt-table-wrapper.preview-mode .gt-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gt-table-wrapper.preview-mode .gt-table-controls {
+    background: #f0f8ff;
+    border-color: #0073aa;
+    padding: 12px;
+}
+
+/*
+ * #1685 — toolbar breathing space. The controls were left-packed and read as
+ * cramped. Push the secondary group (Bulk Actions + Apply, and the Undo/Redo
+ * history buttons that follow it) to the right with margin-left:auto so the
+ * primary group (Search / Export / Print) sits left with clear whitespace
+ * between. Also give the bulk select + Apply an internal gap so they aren't
+ * flush. The mobile media query restacks these to full-width columns, where
+ * margin-left:auto is a harmless no-op.
+ */
+.gt-table-controls .gt-bulk-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gt-table-wrapper.preview-mode .gt-pagination-container {
+    background: #f0f8ff;
+    border-color: #0073aa;
+    padding: 12px;
+}
+
+/* Preview Interactive Elements */
+.gt-table-wrapper.preview-mode .gt-sort-indicator.active {
+    color: #0073aa;
+    font-weight: bold;
+}
+
+.gt-table-wrapper.preview-mode .gt-entry-checkbox:checked {
+    accent-color: #0073aa;
+}
+
+/* Ensure checkboxes are visible and properly sized */
+.gt-entry-checkbox,
+.gt-select-all {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+    cursor: pointer !important;
+    vertical-align: middle !important;
+}
+
+.gt-table-wrapper.preview-mode .gt-select-all:checked {
+    accent-color: #0073aa;
+}
+
+/* Preview Notifications */
+.gt-preview-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #0073aa;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    max-width: 300px;
+    font-size: 14px;
+}
+
+.gt-preview-notification.success {
+    background: #0073aa;
+}
+
+.gt-preview-notification.error {
+    background: #dc3232;
+}
+
+/* Pagination */
+.gt-pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-top: 1px solid #ddd;
+    /* #564 — reserve pagination row height (info text + pagination buttons
+     * collectively ~42px tall before padding). */
+    min-height: 72px;
+    box-sizing: border-box;
+}
+
+/* #564 — reserve a minimum body height during the JS-loading window so
+ * the empty <tbody> does not collapse to 0px and then jump to N rows
+ * worth of content on hydration. ~10 rows × ~40px = 400px is a safe
+ * default for the typical default per_page=25 view; trims naturally
+ * once content arrives. */
+.gt-table-wrapper.gt-table-loading .gt-table,
+.gt-table-wrapper:not(.gt-hydrated) .gt-table {
+    min-height: 400px;
+}
+
+.gt-entry-count {
+    font-size: 13px;
+    color: #666;
+}
+
+/* #1912 — auto-refresh last-updated timestamp */
+.gt-last-updated {
+    font-size: 12px;
+    color: #999;
+    text-align: right;
+    padding: 4px 15px 6px;
+}
+
+.gt-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gt-prev-page,
+.gt-next-page {
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.gt-prev-page:hover,
+.gt-next-page:hover {
+    background: #f1f1f1;
+}
+
+.gt-prev-page:disabled,
+.gt-next-page:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.gt-current-page {
+    font-weight: 500;
+    color: #23282d;
+}
+
+.gt-total-pages {
+    color: #666;
+    font-size: 13px;
+}
+
+/* Empty State */
+.gt-table-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .gt-table-controls {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 10px;
+    }
+
+    .gt-search-container,
+    .gt-bulk-actions,
+    .gt-advanced-filters {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .gt-search-container {
+        order: 1;
+        flex-direction: column;
+    }
+
+    .gt-search-input {
+        margin-bottom: 8px;
+        min-width: unset;
+        width: 100%;
+    }
+
+    .gt-search-btn {
+        width: 100%;
+    }
+
+    .gt-bulk-actions {
+        order: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .gt-bulk-actions select,
+    .gt-bulk-action-select,
+    .gt-bulk-action-btn {
+        width: 100%;
+        min-width: auto;
+    }
+
+    /* Mobile edit indicator adjustments */
+    .gt-edit-indicator-content {
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px 12px;
+    }
+
+    .gt-edit-indicator-text {
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .gt-edit-row-btn {
+        width: 100%;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .gt-advanced-filters {
+        order: 3;
+        margin-left: 0;
+    }
+
+    .gt-toggle-filters {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 16px;
+    }
+
+    .gt-filters-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .gt-filter-field {
+        padding: 16px;
+        min-height: auto;
+    }
+
+    .gt-filter-field-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .gt-filter-type-badge {
+        align-self: flex-end;
+    }
+
+    .gt-date-filter,
+    .gt-number-filter,
+    .gt-range-filter {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .gt-number-filter::before {
+        content: '↓';
+        position: static;
+        transform: none;
+        align-self: center;
+        margin: 8px 0;
+    }
+
+    .gt-range-inputs {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .gt-range-separator {
+        display: none;
+    }
+
+    .gt-filter-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .gt-btn {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 16px;
+    }
+
+    /* Minimum table width on mobile for better usability */
+    .gt-table {
+        min-width: 600px;
+    }
+
+    .gt-table th,
+    .gt-table td {
+        padding: 8px 10px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .gt-table th {
+        padding: 10px 10px;
+    }
+
+    .gt-pagination-container {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .gt-pagination-controls {
+        justify-content: center;
+    }
+
+    .gt-prev-page,
+    .gt-next-page {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}
+
+/* Smaller mobile screens */
+@media (max-width: 480px) {
+    .gt-table-wrapper {
+        margin: 10px 0;
+    }
+
+    .gt-table-controls {
+        padding: 8px;
+    }
+
+    .gt-table th,
+    .gt-table td {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    .gt-table th {
+        padding: 8px 8px;
+    }
+
+    .gt-sort-indicator {
+        margin-left: 4px;
+    }
+
+    .gt-sort-asc,
+    .gt-sort-desc {
+        font-size: 8px;
+    }
+
+    .gt-filters-content {
+        padding: 8px;
+    }
+
+    .gt-filter-field {
+        margin-bottom: 12px;
+    }
+
+    .gt-filter-field label {
+        font-size: 13px;
+    }
+
+    .gt-filter-input,
+    .gt-date-filter input,
+    .gt-number-filter input,
+    .gt-range-min,
+    .gt-range-max {
+        font-size: 14px;
+        padding: 6px 8px;
+    }
+
+    .gt-apply-filters,
+    .gt-clear-filters {
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    .gt-pagination-container {
+        padding: 8px;
+    }
+
+    .gt-entry-count {
+        font-size: 12px;
+    }
+
+    .gt-prev-page,
+    .gt-next-page {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .gt-current-page {
+        font-size: 13px;
+    }
+
+    .gt-total-pages {
+        font-size: 12px;
+    }
+}
+
+/* Editing Styles - Universal */
+.gt-editable-field {
+    cursor: pointer;
+    border: 1px solid transparent;
+    padding: 4px;
+    border-radius: 2px;
+    transition: border-color 0.2s ease;
+    position: relative;
+    min-height: 16px;
+    width: 100%;
+    display: block;
+}
+
+.gt-editable-field:hover {
+    border-color: #0073aa;
+    background-color: #f0f8ff;
+}
+
+/* Disable hover effects when field is being edited */
+.gt-editable-field.gt-editing:hover {
+    border-color: #ddd !important;
+    background-color: transparent !important;
+}
+
+.gt-editable-field:empty::before {
+    content: "Click to edit";
+    color: #999;
+    font-style: italic;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.gt-editable-field:empty:hover::before {
+    opacity: 1;
+}
+
+/* Show hover text for all editable fields (filled and empty) */
+.gt-editable-field::after {
+    content: "Click to edit";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.gt-editable-field:hover::after {
+    opacity: 1;
+}
+
+/* Hide hover text when field is being edited */
+.gt-editable-field.gt-editing::after,
+.gt-editable-field.gt-editing:hover::after,
+.gt-editable-field.gt-editing:empty::before,
+.gt-editable-field.gt-editing:empty:hover::before {
+    opacity: 0 !important;
+}
+
+/* Spreadsheet-like editable cells */
+.gt-editable-cell {
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    min-height: 20px;
+    padding: 8px;
+}
+
+.gt-editable-cell:hover {
+    background-color: #f0f8ff;
+    border: 1px solid #0073aa;
+}
+
+/* Disable hover effects when cell is being edited */
+.gt-editable-cell.gt-editing:hover {
+    background-color: transparent !important;
+    border: 1px solid #ddd !important;
+}
+
+.gt-editable-cell:empty::after {
+    content: "Click to edit";
+    color: #999;
+    font-style: italic;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.gt-editable-cell:empty:hover::after {
+    opacity: 1;
+}
+
+/* Show hover tooltip for all editable cells */
+.gt-editable-cell::before {
+    content: "Click to edit";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.gt-editable-cell:hover::before {
+    opacity: 1;
+}
+
+/* Hide hover text when cell is being edited */
+.gt-editable-cell.gt-editing::before,
+.gt-editable-cell.gt-editing:hover::before,
+.gt-editable-cell.gt-editing:empty::after,
+.gt-editable-cell.gt-editing:empty:hover::after {
+    opacity: 0 !important;
+}
+
+/* Enhanced styling for explicitly empty fields */
+.gt-empty-field {
+    min-width: 80px;
+    min-height: 32px;
+    position: relative;
+}
+
+.gt-empty-field::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.gt-empty-field:hover {
+    background-color: #f8f9ff !important;
+    border: 1px solid #0073aa !important;
+}
+
+/* Disable hover effects when empty field is being edited */
+.gt-empty-field.gt-editing:hover {
+    background-color: transparent !important;
+    border: 1px solid #ddd !important;
+}
+
+.gt-empty-field::after {
+    content: "Click to edit";
+    color: #999;
+    font-style: italic;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.gt-empty-field:hover::after {
+    opacity: 1;
+}
+
+/* Hide hover text when empty field is being edited */
+.gt-empty-field.gt-editing::after,
+.gt-empty-field.gt-editing:hover::after {
+    opacity: 0 !important;
+}
+
+/* Read-only fields styling */
+.gt-readonly-cell {
+    cursor: not-allowed;
+    position: relative;
+    background-color: #f9f9f9;
+    color: #666;
+    transition: background-color 0.2s ease;
+}
+
+.gt-readonly-cell:hover {
+    background-color: #f0f0f0;
+}
+
+.gt-readonly-cell:hover::after {
+    content: "Read-only field";
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0.9;
+}
+
+.gt-readonly-cell:hover::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #333;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* Readonly indicator popup */
+.gt-readonly-indicator {
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.gt-readonly-indicator-content {
+    background-color: #d32f2f;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    position: relative;
+}
+
+.gt-readonly-indicator-content::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #d32f2f;
+}
+
+.gt-readonly-indicator-text {
+    font-weight: 500;
+}
+
+/* Editable cell - ensure no extra spacing during editing */
+.gt-editable-cell.gt-editing {
+    padding: 0 !important;
+    vertical-align: top;
+}
+
+/* Input styles for spreadsheet-like editing */
+.gt-editable-cell .gt-edit-input {
+    width: 100%;
+    height: 100%;
+    border: 2px solid #0073aa;
+    padding: 12px 15px;
+    /* Match table cell padding for seamless appearance */
+    margin: 0;
+    font-size: inherit;
+    font-family: inherit;
+    background: white;
+    box-sizing: border-box;
+    line-height: normal;
+    display: block;
+    vertical-align: top;
+    resize: none;
+    /* Prevent textarea resizing */
+}
+
+/* Special handling for select dropdowns */
+.gt-editable-cell .gt-edit-input[type="select-one"],
+.gt-editable-cell select.gt-edit-input {
+    height: auto;
+    min-height: 36px;
+    cursor: pointer;
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+    appearance: menulist;
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1000;
+}
+
+.gt-editable-cell .gt-edit-input:focus {
+    outline: none;
+    border-color: #005a87;
+    box-shadow: 0 0 0 1px #005a87;
+}
+
+/* Save and Cancel buttons - Desktop styles */
+.gt-save-btn,
+.gt-cancel-btn {
+    padding: 4px 8px;
+    margin: 0 2px;
+    font-size: 12px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    min-width: 50px;
+    font-weight: 500;
+}
+
+.gt-save-btn {
+    background: #0073aa;
+    color: white;
+}
+
+.gt-save-btn:hover {
+    background: #005a87;
+}
+
+.gt-cancel-btn {
+    background: #dc3232;
+    color: white;
+}
+
+.gt-cancel-btn:hover {
+    background: #c62828;
+}
+
+.gt-edit-input {
+    padding: 12px 15px;
+    /* Match table cell padding for seamless appearance */
+    border: 1px solid #0073aa;
+    border-radius: 3px;
+    font-size: 13px;
+    min-width: 100px;
+}
+
+.gt-edit-input:focus {
+    outline: none;
+    border-color: #005a87;
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.2);
+}
+
+@media (max-width: 768px) {
+    .gt-editable-field {
+        display: block;
+        padding: 8px;
+        margin: -4px;
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+    }
+
+    .gt-edit-input {
+        width: 100% !important;
+        padding: 12px 15px;
+        /* Match table cell padding for seamless appearance */
+        font-size: 14px;
+        border: 2px solid #0073aa;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .gt-edit-input:focus {
+        outline: none;
+        border-color: #005a87;
+        box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.2);
+    }
+
+    .gt-save-btn,
+    .gt-cancel-btn {
+        padding: 8px 12px !important;
+        margin: 4px 2px !important;
+        font-size: 13px !important;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        min-width: 60px !important;
+    }
+
+    .gt-save-btn {
+        background: #0073aa !important;
+        color: white;
+    }
+
+    .gt-save-btn:hover {
+        background: #005a87 !important;
+    }
+
+    .gt-cancel-btn {
+        background: #dc3232 !important;
+        color: white;
+    }
+
+    .gt-cancel-btn:hover {
+        background: #c62828 !important;
+    }
+
+    .gt-edit-btn {
+        padding: 6px 10px;
+        margin: 2px;
+        font-size: 12px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        min-width: 50px;
+    }
+
+    .gt-edit-btn {
+        background: #0073aa;
+        color: white;
+    }
+
+    .gt-edit-btn:hover {
+        background: #005a87;
+    }
+
+
+    .gt-actions-cell {
+        white-space: nowrap;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .gt-edit-input {
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+        padding: 12px 15px;
+        /* Match table cell padding for seamless appearance */
+    }
+
+    .gt-save-btn,
+    .gt-cancel-btn {
+        padding: 10px 8px;
+        font-size: 12px;
+        min-width: 50px;
+    }
+
+    .gt-edit-btn {
+        padding: 8px 6px;
+        font-size: 11px;
+        min-width: 45px;
+    }
+}
+
+/* Disabled editing styles */
+.gt-no-actions {
+    color: #999;
+    font-style: italic;
+    font-size: 12px;
+    padding: 8px;
+    display: inline-block;
+}
+
+/* Additional styles for when frontend editing is disabled */
+.gt-table-wrapper[data-editing-disabled="true"] .gt-editable-field {
+    cursor: default !important;
+}
+
+.gt-table-wrapper[data-editing-disabled="true"] .gt-editable-field:hover {
+    border-color: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Date filter styling - make date filters twice as wide as other filters */
+.gt-filter-wide {
+    grid-column: span 2;
+    flex: 2;
+}
+
+/* Ensure date filter inputs are properly styled */
+.gt-date-filter {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    align-items: center;
+}
+
+.gt-date-filter .gt-filter-input {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    padding: 10px 12px !important;
+    height: 20px;
+    box-sizing: border-box;
+    line-height: normal;
+}
+
+/* Force consistent styling for date inputs specifically */
+.gt-date-filter input[type="date"] {
+    padding: 10px 12px !important;
+    height: 42px !important;
+    box-sizing: border-box !important;
+    line-height: normal !important;
+    border: 2px solid #e1e5e9 !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    background: #fafbfc !important;
+}
+
+/* Medium screens: 2-column layout */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .gt-filters-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+/* For responsive grid layouts */
+@media (max-width: 768px) {
+    .gt-filter-wide {
+        grid-column: span 1;
+        /* Stack on mobile */
+    }
+
+    .gt-filters-grid {
+        gap: 16px;
+    }
+}
+
+/* Date input wrapper styling - entire field is clickable */
+.gt-date-input-wrapper {
+    position: relative;
+    flex: 1;
+    cursor: pointer;
+    min-height: 42px;
+    /* Ensure good touch target */
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    background-color: #fff;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    padding: 10px 35px 10px 12px;
+    /* Match consistent padding and space for icon */
+    box-sizing: border-box;
+}
+
+.gt-date-input-wrapper:hover {
+    border-color: #0073aa;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gt-date-input-wrapper:focus-within {
+    border-color: #0073aa;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+    outline: none;
+}
+
+.gt-date-html5 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+    border: none;
+}
+
+.gt-date-display {
+    width: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    z-index: 1;
+    outline: none;
+    color: #333;
+    pointer-events: none;
+    /* Let clicks pass through to the wrapper */
+}
+
+.gt-date-display::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+/* Enhanced calendar icon for date inputs */
+.gt-date-input-wrapper::after {
+    content: "";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 3;
+    width: 20px;
+    height: 20px;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3e%3cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.gt-date-input-wrapper:hover::after {
+    opacity: 1;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230073aa'%3e%3cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3e%3c/svg%3e");
+}
+
+/* When date has a value, show it clearly */
+.gt-date-display:not(:placeholder-shown) {
+    color: #333;
+    font-weight: 500;
+}
+
+/* Conditional Formatting Styles */
+.gt-table-wrapper [style*="background-color"] {
+    /* Ensure text contrast when background color is applied */
+    color: inherit;
+}
+
+/* Common conditional formatting classes that can be used in rules */
+.gt-highlight-red {
+    background-color: #ffebee !important;
+    color: #c62828 !important;
+}
+
+.gt-highlight-blue {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+}
+
+.gt-highlight-yellow {
+    background-color: #fff8e1 !important;
+    color: #f57f17 !important;
+}
+
+.gt-highlight-blue {
+    background-color: #e3f2fd !important;
+    color: #1565c0 !important;
+}
+
+.gt-text-bold {
+    font-weight: bold !important;
+}
+
+.gt-text-italic {
+    font-style: italic !important;
+}
+
+.gt-text-uppercase {
+    text-transform: uppercase !important;
+}
+
+.gt-border-thick {
+    border: 2px solid #333 !important;
+}
+
+.gt-priority-high {
+    background-color: #ffcdd2 !important;
+    color: #d32f2f !important;
+    font-weight: bold !important;
+}
+
+.gt-priority-medium {
+    background-color: #fff3e0 !important;
+    color: #f57c00 !important;
+}
+
+.gt-priority-low {
+    background-color: #f3e5f5 !important;
+    color: #7b1fa2 !important;
+}
+
+.gt-status-completed {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+}
+
+.gt-status-pending {
+    background-color: #fff9c4 !important;
+    color: #f9a825 !important;
+}
+
+.gt-status-cancelled {
+    background-color: #ffcdd2 !important;
+    color: #d32f2f !important;
+    text-decoration: line-through !important;
+}
+
+/* Ensure conditional formatting works well with editable fields */
+.gt-editable-field[style*="background-color"] {
+    border-radius: 2px;
+    padding: 2px 4px;
+}
+
+/* Ensure conditional formatting is visible on hover */
+.gt-table tbody tr:hover td[style*="background-color"] {
+    opacity: 0.9;
+}
+
+/* Add New Entry Button */
+.gt-add-new-container {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.gt-add-new-btn {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gt-add-new-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background: #005a87;
+}
+
+.gt-add-new-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gt-add-icon {
+    font-size: 18px;
+    font-weight: bold;
+    color: white !important;
+    margin-right: 5px;
+    line-height: 1;
+}
+
+/* Add New Entry Modal */
+.gt-add-entry-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+    animation: fadeIn 0.3s ease;
+}
+
+.gt-add-entry-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gt-modal-content {
+    background-color: #fefefe;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+}
+
+.gt-modal-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 20px 24px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gt-modal-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.gt-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.gt-modal-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #495057;
+}
+
+.gt-modal-body {
+    padding: 24px;
+    max-height: calc(90vh - 120px);
+    overflow-y: auto;
+}
+
+.gt-modal-body .gform_wrapper {
+    margin: 0;
+}
+
+.gt-modal-body .gform_wrapper form {
+    margin: 0;
+}
+
+/* Enhanced styling for custom form fields - matching filter styles */
+.gt-modal-body .gt-form-container {
+    max-width: 100%;
+}
+
+.gt-modal-body .gravity-form .gfield {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    transition: none;
+    box-shadow: none;
+}
+
+.gt-modal-body .gravity-form .gfield:hover {
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.gt-modal-body .gravity-form .gfield_label {
+    font-weight: 600;
+    color: #23282d;
+    margin-bottom: 8px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Add field type badges similar to filters */
+.gt-modal-body .gravity-form .gfield_label::after {
+    content: attr(data-field-type);
+    background: #f1f3f4;
+    color: #5f6368;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: auto;
+}
+
+/* Field type specific colors */
+.gt-modal-body .gravity-form .gfield_label[data-field-type="text"]::after {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.gt-modal-body .gravity-form .gfield_label[data-field-type="select"]::after,
+.gt-modal-body .gravity-form .gfield_label[data-field-type="dropdown"]::after {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.gt-modal-body .gravity-form .gfield_label[data-field-type="date"]::after {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.gt-modal-body .gravity-form .gfield_label[data-field-type="number"]::after {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.gt-modal-body .gravity-form .gfield_label[data-field-type="checkbox"]::after,
+.gt-modal-body .gravity-form .gfield_label[data-field-type="radio"]::after {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+.gt-modal-body .gravity-form .gfield_input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.gt-modal-body .gravity-form .gfield_input:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Enhanced dropdown styling to match filters */
+.gt-modal-body .gravity-form select.gfield_input {
+    width: 100%;
+    padding: 10px 30px 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    cursor: pointer;
+    background-color: #fff;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+
+.gt-modal-body .gravity-form select.gfield_input:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.gt-modal-body .gravity-form textarea.gfield_input {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.gt-modal-body .gravity-form .gform_button {
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 20px;
+}
+
+.gt-modal-body .gravity-form .gform_button:hover {
+    background: linear-gradient(135deg, #005a87 0%, #004463 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+}
+
+/* Radio buttons and checkboxes styling */
+.gt-modal-body .gravity-form .gfield_radio,
+.gt-modal-body .gravity-form .gfield_checkbox {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gt-modal-body .gravity-form .gfield_option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.gt-modal-body .gravity-form .gfield_option:hover {
+    background-color: #f8f9fa;
+}
+
+.gt-modal-body .gravity-form .gfield_radio_input,
+.gt-modal-body .gravity-form .gfield_checkbox_input {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Enhanced date picker styling to match filters */
+.gt-modal-body .gravity-form input[type="date"],
+.gt-modal-body .gravity-form input.gt-date-picker,
+.gt-modal-body .gravity-form input.datepicker {
+    width: 100%;
+    padding: 10px 30px 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    background-color: #fff;
+    box-sizing: border-box;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    cursor: pointer;
+}
+
+.gt-modal-body .gravity-form input[type="date"]:focus,
+.gt-modal-body .gravity-form input.gt-date-picker:focus,
+.gt-modal-body .gravity-form input.datepicker:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Enhanced date picker wrapper for Add New Entry modal */
+.gt-modal-body .gt-modal-date-wrapper {
+    position: relative;
+    width: 100%;
+    cursor: pointer;
+    min-height: 42px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.gt-modal-body .gt-modal-date-wrapper:hover {
+    /* No special hover styling for wrapper */
+}
+
+.gt-modal-body .gt-modal-date-wrapper:focus-within {
+    /* No special focus styling for wrapper */
+}
+
+.gt-modal-body .gt-modal-date-wrapper .gt-date-html5 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+    border: none;
+}
+
+.gt-modal-body .gt-modal-date-wrapper .gt-date-display {
+    width: 100%;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.4;
+    outline: none;
+    color: #333;
+    padding: 10px 35px 10px 12px;
+    box-sizing: border-box;
+    pointer-events: auto;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3e%3cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.gt-modal-body .gt-modal-date-wrapper .gt-date-display:hover {
+    border-color: #0073aa;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230073aa'%3e%3cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3e%3c/svg%3e");
+}
+
+.gt-modal-body .gt-modal-date-wrapper .gt-date-display:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230073aa'%3e%3cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3e%3c/svg%3e");
+}
+
+.gt-modal-body .gt-modal-date-wrapper .gt-date-display::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+.gt-modal-body .gt-modal-date-wrapper .gt-date-display:not(:placeholder-shown) {
+    color: #333;
+    font-weight: 500;
+}
+
+/* Enhanced number input styling */
+.gt-modal-body .gravity-form input[type="number"] {
+    text-align: left;
+    padding: 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.gt-modal-body .gravity-form input[type="number"]:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Enhanced multi-select dropdown styling */
+.gt-modal-body .gravity-form select[multiple].gfield_input {
+    min-height: 100px;
+    max-height: 200px;
+    padding: 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: white;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.gt-modal-body .gravity-form select[multiple].gfield_input:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.gt-modal-body .gravity-form select[multiple].gfield_input option {
+    padding: 5px 8px;
+    margin: 2px 0;
+    border-radius: 3px;
+}
+
+.gt-modal-body .gravity-form select[multiple].gfield_input option:checked {
+    background: #0073aa;
+    color: white;
+}
+
+/* Enhanced lookup dropdown styling */
+.gt-modal-body .gravity-form select.gt-lookup-dropdown {
+    width: 100%;
+    padding: 10px 30px 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    cursor: pointer;
+    background-color: #fff;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    box-sizing: border-box;
+}
+
+.gt-modal-body .gravity-form select.gt-lookup-dropdown:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Modal animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Mobile responsiveness for Add New Entry */
+@media (max-width: 768px) {
+    .gt-modal-content {
+        width: 95%;
+        max-height: 95vh;
+        margin: 10px;
+    }
+
+    .gt-modal-header {
+        padding: 16px 20px;
+    }
+
+    .gt-modal-title {
+        font-size: 18px;
+    }
+
+    .gt-modal-body {
+        padding: 20px;
+    }
+
+    .gt-add-new-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .gt-table-controls {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .gt-add-new-container {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .gt-add-new-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Accessibility: Ensure focus styles work with conditional formatting */
+.gt-editable-field:focus[style*="background-color"] {
+    outline: 2px solid #0073aa;
+    outline-offset: 1px;
+}
+
+/* Notification System */
+.gt-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateX(300px);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gt-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.gt-notification-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.gt-notification-error {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.gt-notification-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+
+/* Enhanced Filter Types */
+
+/* Range Filter */
+.gt-range-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gt-range-inputs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.gt-range-separator {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+    padding: 0 4px;
+    white-space: nowrap;
+}
+
+.gt-range-min,
+.gt-range-max {
+    flex: 1;
+    min-width: 70px;
+    font-size: 13px;
+}
+
+/* Compact layout for single column */
+.gt-filter-range .gt-range-inputs {
+    gap: 6px;
+}
+
+.gt-filter-range .gt-range-min,
+.gt-filter-range .gt-range-max {
+    min-width: 60px;
+    padding: 8px 6px;
+}
+
+/* Date Presets */
+.gt-date-presets {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+
+.gt-date-preset {
+    padding: 10px;
+    font-size: 12px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.gt-date-preset:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.gt-date-preset.active {
+    background: #0073aa;
+    color: white;
+    border-color: #0073aa;
+}
+
+/* Checkboxes Filter */
+.gt-checkboxes-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+}
+
+.gt-checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+}
+
+.gt-checkbox-option:hover {
+    background: #f8f9fa;
+}
+
+.gt-checkbox-option.gt-select-all {
+    font-weight: 600;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 6px;
+    margin-bottom: 2px;
+}
+
+.gt-filter-checkbox {
+    margin: 0;
+    transform: scale(1.1);
+}
+
+.gt-checkbox-option span {
+    user-select: none;
+    font-size: 13px;
+}
+
+/* Multi-select dropdown styling */
+.gt-dropdown-filter[multiple] {
+    min-height: 100px;
+    max-height: 200px;
+    padding: 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    background-color: white;
+    overflow-y: auto;
+}
+
+.gt-dropdown-filter[multiple]:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.gt-dropdown-filter[multiple] option {
+    padding: 5px 8px;
+    margin: 2px 0;
+    border-radius: 3px;
+}
+
+.gt-dropdown-filter[multiple] option:checked {
+    background: #0073aa;
+    color: white;
+}
+
+/* Filter type badges updated colors */
+.gt-filter-type-badge {
+    background: #f1f3f4;
+    color: #5f6368;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 60px;
+    justify-content: center;
+}
+
+.gt-filter-text .gt-filter-type-badge {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.gt-filter-text .gt-filter-type-badge::before {
+    content: '📝';
+    font-size: 12px;
+}
+
+.gt-filter-dropdown .gt-filter-type-badge {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.gt-filter-dropdown .gt-filter-type-badge::before {
+    content: '▼';
+    font-size: 10px;
+}
+
+.gt-filter-date .gt-filter-type-badge {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.gt-filter-date .gt-filter-type-badge::before {
+    content: '📅';
+    font-size: 12px;
+}
+
+.gt-filter-range .gt-filter-type-badge {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.gt-filter-range .gt-filter-type-badge::before {
+    content: '↔️';
+    font-size: 12px;
+}
+
+.gt-filter-checkboxes .gt-filter-type-badge {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+/* Form Validation and Error Handling Styles */
+.gt-form-errors {
+    background-color: #ffeaea;
+    border: 1px solid #dc3232;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.gt-form-errors .validation_error {
+    color: #dc3232;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.gt-form-errors ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.gt-form-errors li {
+    color: #721c24;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+/* Error field styling */
+.gfield_error .gfield_input {
+    border-color: #dc3232 !important;
+    box-shadow: 0 0 0 1px rgba(220, 50, 50, 0.3) !important;
+}
+
+.gfield_error .gfield_label {
+    color: #dc3232;
+    font-weight: 600;
+}
+
+.gfield_error .ginput_container select {
+    border-color: #dc3232 !important;
+    box-shadow: 0 0 0 1px rgba(220, 50, 50, 0.3) !important;
+}
+
+.gfield_error .ginput_container textarea {
+    border-color: #dc3232 !important;
+    box-shadow: 0 0 0 1px rgba(220, 50, 50, 0.3) !important;
+}
+
+/* Success state styling */
+.gt-modal-body .gravity-form .gfield_input:valid {
+    border-color: #0073aa;
+}
+
+.gt-modal-body .gravity-form .gfield_input:focus:valid {
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+/* Loading state for form submission */
+.gt-modal-body .gform_footer input[type="submit"]:disabled {
+    background-color: #999 !important;
+    cursor: not-allowed !important;
+    opacity: 0.8;
+}
+
+/* Enhanced form field focus states */
+.gt-modal-body .gravity-form .gfield_input:focus {
+    border-color: #005a87;
+    box-shadow: 0 0 0 1px #005a87;
+    outline: none;
+}
+
+/* Better styling for required field indicators */
+.gfield_required .gfield_required_asterisk {
+    color: #dc3232;
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+/* Improved radio and checkbox styling in modal */
+.gt-modal-body .gravity-form .gfield_radio input[type="radio"],
+.gt-modal-body .gravity-form .gfield_checkbox input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.1);
+}
+
+.gt-modal-body .gravity-form .gfield_radio .gchoice,
+.gt-modal-body .gravity-form .gfield_checkbox .gchoice {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+/* File upload styling */
+.gt-modal-body .gravity-form .ginput_container_fileupload {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.2s ease;
+}
+
+.gt-modal-body .gravity-form .ginput_container_fileupload:hover {
+    border-color: #005a87;
+}
+
+/* Responsive adjustments for validation errors and modal forms */
+@media (max-width: 768px) {
+
+    /* Modal adjustments for mobile */
+    .gt-modal {
+        padding: 10px;
+    }
+
+    .gt-modal-content {
+        width: 95%;
+        max-height: 90vh;
+        margin: 5vh auto;
+        border-radius: 8px;
+    }
+
+    .gt-modal-header {
+        padding: 15px 20px;
+        font-size: 18px;
+    }
+
+    .gt-modal-body {
+        padding: 20px;
+        max-height: calc(90vh - 120px);
+    }
+
+    /* Form field adjustments */
+    .gt-modal-body .gravity-form .gfield {
+        margin-bottom: 20px;
+    }
+
+    .gt-modal-body .gravity-form .gfield_label {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .gt-modal-body .gravity-form .gfield_input {
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+        padding: 12px 14px;
+        min-height: 48px;
+        /* Touch-friendly */
+    }
+
+    .gt-modal-body .gravity-form select.gfield_input {
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    .gt-modal-body .gravity-form textarea.gfield_input {
+        min-height: 100px;
+        font-size: 16px;
+    }
+
+    /* Button adjustments */
+    .gt-modal-body .gform_footer input[type="submit"] {
+        width: 100%;
+        font-size: 16px;
+        padding: 15px 20px;
+        min-height: 50px;
+        margin-top: 10px;
+    }
+
+    /* Close button */
+    .gt-modal-close {
+        font-size: 32px;
+        top: 10px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Date picker adjustments */
+    .gt-modal-body .gravity-form input[type="date"] {
+        font-size: 16px;
+        min-height: 48px;
+    }
+
+    /* Radio and checkbox adjustments */
+    .gt-modal-body .gravity-form .gfield_radio .gchoice,
+    .gt-modal-body .gravity-form .gfield_checkbox .gchoice {
+        padding: 10px 0;
+        font-size: 16px;
+    }
+
+    .gt-modal-body .gravity-form .gfield_radio input[type="radio"],
+    .gt-modal-body .gravity-form .gfield_checkbox input[type="checkbox"] {
+        transform: scale(1.3);
+        margin-right: 12px;
+    }
+
+    /* Validation error adjustments */
+    .gt-form-errors {
+        padding: 10px 12px;
+        font-size: 13px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+
+    .gt-form-errors li {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .gt-form-errors ul {
+        padding-left: 16px;
+    }
+
+    /* Error field highlighting */
+    .gfield_error .gfield_input {
+        border-width: 2px !important;
+    }
+
+    /* File upload mobile adjustments */
+    .gt-modal-body .gravity-form .ginput_container_fileupload {
+        padding: 15px;
+        min-height: 80px;
+    }
+}
+
+/* Extra small screens (phones in landscape, small tablets) */
+@media (max-width: 480px) {
+    .gt-modal-content {
+        width: 98%;
+        margin: 2vh auto;
+        max-height: 96vh;
+    }
+
+    .gt-modal-header {
+        padding: 12px 15px;
+        font-size: 16px;
+    }
+
+    .gt-modal-body {
+        padding: 15px;
+        max-height: calc(96vh - 100px);
+    }
+
+    .gt-modal-body .gravity-form .gfield_input {
+        padding: 10px 12px;
+    }
+
+    /* Smaller close button for very small screens */
+    .gt-modal-close {
+        font-size: 28px;
+        width: 35px;
+        height: 35px;
+        top: 8px;
+        right: 12px;
+    }
+}
+
+/* Multi-Select Dropdown option styling */
+select[multiple].gt-dropdown-filter option {
+    padding: 5px 8px;
+    margin: 2px 0;
+    border-radius: 3px;
+}
+
+select[multiple].gt-dropdown-filter option:checked {
+    background-color: #0073aa;
+    color: white;
+}
+
+/* ============================= */
+/* STICKY HEADER IMPLEMENTATION  */
+/* ============================= */
+
+/* Main sticky header container setup */
+.gt-table-wrapper.sticky-header {
+    /* Container just needs to be positioned for proper stacking */
+    position: relative;
+}
+
+/* Sticky-header mode: dismantle every overflow context between the
+   sticky <th> and the document root. `position: sticky` only sticks
+   inside the nearest scrolling ancestor; if .gt-table-content has
+   `overflow-x: auto` (the default for wide-table horizontal panning)
+   the thead sticks inside THAT container and scrolls off the screen
+   with it when the user scrolls the page. Same story for
+   .gt-table-container's default `overflow: hidden`. Setting both to
+   `overflow: visible !important` makes the page itself become the
+   scroll context, which is what sticky needs.
+
+   Trade-off: very wide tables will overflow the page horizontally
+   instead of getting a container-level horizontal scrollbar. That's
+   the price of page-level sticky. Tables that DON'T need sticky still
+   get the inner horizontal scroll behavior (the default rules at the
+   top of this file are unchanged). */
+.gt-table-wrapper.sticky-header .gt-table-content {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    position: relative;
+    max-height: none !important;
+}
+
+.gt-table-wrapper.sticky-header .gt-table-container {
+    /* Default has `overflow: hidden` which also traps sticky. Visible
+       lets the thead escape to the page-level scroll context. */
+    overflow: visible !important;
+}
+
+/* Ensure table has proper layout */
+.gt-table-wrapper.sticky-header .gt-table {
+    /* Table needs proper layout for sticky to work */
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    position: relative;
+}
+
+/* #549 slice 1.2 — .gt-valign-* class-based vertical alignment. Companion
+   to the inline-style path (which is what slice 1's JS render emits). The
+   pre-existing TC_Vertical_Align_Service::to_class() returns these names;
+   without these rules, callers using the class path silently got no
+   alignment. Future cell-override slice will use the class-based emit
+   (smaller HTML, cacheable CSS). */
+.gt-table tbody td.gt-valign-top,
+.gt-table thead th.gt-valign-top {
+    vertical-align: top;
+}
+.gt-table tbody td.gt-valign-middle,
+.gt-table thead th.gt-valign-middle {
+    vertical-align: middle;
+}
+.gt-table tbody td.gt-valign-bottom,
+.gt-table thead th.gt-valign-bottom {
+    vertical-align: bottom;
+}
+
+/* #501 slice 1 — row expiry. The JS gate adds `.gt-row-expired` to rows
+   past their configured expiry date. Behavior=hide also calls .hide(),
+   behavior=strikethrough relies on these styles to communicate the
+   "stale" state without removing the row from the visual list, and
+   behavior=bottom relies on a re-order in JS. */
+.gt-table tbody tr.gt-row-expired td {
+    color: #888 !important;
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+.gt-table tbody tr.gt-row-expired:hover td {
+    color: #555 !important;
+    opacity: 0.9;
+}
+
+/* #501 slice 2 — inverse-mode "coming soon" rows. Distinct from
+   .gt-row-expired so themes can convey the different semantic
+   ("not yet active" vs "stale"). Default visual: dimmed but no
+   line-through, plus a subtle italic to hint at the "future" state. */
+.gt-table tbody tr.gt-row-future td {
+    color: #6c757d !important;
+    opacity: 0.75;
+    font-style: italic;
+}
+.gt-table tbody tr.gt-row-future:hover td {
+    color: #495057 !important;
+    opacity: 0.95;
+}
+
+/* #567 slice 1 — clickable rows. When the per-table `row_link_template`
+   setting is set, the JS render adds the `gt-row-clickable` class plus
+   role=link / tabindex=0 to every <tr>; the cursor here gives users the
+   visual affordance and the focus outline keeps keyboard nav obvious. */
+.gt-table tbody tr.gt-row-clickable {
+    cursor: pointer;
+}
+.gt-table tbody tr.gt-row-clickable:focus {
+    outline: 2px solid #3498db;
+    outline-offset: -2px;
+}
+
+/* Default state - thead is in normal flow */
+.gt-table-wrapper.sticky-header .gt-table thead {
+    /* Normal positioning by default */
+    position: relative;
+    background: white;
+}
+
+/* #544 slice 1: native CSS sticky-header. Replaces the legacy
+   `position: fixed; top: 30px` approach which drifted column widths and
+   hardcoded the WP admin-bar offset. `position: sticky` on `<th>` keeps
+   thead in the table flow so widths stay correct, and works inside
+   horizontal-scroll wrappers, modal containers, and flip-mode without
+   special-casing. The opt-in is unchanged: per-table `sticky_header`
+   setting still toggles the `.sticky-header` wrapper class.
+
+   z-index 6 matches the sticky-right Actions column header (#617 audit
+   capped at 9999) so the top-right corner cell layers above body cells
+   and the sticky-right column without further per-cell rules.
+
+   Defensive layer (Katie 2026-05-12 report — sticky-header lost on
+   loadtracker.ajstrucking.com under JupiterX + Elementor Canvas +
+   NitroPack):
+   - `-webkit-sticky` prefix keeps older iOS / Safari builds working.
+   - `!important` on position survives critical-CSS minifiers that
+     re-order or strip declarations they think are unused, and beats any
+     theme stylesheet that loads after ours.
+   Pinned by tests/StickyHeaderDefensivePositionTest.php. The #617
+   audit only forbids !important on z-index, not position. */
+.gt-table-wrapper.sticky-header .gt-table thead th {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0;
+    z-index: 6;
+    /* background-color is needed so scrolled body cells don't show through;
+       the dark-gradient header below paints on top, so any solid base is
+       fine — `inherit` falls back to the wrapper's table background. */
+    background-color: #2c3e50;
+}
+
+/* WordPress admin bar offset: when an admin/editor is logged in, the WP
+   toolbar is `position: fixed; top: 0; height: 32px` (46px on mobile per
+   WP core media query at <= 782px). Without offsetting our sticky thead,
+   the header sticks UNDER the admin bar. `body.admin-bar` is set by WP
+   core whenever the toolbar is rendered. */
+body.admin-bar .gt-table-wrapper.sticky-header .gt-table thead th {
+    top: 32px;
+}
+@media screen and (max-width: 782px) {
+    body.admin-bar .gt-table-wrapper.sticky-header .gt-table thead th {
+        top: 46px;
+    }
+}
+
+/* Admin-bar offset as a CSS variable, consumed by the multi-row sticky inline
+   CSS (templates/table.php) so frozen filter + header rows also clear the
+   toolbar. The per-row `top` rules are ID-scoped (more specific than the
+   single-row `top: 32px` above), so they must add the offset themselves. */
+.gt-table-wrapper.sticky-header {
+    --gt-adminbar-offset: 0px;
+}
+body.admin-bar .gt-table-wrapper.sticky-header {
+    --gt-adminbar-offset: 32px;
+}
+@media screen and (max-width: 782px) {
+    body.admin-bar .gt-table-wrapper.sticky-header {
+        --gt-adminbar-offset: 46px;
+    }
+}
+
+/* Legacy `.is-stuck` class neutralized — the JS scroll-watcher still adds
+   it, but the position-fixed rule is gone. Native sticky on `th` already
+   handles the freeze, so the class is a no-op. Kept the selector empty so
+   any future override CSS targeting it doesn't silently appear. */
+.gt-table-wrapper.sticky-header .gt-table thead.is-stuck {
+    /* intentionally no rules — see comment above */
+}
+
+/* Style the sticky header cells */
+.gt-table-wrapper.sticky-header .gt-table thead th {
+    /* Dark background with gradient for depth */
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: #ffffff;
+    font-weight: 600;
+    border-bottom: 2px solid #1a252f;
+    /* Add shadow for depth when sticky */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    /* Ensure complete background coverage */
+    background-clip: padding-box;
+    /* CRITICAL: Match the exact same padding as regular table cells */
+    padding: 12px 15px;
+    /* Match border styling for consistent column boundaries */
+    border-right: 1px solid #1a252f;
+    /* Ensure consistent text alignment */
+    text-align: left;
+    /* Match box-sizing for consistent width calculations */
+    box-sizing: border-box;
+}
+
+/* Ensure text and sort indicators are visible with light color */
+.gt-table-wrapper.sticky-header .gt-table thead th .gt-header-label {
+    color: #ffffff;
+}
+
+.gt-table-wrapper.sticky-header .gt-table thead th .gt-sort-indicator {
+    color: #ecf0f1;
+}
+
+/* Make links in header light colored if any */
+.gt-table-wrapper.sticky-header .gt-table thead th a {
+    color: #ffffff;
+}
+
+/* Ensure the header row stays compact when fixed */
+.gt-table-wrapper.sticky-header .gt-table thead.is-stuck tr {
+    display: table-row;
+    height: auto;
+}
+
+/* Ensure tbody displays properly */
+.gt-table-wrapper.sticky-header .gt-table tbody {
+    /* Standard table body display */
+    display: table-row-group;
+}
+
+/* Add placeholder space when header becomes fixed to prevent content jump */
+.gt-table-wrapper.sticky-header.has-stuck-header .gt-table:before {
+    content: "";
+    display: block;
+    height: 45px;
+    /* Height of single header row */
+}
+
+/* Enhanced shadow effect when header is stuck */
+.gt-table-wrapper.sticky-header .gt-table thead.is-stuck th {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Checkbox styling in sticky header */
+.gt-table-wrapper.sticky-header .gt-table thead th input[type="checkbox"] {
+    /* Style checkboxes to be visible on dark background */
+    accent-color: #3498db;
+}
+
+/* Hover effect for all columns in sticky header */
+.gt-table-wrapper.sticky-header .gt-table thead th:hover {
+    background: linear-gradient(135deg, #34495e 0%, #3d566e 100%);
+    transition: all 0.2s ease;
+}
+
+/* Enhanced hover for sortable columns */
+.gt-table-wrapper.sticky-header .gt-table thead th.gt-sortable:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+    cursor: pointer;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Sort indicator hover in sticky headers */
+.gt-table-wrapper.sticky-header .gt-table thead th.gt-sortable:hover .gt-sort-indicator {
+    color: #ffffff;
+}
+
+/* Ensure preview mode sticky header hover styles work */
+.gt-table-wrapper.preview-mode.sticky-header .gt-table thead th:hover {
+    background: linear-gradient(135deg, #34495e 0%, #3d566e 100%);
+    transition: all 0.2s ease;
+}
+
+.gt-table-wrapper.preview-mode.sticky-header .gt-table thead th.gt-sortable:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+    cursor: pointer;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gt-table-wrapper.preview-mode.sticky-header .gt-table thead th.gt-sortable:hover .gt-sort-indicator {
+    color: #ffffff;
+}
+
+/* Active/sorted column highlight */
+.gt-table-wrapper.sticky-header .gt-table thead th.sorted-asc,
+.gt-table-wrapper.sticky-header .gt-table thead th.sorted-desc {
+    background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+}
+
+/* Ensure sorted states work in preview mode */
+.gt-table-wrapper.preview-mode.sticky-header .gt-table thead th.sorted-asc,
+.gt-table-wrapper.preview-mode.sticky-header .gt-table thead th.sorted-desc {
+    background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+}
+
+/* Ensure proper interaction with editable cells */
+.gt-table-wrapper.sticky-header .gt-editable-cell {
+    position: relative;
+    z-index: 1;
+}
+
+.gt-table-wrapper.sticky-header .gt-editing {
+    z-index: 105;
+    /* Above sticky headers when editing */
+}
+
+/* Mobile optimizations for sticky headers */
+@media (max-width: 768px) {
+    .gt-table-wrapper.sticky-header .gt-table thead th {
+        font-size: 12px;
+        padding: 8px 4px;
+        /* Reduce shadow on mobile for performance */
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        /* Maintain consistent column alignment on mobile */
+        border-right: 1px solid #1a252f;
+        text-align: left;
+        box-sizing: border-box;
+    }
+}
+
+/* Fallback for browsers without sticky support */
+@supports not (position: sticky) {
+
+    /* Simply disable sticky headers for unsupported browsers */
+    .gt-table-wrapper.sticky-header .gt-table thead {
+        position: relative;
+    }
+}
+
+/* Responsive Table - Fit to Screen */
+.gt-table-wrapper.responsive-table {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    /* Ensure this only affects the table wrapper, not the entire page */
+    position: relative;
+    z-index: 1;
+}
+
+.gt-table-wrapper.responsive-table table {
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
+}
+
+.gt-table-wrapper.responsive-table th,
+.gt-table-wrapper.responsive-table td {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    padding: 8px 4px;
+    font-size: 12px;
+}
+
+/* Responsive column widths for common fields */
+.gt-table-wrapper.responsive-table th[data-field-type="date"],
+.gt-table-wrapper.responsive-table td[data-field-type="date"] {
+    width: 10%;
+    min-width: 80px;
+}
+
+.gt-table-wrapper.responsive-table th[data-field-type="number"],
+.gt-table-wrapper.responsive-table td[data-field-type="number"] {
+    width: 8%;
+    min-width: 60px;
+}
+
+.gt-table-wrapper.responsive-table th[data-field-type="text"],
+.gt-table-wrapper.responsive-table td[data-field-type="text"] {
+    width: 15%;
+    min-width: 100px;
+}
+
+.gt-table-wrapper.responsive-table th[data-field-type="select"],
+.gt-table-wrapper.responsive-table td[data-field-type="select"] {
+    width: 12%;
+    min-width: 80px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+
+    .gt-table-wrapper.responsive-table th,
+    .gt-table-wrapper.responsive-table td {
+        padding: 4px 2px;
+        font-size: 11px;
+    }
+
+    .gt-table-wrapper.responsive-table th[data-field-type="date"],
+    .gt-table-wrapper.responsive-table td[data-field-type="date"] {
+        width: 12%;
+        min-width: 70px;
+    }
+
+    .gt-table-wrapper.responsive-table th[data-field-type="number"],
+    .gt-table-wrapper.responsive-table td[data-field-type="number"] {
+        width: 10%;
+        min-width: 50px;
+    }
+}
+
+/* Ensure Gravity Tables styles don't affect page layout outside the wrapper */
+.gt-table-wrapper,
+.gt-table-wrapper .gt-table,
+.gt-table-wrapper .gt-table th,
+.gt-table-wrapper .gt-table td,
+.gt-table-wrapper .gt-table-controls,
+.gt-table-wrapper .gt-pagination-container,
+.gt-table-wrapper .gt-filters-panel,
+.gt-table-wrapper .gt-modal-content {
+    box-sizing: border-box;
+}
+
+/* Minimal fix: Ensure table wrapper doesn't disrupt navigation flow */
+.gt-table-wrapper {
+    margin: 20px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    /* Use block display to prevent disrupting horizontal navigation elements */
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    /* Ensure the wrapper doesn't affect page layout */
+    position: relative;
+    z-index: 1;
+    /* Critical: prevent clearing that stacks navigation elements */
+    float: none !important;
+    clear: none !important;
+}
+
+/* Fix navigation elements stacking vertically - make them display horizontally */
+/* Target only navigation elements that come after the table wrapper */
+.gt-table-wrapper~a[href*="ajs-trucking-admin"],
+.gt-table-wrapper~a[href*="member-login"],
+.gt-table-wrapper~a[href*="admin-loads-hauled"],
+.gt-table-wrapper~a[href*="wp-admin"] {
+    display: inline-block !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 10px !important;
+    vertical-align: top !important;
+    float: none !important;
+    clear: none !important;
+}
+
+/* Fix h3 headings that come after the table wrapper */
+.gt-table-wrapper~h3 {
+    display: inline-block !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 10px 0 0 !important;
+    vertical-align: top !important;
+    float: none !important;
+    clear: none !important;
+}
+
+/* ============================= */
+/* MOBILE RESPONSIVE CARD LAYOUT  */
+/* ============================= */
+
+/* Enhanced responsive mode: Card-based layout for mobile devices */
+.gt-table-wrapper[data-responsive-mode="enhanced"] {
+    position: relative;
+}
+
+/* Hide traditional table structure on mobile when enhanced mode is enabled */
+@media (max-width: 480px) {
+    .gt-table-wrapper[data-responsive-mode="enhanced"] .gt-table {
+        display: none;
+    }
+
+    .gt-table-wrapper[data-responsive-mode="enhanced"] .gt-table-content {
+        overflow: visible;
+    }
+}
+
+/* Hide traditional table structure on tablet when enhanced mode is enabled */
+@media (min-width: 481px) and (max-width: 768px) {
+    .gt-table-wrapper[data-responsive-mode="enhanced"].hide-on-tablet .gt-table {
+        display: none;
+    }
+}
+
+/* Card container for enhanced responsive mode */
+.gt-cards-container {
+    display: none;
+    /* Hidden by default, shown by JavaScript when appropriate */
+    flex-direction: column;
+    gap: 16px;
+    padding: 10px 0;
+}
+
+/* Individual card styling */
+.gt-entry-card {
+    background: #2d2d2d;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 0;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.gt-entry-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    border-color: #0073aa;
+}
+
+/* Card header with date as primary info and actions */
+.gt-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+}
+
+.gt-card-primary-info {
+    flex: 1;
+}
+
+.gt-card-date {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+.gt-card-entry-id {
+    font-weight: 400;
+    color: #87CEEB;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.gt-card-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.gt-card-actions .gt-entry-checkbox {
+    margin: 0;
+    transform: scale(1.2);
+}
+
+/* Main card toggle (+/-) */
+.gt-card-main-toggle {
+    background: #0073aa;
+    border: 1px solid #0073aa;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gt-card-main-toggle:hover {
+    background: #005a8b;
+    border-color: #005a8b;
+    transform: scale(1.1);
+}
+
+.gt-card-main-toggle.expanded {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+/* Main card content (collapsible) */
+.gt-card-main-content {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.gt-card-main-content.collapsed {
+    display: none;
+}
+
+/* Show More toggle for hidden fields */
+.gt-card-toggle {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    margin: 8px auto;
+    width: fit-content;
+    min-width: 120px;
+}
+
+.gt-card-toggle:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transform: translateY(-1px);
+}
+
+.gt-card-toggle:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+}
+
+.gt-card-toggle.expanded {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 2px 8px rgba(240, 147, 251, 0.3);
+}
+
+.gt-card-toggle.expanded:hover {
+    background: linear-gradient(135deg, #ee82f0 0%, #f04358 100%);
+    box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
+}
+
+.gt-toggle-text {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.gt-toggle-icon {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.gt-card-toggle.expanded .gt-toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* Visible fields section - always shown */
+.gt-card-visible-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-bottom: 8px;
+}
+
+/* Hidden fields section - collapsible */
+.gt-card-hidden-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.gt-card-hidden-fields.collapsed {
+    display: none;
+}
+
+/* Toggle section for expand/collapse button */
+.gt-card-toggle-section {
+    display: flex;
+    justify-content: center;
+    margin: 8px 0;
+}
+
+/* Individual field styling within cards */
+.gt-card-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 20px;
+}
+
+.gt-card-field:last-child {
+    border-bottom: none;
+}
+
+.gt-card-field-label {
+    font-weight: 500;
+    color: #87CEEB;
+    font-size: 14px;
+    min-width: 120px;
+    flex-shrink: 0;
+    margin-right: 16px;
+}
+
+.gt-card-field-label::after {
+    content: ":";
+    margin-left: 4px;
+}
+
+.gt-card-field-value {
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    flex: 1;
+    text-align: left;
+}
+
+/* Special styling for different field types */
+.gt-card-field[data-field-type="date"] .gt-card-field-value {
+    font-family: monospace;
+    font-size: 14px;
+    color: #0073aa;
+}
+
+.gt-card-field[data-field-type="number"] .gt-card-field-value {
+    font-family: monospace;
+    font-size: 14px;
+    text-align: right;
+    color: #1976d2;
+}
+
+.gt-card-field[data-field-type="select"] .gt-card-field-value {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border-left: 3px solid #0073aa;
+    font-size: 14px;
+}
+
+/* Editable fields in cards */
+.gt-card-field-value.gt-editable-cell {
+    cursor: pointer;
+    border: 1px solid transparent;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+}
+
+.gt-card-field-value.gt-editable-cell:hover {
+    background-color: #f0f8ff;
+    border-color: #0073aa;
+}
+
+.gt-card-field-value.gt-editable-cell:empty::after {
+    content: "Tap to edit";
+    color: #999;
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* Enhanced styling for empty editable fields in cards */
+.gt-card-field-value.gt-empty-field {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.gt-card-field-value.gt-empty-field::after {
+    content: "Tap to edit";
+    color: #999;
+    font-style: italic;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.gt-card-field-value.gt-empty-field:hover::after {
+    opacity: 1;
+}
+
+/* Hide hover text when card field is being edited */
+.gt-card-field-value.gt-empty-field.gt-editing::after,
+.gt-card-field-value.gt-empty-field.gt-editing:hover::after {
+    opacity: 0 !important;
+}
+
+/* Read-only fields in cards */
+.gt-card-field-value.gt-readonly-cell {
+    background-color: #f9f9f9;
+    color: #666;
+    padding: 6px 8px;
+    border-radius: 4px;
+    border-left: 3px solid #dee2e6;
+}
+
+/* Card footer with additional actions */
+.gt-card-footer {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #f1f3f4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gt-card-meta {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+.gt-card-edit-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.gt-card-edit-actions .gt-edit-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+/* Enhanced card layout for better visual hierarchy */
+.gt-entry-card.priority-high {
+    border-left: 4px solid #dc3545;
+}
+
+.gt-entry-card.priority-medium {
+    border-left: 4px solid #ffc107;
+}
+
+.gt-entry-card.priority-low {
+    border-left: 4px solid #28a745;
+}
+
+/* Loading state for cards */
+.gt-cards-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-style: italic;
+}
+
+.gt-cards-loading::before {
+    content: "⟳";
+    font-size: 24px;
+    animation: spin 1s linear infinite;
+    display: block;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Empty state for cards */
+.gt-cards-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.gt-cards-empty .gt-empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.gt-cards-empty .gt-empty-message {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.gt-cards-empty .gt-empty-submessage {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+/* Tablet-specific adjustments */
+@media (min-width: 481px) and (max-width: 768px) {
+    .gt-entry-card {
+        padding: 20px;
+    }
+
+    .gt-cards-container {
+        gap: 20px;
+        padding: 15px 0;
+    }
+
+    .gt-card-field {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .gt-card-field.hidden-tablet {
+        display: none;
+    }
+
+    .gt-card-field-label {
+        min-width: 120px;
+        flex-shrink: 0;
+    }
+
+    .gt-card-field-value {
+        flex: 1;
+    }
+}
+
+/* Enhanced mobile styles */
+@media (max-width: 480px) {
+    .gt-cards-container {
+        gap: 12px;
+        padding: 8px 0;
+    }
+
+    .gt-entry-card {
+        padding: 12px;
+        border-radius: 8px;
+    }
+
+    .gt-card-header {
+        margin-bottom: 10px;
+    }
+
+    .gt-card-entry-id {
+        font-size: 13px;
+        padding: 3px 6px;
+    }
+
+    .gt-card-toggle {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+
+    .gt-card-field-label {
+        font-size: 12px;
+    }
+
+    .gt-card-field-value {
+        font-size: 14px;
+    }
+
+    /* Compact layout for mobile */
+    .gt-card-summary {
+        gap: 6px;
+    }
+
+    .gt-card-content {
+        gap: 8px;
+    }
+}
+
+/* Integration with existing table controls */
+.gt-table-wrapper[data-responsive-mode="enhanced"] .gt-table-controls {
+    /* Controls remain visible and functional in card mode */
+    display: flex;
+}
+
+/* Pagination works with cards */
+.gt-table-wrapper[data-responsive-mode="enhanced"] .gt-pagination-container {
+    /* Pagination remains visible and functional in card mode */
+    display: flex;
+}
+
+/* Selection and bulk actions work with cards */
+.gt-table-wrapper[data-responsive-mode="enhanced"] .gt-bulk-actions {
+    /* Bulk actions remain functional with card checkboxes */
+    display: flex;
+}
+
+/* Smooth transitions between table and card views */
+.gt-table-wrapper[data-responsive-mode="enhanced"] .gt-table,
+.gt-table-wrapper[data-responsive-mode="enhanced"] .gt-cards-container {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.gt-table-wrapper[data-responsive-mode="enhanced"] .gt-table.hiding {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.gt-table-wrapper[data-responsive-mode="enhanced"] .gt-cards-container.showing {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Conditional formatting support in cards */
+.gt-card-field-value[style*="background-color"] {
+    border-radius: 4px;
+    padding: 6px 8px;
+}
+
+/* Ensure responsive cards don't break page layout */
+.gt-cards-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    /* Prevent horizontal scrolling in card view */
+}
+
+/* Ensure mobile table wrapper doesn't cause horizontal overflow */
+@media (max-width: 480px) {
+    .gt-table-wrapper {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        /* No horizontal overflow on mobile */
+        box-sizing: border-box;
+    }
+
+    .gt-table-wrapper * {
+        box-sizing: border-box;
+    }
+
+    /* Hide scroll hint completely on mobile */
+    .gt-scroll-hint {
+        display: none !important;
+    }
+}
+
+/* Hide sort indicators and table header in mobile view since sorting doesn't work with cards */
+@media (max-width: 768px) {
+    .gt-sort-indicator {
+        display: none !important;
+    }
+
+    .gt-sortable {
+        cursor: default !important;
+    }
+
+    .gt-sortable:hover {
+        background-color: inherit !important;
+    }
+
+    .gt-sortable::after,
+    .gt-sortable::before {
+        display: none !important;
+    }
+
+    /* Hide entire table header in mobile card view */
+    .gt-table-wrapper[data-responsive-mode="enhanced"] .gt-table thead {
+        display: none !important;
+    }
+
+    /* Also hide any sorting arrows that might be generated by other CSS */
+    th[data-sort-field]::after,
+    th[data-sort-field]::before,
+    .gt-table th.sortable::after,
+    .gt-table th.sortable::before {
+        display: none !important;
+    }
+}
+
+/* Export Controls */
+.gt-export-container {
+    position: relative;
+    display: inline-block;
+}
+
+.gt-export-dropdown {
+    position: relative;
+}
+
+.gt-export-btn {
+    padding: 10px 16px;
+    background: #0073aa;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gt-export-btn:hover {
+    background: #005a87;
+}
+
+.gt-print-btn {
+    padding: 10px 14px;
+    margin-left: 8px;
+    background: #fff;
+    color: #0073aa;
+    border: 1px solid #0073aa;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.gt-print-btn:hover {
+    background: #0073aa;
+    color: #fff;
+}
+
+.gt-print-icon {
+    font-size: 14px;
+}
+
+.gt-export-icon {
+    font-size: 14px;
+}
+
+.gt-dropdown-arrow {
+    font-size: 10px;
+    margin-left: 3px;
+    transition: transform 0.2s;
+}
+
+.gt-export-dropdown.open .gt-dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.gt-export-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    min-width: 160px;
+    z-index: 1000;
+    display: none;
+    margin-top: 2px;
+}
+
+.gt-export-dropdown.open .gt-export-options {
+    display: block;
+}
+
+.gt-export-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+    white-space: nowrap;
+    line-height: 1.4;
+    font-size: 14px;
+}
+
+.gt-export-option:last-child {
+    border-bottom: none;
+}
+
+.gt-export-option:hover {
+    background: #f8f9fa;
+    color: #0073aa;
+}
+
+.gt-format-icon {
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    color: #6b7280;
+}
+/* #1680 — inline SVG export icons sit crisp at 16px and inherit row color. */
+.gt-format-icon svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+.gt-export-option:hover .gt-format-icon,
+.gt-export-menu-item:hover .gt-format-icon,
+.gt-export-menu-item:focus .gt-format-icon {
+    color: #0073aa;
+}
+.gt-export-btn .gt-export-icon {
+    display: inline-flex;
+    align-items: center;
+}
+.gt-export-btn .gt-export-icon svg,
+.gt-export-btn .gt-dropdown-arrow svg {
+    display: block;
+}
+.gt-export-btn .gt-dropdown-arrow {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 2px;
+}
+
+.gt-export-option:hover .gt-format-icon {
+    transform: scale(1.1);
+    transition: transform 0.2s;
+}
+
+/*
+ * #1680 — the visible-rows export actions (Copy / CSV / Excel / Save as PDF)
+ * now live inside the Export dropdown. Reset the native <button> chrome and
+ * style them as full-width menu rows matching .gt-export-option (previously
+ * they rendered as unstyled browser buttons in a separate bar).
+ */
+.gt-export-options .gt-toolbar-export {
+    display: block;
+    border-top: 1px solid #f0f0f0;
+}
+/*
+ * Scoped under .gt-export-options so these rules outrank the standalone
+ * .gt-pdf-btn rule (red bordered button, 4px padding) further down the file
+ * which would otherwise win on source order and squash the PDF row's height.
+ */
+.gt-export-options .gt-export-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 15px;
+    margin: 0;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    font: inherit;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: nowrap;
+    text-align: left;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.gt-export-options .gt-toolbar-export .gt-export-menu-item:last-child {
+    border-bottom: none;
+}
+.gt-export-options .gt-export-menu-item:hover,
+.gt-export-options .gt-export-menu-item:focus {
+    background: #f8f9fa;
+    color: #0073aa;
+}
+
+/* Responsive export controls */
+@media (max-width: 768px) {
+    .gt-export-container {
+        width: 100%;
+        order: 3;
+    }
+
+    .gt-export-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .gt-export-options {
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
+}
+
+/* Enhanced delete action styles */
+.gt-delete-action {
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    transition: all 0.2s ease;
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: #6c757d;
+    position: relative;
+}
+
+.gt-delete-action:hover {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    border-color: #dc3545;
+}
+
+.gt-delete-action:active {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);
+}
+
+/* Subtle glow effect for delete action */
+.gt-delete-action::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(220, 53, 69, 0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+    z-index: -1;
+    opacity: 0;
+}
+
+.gt-delete-action:hover::before {
+    width: 40px;
+    height: 40px;
+    opacity: 1;
+}
+
+/* Enhanced tooltip-like effect */
+.gt-delete-action:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    animation: tooltip-fade-in 0.3s ease forwards;
+    pointer-events: none;
+    margin-bottom: 5px;
+}
+
+@keyframes tooltip-fade-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Pulse animation for delete action when row is hovered */
+.gt-table tbody tr:hover .gt-delete-action {
+    animation: delete-pulse 2s infinite;
+}
+
+@keyframes delete-pulse {
+
+    0%,
+    100% {
+        opacity: 0.7;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.gt-deleting {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.gt-deleting .gt-delete-action {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #6c757d;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+    animation: deleting-spinner 1s linear infinite;
+}
+
+@keyframes deleting-spinner {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Mobile optimizations for delete actions */
+@media (max-width: 768px) {
+    .gt-delete-action {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 8px;
+        font-size: 16px;
+    }
+
+    .gt-delete-action:hover::after {
+        display: none;
+        /* Hide tooltips on mobile */
+    }
+
+    /* Larger touch targets on mobile */
+    .gt-delete-action:hover {
+        transform: scale(1.1);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    /* Disable pulse animation on mobile for performance */
+    .gt-table tbody tr:hover .gt-delete-action {
+        animation: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .gt-delete-action:hover {
+        background: #dc3545;
+        border: 2px solid #000;
+        color: #fff;
+    }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+    .gt-delete-action,
+    .gt-delete-action:hover,
+    .gt-delete-action::before {
+        transition: none;
+        animation: none;
+        transform: none !important;
+    }
+
+    .gt-table tbody tr:hover .gt-delete-action {
+        animation: none;
+    }
+}
+
+/* Message display styles */
+.gt-message {
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    position: relative;
+    animation: gt-message-slide-in 0.3s ease-out;
+}
+
+.gt-message-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.gt-message-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+@keyframes gt-message-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Custom Thickbox Styles for Gravity Tables - Ported from GF Admin Popup */
+
+/* Modernize ThickBox Window */
+#TB_window {
+    /* Position top/bottom fixed to create full height modal */
+    top: 30px !important;
+    bottom: 30px !important;
+    margin-top: 0 !important;
+    /* Remove legacy centering */
+    height: auto !important;
+    /* Allow height to flex like reference plugin */
+
+    /* Width & Horizontal Centering */
+    width: 90% !important;
+    max-width: 1200px !important;
+
+    /* Better Centering Strategy */
+    left: 50% !important;
+    margin-left: 0 !important;
+    transform: translateX(-50%) !important;
+
+    /* Single Scrollbar for the whole window */
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+
+    /* Visual Cleanup */
+    border-radius: 4px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    background: #fff !important;
+    /* Paired with the #TB_overlay rule below: overlay is lowered so the
+       modal (9999) sits above it. Both stay <= 9999 to honour #617. */
+    z-index: 9999;
+}
+
+/* Pull ThickBox's overlay below the modal window. WordPress core's
+   thickbox.css ships the overlay at 100050, which is higher than the
+   9999 we cap #TB_window at; with the overlay above the modal, every
+   click on the form area hits the dismiss layer and ThickBox closes
+   (the bug Katie reported 2026-05-12). Same #ID specificity + later
+   load order lets the rule below win over WP core's value. See
+   tests/AddEntryPopupZIndexTest.php for the pinned contract. */
+#TB_overlay {
+    z-index: 9000;
+}
+
+/* Ensure Editor/Content uses full width */
+#TB_window .mceContentBody {
+    max-width: 100% !important;
+}
+
+/* Iframe specific fix */
+#TB_iframeContent {
+    position: absolute !important;
+    top: 30px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: calc(100% - 30px) !important;
+    min-height: 400px !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    background: #fff;
+}
+
+/* Reset ThickBox Content Container to allow full scrolling (if used inline) */
+#TB_ajaxContent {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 20px 30px !important;
+    box-sizing: border-box;
+}
+
+/* Responsive Visibility Classes */
+@media (max-width: 1024px) {
+
+    .gt-table th.gt-hidden-tablet,
+    .gt-table td.gt-hidden-tablet {
+        display: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .gt-table th.gt-hidden-mobile,
+    .gt-table td.gt-hidden-mobile {
+        display: none !important;
+    }
+}
+
+/* Recalculated cell highlight animation */
+.gt-table td.gt-recalculated {
+    animation: gt-recalc-flash 1.5s ease;
+}
+
+@keyframes gt-recalc-flash {
+    0% {
+        background-color: rgba(76, 175, 80, 0.3);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* Column Totals Row */
+.gt-column-totals .gt-totals-row {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border-top: 2px solid #1a252f;
+}
+
+.gt-column-totals .gt-totals-cell {
+    padding: 8px 10px;
+    color: #ffffff;
+    font-weight: 600;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
+}
+
+.gt-column-totals .gt-totals-label {
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+}
+
+.gt-column-totals .gt-totals-numeric {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Saved Filter Presets */
+.gt-presets {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+    flex-wrap: wrap;
+}
+
+.gt-preset-select {
+    min-width: 180px;
+    max-width: 240px;
+    padding: 8px 10px;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.gt-preset-save,
+.gt-preset-delete {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.gt-preset-delete {
+    color: #b32d2e;
+    border-color: #d3a3a3;
+}
+
+.gt-preset-delete:hover {
+    background: #b32d2e;
+    color: #fff;
+    border-color: #b32d2e;
+}
+
+@media (max-width: 640px) {
+    .gt-presets {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .gt-preset-select {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+
+/* Entry Details Popup Styles */
+.gt-popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.gt-popup-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: gtModalFadeIn 0.3s ease-out;
+}
+
+@keyframes gtModalFadeIn {
+    from { opacity: 0; transform: translate(-50%, -45%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+.gt-popup-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    color: #666;
+    cursor: pointer;
+    line-height: 1;
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.gt-popup-close:hover {
+    color: #000;
+}
+
+.gt-popup-body {
+    padding: 30px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.gt-details-container h3 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 22px;
+    color: #2c3338;
+    border-bottom: 2px solid #f0f0f1;
+    padding-bottom: 15px;
+}
+
+.gt-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 24px;
+    margin: 0 0 20px;
+}
+
+.gt-details-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    background: #fafbfc;
+    border: 1px solid #eef0f2;
+    border-radius: 6px;
+    min-width: 0;
+}
+
+.gt-detail-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+    margin: 0;
+}
+
+.gt-detail-value {
+    font-size: 14px;
+    color: #1d2327;
+    word-break: break-word;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.gt-detail-empty {
+    color: #9ca3af;
+}
+
+.gt-details-loading,
+.gt-details-error {
+    text-align: center;
+    padding: 30px 0;
+    color: #50575e;
+}
+
+.gt-details-gf-link {
+    margin: 10px 0 0;
+    font-size: 13px;
+}
+
+.gt-details-footer {
+    padding: 16px 24px;
+    background: #f8f9fa;
+    border-top: 1px solid #f0f0f1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.gt-close-popup,
+.gt-details-edit-btn {
+    padding: 9px 18px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+    font-size: 14px;
+}
+
+.gt-close-popup {
+    background: #2271b1;
+    color: #fff;
+}
+
+.gt-close-popup:hover {
+    background: #135e96;
+}
+
+.gt-details-edit-btn {
+    background: #fff;
+    color: #2271b1;
+    border: 1px solid #2271b1;
+}
+
+.gt-details-edit-btn:hover {
+    background: #2271b1;
+    color: #fff;
+}
+
+.gt-popup-modal:focus {
+    outline: none;
+}
+
+@media (max-width: 640px) {
+    .gt-details-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .gt-popup-modal {
+        width: 96%;
+        max-height: 92vh;
+    }
+    .gt-popup-body {
+        padding: 20px;
+    }
+    .gt-details-footer {
+        padding: 14px 20px;
+        flex-direction: column-reverse;
+    }
+    .gt-close-popup,
+    .gt-details-edit-btn {
+        width: 100%;
+    }
+}
+
+/* Action icons styling */
+.gt-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin: 0 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f0f0f1;
+    border: 1px solid #ccd0d4;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.gt-view-action {
+    color: #2271b1;
+}
+
+.gt-view-action:hover {
+    background: #2271b1;
+    color: #fff;
+    border-color: #135e96;
+}
+
+.gt-history-action {
+    color: #6b46c1;
+}
+
+.gt-history-action:hover {
+    background: #6b46c1;
+    color: #fff;
+    border-color: #553c9a;
+}
+
+.gt-wc-create-action {
+    color: #7f54b3; /* WooCommerce purple */
+}
+
+.gt-wc-create-action:hover {
+    background: #7f54b3;
+    color: #fff;
+    border-color: #6a3f99;
+}
+
+.gt-history-container h3 {
+    margin-top: 0;
+    margin-bottom: 18px;
+    font-size: 20px;
+    border-bottom: 2px solid #f0f0f1;
+    padding-bottom: 12px;
+}
+
+.gt-history-empty,
+.gt-history-loading,
+.gt-history-error {
+    text-align: center;
+    color: #6b7280;
+    padding: 24px 0;
+}
+
+.gt-history-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 2px solid #e5e7eb;
+}
+
+.gt-history-item {
+    margin: 0;
+    padding: 12px 0 12px 16px;
+    position: relative;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.gt-history-item::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 18px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #6b46c1;
+    border: 2px solid #fff;
+}
+
+.gt-history-item:last-child {
+    border-bottom: none;
+}
+
+.gt-history-meta {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.gt-history-when {
+    font-weight: 600;
+    color: #374151;
+}
+
+.gt-history-field {
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #1f2937;
+}
+
+.gt-history-diff {
+    font-size: 13px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    color: #4b5563;
+}
+
+.gt-history-old {
+    text-decoration: line-through;
+    color: #b91c1c;
+}
+
+.gt-history-arrow {
+    color: #9ca3af;
+    margin: 0 4px;
+}
+
+.gt-history-new {
+    color: #047857;
+    font-weight: 600;
+}
+
+.gt-edit-action {
+    color: #46b450;
+}
+
+.gt-edit-action:hover {
+    background: #46b450;
+    color: #fff;
+    border-color: #348c3a;
+}
+
+.gt-delete-action {
+    color: #d63638;
+}
+
+.gt-delete-action:hover {
+    background: #d63638;
+    color: #fff;
+    border-color: #902627;
+}
+
+.gt-view-detail {
+    color: #2271b1;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.gt-view-detail:hover {
+    text-decoration: underline;
+}
+
+body.gt-modal-open {
+    overflow: hidden;
+}
+
+/* User Column Reordering */
+.gt-col-draggable {
+    cursor: grab;
+}
+
+.gt-col-draggable:active {
+    cursor: grabbing;
+}
+
+th.gt-col-dragging {
+    opacity: 0.5;
+}
+
+th.gt-col-drop-target {
+    box-shadow: inset 4px 0 0 0 #2271b1;
+}
+
+.gt-col-reset-btn {
+    margin-left: 8px;
+    padding: 8px 12px;
+    background: #fff;
+    color: #2271b1;
+    border: 1px solid #2271b1;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.gt-col-reset-btn:hover {
+    background: #2271b1;
+    color: #fff;
+}
+
+/* Undo / Redo toolbar buttons */
+.gt-undo-btn,
+.gt-redo-btn {
+    margin-left: 6px;
+    padding: 8px 12px;
+    background: #fff;
+    color: #2271b1;
+    border: 1px solid #2271b1;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s, opacity 0.2s;
+}
+
+.gt-undo-btn:hover:not([disabled]),
+.gt-redo-btn:hover:not([disabled]) {
+    background: #2271b1;
+    color: #fff;
+}
+
+.gt-undo-btn[disabled],
+.gt-redo-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Undo / Redo toast */
+.gt-undo-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translate(-50%, 24px);
+    background: #1f2937;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 9999;
+    max-width: 80vw;
+    text-align: center;
+}
+
+.gt-undo-toast.gt-undo-toast-shown {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+/* Column Resizing Styles */
+.gt-table th {
+    position: relative; /* For resizer positioning */
+}
+
+.gt-resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 10;
+    transition: background 0.2s;
+}
+
+.gt-resizer:hover {
+    background: rgba(0, 115, 170, 0.3);
+}
+
+.gt-table th.resizing {
+    border-right: 2px solid #0073aa !important;
+}
+
+body.gt-resizing-active {
+    cursor: col-resize !important;
+    user-select: none !important;
+}
+
+.gt-table-wrapper.resizing-active {
+    overflow-x: auto !important; /* Ensure we can scroll if widened */
+}
+
+/* ============================================================
+   #193 – Freeze first column
+   ============================================================ */
+
+/* The wrapper must set overflow-x:auto so horizontal scrolling works */
+.gt-table-wrapper.gt-freeze-first-col .gt-table-content {
+    overflow-x: auto;
+}
+
+/* Freeze the first header cell */
+.gt-table-wrapper.gt-freeze-first-col .gt-table thead th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background-color: var(--gt-header-bg, #f9f9f9);
+}
+
+/* Freeze the first body cell in every row */
+.gt-table-wrapper.gt-freeze-first-col .gt-table tbody td:first-child,
+.gt-table-wrapper.gt-freeze-first-col .gt-table tfoot td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: var(--gt-row-bg, #ffffff);
+}
+
+/* Alternate-row stripe support: ensure frozen cell inherits the stripe background */
+.gt-table-wrapper.gt-freeze-first-col .gt-table tbody tr:nth-child(even) td:first-child {
+    background-color: var(--gt-row-alt-bg, #f7f7f7);
+}
+
+/* Hover: keep frozen cell highlighted on row hover */
+.gt-table-wrapper.gt-freeze-first-col .gt-table tbody tr:hover td:first-child {
+    background-color: var(--gt-row-hover-bg, #eaf3fb);
+}
+
+/* When both sticky-header and freeze-first-col are active, the top-left
+   corner cell needs the highest z-index so it stays above both axes. */
+.gt-table-wrapper.sticky-header.gt-freeze-first-col .gt-table thead th:first-child {
+    z-index: 4;
+}
+
+/* =====================================================================
+   Collapse / Modal responsive modes (#196)
+   ===================================================================== */
+
+/* Expand toggle button (Collapse mode) */
+.gt-row-expand-btn {
+    background: none;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    padding: 2px 6px;
+    transition: transform 0.2s ease;
+}
+.gt-row-expand-btn[aria-expanded="true"] {
+    transform: rotate(90deg);
+}
+
+/* Sub-row that holds hidden column data in Collapse mode */
+.gt-collapsed-sub-row {
+    display: none;
+}
+.gt-collapsed-sub-row.gt-sub-row-open {
+    display: table-row;
+}
+.gt-collapsed-sub-row td {
+    background: var(--gt-row-alt-bg, #f7f7f7);
+    padding: 8px 12px;
+}
+.gt-sub-row-dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 12px;
+    margin: 0;
+}
+.gt-sub-row-dl dt {
+    font-weight: 600;
+}
+.gt-sub-row-dl dd {
+    margin: 0;
+}
+
+/* Row detail button (Modal mode) */
+.gt-row-detail-btn {
+    background: none;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 8px;
+}
+.gt-row-detail-btn:hover {
+    background: var(--gt-accent, #0073aa);
+    color: #fff;
+}
+
+/* Row detail overlay (Modal mode) */
+.gt-row-detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.gt-row-detail-panel {
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    max-height: 80vh;
+    max-width: 480px;
+    overflow-y: auto;
+    padding: 20px;
+    width: 90%;
+}
+.gt-row-detail-close {
+    float: right;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+}
+
+/* =====================================================================
+   Comparison / Pricing table template (#211)
+   ===================================================================== */
+
+.gt-comparison-table-wrap {
+    overflow-x: auto;
+    margin: 0 0 30px 0;
+}
+
+.gt-billing-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin: 0 0 16px 0;
+}
+.gt-billing-btn {
+    border: 1px solid var(--gt-accent, #0073aa);
+    background: transparent;
+    color: var(--gt-accent, #0073aa);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 6px 18px;
+}
+.gt-billing-btn:first-child { border-radius: 4px 0 0 4px; }
+.gt-billing-btn:last-child  { border-radius: 0 4px 4px 0; border-left: none; }
+.gt-billing-btn.active {
+    background: var(--gt-accent, #0073aa);
+    color: #fff;
+}
+
+.gt-comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.gt-comparison-table th,
+.gt-comparison-table td {
+    border: 1px solid #e0e0e0;
+    padding: 12px 16px;
+    text-align: center;
+    vertical-align: middle;
+    width: 1%;
+}
+.gt-comparison-table .gt-feature-label-col,
+.gt-comparison-table .gt-feature-label {
+    text-align: left;
+    width: 30%;
+    font-weight: 600;
+}
+
+/* Recommended column highlight */
+.gt-col-recommended {
+    background: var(--gt-recommended-bg, #f0f8ff);
+    border-color: var(--gt-accent, #0073aa) !important;
+}
+.gt-recommended-badge {
+    display: inline-block;
+    background: var(--gt-accent, #0073aa);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 11px;
+    padding: 2px 8px;
+    margin-bottom: 4px;
+}
+
+/* Pricing row */
+.gt-pricing-row td {
+    font-size: 1.5em;
+    font-weight: 700;
+}
+.gt-billing-period {
+    font-size: 0.55em;
+    font-weight: 400;
+    color: #666;
+}
+
+/* Feature rows */
+.gt-check { color: #2e7d32; font-size: 1.1em; }
+.gt-cross  { color: #aaa; }
+
+/* CTA row */
+.gt-cta-row td { border-top: 2px solid #e0e0e0; padding: 16px; }
+.gt-cta-btn {
+    display: inline-block;
+    border: 2px solid var(--gt-accent, #0073aa);
+    border-radius: 4px;
+    color: var(--gt-accent, #0073aa);
+    font-weight: 600;
+    padding: 10px 20px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+.gt-cta-btn-primary {
+    background: var(--gt-accent, #0073aa);
+    color: #fff;
+}
+.gt-cta-btn:hover {
+    background: var(--gt-accent, #0073aa);
+    color: #fff;
+}
+
+/* Responsive: card-per-plan on narrow viewports */
+@media (max-width: 640px) {
+    .gt-comparison-table thead { display: none; }
+    .gt-comparison-table tr   { display: block; margin-bottom: 12px; border: 1px solid #e0e0e0; border-radius: 4px; }
+    .gt-comparison-table td   { display: block; width: 100%; text-align: left; border: none; border-bottom: 1px solid #f0f0f0; }
+    .gt-comparison-table td::before { content: attr(data-label); font-weight: 600; display: block; font-size: 11px; color: #888; }
+}
+
+/* PDF export button (#212) */
+.gt-pdf-btn {
+    background: none;
+    border: 1px solid #cc0000;
+    border-radius: 3px;
+    color: #cc0000;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 10px;
+}
+.gt-pdf-btn:hover {
+    background: #cc0000;
+    color: #fff;
+}
+
+/* Flip responsive mode — first column becomes row labels on mobile (#348). */
+@media (max-width: 768px) {
+    .gt-table-wrapper.gt-flip-responsive .gt-table thead {
+        display: none;
+    }
+    .gt-table-wrapper.gt-flip-responsive .gt-table,
+    .gt-table-wrapper.gt-flip-responsive .gt-table tbody,
+    .gt-table-wrapper.gt-flip-responsive .gt-table tr,
+    .gt-table-wrapper.gt-flip-responsive .gt-table td {
+        display: block;
+        width: 100%;
+    }
+    .gt-table-wrapper.gt-flip-responsive .gt-table tr {
+        margin-bottom: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 8px;
+    }
+    .gt-table-wrapper.gt-flip-responsive .gt-table td {
+        display: flex;
+        text-align: left;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 4px 8px;
+    }
+    .gt-table-wrapper.gt-flip-responsive .gt-table td[scope="row"],
+    .gt-table-wrapper.gt-flip-responsive .gt-table td:first-child {
+        font-weight: 700;
+        background: #f7f7f7;
+        border-bottom: 2px solid #ddd;
+    }
+    .gt-table-wrapper.gt-flip-responsive .gt-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        min-width: 120px;
+        color: #555;
+        margin-right: 8px;
+    }
+}
+
+/* ============================================================
+ * Issue #534 — Freeze first column.
+ * Activated by .gt-freeze-first-column on the .gt-table-wrapper
+ * (composed in templates/table.php from $table_settings['freeze_first_column']).
+ * Pins the first <th> / <td> of every row so it stays visible while
+ * the rest of the table scrolls horizontally. Uses position:sticky
+ * which works in every browser shipped after 2017.
+ * ============================================================ */
+.gt-table-wrapper.gt-freeze-first-column .gt-table th:first-child,
+.gt-table-wrapper.gt-freeze-first-column .gt-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: #fff;
+    /* Subtle shadow so the user can see the boundary while scrolling. */
+    box-shadow: 1px 0 0 0 rgba(0, 0, 0, 0.08);
+}
+
+.gt-table-wrapper.gt-freeze-first-column .gt-table thead th:first-child {
+    /* Header first cell sits above the body sticky cell stack. */
+    z-index: 3;
+}
+
+/* ============================================================
+ * #556 slice 3 — expandable / collapsible detail rows
+ * ============================================================
+ * Renders when at least one column on the table is flagged
+ * "Show in detail row only" via the slice-2 admin toggle.
+ * Markup contract (frontend.js renderEntries):
+ *   <th class="gt-detail-toggle-header">    (thead)
+ *   <td class="gt-detail-toggle-cell">      (each parent <tr>)
+ *     <button class="gt-detail-toggle" aria-expanded="false">
+ *       <span class="gt-detail-toggle-chevron">▶</span>
+ *     </button>
+ *   <tr class="gt-detail-row" hidden>       (sibling after parent)
+ *     <td colspan="N">
+ *       <dl class="gt-detail-row-grid">
+ *         <div class="gt-detail-row-cell">
+ *           <dt class="gt-detail-row-label">Field label</dt>
+ *           <dd class="gt-detail-row-value">value</dd>
+ *
+ * Hidden via the [hidden] HTML attribute (browser default
+ * display:none). aria-expanded on the toggle button drives a
+ * 90deg chevron rotation so the user gets visual confirmation
+ * without us having to swap glyph text.
+ */
+.gt-detail-toggle-header,
+.gt-detail-toggle-cell {
+    width: 32px;
+    min-width: 32px;
+    text-align: center;
+    padding: 0;
+}
+
+.gt-detail-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin: 0 auto;
+    background: transparent;
+    border: 1px solid transparent;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 3px;
+    line-height: 1;
+}
+
+.gt-detail-toggle:hover,
+.gt-detail-toggle:focus-visible {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.12);
+    outline: none;
+}
+
+.gt-detail-toggle:focus-visible {
+    box-shadow: 0 0 0 2px rgba(33, 113, 235, 0.45);
+}
+
+.gt-detail-toggle-chevron {
+    display: inline-block;
+    font-size: 11px;
+    line-height: 1;
+    transition: transform 0.15s ease-out;
+}
+
+.gt-detail-toggle[aria-expanded="true"] .gt-detail-toggle-chevron {
+    transform: rotate(90deg);
+}
+
+.gt-detail-row > td {
+    background: #fafafa;
+    border-top: 1px dashed #e0e0e0;
+    padding: 14px 16px;
+}
+
+.gt-detail-row-grid {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px 24px;
+}
+
+.gt-detail-row-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.gt-detail-row-label {
+    margin: 0;
+    font-weight: 600;
+    font-size: 12px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.gt-detail-row-value {
+    margin: 0;
+    color: #222;
+    word-break: break-word;
+}
+
+.gt-detail-row-empty {
+    color: #888;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   #1606 — search-term highlighting
+   Matched substrings in cell text when a global search term is active.
+   Theme-aware via --gt-search-hit-bg (settable from custom CSS / typography
+   custom colors); falls back to a soft amber that works on light themes.
+   ========================================================================== */
+
+.gt-table-wrapper mark.gt-search-hit {
+    background: var(--gt-search-hit-bg, #ffe58a);
+    color: inherit;
+    padding: 0 1px;
+    border-radius: 2px;
+}
+
+/* ==========================================================================
+   #1596 — pivot view visitor toggle + pivot layout
+   ========================================================================== */
+
+.gt-table-controls .gt-pivot-toggle {
+    padding: 6px 12px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: var(--gt-header-bg, #f6f7f7);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.gt-table-controls .gt-pivot-toggle:hover {
+    background: var(--gt-row-hover-bg, #eef1f3);
+}
+
+.gt-table-wrapper th.gt-pivot-th {
+    white-space: nowrap;
+}
+
+.gt-table-wrapper td.gt-pivot-cell {
+    cursor: default;
+}
+
+/* ==========================================================================
+   #1601 — table summary line (rule-based digest above the table)
+   ========================================================================== */
+
+.gt-table-wrapper .gt-table-summary {
+    margin: 8px 0;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #50575e;
+    background: var(--gt-row-alt-bg, #f6f7f7);
+    border-left: 3px solid var(--gt-accent, #2271b1);
+    border-radius: 2px;
+}
+
+.gt-table-wrapper .gt-table-summary-note {
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* ── Data Bars (#1731) ────────────────────────────────────────────────
+   Pro-gated, per-column, CSS-only in-cell value bars. A low-opacity
+   ::after underlay sits BEHIND the cell text (negative z-index inside the
+   td's own stacking context), its width driven by the inline
+   --gt-bar-pct custom property. Scoped to `td` so card-view field divs
+   cannot inherit it. The bar is suppressed on cells that already carry an
+   inline background (conditional formatting / per-column background — see
+   the td[style*="background-color"] rule earlier in this file) to avoid a
+   muddy double-paint.
+   ------------------------------------------------------------------- */
+.gt-table tbody td[data-gt-bar-pct] {
+    position: relative;
+    z-index: 0;
+}
+.gt-table tbody td[data-gt-bar-pct]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: calc(var(--gt-bar-pct, 0) * 1%);
+    background: var(--gt-bar-color, #3b82f6);
+    opacity: 0.18;
+    z-index: -1;
+    pointer-events: none;
+}
+.gt-table tbody td[data-gt-bar-pct][style*="background-color"]::after {
+    display: none;
+}

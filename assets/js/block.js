@@ -1,447 +1,133 @@
 /**
- * TableCrafter Gutenberg Block
+ * TableCrafter Gutenberg block (#2013).
  *
- * Provides a native WordPress editing experience with a live preview
- * and a comprehensive sidebar for data configuration.
+ * Server-rendered block that displays a TableCrafter table by id. The preview
+ * in the editor uses ServerSideRender so it matches the front end exactly. No
+ * build step — written against the wp.* globals with wp.element.createElement.
  */
-(function (blocks, editor, components, serverSideRender, element) {
-    const el = element.createElement;
+( function ( blocks, element, blockEditor, components, serverSideRender, i18n ) {
+	'use strict';
 
-    // Debug utility - only logs when debug mode is enabled
-    const TC_DEBUG = {
-        enabled: typeof window !== 'undefined' && window.TABLECRAFTER_DEBUG === true,
-        log: function(...args) { if (this.enabled) console.log('[TableCrafter Block]', ...args); }
-    };
-    const { InspectorControls } = editor;
-    const { PanelBody, TextControl, ToggleControl, ExternalLink, SelectControl } = components;
+	var el = element.createElement;
+	var __ = i18n.__;
+	var InspectorControls = blockEditor.InspectorControls;
+	var PanelBody = components.PanelBody;
+	var TextControl = components.TextControl;
+	var ServerSideRender = serverSideRender;
 
-    blocks.registerBlockType('tablecrafter/data-table', {
-        title: 'TableCrafter',
-        description: 'Transform JSON APIs, CSV files, and Google Sheets into dynamic, auto-refreshing data tables.',
-        icon: el('svg', { 
-            width: 24, 
-            height: 24, 
-            viewBox: '0 0 24 24', 
-            fill: 'none',
-            style: { color: '#0073aa' }
-        },
-            // Simple table outline
-            el('rect', { 
-                x: 4, y: 6, width: 16, height: 12, 
-                rx: 1, 
-                stroke: 'currentColor', 
-                strokeWidth: 2,
-                fill: 'none'
-            }),
-            
-            // Two simple grid lines
-            el('line', { x1: 4, y1: 10, x2: 20, y2: 10, stroke: 'currentColor', strokeWidth: 2 }),
-            el('line', { x1: 4, y1: 14, x2: 20, y2: 14, stroke: 'currentColor', strokeWidth: 2 }),
-            el('line', { x1: 12, y1: 6, x2: 12, y2: 18, stroke: 'currentColor', strokeWidth: 2 })
-        ),
-        category: 'widgets',
+	blocks.registerBlockType( 'tablecrafter/table', {
+		apiVersion: 2,
+		title: __( 'TableCrafter Table', 'tc-data-tables' ),
+		description: __( 'Display a TableCrafter table (Gravity Forms or any data source) by its ID.', 'tc-data-tables' ),
+		icon: 'editor-table',
+		category: 'widgets',
+		attributes: {
+			tableId: { type: 'number', 'default': 0 }
+		},
 
-        // Define block attributes to persist in database
-        attributes: {
-            source: { type: 'string', default: '' },
-            root: { type: 'string', default: '' },
-            include: { type: 'string', default: '' },
-            exclude: { type: 'string', default: '' },
-            search: { type: 'boolean', default: false },
-            filters: { type: 'boolean', default: true },
-            export: { type: 'boolean', default: false },
-            per_page: { type: 'number', default: 0 },
-            id: { type: 'string', default: '' },
-            // Auto-refresh attributes
-            auto_refresh: { type: 'boolean', default: false },
-            refresh_interval: { type: 'number', default: 300000 },
-            refresh_indicator: { type: 'boolean', default: true },
-            refresh_countdown: { type: 'boolean', default: false },
-            refresh_last_updated: { type: 'boolean', default: true }
-        },
+		edit: function ( props ) {
+			var tableId = props.attributes.tableId || 0;
 
-        /**
-         * The edit function describes the structure of your block in the context of the editor.
-         * This represents what the editor will render when the block is used.
-         */
-        edit: function (props) {
-            const { attributes, setAttributes } = props;
+			var inspector = el(
+				InspectorControls,
+				null,
+				el(
+					PanelBody,
+					{ title: __( 'Table settings', 'tc-data-tables' ), initialOpen: true },
+					el( TextControl, {
+						label: __( 'Table ID', 'tc-data-tables' ),
+						type: 'number',
+						value: tableId ? String( tableId ) : '',
+						onChange: function ( value ) {
+							props.setAttributes( { tableId: parseInt( value, 10 ) || 0 } );
+						}
+					} )
+				)
+			);
 
-            // Attribute update helpers
-            const updateSource = (value) => setAttributes({ source: value });
-            const updateRoot = (value) => setAttributes({ root: value });
-            const updateInclude = (value) => setAttributes({ include: value });
-            const updateExclude = (value) => setAttributes({ exclude: value });
-            const updateSearch = (value) => setAttributes({ search: value });
-            const updatePerPage = (value) => setAttributes({ per_page: parseInt(value) || 0 });
+			var body = tableId
+				? el( ServerSideRender, { block: 'tablecrafter/table', attributes: props.attributes } )
+				: el(
+					'p',
+					{ className: 'gt-block-placeholder' },
+					__( 'Enter a Table ID in the block settings to display a table.', 'tc-data-tables' )
+				);
 
-            return [
-                // Sidebar controls (Inspector)
-                el(InspectorControls, { key: 'controls' },
-                    el(PanelBody, { title: 'Data Settings', initialOpen: true },
-                        el(TextControl, {
-                            label: 'Data Source URL',
-                            value: attributes.source,
-                            onChange: updateSource,
-                            help: 'URL to your data source: JSON API, CSV file, or Google Sheet (must be publicly accessible).'
-                        }),
-                        el(editor.MediaUpload, {
-                            onSelect: (media) => updateSource(media.url),
-                            allowedTypes: ['text/csv', 'application/vnd.ms-excel', 'text/plain'],
-                            value: attributes.source,
-                            render: ({ open }) => el(components.Button, {
-                                variant: 'secondary',
-                                onClick: open,
-                                icon: 'upload',
-                                style: { marginBottom: '15px', width: '100%', justifyContent: 'center' }
-                            }, 'Upload CSV/JSON File')
-                        }),
-                        el(SelectControl, {
-                            label: 'Demo Data Sources',
-                            value: attributes.source,
-                            options: window.tablecrafterData ? window.tablecrafterData.demoUrls : [],
-                            onChange: updateSource,
-                            help: 'Try different data formats: JSON APIs, CSV files, and Google Sheets with sample data.'
-                        }),
-                        el(TextControl, {
-                            label: 'Data Root Path (Optional)',
-                            value: attributes.root,
-                            onChange: updateRoot,
-                            help: 'For nested JSON: dot-notation path to the data array (e.g., data.items, response.results).'
-                        }),
-                        el(ToggleControl, {
-                            label: 'Enable Search',
-                            checked: attributes.search,
-                            onChange: (val) => setAttributes({ search: val }),
-                            help: 'Adds a real-time global search bar that filters all table data as users type.'
-                        }),
-                        el(ToggleControl, {
-                            label: 'Enable Column Filters',
-                            checked: attributes.filters !== false,
-                            onChange: (val) => setAttributes({ filters: val }),
-                            help: 'Adds smart column-specific filters: dropdowns for text, ranges for numbers, date pickers for dates.'
-                        }),
-                        el(ToggleControl, {
-                            label: 'Enable Export Tools',
-                            checked: attributes.export,
-                            onChange: (val) => setAttributes({ export: val }),
-                            help: 'Adds CSV download and copy-to-clipboard buttons that respect current filters and search.'
-                        }),
-                        el(TextControl, {
-                            label: 'Rows Per Page',
-                            value: attributes.per_page,
-                            type: 'number',
-                            onChange: updatePerPage,
-                            help: 'Enable pagination: number of rows per page (0 = show all rows, 10-50 recommended for large datasets).'
-                        }),
-                        el(TextControl, {
-                            label: 'Include Columns (Optional)',
-                            value: attributes.include,
-                            onChange: updateInclude,
-                            help: 'Show only specific columns: comma-separated list of field names (e.g., name,email,status).'
-                        }),
-                        el(TextControl, {
-                            label: 'Exclude Columns (Optional)',
-                            value: attributes.exclude,
-                            onChange: updateExclude,
-                            help: 'Hide specific columns: comma-separated list of field names to exclude (e.g., id,password,internal_notes).'
-                        })
-                    ),
-                    el(PanelBody, { title: 'Auto-Refresh Settings', initialOpen: false },
-                        el(ToggleControl, {
-                            label: 'Enable Auto-Refresh',
-                            checked: attributes.auto_refresh,
-                            onChange: (val) => setAttributes({ auto_refresh: val }),
-                            help: 'Transform your table into a live dashboard: automatically fetch fresh data at custom intervals.'
-                        }),
-                        attributes.auto_refresh && el(TextControl, {
-                            label: 'Refresh Interval (milliseconds)',
-                            value: attributes.refresh_interval,
-                            type: 'number',
-                            onChange: (val) => setAttributes({ refresh_interval: parseInt(val) || 300000 }),
-                            help: 'Refresh frequency in milliseconds: 30000 = 30s, 300000 = 5min (default), 3600000 = 1hr.'
-                        }),
-                        attributes.auto_refresh && el(ToggleControl, {
-                            label: 'Show Refresh Indicator',
-                            checked: attributes.refresh_indicator,
-                            onChange: (val) => setAttributes({ refresh_indicator: val }),
-                            help: 'Show visual controls: spinning refresh icon, pause/resume buttons, and manual refresh trigger.'
-                        }),
-                        attributes.auto_refresh && el(ToggleControl, {
-                            label: 'Show Countdown Timer',
-                            checked: attributes.refresh_countdown,
-                            onChange: (val) => setAttributes({ refresh_countdown: val }),
-                            help: 'Display live countdown showing time remaining until next automatic data refresh.'
-                        }),
-                        attributes.auto_refresh && el(ToggleControl, {
-                            label: 'Show Last Updated',
-                            checked: attributes.refresh_last_updated,
-                            onChange: (val) => setAttributes({ refresh_last_updated: val }),
-                            help: 'Show timestamp of last data refresh (e.g., "Updated 3 minutes ago") for data freshness confidence.'
-                        }),
-                        el('div', { className: 'tc-block-help', style: { marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px' } },
-                            el('p', null, 'Need help? Check the '),
-                            el(ExternalLink, { href: 'https://github.com/TableCrafter/wp-data-tables' }, 'Documentation')
-                        )
-                    )
-                ),
-                // Main visual editor view (Live Preview)
-                el('div', { className: props.className, key: 'preview' },
-                    el(serverSideRender, {
-                        block: 'tablecrafter/data-table',
-                        attributes: attributes
-                    })
-                )
-            ];
-        },
+			return [ inspector, el( 'div', { key: 'gt-block' }, body ) ];
+		},
 
-        /**
-         * The save function defines the frontend markup.
-         * Since this is a dynamic block, we return null and handle rendering in PHP.
-         */
-        save: function () {
-            return null;
-        },
-    });
+		// Dynamic block — rendered by PHP render_callback.
+		save: function () {
+			return null;
+		}
+	} );
 
-    /**
-     * Editor Preview Initialization
-     * 
-     * Since the block preview is rendered on the server (SSR), we need to 
-     * initialize the TableCrafter tools (search, export, etc.) client-side 
-     * once the HTML is injected into the editor.
-     */
-    const initPreview = (container) => {
-        if (!container) return;
+	// #2144 — back-compat registration for the 3.5.x `tablecrafter/data-table`
+	// block so existing posts are recognised in the editor (not "unsupported")
+	// and keep rendering. Deprecated: edit shows a live preview + the source.
+	blocks.registerBlockType( 'tablecrafter/data-table', {
+		apiVersion: 2,
+		title: __( 'TableCrafter Data Table (legacy)', 'tc-data-tables' ),
+		description: __( 'Legacy inline-source table from the previous TableCrafter version. Still supported.', 'tc-data-tables' ),
+		icon: 'editor-table',
+		category: 'widgets',
+		attributes: {
+			source: { type: 'string', 'default': '' },
+			root: { type: 'string', 'default': '' },
+			include: { type: 'string', 'default': '' },
+			exclude: { type: 'string', 'default': '' },
+			search: { type: 'boolean', 'default': false },
+			filters: { type: 'boolean', 'default': true },
+			export: { type: 'boolean', 'default': false },
+			per_page: { type: 'number', 'default': 0 },
+			id: { type: 'string', 'default': '' },
+			auto_refresh: { type: 'boolean', 'default': false },
+			refresh_interval: { type: 'number', 'default': 300000 },
+			refresh_indicator: { type: 'boolean', 'default': true },
+			refresh_countdown: { type: 'boolean', 'default': false },
+			refresh_last_updated: { type: 'boolean', 'default': true }
+		},
 
-        const source = container.getAttribute('data-source');
-        const search = container.getAttribute('data-search') === 'true';
-        const filters = container.getAttribute('data-filters') !== 'false';
-        const exportable = container.getAttribute('data-export') === 'true';
-        const perPage = parseInt(container.getAttribute('data-per-page')) || 0;
+		edit: function ( props ) {
+			var source = props.attributes.source || '';
 
-        TC_DEBUG.log(' Checking container', {
-            id: container.id,
-            source,
-            search,
-            filters,
-            exportable,
-            perPage,
-            initialized: container.dataset.tcInitialized,
-            tcSearch: container.dataset.tcSearch,
-            tcExport: container.dataset.tcExport,
-            ssr: container.dataset.ssr,
-            hasSearchUI: !!container.querySelector('.tc-global-search'),
-            hasFiltersUI: !!container.querySelector('.tc-filters'),
-            hasControlsUI: !!container.querySelector('.tc-controls')
-        });
+			var inspector = el(
+				InspectorControls,
+				null,
+				el(
+					PanelBody,
+					{ title: __( 'Data source', 'tc-data-tables' ), initialOpen: true },
+					el( TextControl, {
+						label: __( 'Source URL (JSON / CSV / Google Sheet)', 'tc-data-tables' ),
+						value: source,
+						onChange: function ( value ) {
+							props.setAttributes( { source: value } );
+						}
+					} )
+				)
+			);
 
-        // Aggressive re-initialization check
-        const libLoaded = typeof window.TableCrafter !== 'undefined' || (container.ownerDocument.defaultView && container.ownerDocument.defaultView.TableCrafter);
+			var body = source
+				? el( ServerSideRender, { block: 'tablecrafter/data-table', attributes: props.attributes } )
+				: el(
+					'p',
+					{ className: 'gt-block-placeholder' },
+					__( 'Enter a source URL to display a table.', 'tc-data-tables' )
+				);
 
-        if (source && libLoaded) {
-            const TC = window.TableCrafter || container.ownerDocument.defaultView.TableCrafter;
+			return [ inspector, el( 'div', { key: 'gt-legacy-block' }, body ) ];
+		},
 
-            // Force re-init if settings changed
-            const autoRefresh = container.getAttribute('data-auto-refresh') === 'true';
-            const refreshInterval = parseInt(container.getAttribute('data-refresh-interval')) || 300000;
-            
-            if (container.dataset.tcSearch !== search.toString() || 
-                container.dataset.tcFilters !== filters.toString() || 
-                container.dataset.tcExport !== exportable.toString() ||
-                container.dataset.tcPerPage !== perPage.toString() ||
-                container.dataset.tcAutoRefresh !== autoRefresh.toString() ||
-                container.dataset.tcRefreshInterval !== refreshInterval.toString() ||
-                container.dataset.tcInitialized !== 'true') {
-                TC_DEBUG.log(' (Re)Initializing instance', {
-                    oldSearch: container.dataset.tcSearch,
-                    newSearch: search.toString(),
-                    oldExport: container.dataset.tcExport,
-                    newExport: exportable.toString(),
-                    wasInitialized: container.dataset.tcInitialized
-                });
-
-                // Clear all TableCrafter data attributes and content to force clean re-init
-                container.removeAttribute('data-tc-initialized');
-                container.removeAttribute('data-tc-loaded');
-                container.dataset.ssr = "false"; // Disable SSR mode for re-init
-                
-                // Clear any existing TableCrafter UI elements
-                const existingUI = container.querySelectorAll('.tc-controls, .tc-filters, .tc-global-search, .tc-pagination');
-                TC_DEBUG.log(' Removing existing UI elements', existingUI.length);
-                existingUI.forEach(el => el.remove());
-
-                // Get auto-refresh settings from data attributes
-                const autoRefresh = container.getAttribute('data-auto-refresh') === 'true';
-                const refreshInterval = parseInt(container.getAttribute('data-refresh-interval')) || 300000;
-                const refreshIndicator = container.getAttribute('data-refresh-indicator') !== 'false';
-                const refreshCountdown = container.getAttribute('data-refresh-countdown') === 'true';
-                const refreshLastUpdated = container.getAttribute('data-refresh-last-updated') !== 'false';
-
-                const config = {
-                    data: source,
-                    responsive: true,
-                    pagination: perPage > 0,
-                    pageSize: perPage > 0 ? perPage : 25,
-                    globalSearch: search,
-                    filterable: filters,
-                    exportable: exportable,
-                    autoRefresh: {
-                        enabled: autoRefresh,
-                        interval: refreshInterval,
-                        showIndicator: refreshIndicator,
-                        showCountdown: refreshCountdown,
-                        showLastUpdated: refreshLastUpdated,
-                        pauseOnInteraction: true,
-                        pauseOnVisibilityChange: true,
-                        retryOnFailure: true,
-                        maxRetries: 3
-                    },
-                    api: {
-                        proxy: {
-                            url: (window.tablecrafterData && window.tablecrafterData.ajaxUrl) ? window.tablecrafterData.ajaxUrl : undefined,
-                            nonce: (window.tablecrafterData && window.tablecrafterData.nonce) ? window.tablecrafterData.nonce : undefined
-                        }
-                    },
-                    // Force a fresh render
-                    forceRender: true
-                };
-                
-                TC_DEBUG.log(' Creating new instance with config', config);
-                const tcInstance = new TC(container, config);
-                
-                TC_DEBUG.log(' Instance created', {
-                    instance: tcInstance,
-                    hasSearchAfter: !!container.querySelector('.tc-global-search'),
-                    hasFiltersAfter: !!container.querySelector('.tc-filters'),
-                    hasControlsAfter: !!container.querySelector('.tc-controls')
-                });
-
-                container.dataset.tcInitialized = 'true';
-                container.dataset.tcSearch = search.toString();
-                container.dataset.tcFilters = filters.toString();
-                container.dataset.tcExport = exportable.toString();
-                container.dataset.tcPerPage = perPage.toString();
-                container.dataset.tcAutoRefresh = autoRefresh.toString();
-                container.dataset.tcRefreshInterval = refreshInterval.toString();
-                
-                // Double check after a short delay
-                setTimeout(() => {
-                    TC_DEBUG.log(' Post-init check', {
-                        id: container.id,
-                        search,
-                        hasSearchUI: !!container.querySelector('.tc-global-search'),
-                        hasFiltersUI: !!container.querySelector('.tc-filters'),
-                        hasControlsUI: !!container.querySelector('.tc-controls'),
-                        containerHTML: container.innerHTML.substring(0, 500) + '...'
-                    });
-                }, 100);
-            }
-        } else if (source) {
-            console.warn('TableCrafter Block: Library not found, retrying in 1s...');
-            setTimeout(() => initPreview(container), 1000);
-        }
-    };
-
-    // Initial scan for blocks already in the DOM (including iframes)
-    const scanForBlocks = (root = document) => {
-        // Find in current document
-        const containers = root.querySelectorAll('.tablecrafter-container');
-        containers.forEach(initPreview);
-
-        // Find in iframes (Gutenberg often uses iframes for the editor content)
-        const iframes = root.querySelectorAll('iframe');
-        iframes.forEach(iframe => {
-            try {
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                if (iframeDoc) {
-                    scanForBlocks(iframeDoc);
-                }
-            } catch (e) {
-                // Ignore cross-origin iframe errors
-            }
-        });
-    };
-
-    // Track observed documents to avoid duplicates
-    const observedDocs = new Set();
-
-    // Use MutationObserver to detect when SSR content is added, replaced, or changed
-    const createObserver = () => {
-        return new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'childList') {
-                    mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === 1) { // Element
-                            if (node.classList.contains('tablecrafter-container')) {
-                                initPreview(node);
-                            } else if (node.tagName === 'IFRAME') {
-                                watchDocument(node.contentDocument);
-                            } else {
-                                const containers = node.querySelectorAll('.tablecrafter-container');
-                                containers.forEach(initPreview);
-
-                                // Also scan for nested iframes
-                                const iframes = node.querySelectorAll('iframe');
-                                iframes.forEach(iframe => watchDocument(iframe.contentDocument));
-                            }
-                        }
-                    });
-                } else if (mutation.type === 'attributes') {
-                    const node = mutation.target;
-                    if (node.classList.contains('tablecrafter-container')) {
-                        initPreview(node);
-                    }
-                }
-            });
-        });
-    };
-
-    const watchDocument = (doc) => {
-        if (!doc || observedDocs.has(doc)) return;
-
-        try {
-            const observer = createObserver();
-            observer.observe(doc.body || doc, {
-                childList: true,
-                subtree: true,
-                attributes: true,
-                attributeFilter: ['data-search', 'data-source', 'data-export', 'data-per-page', 'data-auto-refresh', 'data-refresh-interval']
-            });
-            observedDocs.add(doc);
-
-            // Initial scan of this document
-            const containers = doc.querySelectorAll('.tablecrafter-container');
-            containers.forEach(initPreview);
-
-            // Also search for existing iframes in this document
-            const iframes = doc.querySelectorAll('iframe');
-            iframes.forEach(iframe => {
-                if (iframe.contentDocument) {
-                    watchDocument(iframe.contentDocument);
-                } else {
-                    iframe.addEventListener('load', () => watchDocument(iframe.contentDocument));
-                }
-            });
-        } catch (e) {
-            // Ignore cross-origin errors
-        }
-    };
-
-    // Start watching the main document
-    watchDocument(document);
-
-    // Periodic safety scan (Gutenberg can be tricky)
-    setInterval(() => {
-        const doc = document.querySelector('iframe.edit-site-visual-editor__editor-canvas')?.contentDocument || document;
-        const containers = doc.querySelectorAll('.tablecrafter-container');
-        containers.forEach(initPreview);
-    }, 3000);
-
-})(
-    window.wp.blocks,
-    window.wp.blockEditor || window.wp.editor,
-    window.wp.components,
-    window.wp.serverSideRender,
-    window.wp.element
+		// Dynamic block — rendered by PHP render_callback.
+		save: function () {
+			return null;
+		}
+	} );
+} )(
+	window.wp.blocks,
+	window.wp.element,
+	window.wp.blockEditor,
+	window.wp.components,
+	window.wp.serverSideRender,
+	window.wp.i18n
 );

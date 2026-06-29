@@ -1,0 +1,121 @@
+/**
+ * Gravity Tables – RTL (right-to-left) stylesheet
+ *
+ * Loaded only when is_rtl() is true (Arabic, Hebrew, Persian, Urdu, etc.).
+ * Uses CSS logical properties where possible; falls back to explicit
+ * left/right overrides for broader browser support.
+ */
+
+/* ── Wrapper ─────────────────────────────────────────────────────────────── */
+
+.gt-table-wrapper[dir="rtl"],
+.gt-rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+/* ── Table cells ─────────────────────────────────────────────────────────── */
+
+.gt-rtl .gt-table th,
+.gt-rtl .gt-table td {
+    text-align: right;
+}
+
+/* ── Sort icons (flip horizontal so ↑/↓ chevrons point the right way) ─────── */
+
+.gt-rtl .gt-sort-icon {
+    transform: scaleX(-1);
+}
+
+.gt-rtl th.gt-sortable .gt-sort-indicator {
+    margin-inline-start: 0;
+    margin-inline-end: 0.4em;
+    float: left;
+}
+
+/* ── Pagination ──────────────────────────────────────────────────────────── */
+
+.gt-rtl .gt-pagination {
+    direction: rtl;
+}
+
+.gt-rtl .gt-pagination .gt-page-prev,
+.gt-rtl .gt-pagination .gt-page-next {
+    transform: scaleX(-1);
+}
+
+.gt-rtl .gt-pagination-info {
+    text-align: left;
+}
+
+/* ── Filters & search ────────────────────────────────────────────────────── */
+
+.gt-rtl .gt-filter-bar,
+.gt-rtl .gt-search-bar {
+    direction: rtl;
+    text-align: right;
+}
+
+.gt-rtl .gt-filter-bar input,
+.gt-rtl .gt-filter-bar select,
+.gt-rtl .gt-search-bar input {
+    text-align: right;
+    padding-inline-start: 0.5em;
+    padding-inline-end: 2em;
+}
+
+/* ── Inline edit ─────────────────────────────────────────────────────────── */
+
+.gt-rtl .gt-inline-edit-actions {
+    direction: rtl;
+    text-align: left;
+}
+
+.gt-rtl .gt-inline-edit-actions .gt-save-btn,
+.gt-rtl .gt-inline-edit-actions .gt-cancel-btn {
+    margin-inline-start: 0.4em;
+    margin-inline-end: 0;
+}
+
+/* ── Dropdowns & pop-ups ─────────────────────────────────────────────────── */
+
+.gt-rtl .gt-dropdown-menu,
+.gt-rtl .gt-column-visibility-menu {
+    right: auto;
+    left: 0;
+    text-align: right;
+}
+
+/* ── Export toolbar ──────────────────────────────────────────────────────── */
+
+.gt-rtl .gt-export-toolbar {
+    direction: rtl;
+}
+
+/* ── Admin builder (RTL admin language) ──────────────────────────────────── */
+
+.rtl .gt-builder-column-list .gt-drag-handle {
+    float: right;
+    margin-inline-start: 0.5em;
+    margin-inline-end: 0;
+}
+
+.rtl .gt-builder-settings-panel {
+    direction: rtl;
+    text-align: right;
+}
+
+/* ── Data bars (flip fill direction for RTL) ─────────────────────────────── */
+
+.gt-rtl .gt-table tbody td[data-gt-bar-pct]::after {
+    right: 0;
+    left: auto;
+}
+
+/* ── Print ────────────────────────────────────────────────────────────────── */
+
+@media print {
+    .gt-rtl .gt-table {
+        direction: rtl;
+    }
+}

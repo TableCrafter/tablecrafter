@@ -1,0 +1,185 @@
+/*
+ * Gravity Tables — print stylesheet
+ *
+ * Loaded with media="print", so all rules in this file only apply when
+ * the user is printing or viewing print preview.
+ */
+
+/* Hide chrome that doesn't belong on paper */
+.gt-table-wrapper .gt-table-controls,
+.gt-table-wrapper .gt-search-bar,
+.gt-table-wrapper .gt-export-container,
+.gt-table-wrapper .gt-export-dropdown,
+.gt-table-wrapper .gt-print-btn,
+.gt-table-wrapper .gt-filters-panel,
+.gt-table-wrapper .gt-filters-toggle,
+.gt-table-wrapper .gt-filter-bar,
+.gt-table-wrapper .gt-advanced-filters,
+.gt-table-wrapper .gt-filter-actions,
+.gt-table-wrapper .gt-bulk-actions,
+.gt-table-wrapper .gt-pagination,
+.gt-table-wrapper .gt-pagination-container,
+.gt-table-wrapper .gt-pagination-info,
+.gt-table-wrapper .gt-entry-count,
+.gt-table-wrapper .gt-entry-info,
+.gt-table-wrapper .gt-presets,
+.gt-table-wrapper .gt-add-new-btn,
+.gt-table-wrapper .gt-resizer,
+.gt-table-wrapper .gt-action,
+.gt-table-wrapper th .gt-sort-arrows,
+.gt-table-wrapper input[type="checkbox"].gt-row-select,
+.gt-table-wrapper input[type="checkbox"].gt-select-all,
+.gt-table-wrapper .gt-edit-indicator,
+.gt-table-wrapper .gt-readonly-indicator,
+.gt-popup-overlay {
+    display: none !important;
+}
+
+/* Hide the Actions column (it only makes sense on screen) */
+.gt-table-wrapper th.gt-actions-header,
+.gt-table-wrapper td.gt-actions-cell,
+.gt-table-wrapper th.gt-col-actions,
+.gt-table-wrapper td.gt-col-actions,
+.gt-table-wrapper .gt-table th:has(.gt-action),
+.gt-table-wrapper .gt-table td:has(.gt-action) {
+    display: none !important;
+}
+
+/* Print header — populated by JS via .gt-print-header */
+.gt-print-header {
+    display: block !important;
+    margin: 0 0 12pt 0;
+    padding: 0 0 8pt 0;
+    border-bottom: 1pt solid #000;
+    font-family: Georgia, "Times New Roman", serif;
+    color: #000;
+}
+
+.gt-print-header__title {
+    font-size: 18pt;
+    font-weight: 700;
+    margin: 0 0 4pt 0;
+}
+
+.gt-print-header__meta {
+    font-size: 9pt;
+    color: #333;
+    margin: 0;
+}
+
+.gt-print-header__filters {
+    margin: 6pt 0 0 0;
+    font-size: 9pt;
+    color: #000;
+}
+
+.gt-print-header__filters strong {
+    font-weight: 700;
+}
+
+/* Make sure the host page chrome (theme header/footer/sidebar) stays out
+   of the way for the most common WordPress themes. */
+body.gt-printing > *:not(.gt-print-root) {
+    /* This class is added by JS only when the user clicks our print button,
+       so this rule is opt-in and won't affect Cmd/Ctrl-P. */
+}
+
+/* Table layout for paper */
+.gt-table-wrapper {
+    box-shadow: none !important;
+    border: none !important;
+    background: #fff !important;
+    color: #000 !important;
+    width: 100% !important;
+    overflow: visible !important;
+}
+
+.gt-table-wrapper .gt-table-content {
+    overflow: visible !important;
+    max-height: none !important;
+}
+
+.gt-table-wrapper .gt-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 9pt !important;
+    color: #000 !important;
+    background: #fff !important;
+}
+
+/* Repeat the table head on every printed page */
+.gt-table-wrapper .gt-table thead {
+    display: table-header-group !important;
+}
+
+.gt-table-wrapper .gt-table tfoot {
+    display: table-footer-group !important;
+}
+
+/* Avoid breaking a row across pages */
+.gt-table-wrapper .gt-table tr,
+.gt-table-wrapper .gt-table thead,
+.gt-table-wrapper .gt-table tfoot {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+}
+
+.gt-table-wrapper .gt-table th,
+.gt-table-wrapper .gt-table td {
+    border: 1pt solid #999 !important;
+    padding: 4pt 6pt !important;
+    color: #000 !important;
+    background: #fff !important;
+    vertical-align: top !important;
+}
+
+.gt-table-wrapper .gt-table thead th {
+    background: #eee !important;
+    font-weight: 700 !important;
+    border-bottom: 1.5pt solid #000 !important;
+}
+
+/* Subtle zebra striping in grayscale */
+.gt-table-wrapper .gt-table tbody tr:nth-child(even) td {
+    background: #f7f7f7 !important;
+}
+
+/* Conditional formatting cells: convert color fills to bordered indicators
+   so the meaning survives B&W printing. */
+.gt-table-wrapper .gt-cf-cell {
+    background: #fff !important;
+    border-left: 3pt solid #000 !important;
+}
+
+.gt-table-wrapper .gt-cf-cell--positive {
+    border-left-style: solid !important;
+}
+
+.gt-table-wrapper .gt-cf-cell--negative {
+    border-left-style: dashed !important;
+}
+
+.gt-table-wrapper .gt-cf-cell--warning {
+    border-left-style: double !important;
+}
+
+/* Links should print as plain text — but show URL in parentheses for
+   external links if it's useful */
+.gt-table-wrapper a {
+    color: #000 !important;
+    text-decoration: none !important;
+}
+
+/* Page setup */
+@page {
+    margin: 0.6in 0.5in;
+}
+
+/* Print-only pagination notice — shown in print, hidden on screen */
+.gt-print-pagination-notice {
+    display: block !important;
+    font-size: 8pt;
+    color: #555;
+    margin: 8pt 0 0 0;
+    font-style: italic;
+}
