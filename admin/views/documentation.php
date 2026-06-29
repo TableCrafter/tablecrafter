@@ -79,7 +79,7 @@ if (!defined('ABSPATH')) {
                     ?>
                     </tbody>
                 </table>
-                <p class="gt-tier-upsell"><?php _e('Note: Airtable display is Free — you can show any Airtable base read-only. Two-way write-back to Airtable (and Notion) is Pro.', 'tc-data-tables'); ?></p>
+                <p class="gt-tier-upsell"><?php _e('The free tier covers generic file/URL sources (JSON, CSV, Google Sheets, Excel). The rich integrations — Gravity Forms, WooCommerce, Airtable, Notion, XML, and External DB — are Pro.', 'tc-data-tables'); ?></p>
 
                 <h3><?php _e('Features', 'tc-data-tables'); ?></h3>
                 <table class="gt-tier-table">
@@ -680,6 +680,11 @@ if (!defined('ABSPATH')) {
             <div id="whats-new" class="gt-docs-section">
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
+
+                <h3><?php _e('v8.0.22 — Free vs Pro boundary', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Premium integrations are now Pro', 'tc-data-tables'); ?></strong> — <?php _e('Gravity Forms, WooCommerce and Airtable join Notion, XML and External DB as Pro sources. The free tier covers JSON, CSV, Google Sheets and Excel. Free users opening a Pro-source table get an upgrade prompt.', 'tc-data-tables'); ?></li>
+                </ul>
 
                 <h3><?php _e('v8.0.21 — Runs on PHP 8.1+ (packaging fix)', 'tc-data-tables'); ?></h3>
                 <ul>

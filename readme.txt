@@ -4,11 +4,11 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.21
+Stable tag: 8.0.22
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Editable data tables for WordPress: show and edit Gravity Forms, Google Sheets, Airtable, CSV and JSON data with sorting, search and filters.
+Editable WordPress tables from JSON, CSV & Google Sheets with sort, search & filters. Pro adds Gravity Forms, Airtable & inline editing.
 
 == Description ==
 
@@ -16,12 +16,10 @@ TableCrafter builds fast, responsive, sortable data tables in WordPress from the
 
 **Free data sources**
 
-* **Gravity Forms** entries
-* **WooCommerce** products
 * **JSON / REST APIs** (any public endpoint)
 * **CSV** files (URL)
 * **Public Google Sheets**
-* **Airtable** (read)
+* **Excel** (.xlsx) files
 
 **Free features**
 
@@ -35,12 +33,13 @@ This plugin is the successor to the original "TableCrafter - Data to Beautiful T
 
 == Upgrade to Pro ==
 
-[TableCrafter Pro](https://tablecrafter.com) unlocks the connected sources and editing suite:
+[TableCrafter Pro](https://tablecrafter.com) unlocks the connected integrations and editing suite:
 
-* **Notion** databases as live tables
+* **Gravity Forms** entries and **WooCommerce** products
+* **Airtable** and **Notion** databases as live tables
 * **XML** feeds and **External Databases** (MySQL / MS SQL)
-* **Private Google Sheets** and **Airtable two-way sync** (write-back)
 * **Frontend inline editing**, bulk fill, and row duplication
+* Two-way sync / write-back (Airtable, Notion, External DB)
 * Advanced filters, conditional formatting, role-based permissions, scheduled export, and background (SWR) refresh
 
 <!-- fs_premium_only_begin -->
@@ -120,6 +119,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.22 =
+* Changed: the premium integrations — Gravity Forms, WooCommerce and Airtable — are now Pro features (joining Notion, XML and External DB). The free tier covers JSON, CSV, Google Sheets and Excel. Free users opening a Pro-source table see an upgrade prompt.
 
 = 8.0.21 =
 * Fixed: a packaging issue forced PHP 8.3 even though the plugin supports lower. The plugin now correctly runs on PHP 8.1+ (the bundled spreadsheet library's floor). Resolves a fatal error on PHP 8.1/8.2 sites.

@@ -35,7 +35,7 @@ class TC_Source_Registry
             'gravity_forms' => array(
                 'label'          => self::t('Gravity Forms entries'),
                 'requires_gf'    => true,
-                'pro'            => false,
+                'pro'            => true, // Gravity Forms is the premium product's core source.
                 'in_wizard'      => true,
                 'wizard_icon'    => 'dashicons-feedback',
                 'wizard_badge'   => self::t('Most popular'),
@@ -45,7 +45,7 @@ class TC_Source_Registry
             'woocommerce_products' => array(
                 'label'          => self::t('WooCommerce Products'),
                 'requires_gf'    => false,
-                'pro'            => false,
+                'pro'            => true, // WooCommerce integration is Pro.
                 'in_wizard'      => true,
                 'wizard_icon'    => 'dashicons-cart',
                 'requires_class' => 'WooCommerce',
@@ -62,7 +62,7 @@ class TC_Source_Registry
             'airtable' => array(
                 'label'       => self::t('Airtable'),
                 'requires_gf' => false,
-                'pro'         => false,
+                'pro'         => true, // Airtable integration is Pro.
                 'in_wizard'   => false,
                 'description' => self::t('Pull records from an Airtable base.'),
             ),

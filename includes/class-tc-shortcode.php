@@ -1604,6 +1604,19 @@ class TC_Shortcode
      */
     private function render_inline_airtable(string $url, array $atts): string
     {
+        // Airtable is a Pro integration. Free plans get an upsell instead of the
+        // table (grandfathered ever-premium sites keep read access).
+        if (function_exists('gt_is_premium') && !gt_is_premium()
+            && !(function_exists('gt_is_grandfathered') && gt_is_grandfathered())) {
+            if (function_exists('current_user_can') && current_user_can('manage_options')) {
+                return '<div class="gt-upgrade-notice" style="background:#fff3cd;border:1px solid #ffeaa7;color:#856404;padding:15px;border-radius:5px;margin:20px 0;">'
+                    . '<strong>⚠️ ' . esc_html__('Pro data source', 'tc-data-tables') . ':</strong> '
+                    . esc_html__('The Airtable data source is a Pro feature.', 'tc-data-tables')
+                    . ' <a href="' . esc_url(function_exists('wgt_fs') && wgt_fs() ? wgt_fs()->get_upgrade_url() : '#') . '">' . esc_html__('Upgrade to Pro', 'tc-data-tables') . '</a></div>';
+            }
+            return '<p>' . esc_html__('This table is unavailable on the current plan.', 'tc-data-tables') . '</p>';
+        }
+
         $parsed = TC_Inline_Shortcode_Compat::parse_airtable_url($url);
         $token  = $this->resolve_airtable_inline_token($parsed['token']);
 
