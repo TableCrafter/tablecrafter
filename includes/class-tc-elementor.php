@@ -76,6 +76,46 @@ function gt_register_gravity_tables_elementor_widget($widgets_manager)
                     )
                 );
 
+                // #2145 — legacy inline data source (back-compat with the 3.5.x
+                // widget). When set, it takes precedence over Table ID and
+                // renders the URL directly (JSON / CSV / public Google Sheet).
+                $this->add_control(
+                    'data_source',
+                    array(
+                        'label'       => __('Or: Data Source URL', 'tc-data-tables'),
+                        'type'        => \Elementor\Controls_Manager::URL,
+                        'placeholder' => 'https://api.example.com/data.json',
+                        'description' => __('Inline source: a JSON / CSV / public Google Sheet URL. Overrides Table ID when set.', 'tc-data-tables'),
+                    )
+                );
+
+                $this->add_control(
+                    'root_path',
+                    array(
+                        'label'       => __('JSON Root Path', 'tc-data-tables'),
+                        'type'        => \Elementor\Controls_Manager::TEXT,
+                        'description' => __('Dot-path to the data array in a JSON response (e.g. data.results).', 'tc-data-tables'),
+                    )
+                );
+
+                $this->add_control(
+                    'include_columns',
+                    array(
+                        'label'     => __('Include Columns', 'tc-data-tables'),
+                        'type'      => \Elementor\Controls_Manager::TEXT,
+                        'description' => __('Comma-separated columns to show (inline source).', 'tc-data-tables'),
+                    )
+                );
+
+                $this->add_control(
+                    'exclude_columns',
+                    array(
+                        'label'     => __('Exclude Columns', 'tc-data-tables'),
+                        'type'      => \Elementor\Controls_Manager::TEXT,
+                        'description' => __('Comma-separated columns to hide (inline source).', 'tc-data-tables'),
+                    )
+                );
+
                 $this->add_control(
                     'show_search',
                     array(
@@ -141,6 +181,16 @@ function gt_register_gravity_tables_elementor_widget($widgets_manager)
             protected function render(): void
             {
                 $settings = $this->get_settings_for_display();
+
+                // #2145 — legacy inline source takes precedence over table id,
+                // so 3.5.x Elementor elements (and new inline ones) render.
+                if (class_exists('TC_Inline_Shortcode_Compat')) {
+                    $inline = TC_Inline_Shortcode_Compat::elementor_inline_shortcode($settings);
+                    if ($inline !== '') {
+                        echo do_shortcode($inline);
+                        return;
+                    }
+                }
 
                 $table_id = (int) ($settings['table_id'] ?? 0);
                 if ($table_id <= 0) {

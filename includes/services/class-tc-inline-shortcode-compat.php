@@ -106,6 +106,62 @@ class TC_Inline_Shortcode_Compat {
         );
     }
 
+    /**
+     * #2145 — Map a legacy Elementor widget's settings to an inline
+     * `[tablecrafter source=...]` shortcode. Returns '' when there is no inline
+     * data source (so the widget can fall back to its table-id path).
+     *
+     * Elementor's URL control stores `data_source` as `['url' => '...']`.
+     * Reads both the 3.5.x toggle keys (enable_*) and v8's (show_*).
+     */
+    public static function elementor_inline_shortcode(array $settings): string {
+        $ds  = $settings['data_source'] ?? '';
+        $url = is_array($ds) ? (string) ($ds['url'] ?? '') : (string) $ds;
+        $url = trim(str_replace(array('"', ']', '['), '', $url));
+        if ($url === '') {
+            return '';
+        }
+
+        $parts = array('source="' . $url . '"');
+
+        $map = array('root' => 'root_path', 'include' => 'include_columns', 'exclude' => 'exclude_columns');
+        foreach ($map as $att => $key) {
+            $val = trim(str_replace(array('"', ']', '['), '', (string) ($settings[$key] ?? '')));
+            if ($val !== '') {
+                $parts[] = $att . '="' . $val . '"';
+            }
+        }
+
+        $per_page = isset($settings['per_page']) ? (int) $settings['per_page'] : 0;
+        if ($per_page > 0) {
+            $parts[] = 'per_page="' . $per_page . '"';
+        }
+
+        // Toggles: honour either the 3.5.x (enable_*) or v8 (show_*) keys.
+        $toggles = array(
+            'search'  => array('show_search', 'enable_search'),
+            'export'  => array('show_export', 'enable_export'),
+            'filters' => array('show_filters', 'enable_filters'),
+        );
+        foreach ($toggles as $att => $keys) {
+            $present = false;
+            $on      = false;
+            foreach ($keys as $k) {
+                if (array_key_exists($k, $settings)) {
+                    $present = true;
+                    if (self::is_truthy($settings[$k])) {
+                        $on = true;
+                    }
+                }
+            }
+            if ($present) {
+                $parts[] = $att . '="' . ($on ? 'true' : 'false') . '"';
+            }
+        }
+
+        return '[tablecrafter ' . implode(' ', $parts) . ']';
+    }
+
     private static function is_truthy($v): bool {
         return in_array(strtolower(trim((string) $v)), array('true', '1', 'yes', 'on'), true);
     }
