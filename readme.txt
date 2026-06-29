@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 8.0.14
+Stable tag: 8.0.15
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.15 =
+* New: tables now auto-format your data into beautiful cells — ISO dates become readable dates, large numbers get thousands separators, and links become clickable, all automatically (years and short IDs are left untouched).
 
 = 8.0.14 =
 * New: a "Plans: Free vs Pro" section in the docs with a clear Free/Pro badge on every data source and feature, so you can see at a glance what's included and what Pro unlocks.

@@ -681,6 +681,11 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.15 — Beautiful auto-formatted cells', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Rich auto-formatting (#2132)', 'tc-data-tables'); ?></strong> — <?php _e('External-source tables now format cells automatically: ISO dates become readable, large numbers get thousands separators, and URLs become clickable links. Conservative by design — 4-digit years and short IDs are left as-is.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.14 — Free vs Pro clarity', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Plans: Free vs Pro section (#2162)', 'tc-data-tables'); ?></strong> — <?php _e('A new docs section badges every data source and feature as Free or Pro (sources are read live from the registry, so it is always accurate). Pro rows link straight to upgrade.', 'tc-data-tables'); ?></li>

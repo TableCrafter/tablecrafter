@@ -2232,7 +2232,14 @@ class TC_Shortcode
                 if (is_array($val) || is_object($val)) {
                     $val = wp_json_encode($val);
                 }
-                $html .= '<td>' . esc_html((string) $val) . '</td>';
+                // #2132 — auto-format dates / numbers / URLs into beautiful cells
+                // by default (the engine escapes text internally). Falls back to
+                // plain esc_html if the engine isn't loaded.
+                if (class_exists('TC_Auto_Format')) {
+                    $html .= '<td>' . TC_Auto_Format::format_cell((string) $val, 'auto') . '</td>';
+                } else {
+                    $html .= '<td>' . esc_html((string) $val) . '</td>';
+                }
             }
             $html .= '</tr>';
         }
