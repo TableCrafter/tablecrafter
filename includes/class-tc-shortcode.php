@@ -1061,6 +1061,15 @@ class TC_Shortcode
                 'search'               => '', // "false" to hide the search box (default shown)
                 'export'               => '', // "true" to show a CSV export button
                 'filters'              => '', // "true" to show per-column filter inputs
+                // #2143 — legacy inline auto-refresh params. Must be registered
+                // here or shortcode_atts() strips them before build_refresh_opts()
+                // ever sees them (the bug a browser smoke caught: auto_refresh was
+                // dropped end-to-end despite the unit test passing).
+                'auto_refresh'         => '', // "true" to poll + refresh the table
+                'refresh_interval'     => '', // ms between refreshes (min 5000)
+                'refresh_indicator'    => '', // "false" to hide the refreshing indicator
+                'refresh_countdown'    => '', // "true" to show a countdown
+                'refresh_last_updated' => '', // "false" to hide the last-updated time
             ), $atts, 'gravity_table');
 
             // Parse comma-separated roles if provided

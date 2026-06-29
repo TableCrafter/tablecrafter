@@ -681,6 +681,11 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.20 — Inline auto-refresh fix', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Auto-refresh works again (#2143)', 'tc-data-tables'); ?></strong> — <?php _e('The auto_refresh / refresh_interval settings on inline tables were being dropped before taking effect; live tables now poll and update on schedule. Caught by a browser smoke of the free build.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.19 — Support area (Pro, foundation)', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Support threads (#2159)', 'tc-data-tables'); ?></strong> — <?php _e('A new Pro Support area to manage customer support threads — phase one of an AI-assisted support system with human takeover coming next.', 'tc-data-tables'); ?></li>

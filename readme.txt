@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 8.0.19
+Stable tag: 8.0.20
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.20 =
+* Fixed: inline table auto-refresh (auto_refresh / refresh_interval) now works again — the settings were being dropped before they took effect. Live tables poll and update on schedule as intended.
 
 = 8.0.19 =
 * New (Pro, foundation): a Support area in the admin to manage customer support threads. This is phase one of an AI-assisted support system with human takeover coming in future updates.
