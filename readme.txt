@@ -1,5 +1,5 @@
 === TableCrafter – Data to Beautiful Tables ===
-Contributors: isupercoder
+Contributors: fahdi
 Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
