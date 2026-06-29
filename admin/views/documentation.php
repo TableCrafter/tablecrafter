@@ -681,6 +681,11 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.17 — Start from a template', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Prebuilt templates gallery (#2134)', 'tc-data-tables'); ?></strong> — <?php _e('Five one-click templates (Inventory, Business Directory, CRM Pipeline, Event List, Load Tracker) create a ready-to-edit table with sample data and columns already set up.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.16 — Embed tables anywhere', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Embeddable public tables (#2133)', 'tc-data-tables'); ?></strong> — <?php _e('Each table has a "Copy embed code" button that gives you an iframe snippet to drop on any site. The embedded view is public and read-only, with a small "Made with TableCrafter" link (removed on Pro).', 'tc-data-tables'); ?></li>

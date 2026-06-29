@@ -1,0 +1,6 @@
+[
+  { "load_id": "LD-5001", "driver": "M. Alvarez", "origin": "Grand Rapids, MI", "destination": "Chicago, IL", "miles": 178, "rate": 525.00, "status": "Delivered", "date": "2026-06-12" },
+  { "load_id": "LD-5002", "driver": "T. Nguyen", "origin": "Detroit, MI", "destination": "Columbus, OH", "miles": 204, "rate": 610.00, "status": "In transit", "date": "2026-06-14" },
+  { "load_id": "LD-5003", "driver": "R. Patel", "origin": "Lansing, MI", "destination": "Indianapolis, IN", "miles": 287, "rate": 845.00, "status": "Assigned", "date": "2026-06-15" },
+  { "load_id": "LD-5004", "driver": "M. Alvarez", "origin": "Kalamazoo, MI", "destination": "Cleveland, OH", "miles": 312, "rate": 905.00, "status": "Booked", "date": "2026-06-16" }
+]

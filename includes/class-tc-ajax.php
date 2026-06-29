@@ -1235,6 +1235,13 @@ class TC_Ajax
 
         $key      = isset($_POST['demo']) ? sanitize_key(wp_unslash($_POST['demo'])) : '';
         $settings = class_exists('TC_Demo_Data') ? TC_Demo_Data::table_settings($key) : null;
+        // #2134 — templates install through the same path; fall back to the
+        // templates registry for keys the demo registry doesn't know.
+        $is_template = false;
+        if ($settings === null && class_exists('TC_Templates')) {
+            $settings = TC_Templates::table_settings($key);
+            $is_template = ($settings !== null);
+        }
         if ($settings === null) {
             wp_send_json_error(array('message' => __('Unknown demo dataset.', 'tc-data-tables')));
         }
@@ -1243,7 +1250,7 @@ class TC_Ajax
         // + builder preview) instead of an empty table the user must configure.
         // Set BOTH keys: the builder load path prefers 'columns', the save path
         // writes 'selected_fields' — populate both so the demo is consistent.
-        $columns = TC_Demo_Data::columns_for($key);
+        $columns = $is_template ? TC_Templates::columns_for($key) : TC_Demo_Data::columns_for($key);
         if (!empty($columns)) {
             $settings['selected_fields'] = $columns;
             $settings['columns']         = $columns;

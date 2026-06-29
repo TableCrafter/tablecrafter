@@ -1,0 +1,6 @@
+[
+  { "event": "Summer Kickoff Mixer", "date": "2026-07-10", "time": "6:00 PM", "venue": "Riverside Hall", "city": "Grand Rapids", "tickets_url": "https://tickets.example.com/kickoff", "status": "On sale" },
+  { "event": "Founders Workshop", "date": "2026-07-18", "time": "9:00 AM", "venue": "Innovation Lab", "city": "Ann Arbor", "tickets_url": "https://tickets.example.com/workshop", "status": "On sale" },
+  { "event": "Charity 5K Run", "date": "2026-08-02", "time": "7:30 AM", "venue": "Millennium Park", "city": "Walker", "tickets_url": "https://tickets.example.com/5k", "status": "Few left" },
+  { "event": "Autumn Gala", "date": "2026-09-20", "time": "7:00 PM", "venue": "Grand Ballroom", "city": "Detroit", "tickets_url": "https://tickets.example.com/gala", "status": "Coming soon" }
+]

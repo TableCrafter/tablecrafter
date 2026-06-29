@@ -1,0 +1,7 @@
+[
+  { "sku": "INV-1001", "product": "Wireless Mouse", "category": "Accessories", "in_stock": 142, "reorder_at": 50, "unit_price": 24.99, "updated": "2026-06-01" },
+  { "sku": "INV-1002", "product": "Mechanical Keyboard", "category": "Accessories", "in_stock": 38, "reorder_at": 40, "unit_price": 89.00, "updated": "2026-06-03" },
+  { "sku": "INV-1003", "product": "27\" Monitor", "category": "Displays", "in_stock": 17, "reorder_at": 15, "unit_price": 219.50, "updated": "2026-06-05" },
+  { "sku": "INV-1004", "product": "USB-C Hub", "category": "Accessories", "in_stock": 64, "reorder_at": 30, "unit_price": 39.95, "updated": "2026-06-07" },
+  { "sku": "INV-1005", "product": "Laptop Stand", "category": "Office", "in_stock": 9, "reorder_at": 20, "unit_price": 45.00, "updated": "2026-06-09" }
+]

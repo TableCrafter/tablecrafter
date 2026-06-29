@@ -1,0 +1,6 @@
+[
+  { "company": "Northwind Co", "contact": "Dana Reyes", "email": "dana@northwind.example.com", "stage": "Qualified", "value": 12000, "owner": "Sam", "next_step": "2026-06-30" },
+  { "company": "Globex", "contact": "Lee Park", "email": "lee@globex.example.com", "stage": "Proposal", "value": 48000, "owner": "Sam", "next_step": "2026-07-02" },
+  { "company": "Initech", "contact": "Pat Morgan", "email": "pat@initech.example.com", "stage": "Negotiation", "value": 31500, "owner": "Riley", "next_step": "2026-07-05" },
+  { "company": "Umbra LLC", "contact": "Casey Lin", "email": "casey@umbra.example.com", "stage": "Closed Won", "value": 22000, "owner": "Riley", "next_step": "" }
+]

@@ -1,0 +1,6 @@
+[
+  { "name": "Acme Plumbing", "category": "Home Services", "phone": "(616) 555-0142", "email": "hello@acmeplumbing.com", "website": "https://acmeplumbing.example.com", "city": "Grand Rapids" },
+  { "name": "Bright Smile Dental", "category": "Healthcare", "phone": "(616) 555-0188", "email": "front@brightsmile.example.com", "website": "https://brightsmile.example.com", "city": "Grandville" },
+  { "name": "Lakeshore Yoga", "category": "Fitness", "phone": "(616) 555-0119", "email": "studio@lakeshoreyoga.example.com", "website": "https://lakeshoreyoga.example.com", "city": "Holland" },
+  { "name": "North Park Cafe", "category": "Food & Drink", "phone": "(616) 555-0173", "email": "team@northparkcafe.example.com", "website": "https://northparkcafe.example.com", "city": "Grand Rapids" }
+]

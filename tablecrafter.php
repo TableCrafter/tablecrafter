@@ -3,7 +3,7 @@
  * Plugin Name: TableCrafter
  * Plugin URI: https://github.com/TableCrafter/tablecrafter
  * Description: TableCrafter — beautiful, responsive data tables for WordPress. Free: 3 tables, 8 columns, 500 entries. Pro: unlimited everything + frontend editing, bulk operations, advanced filters.
- * Version: 8.0.16
+ * Version: 8.0.17
  * Author: Fahad Murtaza @ iSuperCoder.com
  * Author URI: https://isupercoder.com/contact
  * License: GPL-2.0-or-later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('TC_VERSION', '8.0.16');
+define('TC_VERSION', '8.0.17');
 define('TC_PHP_COMPAT_VERSION', '8.0');
 define('TC_ELEMENTOR_MIN_VERSION', '3.5.0');
 define('TC_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -200,6 +200,7 @@ require_once TC_PLUGIN_PATH . 'includes/services/class-tc-embed.php'; // #2133 e
 if (function_exists('add_action')) {
     add_action('template_redirect', 'tc_embed_template_redirect', 1);
 }
+require_once TC_PLUGIN_PATH . 'includes/services/class-tc-templates.php'; // #2134 prebuilt templates gallery
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-placeholder-service.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-typography-service.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-wrap-mode-service.php';
