@@ -3,7 +3,7 @@
  * Plugin Name: TableCrafter
  * Plugin URI: https://github.com/TableCrafter/tablecrafter
  * Description: TableCrafter — beautiful, responsive data tables for WordPress. Free: 3 tables, 8 columns, 500 entries. Pro: unlimited everything + frontend editing, bulk operations, advanced filters.
- * Version: 8.0.12
+ * Version: 8.0.13
  * Author: Fahad Murtaza @ iSuperCoder.com
  * Author URI: https://isupercoder.com/contact
  * License: GPL-2.0-or-later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('TC_VERSION', '8.0.12');
+define('TC_VERSION', '8.0.13');
 define('TC_PHP_COMPAT_VERSION', '8.0');
 define('TC_ELEMENTOR_MIN_VERSION', '3.5.0');
 define('TC_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -119,6 +119,15 @@ if (!function_exists('wgt_fs')) {
     wgt_fs();
     // Signal that SDK was initiated.
     do_action('wgt_fs_loaded');
+
+    // #2146 — clean up plugin data on uninstall via Freemius's after_uninstall
+    // hook. Freemius forbids a raw uninstall.php (it tracks the uninstall event
+    // itself), so the cleanup is registered here for both free and premium.
+    $wgt_fs_instance = wgt_fs();
+    if ($wgt_fs_instance) {
+        require_once __DIR__ . '/includes/uninstall-cleanup.php';
+        $wgt_fs_instance->add_action('after_uninstall', 'tc_run_uninstall_cleanup');
+    }
 }
 
 // gt_is_premium() / gt_is_free_plan() live in includes/helpers-license.php

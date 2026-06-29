@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 8.0.12
+Stable tag: 8.0.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.13 =
+* Fixed: the plugin's uninstall cleanup now runs through the licensing SDK's uninstall hook instead of a separate uninstall.php, so updates deploy cleanly. Same result — deleting the plugin removes its tables, options and scheduled tasks.
 
 = 8.0.12 =
 * New: inline tables can auto-refresh again — the classic `auto_refresh`, `refresh_interval`, `refresh_indicator`, `refresh_countdown` and `refresh_last_updated` settings now poll the source and update the table in place.
