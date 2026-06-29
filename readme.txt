@@ -3,8 +3,8 @@ Contributors: fahdi
 Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
-Requires PHP: 8.0
-Stable tag: 8.0.20
+Requires PHP: 8.1
+Stable tag: 8.0.21
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,10 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.21 =
+* Fixed: a packaging issue forced PHP 8.3 even though the plugin supports lower. The plugin now correctly runs on PHP 8.1+ (the bundled spreadsheet library's floor). Resolves a fatal error on PHP 8.1/8.2 sites.
+* Changed: minimum PHP is now stated as 8.1 (matches the bundled libraries).
 
 = 8.0.20 =
 * Fixed: inline table auto-refresh (auto_refresh / refresh_interval) now works again — the settings were being dropped before they took effect. Live tables poll and update on schedule as intended.

@@ -3,7 +3,7 @@
         'name' => 'gravity-tables/gravity-tables',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '33c73dc2ff0ae1d62130a2af59fc908414b8a36c',
+        'reference' => 'ff604658a17b813c423f7ed637cbbabe597492fb',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'composer/pcre' => array(
-            'pretty_version' => '3.3.2',
-            'version' => '3.3.2.0',
-            'reference' => 'b2bed4734f0cc156ee1fe9c0da2550420d99a21e',
+            'pretty_version' => '3.4.0',
+            'version' => '3.4.0.0',
+            'reference' => 'd5a341b3fb61f3001970940afb1d332968a183ed',
             'type' => 'library',
             'install_path' => __DIR__ . '/./pcre',
             'aliases' => array(),
@@ -31,7 +31,7 @@
         'gravity-tables/gravity-tables' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '33c73dc2ff0ae1d62130a2af59fc908414b8a36c',
+            'reference' => 'ff604658a17b813c423f7ed637cbbabe597492fb',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -47,9 +47,9 @@
             'dev_requirement' => false,
         ),
         'maennchen/zipstream-php' => array(
-            'pretty_version' => '3.2.2',
-            'version' => '3.2.2.0',
-            'reference' => '77bebeb4c6c340bb3c11c843b2cffd8bbfde4d5e',
+            'pretty_version' => '3.1.1',
+            'version' => '3.1.1.0',
+            'reference' => '6187e9cc4493da94b9b63eb2315821552015fca9',
             'type' => 'library',
             'install_path' => __DIR__ . '/../maennchen/zipstream-php',
             'aliases' => array(),
