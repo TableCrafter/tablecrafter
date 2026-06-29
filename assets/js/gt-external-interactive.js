@@ -127,8 +127,20 @@
             if (page > pages) { page = pages; }
             var start = (page - 1) * perPage;
 
-            allRows.forEach(function (r) { r.style.display = 'none'; });
-            rows.slice(start, start + perPage).forEach(function (r) { r.style.display = ''; });
+            // #2131 — DOM virtualization: keep ONLY the current page's rows in
+            // the DOM instead of leaving every row attached (display:none). For
+            // large datasets (thousands of rows) this keeps the live tbody tiny,
+            // so sort/filter/paginate stay fast and layout/reflow cost is bounded
+            // by per_page, not row count. Off-page rows live in the `allRows`
+            // array (detached but referenced), so sort/search/export still see
+            // the full set.
+            while (tbody.firstChild) { tbody.removeChild(tbody.firstChild); }
+            var frag = document.createDocumentFragment();
+            rows.slice(start, start + perPage).forEach(function (r) {
+                r.style.display = '';
+                frag.appendChild(r);
+            });
+            tbody.appendChild(frag);
 
             pager.innerHTML = '';
             var info = document.createElement('span');

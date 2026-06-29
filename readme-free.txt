@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 8.0.17
+Stable tag: 8.0.18
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.18 =
+* Performance: large external-source tables now stay fast — only the current page's rows are kept in the page at a time, so tables with thousands of rows sort, filter, and paginate smoothly.
 
 = 8.0.17 =
 * New: "Start from a template" — create a ready-to-edit table in one click from 5 prebuilt templates (Inventory, Business Directory, CRM Pipeline, Event List, Load Tracker), each with sample data and columns already set up.

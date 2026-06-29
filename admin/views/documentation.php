@@ -681,6 +681,11 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.18 — Faster large tables', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('DOM virtualization (#2131)', 'tc-data-tables'); ?></strong> — <?php _e('External-source tables with thousands of rows now keep only the visible page in the DOM, so sorting, filtering, and paging stay smooth.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.17 — Start from a template', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Prebuilt templates gallery (#2134)', 'tc-data-tables'); ?></strong> — <?php _e('Five one-click templates (Inventory, Business Directory, CRM Pipeline, Event List, Load Tracker) create a ready-to-edit table with sample data and columns already set up.', 'tc-data-tables'); ?></li>
