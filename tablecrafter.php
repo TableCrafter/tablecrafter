@@ -3,7 +3,7 @@
  * Plugin Name: TableCrafter
  * Plugin URI: https://github.com/TableCrafter/tablecrafter
  * Description: TableCrafter — beautiful, responsive data tables for WordPress. Free: 3 tables, 8 columns, 500 entries. Pro: unlimited everything + frontend editing, bulk operations, advanced filters.
- * Version: 8.0.23
+ * Version: 8.0.24
  * Author: Fahad Murtaza @ iSuperCoder.com
  * Author URI: https://isupercoder.com/contact
  * License: GPL-2.0-or-later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('TC_VERSION', '8.0.23');
+define('TC_VERSION', '8.0.24');
 define('TC_PHP_COMPAT_VERSION', '8.1');
 define('TC_ELEMENTOR_MIN_VERSION', '3.5.0');
 define('TC_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -114,9 +114,34 @@ if (!function_exists('wgt_fs')) {
                     'support' => false,
                 ),
             ));
+
+            // Add a "where do I find my license key?" helper to the Freemius
+            // license-activation screen — the SDK's default message only says
+            // "enter your license key" with no pointer to where to get it.
+            $wgt_fs->add_filter('connect-message_on-premium', 'tc_fs_license_help_message', 10, 1);
         }
 
         return $wgt_fs;
+    }
+
+    /**
+     * Append a helpful pointer (where to find / how to buy a license key) to the
+     * Freemius license-activation prompt. Hooked on 'connect-message_on-premium'.
+     */
+    function tc_fs_license_help_message($message)
+    {
+        $help = '<br><br><span style="display:block;font-size:12px;line-height:1.5;opacity:.85">'
+            . sprintf(
+                /* translators: 1: open account link, 2: close link, 3: open pricing link, 4: close link */
+                __('Your license key is in your purchase confirmation email and your %1$sFreemius account%2$s. Don\'t have one yet? %3$sGet TableCrafter Pro%4$s.', 'tc-data-tables'),
+                '<a href="https://users.freemius.com/" target="_blank" rel="noopener noreferrer">',
+                '</a>',
+                '<a href="https://tablecrafter.com/#pricing" target="_blank" rel="noopener noreferrer">',
+                '</a>'
+            )
+            . '</span>';
+
+        return $message . $help;
     }
 
     // Init Freemius.
@@ -1085,7 +1110,7 @@ class Gravity_Tables_Plugin
     public function gravity_forms_notice()
     {
         echo '<div class="notice notice-warning"><p>';
-        echo __('Gravity Forms is not active. TableCrafter\'s external data sources (JSON, CSV, Airtable, and more) work normally; Gravity Forms entry tables become available once you install and activate Gravity Forms.', 'tc-data-tables');
+        echo __('Gravity Forms is not active. TableCrafter\'s external data sources (JSON, CSV, Google Sheets, and Excel) work normally. Gravity Forms entry tables are a Pro feature and also need Gravity Forms active.', 'tc-data-tables');
         echo '</p></div>';
     }
 }

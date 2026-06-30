@@ -681,6 +681,17 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.24 — Correct tier copy + license helper', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Accurate "Gravity Forms not active" notice', 'tc-data-tables'); ?></strong> — <?php _e('lists the real free sources (JSON, CSV, Google Sheets, Excel) and notes Gravity Forms tables are Pro.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('License-key helper', 'tc-data-tables'); ?></strong> — <?php _e('the license-activation screen now points you to where to find your key.', 'tc-data-tables'); ?></li>
+                </ul>
+
+                <h3><?php _e('v8.0.23 — Free activation fix', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Freemius opt-in', 'tc-data-tables'); ?></strong> — <?php _e('fresh free installs now connect or skip cleanly instead of erroring with an invalid-license message.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.22 — Free vs Pro boundary', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Premium integrations are now Pro', 'tc-data-tables'); ?></strong> — <?php _e('Gravity Forms, WooCommerce and Airtable join Notion, XML and External DB as Pro sources. The free tier covers JSON, CSV, Google Sheets and Excel. Free users opening a Pro-source table get an upgrade prompt.', 'tc-data-tables'); ?></li>
