@@ -681,6 +681,11 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.25 — On-brand upgrade card', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Redesigned upgrade card', 'tc-data-tables'); ?></strong> — <?php _e('on-brand look with an accurate Pro pitch (editing, bulk ops, advanced filters, premium sources) — unlimited tables stays a Free perk.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.24 — Correct tier copy + license helper', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Accurate "Gravity Forms not active" notice', 'tc-data-tables'); ?></strong> — <?php _e('lists the real free sources (JSON, CSV, Google Sheets, Excel) and notes Gravity Forms tables are Pro.', 'tc-data-tables'); ?></li>

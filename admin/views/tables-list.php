@@ -245,47 +245,57 @@ foreach ($forms as $form) {
         </div>
     <?php endif; ?>
     
-    <?php if (gt_is_free_plan()): ?>
-    <div class="notice notice-info" style="margin-top: 20px; position: relative;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <h3 style="margin: 10px 0 5px 0;"><?php _e('🆓 Free Plan', 'tc-data-tables'); ?></h3>
-                <p style="margin: 5px 0;">
-                    <?php
-                    // #2025 — size caps removed: free includes unlimited tables,
-                    // columns and entries. Upgrade is a FEATURE decision (editing,
-                    // sync, advanced filters, pro data sources), not a size limit.
-                    _e('✅ Unlimited tables • ✅ Unlimited columns • ✅ Unlimited rows. Upgrade to Pro for frontend editing, two-way sync, advanced filters &amp; premium data sources.', 'tc-data-tables');
-                    ?>
-                </p>
+    <?php if (gt_is_free_plan()):
+        $tc_has_fs      = function_exists('wgt_fs') && wgt_fs();
+        $tc_can_trial   = $tc_has_fs && !wgt_fs()->is_trial() && !wgt_fs()->is_trial_utilized();
+        $tc_cta_url     = $tc_can_trial ? wgt_fs()->get_trial_url() : ($tc_has_fs ? wgt_fs()->get_upgrade_url() : '#');
+        $tc_cta_label   = $tc_can_trial ? __('Start 7-Day Free Trial', 'tc-data-tables') : __('Upgrade to Pro', 'tc-data-tables');
+        $tc_license_url = admin_url('admin.php?page=gravity-tables-license');
+    ?>
+    <div class="tc-upgrade-card">
+        <div class="tc-upgrade-free">
+            <span class="tc-badge-free"><?php _e('FREE PLAN', 'tc-data-tables'); ?></span>
+            <h3 class="tc-upgrade-h"><?php _e('You\'re on Free — and it\'s genuinely generous', 'tc-data-tables'); ?></h3>
+            <p class="tc-upgrade-sub"><?php _e('Unlimited tables, columns &amp; rows from JSON, CSV, Google Sheets &amp; Excel — with search, sort, pagination &amp; export.', 'tc-data-tables'); ?></p>
+        </div>
+        <div class="tc-upgrade-pro">
+            <div class="tc-pro-title"><?php _e('Do more with', 'tc-data-tables'); ?> <span class="tc-pro-word">PRO</span></div>
+            <ul class="tc-pro-feats">
+                <li><span>⚡</span><?php _e('Frontend inline editing', 'tc-data-tables'); ?></li>
+                <li><span>💪</span><?php _e('Bulk operations &amp; column fill', 'tc-data-tables'); ?></li>
+                <li><span>🎛️</span><?php _e('Advanced filters &amp; formatting', 'tc-data-tables'); ?></li>
+                <li><span>🔌</span><?php _e('Gravity Forms, WooCommerce, Airtable &amp; Notion', 'tc-data-tables'); ?></li>
+            </ul>
+            <div class="tc-cta-row">
+                <a href="<?php echo esc_url($tc_cta_url); ?>" class="tc-btn-pro"><?php echo esc_html($tc_cta_label); ?> &rarr;</a>
+                <a href="<?php echo esc_url($tc_license_url); ?>" class="tc-btn-ghost"><?php _e('Enter License Key', 'tc-data-tables'); ?></a>
             </div>
-            <div style="text-align: right;">
-                <?php if (function_exists('wgt_fs') && !wgt_fs()->is_trial() && !wgt_fs()->is_trial_utilized()): ?>
-                    <h4 style="margin: 5px 0; color: #00a32a;"><?php _e('🎯 Try Pro Free!', 'tc-data-tables'); ?></h4>
-                    <p style="margin: 5px 0; font-size: 13px;">
-                        <?php _e('🔥 Unlimited tables & entries<br>⚡ Frontend editing<br>💪 Bulk operations<br>🎯 Advanced filters', 'tc-data-tables'); ?>
-                    </p>
-                    <a href="<?php echo wgt_fs()->get_trial_url(); ?>" class="button button-primary" style="background: #00a32a; border-color: #007f2a;">
-                        <?php _e('Start 7-Day Free Trial', 'tc-data-tables'); ?>
-                    </a>
-                    <a href="<?php echo admin_url('admin.php?page=gravity-tables-license'); ?>" class="button button-secondary" style="margin-top: 5px;">
-                        <?php _e('Enter License Key', 'tc-data-tables'); ?>
-                    </a>
-                    <p style="margin: 5px 0; font-size: 11px; color: #666;">
-                        <?php _e('No payment required for trial • Or enter existing license', 'tc-data-tables'); ?>
-                    </p>
-                <?php else: ?>
-                    <h4 style="margin: 5px 0; color: #0073aa;"><?php _e('🚀 Upgrade to Pro', 'tc-data-tables'); ?></h4>
-                    <p style="margin: 5px 0; font-size: 13px;">
-                        <?php _e('🔥 Unlimited tables & entries<br>⚡ Frontend editing<br>💪 Bulk operations<br>🎯 Advanced filters', 'tc-data-tables'); ?>
-                    </p>
-                    <a href="<?php echo function_exists('wgt_fs') ? wgt_fs()->get_upgrade_url() : '#'; ?>" class="button button-primary">
-                        <?php _e('Upgrade Now', 'tc-data-tables'); ?>
-                    </a>
-                <?php endif; ?>
-            </div>
+            <?php if ($tc_can_trial): ?>
+            <p class="tc-cta-fine"><?php _e('No payment required for the trial · cancel anytime', 'tc-data-tables'); ?></p>
+            <?php endif; ?>
         </div>
     </div>
+    <style>
+        .tc-upgrade-card{display:flex;flex-wrap:wrap;margin:20px 0;background:#fff;border:1px solid #e5e3dd;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(13,148,136,.08)}
+        .tc-upgrade-free{flex:1 1 320px;padding:22px 26px;position:relative}
+        .tc-upgrade-free::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,#2dd4bf,#0d9488)}
+        .tc-badge-free{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;color:#0d9488;background:#f0fdfa;border:1px solid #99f6e4;border-radius:999px;padding:3px 10px}
+        .tc-upgrade-h{margin:12px 0 6px;font-size:18px;line-height:1.3;color:#141312}
+        .tc-upgrade-sub{margin:0;color:#6b6560;font-size:13.5px;line-height:1.6;max-width:48ch}
+        .tc-upgrade-pro{flex:1 1 340px;padding:22px 26px;background:linear-gradient(135deg,#f0fdfa 0%,#fdfdfb 100%);border-left:1px solid #e5e3dd}
+        .tc-pro-title{font-size:15px;font-weight:600;color:#141312;margin-bottom:12px}
+        .tc-pro-word{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.06em;color:#fff;background:linear-gradient(135deg,#14b8a6,#0d9488);border-radius:6px;padding:2px 8px;vertical-align:middle}
+        .tc-pro-feats{margin:0 0 16px;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:9px 16px}
+        .tc-pro-feats li{display:flex;align-items:center;gap:8px;font-size:13px;color:#2b2926;margin:0}
+        .tc-pro-feats li span{font-size:15px;line-height:1}
+        .tc-cta-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+        .tc-btn-pro{display:inline-block;background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff!important;text-decoration:none;font-weight:600;font-size:14px;padding:10px 20px;border-radius:9px;box-shadow:0 2px 10px rgba(13,148,136,.35);transition:transform .12s,box-shadow .12s}
+        .tc-btn-pro:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(13,148,136,.45);color:#fff!important}
+        .tc-btn-ghost{display:inline-block;color:#0d9488!important;text-decoration:none;font-weight:600;font-size:14px;padding:9px 16px;border:1.5px solid #5eead4;border-radius:9px;transition:background .12s,border-color .12s}
+        .tc-btn-ghost:hover{background:#f0fdfa;border-color:#14b8a6}
+        .tc-cta-fine{margin:12px 0 0;font-size:11.5px;color:#9a948c}
+        @media(max-width:782px){.tc-upgrade-pro{border-left:none;border-top:1px solid #e5e3dd}.tc-pro-feats{grid-template-columns:1fr}}
+    </style>
     <?php endif; ?>
     
     <div id="gt-tables-list" class="gt-admin-container">
