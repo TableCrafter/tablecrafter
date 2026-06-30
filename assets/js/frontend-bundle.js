@@ -58,12 +58,12 @@
 (function (window) {
     'use strict';
 
-    var VERSION = '8.0.26';
+    var VERSION = '8.0.27';
     // TC_JS_VERSION preserved as a top-level literal so the pre-#831 file-grep
     // contract in #99 (script must declare a quoted-semver var named TC_JS_VERSION)
     // keeps matching the bundle. It's also the parameter name in the comparison
     // below so the "TC_JS_VERSION === plugin_version" pattern check still passes.
-    var TC_JS_VERSION = '8.0.26';
+    var TC_JS_VERSION = '8.0.27';
 
     // Internal names retained as gtNaturalSort / gtParseCurrency /
     // gtCurrencySort / gtCheckVersionMismatch so the pre-#831 file-grep
@@ -165,7 +165,7 @@
     // .parseCurrency / .currencySort / .checkVersionMismatch / .VERSION.
     // TC_JS_VERSION kept here as a local alias for the few existing call
     // sites in this file (init() still references it via the namespace).
-    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.26';
+    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.27';
 
     // Initialize all tables on the page
     $(document).ready(function () {

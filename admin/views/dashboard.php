@@ -324,7 +324,7 @@ $changelog = array(
                         <?php esc_html_e( 'Upgrade to Pro', 'tc-data-tables' ); ?>
                     </a>
                     <?php endif; ?>
-                    <a href="https://wordpress.org/plugins/tablecrafter-wp-data-tables/#reviews" target="_blank" rel="noopener" class="gt-quick-link">
+                    <a href="https://wordpress.org/support/plugin/tablecrafter-wp-data-tables/reviews/#new-post" target="_blank" rel="noopener" class="gt-quick-link">
                         <span class="gt-quick-link-icon">⭐</span>
                         <?php esc_html_e( 'Rate plugin', 'tc-data-tables' ); ?>
                     </a>
