@@ -1233,6 +1233,13 @@ class TC_Shortcode
                 return $this->render_external_db_source_table((int) $atts['id'], $settings);
             }
 
+            // #2196 — WooCommerce products data source. The id-based render path
+            // had no case for it, so a woo table fell through to the
+            // "Gravity Forms is required" check below and never rendered.
+            if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'woocommerce_products') {
+                return $this->render_woocommerce_source_table((int) $atts['id'], $settings);
+            }
+
             // #607 slice 3 — frontend password gate. Defense in depth:
             // when the table has a password hash and the visitor's cookie
             // doesn't verify (or no correct POST), short-circuit BEFORE
@@ -2141,6 +2148,55 @@ class TC_Shortcode
     }
 
     /**
+     * #2196 — Render a WooCommerce products table (id-based source). Cells are
+     * trusted WooCommerce-generated HTML (product links, formatted prices,
+     * add-to-cart), so they pass through the shared renderer with allow_html.
+     */
+    private function render_woocommerce_source_table(int $table_id, array $settings): string
+    {
+        if (!class_exists('TC_WooCommerce') || !TC_WooCommerce::is_woocommerce_active()) {
+            return '<p class="gt-wc-source-error">' . esc_html__('WooCommerce is not active.', 'tc-data-tables') . '</p>';
+        }
+
+        $per_page = (isset($settings['per_page']) && (int) $settings['per_page'] > 0) ? (int) $settings['per_page'] : 100;
+        // get_product_table_entries() returns ['entries' => [...products], 'total' => N].
+        $result = TC_WooCommerce::get_product_table_entries(array('per_page' => $per_page));
+        $rows   = (is_array($result) && isset($result['entries']) && is_array($result['entries'])) ? $result['entries'] : array();
+
+        if (empty($rows)) {
+            return '<p class="gt-wc-source-empty">' . esc_html__('No products found.', 'tc-data-tables') . '</p>';
+        }
+
+        // Column keys from the first row, honouring any builder column selection.
+        $flat = array();
+        foreach ($rows as $row) {
+            $flat[] = (array) $row;
+        }
+        $column_keys = array_map('strval', array_keys($flat[0]));
+        if (!empty($settings['selected_fields']) && is_array($settings['selected_fields'])) {
+            $ordered = array();
+            foreach (array_map('strval', $settings['selected_fields']) as $key) {
+                if (in_array($key, $column_keys, true)) {
+                    $ordered[] = $key;
+                }
+            }
+            if (!empty($ordered)) {
+                $column_keys = $ordered;
+            }
+        }
+
+        return $this->render_external_source_table_html(
+            $flat,
+            $column_keys,
+            'woocommerce',
+            isset($settings['table_title']) ? (string) $settings['table_title'] : '',
+            $table_id,
+            _n('%d product.', '%d products.', count($flat), 'tc-data-tables'),
+            array('allow_html' => true)
+        );
+    }
+
+    /**
      * #1008 v4.180.0 — Shared HTML generation for the external data-source
      * render methods. Takes pre-flattened rows + column keys + a source-kind
      * slug ('json' / 'airtable' / 'notion') and emits the standard wrapper /
@@ -2254,10 +2310,15 @@ class TC_Shortcode
                 if (is_array($val) || is_object($val)) {
                     $val = wp_json_encode($val);
                 }
+                // #2196 — allow_html: trusted source-generated HTML cells
+                // (e.g. WooCommerce product links / prices / add-to-cart) pass
+                // through wp_kses_post instead of being auto-formatted/escaped.
+                if (!empty($opts['allow_html'])) {
+                    $html .= '<td>' . wp_kses_post((string) $val) . '</td>';
                 // #2132 — auto-format dates / numbers / URLs into beautiful cells
                 // by default (the engine escapes text internally). Falls back to
                 // plain esc_html if the engine isn't loaded.
-                if (class_exists('TC_Auto_Format')) {
+                } elseif (class_exists('TC_Auto_Format')) {
                     $html .= '<td>' . TC_Auto_Format::format_cell((string) $val, 'auto') . '</td>';
                 } else {
                     $html .= '<td>' . esc_html((string) $val) . '</td>';
