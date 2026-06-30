@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.22
+Stable tag: 8.0.23
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.23 =
+* Fixed: free activation on a fresh site. The Freemius opt-in was missing the WordPress.org-compliant flag, so "Allow & Continue" could error with an invalid-license message; free installs now connect (or skip) cleanly.
 
 = 8.0.22 =
 * Changed: the premium integrations — Gravity Forms, WooCommerce and Airtable — are now Pro features (joining Notion, XML and External DB). The free tier covers JSON, CSV, Google Sheets and Excel. Free users opening a Pro-source table see an upgrade prompt.
