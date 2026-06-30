@@ -681,6 +681,12 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.28 — Button fix + on-brand Welcome', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Upgrade button stays in its card', 'tc-data-tables'); ?></strong> — <?php _e('the License & Account CTA no longer overflows on narrow widths.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('On-brand Welcome screen', 'tc-data-tables'); ?></strong> — <?php _e('the "Start from a template" page now uses the TableCrafter look.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.27 — Rate-plugin link fixed', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Leave a review works', 'tc-data-tables'); ?></strong> — <?php _e('the "Rate plugin" link now opens the WordPress.org review form.', 'tc-data-tables'); ?></li>

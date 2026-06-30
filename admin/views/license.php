@@ -424,8 +424,10 @@ if ($_fs_user):
 
 /* ── Buttons ── */
 .gt-btn {
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     border-radius: 6px;
     font-size: 13px;
@@ -435,7 +437,10 @@ if ($_fs_user):
     border: none;
     padding: 9px 18px;
     transition: background .15s, box-shadow .15s, color .15s;
-    line-height: 1;
+    line-height: 1.2;
+    white-space: normal;
+    text-align: center;
+    max-width: 100%;
 }
 .gt-btn--primary {
     background: var(--tc);
