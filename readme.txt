@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.25
+Stable tag: 8.0.26
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.26 =
+* Fixed: the License &amp; Account page had inaccurate upgrade copy — it priced Pro at $9.99/mo (it's $7.99), advertised a 10-day trial (it's 7), and listed Free features (unlimited tables, JSON) as Pro. Corrected the pricing, trial length, and Pro feature list, and added a clearer price display.
 
 = 8.0.25 =
 * Improved: redesigned the in-plugin upgrade card with an on-brand look and an accurate Pro pitch (frontend editing, bulk operations, advanced filters, and premium data sources) — no longer lists "unlimited tables" as a Pro perk, since that's free.

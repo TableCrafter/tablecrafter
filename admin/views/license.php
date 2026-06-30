@@ -108,7 +108,7 @@ $can_trial = $fs && method_exists($fs, 'is_trial_utilized')
         <div class="gt-license-card gt-license-card--featured">
             <div class="gt-license-card-badge"><?php esc_html_e('Recommended', 'tc-data-tables'); ?></div>
             <h2><?php esc_html_e('Upgrade to Pro', 'tc-data-tables'); ?></h2>
-            <p><?php esc_html_e('Keep everything you\'ve built. Unlimited tables, full editing, priority support.', 'tc-data-tables'); ?></p>
+            <p><?php esc_html_e('Keep everything you\'ve built — frontend editing, advanced filters &amp; priority support.', 'tc-data-tables'); ?></p>
             <a href="<?php echo esc_url(method_exists($fs, 'get_upgrade_url') ? $fs->get_upgrade_url() : 'https://tablecrafter.com/#pricing'); ?>" class="gt-btn gt-btn--primary gt-btn--lg">
                 <?php esc_html_e('Upgrade Now', 'tc-data-tables'); ?>
             </a>
@@ -140,22 +140,25 @@ $can_trial = $fs && method_exists($fs, 'is_trial_utilized')
         <!-- Purchase (primary CTA) -->
         <div class="gt-license-card gt-license-card--featured">
             <div class="gt-license-card-badge"><?php esc_html_e('Most Popular', 'tc-data-tables'); ?></div>
-            <h2><?php esc_html_e('Get Pro — from $9.99/mo', 'tc-data-tables'); ?></h2>
+            <h2><?php esc_html_e('Get TableCrafter Pro', 'tc-data-tables'); ?></h2>
+            <div class="gt-price">
+                <span class="gt-price-amt">$7.99</span><span class="gt-price-per"><?php esc_html_e('/mo', 'tc-data-tables'); ?></span>
+                <span class="gt-price-note"><?php esc_html_e('billed annually · or a one-time lifetime license', 'tc-data-tables'); ?></span>
+            </div>
             <p><?php esc_html_e('Everything in Free, plus the features your clients actually need:', 'tc-data-tables'); ?></p>
             <ul class="gt-license-features">
-                <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Unlimited tables & entries', 'tc-data-tables'); ?></li>
                 <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Inline frontend editing (click to edit, Enter to save)', 'tc-data-tables'); ?></li>
-                <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Bulk delete, bulk export, bulk edit', 'tc-data-tables'); ?></li>
+                <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Bulk delete, bulk export &amp; bulk edit', 'tc-data-tables'); ?></li>
                 <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Advanced filters + URL-shareable filter state', 'tc-data-tables'); ?></li>
                 <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Add new entries from the frontend', 'tc-data-tables'); ?></li>
-                <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Airtable, Notion, and JSON data sources', 'tc-data-tables'); ?></li>
-                <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('AI cleanup suggestions & table summaries', 'tc-data-tables'); ?></li>
+                <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Gravity Forms, WooCommerce, Airtable &amp; Notion sources', 'tc-data-tables'); ?></li>
+                <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Conditional formatting, data bars &amp; role permissions', 'tc-data-tables'); ?></li>
                 <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Priority email support', 'tc-data-tables'); ?></li>
             </ul>
             <a href="<?php echo esc_url($fs && method_exists($fs, 'get_upgrade_url') ? $fs->get_upgrade_url() : 'https://tablecrafter.com/#pricing'); ?>" class="gt-btn gt-btn--primary gt-btn--lg">
-                <?php esc_html_e('Buy Pro — 10-day free trial included', 'tc-data-tables'); ?>
+                <?php esc_html_e('Start Pro — 7-day free trial', 'tc-data-tables'); ?>
             </a>
-            <p class="gt-license-small"><?php esc_html_e('7-day refund policy · Cancel anytime · Instant activation', 'tc-data-tables'); ?></p>
+            <p class="gt-license-small"><?php esc_html_e('No card required for the trial · Cancel anytime · Instant activation', 'tc-data-tables'); ?></p>
         </div>
 
         <div class="gt-license-sidebar">
@@ -391,6 +394,32 @@ if ($_fs_user):
     height: 17px;
     flex-shrink: 0;
     margin-top: 1px;
+}
+
+/* ── Price ── */
+.gt-price {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 14px;
+}
+.gt-price-amt {
+    font-size: 34px;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1;
+}
+.gt-price-per {
+    font-size: 15px;
+    color: #6b7280;
+    font-weight: 600;
+}
+.gt-price-note {
+    font-size: 12px;
+    color: #9ca3af;
+    flex-basis: 100%;
+    margin-top: 3px;
 }
 
 /* ── Buttons ── */
