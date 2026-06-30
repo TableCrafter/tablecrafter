@@ -201,6 +201,18 @@ class TC_Admin
                 <span class="gt-acct-badge <?php echo esc_attr($badge_class); ?>"><?php echo esc_html($plan_label); ?></span>
             </div>
         </div>
+        <style>
+        /* Make the Freemius account-page action buttons readable + on-brand
+           (default rendered green text on a blue button — low contrast). */
+        .gt-account-page .button-primary,
+        .gt-account-page a.button-primary {
+            background: #0d9488 !important; border-color: #0d9488 !important;
+            color: #fff !important; text-shadow: none !important; box-shadow: none !important;
+        }
+        .gt-account-page .button-primary:hover { background: #0f766e !important; border-color: #0f766e !important; color: #fff !important; }
+        .gt-account-page .button-primary .dashicons,
+        .gt-account-page .button-primary i { color: #fff !important; }
+        </style>
         <?php
     }
 

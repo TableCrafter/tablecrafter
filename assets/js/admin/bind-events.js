@@ -196,7 +196,10 @@
             $(document).on('click', '.gt-load-demo', function () {
                 var $btn    = $(this);
                 var demo    = $btn.data('demo');
-                var $result = $btn.closest('p').find('.gt-load-demo-result');
+                // #2196 — template cards live in .gt-template-card (no <p> ancestor),
+                // so widen the lookup; fall back to a sibling so feedback always lands.
+                var $result = $btn.closest('p, .gt-template-card').find('.gt-load-demo-result');
+                if (!$result.length) { $result = $btn.siblings('.gt-load-demo-result'); }
 
                 $btn.prop('disabled', true);
                 $result.html('<span style="color:#50575e;">Creating demo...</span>');

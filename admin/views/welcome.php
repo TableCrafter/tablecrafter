@@ -10,10 +10,12 @@ if (!defined('ABSPATH')) {
 }
 ?>
 <div class="wrap gt-welcome">
+    <!-- h1 must be the first element so WP admin notices render before the hero, not inside it. -->
+    <h1 class="screen-reader-text"><?php esc_html_e('Welcome to TableCrafter', 'tc-data-tables'); ?></h1>
     <div class="gt-welcome-hero">
         <span class="gt-welcome-logo">TC</span>
         <div>
-            <h1><?php esc_html_e('Welcome to TableCrafter', 'tc-data-tables'); ?></h1>
+            <h2 class="gt-welcome-hero-title"><?php esc_html_e('Welcome to TableCrafter', 'tc-data-tables'); ?></h2>
             <p><?php esc_html_e('Turn any data source into a beautiful, responsive WordPress table — JSON / REST APIs, CSV, Google Sheets and Excel for free, plus Gravity Forms, WooCommerce, Airtable, Notion and external databases on Pro. Add a shortcode (or the TableCrafter block / Elementor widget) and you are done.', 'tc-data-tables'); ?></p>
         </div>
     </div>
@@ -46,6 +48,7 @@ if (!defined('ABSPATH')) {
                     <button type="button" class="button gt-btn-tc gt-load-demo" data-demo="<?php echo esc_attr($gt_tpl_key); ?>">
                         <?php esc_html_e('Create this table', 'tc-data-tables'); ?>
                     </button>
+                    <span class="gt-load-demo-result"></span>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -75,7 +78,7 @@ if (!defined('ABSPATH')) {
     background: rgba(255,255,255,.18); display: flex; align-items: center;
     justify-content: center; font-weight: 800; font-size: 20px; letter-spacing: -1px;
 }
-.gt-welcome-hero h1 { color: #fff; margin: 0 0 4px; font-size: 23px; }
+.gt-welcome-hero-title { color: #fff; margin: 0 0 4px; font-size: 23px; }
 .gt-welcome-hero p { color: rgba(255,255,255,.9); margin: 0; font-size: 14px; line-height: 1.55; max-width: 760px; }
 .gt-welcome h2 { font-size: 17px; color: #141312; margin: 30px 0 6px; }
 .gt-welcome-lead { color: #4b5563; }
@@ -111,7 +114,14 @@ if (!defined('ABSPATH')) {
 .gt-template-cat { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #0d9488; }
 .gt-template-name { display: block; margin: 5px 0; color: #141312; font-size: 15px; }
 .gt-template-desc { margin: 0 0 14px; color: #6b6560; font-size: 13px; line-height: 1.5; }
-.gt-load-demo-result { margin-left: 8px; font-size: 13px; color: #0d9488; }
+.gt-load-demo-result { display: inline-block; margin-left: 8px; font-size: 13px; color: #0d9488; }
+.gt-template-card .gt-load-demo-result { display: block; margin: 10px 0 0; }
+.gt-load-demo-result .button {
+    box-sizing: border-box; border-radius: 6px !important; height: auto !important;
+    padding: 4px 12px !important; font-weight: 600 !important; margin-left: 6px;
+    border: 1.5px solid #0d9488 !important; color: #0d9488 !important; background: #fff !important;
+}
+.gt-load-demo-result .button:hover { background: #f0fdfa !important; }
 @media (max-width: 782px) {
     .gt-welcome-hero { flex-direction: column; text-align: center; }
     .gt-template-card { flex-basis: 100%; }

@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.28
+Stable tag: 8.0.29
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,11 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.29 =
+* Fixed: on the Welcome screen, the "Gravity Forms is not active" notice was unreadable inside the colored header; it now appears above it.
+* Fixed: the "Start from a template" buttons now confirm when a table is created (they were creating the table but showing no feedback).
+* Improved: the account-page upgrade button and the template result buttons now match the TableCrafter brand.
 
 = 8.0.28 =
 * Fixed: the upgrade button on the License & Account page could overflow its card on narrow widths; it now stays inside.
