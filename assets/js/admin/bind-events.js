@@ -70,6 +70,12 @@
                 $('.gt-csv-source-fields').toggle(val === 'csv');
                 $('.gt-xlsx-source-fields').toggle(val === 'xlsx');
                 $('.gt-external-db-source-fields').toggle(val === 'external_db');
+                $('.gt-woocommerce-source-fields').toggle(val === 'woocommerce_products');
+                // #2200 — WooCommerce needs no URL/config, so auto-load its product
+                // columns into the picker the moment the source is selected.
+                if (val === 'woocommerce_products') {
+                    setTimeout(function () { $('.gt-wc-load-columns').trigger('click'); }, 100);
+                }
                 $('.gt-sync-direction-field').toggle(isExternal);
                 // #2108 — the Gravity Form picker is only relevant for the
                 // gravity_forms source. Hide it (and drop its `required`) for
@@ -190,6 +196,31 @@
                 }).always(function () {
                     $btn.prop('disabled', false);
                 });
+            });
+
+            // #2200 — WooCommerce: load product columns (friendly labels) into the
+            // field picker + trigger the preview, mirroring the JSON / remote flow.
+            $(document).on('click', '.gt-wc-load-columns', function () {
+                var $btn    = $(this);
+                var $result = $('.gt-wc-load-result');
+                $btn.prop('disabled', true);
+                $result.html('<span style="color:#50575e;">Loading products…</span>');
+                $.post(gtAdmin.ajax_url, { action: 'gt_preview_wc_source', nonce: gtAdmin.nonce })
+                    .done(function (resp) {
+                        if (resp && resp.success && resp.data && resp.data.columns) {
+                            var d = resp.data;
+                            $result.html('<span style="color:#00a32a;">✓ ' + d.row_count + ' products, '
+                                + d.columns.length + ' columns loaded into the field picker.</span>');
+                            if (typeof self.loadJsonColumns === 'function') {
+                                self.loadJsonColumns(d.columns);
+                            }
+                        } else {
+                            var m = (resp && resp.data && resp.data.message) || 'Could not load products';
+                            $result.html('<span style="color:#d63638;">✗ ' + m + '</span>');
+                        }
+                    })
+                    .fail(function () { $result.html('<span style="color:#d63638;">Network error</span>'); })
+                    .always(function () { $btn.prop('disabled', false); });
             });
 
             // #2063 — one-click demo table creation.

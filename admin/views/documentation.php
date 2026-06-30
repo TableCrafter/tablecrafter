@@ -681,6 +681,11 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.31 — WooCommerce builder (Pro)', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Build WooCommerce tables easily', 'tc-data-tables'); ?></strong> — <?php _e('the builder now auto-loads product columns into the field picker and shows a live preview.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.30 — WooCommerce tables render (Pro)', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('WooCommerce product tables fixed', 'tc-data-tables'); ?></strong> — <?php _e('they showed "Gravity Forms is required"; now they render product links, prices, stock and add-to-cart.', 'tc-data-tables'); ?></li>

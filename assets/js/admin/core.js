@@ -76,6 +76,12 @@
                             this.generatePreview();
                         }.bind(this), 100);
                     }
+                } else if (srcType === 'woocommerce_products') {
+                    // #2200 — WooCommerce has no URL; auto-load product columns into
+                    // the picker on edit so saved/selectable columns + preview appear.
+                    setTimeout(function () {
+                        $('.gt-wc-load-columns').trigger('click');
+                    }, 150);
                 } else if (this.selectedFields.length > 0) {
                     // GF / already-known sources: render the saved selection + preview
                     // after a short delay to ensure the UI is ready.

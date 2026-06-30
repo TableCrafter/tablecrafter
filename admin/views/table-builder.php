@@ -302,6 +302,16 @@ if ($table_id) {
                         <p class="description"><?php _e('Only SELECT statements run (enforced server-side in read-only mode).', 'tc-data-tables'); ?></p>
                     </div>
 
+                    <!-- #2200 — WooCommerce products source. Shown only when
+                         data_source_type = woocommerce_products. Columns auto-load on
+                         select/edit; the button refreshes. Toggle in admin/bind-events.js. -->
+                    <div class="gt-form-row gt-woocommerce-source-fields"
+                         style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'woocommerce_products') ? '' : 'display: none;'; ?>">
+                        <p class="description"><?php esc_html_e('Lists your WooCommerce products — name, SKU, price, stock, rating, and add-to-cart. Columns load automatically; use the button to refresh.', 'tc-data-tables'); ?></p>
+                        <button type="button" class="button gt-wc-load-columns"><?php esc_html_e('Load WooCommerce columns', 'tc-data-tables'); ?></button>
+                        <span class="gt-wc-load-result" style="margin-left:8px;"></span>
+                    </div>
+
                     <!-- #985 v4.168.0 — JSON data source fields (slice 3b-2 of #512). -->
                     <!-- Shown only when data_source_type = json. The toggle is wired in admin/bind-events.js. -->
                     <div class="gt-form-row gt-json-source-fields"

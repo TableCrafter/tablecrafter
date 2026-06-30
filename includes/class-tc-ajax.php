@@ -109,6 +109,8 @@ class TC_Ajax
         add_action('wp_ajax_nopriv_gt_server_side_entries', array($this, 'server_side_entries'));
         add_action('wp_ajax_gt_get_wc_products', array($this, 'get_wc_products'));
         add_action('wp_ajax_nopriv_gt_get_wc_products', array($this, 'get_wc_products'));
+        // #2200 — builder: load WooCommerce product columns into the field picker.
+        add_action('wp_ajax_gt_preview_wc_source', array($this, 'preview_wc_source'));
         add_action('wp_ajax_gt_get_lookup_options', array($this, 'get_lookup_options'));
         add_action('wp_ajax_nopriv_gt_get_lookup_options', array($this, 'get_lookup_options'));
         // Text-filter typeahead (4.7.57): distinct existing values for a form field, optionally search-filtered.
@@ -1671,6 +1673,11 @@ class TC_Ajax
                 wp_send_json_success(['html' => '<p>' . esc_html__('Save the table then view it on the frontend to preview this data source.', 'tc-data-tables') . '</p>']);
                 return;
             }
+            // #2200 — WooCommerce products preview live (no save needed).
+            if ($data_source_type === 'woocommerce_products') {
+                wp_send_json_success(['html' => $this->preview_woocommerce_source_html($settings_post)]);
+                return;
+            }
 
             // gravity_forms source requires a form_id.
             if (empty($_POST['form_id'])) {
@@ -2715,6 +2722,107 @@ class TC_Ajax
             'data'            => $data,
             'bar_maxes'       => $bar_maxes,
         ));
+    }
+
+    /**
+     * #2200 — Builder: return WooCommerce product columns (with friendly labels)
+     * + total count so the field picker populates, exactly like the JSON / remote
+     * source "Test connection" flow (see assets/js/admin/field-list.js loadJsonColumns).
+     */
+    public function preview_wc_source(): void
+    {
+        check_ajax_referer('gt_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Insufficient permissions', 'tc-data-tables')));
+        }
+        if (!class_exists('TC_WooCommerce') || !TC_WooCommerce::is_woocommerce_active()) {
+            wp_send_json_error(array('message' => __('WooCommerce is not active.', 'tc-data-tables')));
+        }
+
+        $res   = TC_WooCommerce::get_product_table_entries(array('per_page' => 5));
+        $rows  = (is_array($res) && isset($res['entries']) && is_array($res['entries'])) ? $res['entries'] : array();
+        $total = (is_array($res) && isset($res['total'])) ? (int) $res['total'] : count($rows);
+
+        if (empty($rows)) {
+            wp_send_json_error(array('message' => __('No products found.', 'tc-data-tables')));
+        }
+
+        $labels  = array(
+            'id'           => __('ID', 'tc-data-tables'),
+            'thumbnail'    => __('Image', 'tc-data-tables'),
+            'name'         => __('Product', 'tc-data-tables'),
+            'sku'          => __('SKU', 'tc-data-tables'),
+            'price'        => __('Price', 'tc-data-tables'),
+            'stock_status' => __('Stock', 'tc-data-tables'),
+            'rating'       => __('Rating', 'tc-data-tables'),
+            'add_to_cart'  => __('Add to Cart', 'tc-data-tables'),
+        );
+        $columns = array();
+        foreach (array_keys((array) $rows[0]) as $key) {
+            $key       = (string) $key;
+            $columns[] = array(
+                'id'   => $key,
+                'name' => isset($labels[$key]) ? $labels[$key] : ucwords(str_replace('_', ' ', $key)),
+            );
+        }
+
+        wp_send_json_success(array('columns' => $columns, 'row_count' => $total));
+    }
+
+    /**
+     * #2200 — Build the in-builder live preview for a WooCommerce products table.
+     * Cells are trusted WC-generated HTML (links / prices / add-to-cart) so they
+     * pass through wp_kses_post. Honours the builder's selected columns if set.
+     */
+    private function preview_woocommerce_source_html(array $settings_post): string
+    {
+        if (!class_exists('TC_WooCommerce') || !TC_WooCommerce::is_woocommerce_active()) {
+            return '<p>' . esc_html__('WooCommerce is not active.', 'tc-data-tables') . '</p>';
+        }
+        $res  = TC_WooCommerce::get_product_table_entries(array('per_page' => 10));
+        $rows = (is_array($res) && isset($res['entries']) && is_array($res['entries'])) ? $res['entries'] : array();
+        if (empty($rows)) {
+            return '<p>' . esc_html__('No products found.', 'tc-data-tables') . '</p>';
+        }
+
+        $all_keys = array_map('strval', array_keys((array) $rows[0]));
+        $selected = array();
+        if (isset($settings_post['columns']) && is_array($settings_post['columns'])) {
+            foreach ($settings_post['columns'] as $col) {
+                $id = is_array($col) ? (string) ($col['id'] ?? '') : (string) $col;
+                if ($id !== '' && in_array($id, $all_keys, true)) {
+                    $selected[] = $id;
+                }
+            }
+        }
+        $keys   = !empty($selected) ? $selected : $all_keys;
+        $labels = array(
+            'id' => 'ID', 'thumbnail' => 'Image', 'name' => 'Product', 'sku' => 'SKU',
+            'price' => 'Price', 'stock_status' => 'Stock', 'rating' => 'Rating', 'add_to_cart' => 'Add to Cart',
+        );
+
+        $html = '<table class="widefat striped gt-wc-preview"><thead><tr>';
+        foreach ($keys as $k) {
+            $label = isset($labels[$k]) ? $labels[$k] : ucwords(str_replace('_', ' ', $k));
+            $html .= '<th>' . esc_html($label) . '</th>';
+        }
+        $html .= '</tr></thead><tbody>';
+        foreach ($rows as $row) {
+            $row   = (array) $row;
+            $html .= '<tr>';
+            foreach ($keys as $k) {
+                $html .= '<td>' . wp_kses_post((string) ($row[$k] ?? '')) . '</td>';
+            }
+            $html .= '</tr>';
+        }
+        $html .= '</tbody></table>';
+        $total = (is_array($res) && isset($res['total'])) ? (int) $res['total'] : count($rows);
+        $html .= '<p class="description">' . esc_html(sprintf(
+            /* translators: %d: product count */
+            _n('%d product (preview shows up to 10).', '%d products (preview shows up to 10).', $total, 'tc-data-tables'),
+            $total
+        )) . '</p>';
+        return $html;
     }
 
     /**

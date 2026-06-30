@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.30
+Stable tag: 8.0.31
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.31 =
+* Improved (Pro): building a WooCommerce products table now auto-loads the product columns (Product, SKU, Price, Stock, Rating, Add to Cart) into the field picker and shows a live preview in the builder — previously the column picker and preview were empty.
 
 = 8.0.30 =
 * Fixed (Pro): WooCommerce product tables now render. They previously showed "Gravity Forms is required for this table" because the render path had no WooCommerce case. Product links, prices, stock and add-to-cart now display.
