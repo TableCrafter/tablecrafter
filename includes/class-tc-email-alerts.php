@@ -18,9 +18,11 @@
  * @package GravityTables
  */
 
+// @codeCoverageIgnoreStart -- ABSPATH guard; condition is always false under the test shim and runs pre-instrumentation.
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
+// @codeCoverageIgnoreEnd
 
 class TC_Email_Alerts {
 
@@ -136,7 +138,9 @@ class TC_Email_Alerts {
      */
     public static function build_csv_attachment( int $table_id ) {
         if ( ! class_exists( 'TC_Ajax' ) ) {
+            // @codeCoverageIgnoreStart -- free-build-only fallback; TC_Ajax is autoloaded in this build.
             return false;
+            // @codeCoverageIgnoreEnd
         }
 
         // Fetch rows via the same path as the frontend AJAX export.

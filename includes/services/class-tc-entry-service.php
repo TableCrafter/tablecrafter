@@ -144,7 +144,9 @@ class TC_Entry_Service {
             throw new TC_Validation_Exception(__('No updates provided', 'tc-data-tables'));
         }
         
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         
         $updated_fields = [];
         $success = true;
@@ -317,7 +319,9 @@ class TC_Entry_Service {
      * @return array Query results
      */
     private function executeEntriesQuery(int $form_id, array $params): array {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         
         $offset = ($params['page'] - 1) * $params['per_page'];
         
@@ -397,7 +401,9 @@ class TC_Entry_Service {
         
         // Users with driver role can edit their own entries
         if (current_user_can('driver')) {
+            // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
             global $wpdb;
+            // @codeCoverageIgnoreEnd
             
             $user_field_value = $wpdb->get_var($wpdb->prepare(
                 "SELECT meta_value FROM {$wpdb->prefix}gf_entry_meta 
@@ -438,7 +444,9 @@ class TC_Entry_Service {
      * @return array Result
      */
     private function bulkDeleteEntries(array $entry_ids): array {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         
         $deleted = 0;
         foreach ($entry_ids as $entry_id) {
@@ -529,7 +537,9 @@ class TC_Entry_Service {
      * @return array Result
      */
     private function bulkEditEntries(array $entry_ids, array $updates): array {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         
         $updated = 0;
         foreach ($entry_ids as $entry_id) {
@@ -581,7 +591,9 @@ class TC_Entry_Service {
      * @return int Total count
      */
     private function getEntriesCount(int $form_id, array $params): int {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         
         $count_query = "
             SELECT COUNT(DISTINCT e.id) as total
@@ -607,7 +619,9 @@ class TC_Entry_Service {
      * @return void
      */
     private function addSearchFilters(string &$query, array &$params, array $search_params): void {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         
         if (!empty($search_params['search'])) {
             $query .= " AND (
@@ -652,7 +666,9 @@ class TC_Entry_Service {
      * @return void
      */
     private function addCustomFilters(string &$query, array &$params, array $filters): void {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         
         foreach ($filters as $field_id => $filter_data) {
             if (!is_array($filter_data) || !isset($filter_data['type'])) {

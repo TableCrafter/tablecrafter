@@ -7,9 +7,11 @@
  * (#2063) reads these definitions; the welcome screen (#2064) surfaces them.
  */
 
+// @codeCoverageIgnoreStart -- ABSPATH guard; condition is always false under the test shim and runs pre-instrumentation.
 if (!defined('ABSPATH') && !defined('TC_PHPUNIT_SHIM')) {
     exit;
 }
+// @codeCoverageIgnoreEnd
 
 class TC_Demo_Data
 {
@@ -115,7 +117,9 @@ class TC_Demo_Data
             // column keys. Empty (no pre-selected columns) when offline or the
             // sheet is unreachable — the table still renders, just unconfigured.
             if (!class_exists('TC_Google_Sheets')) {
+                // @codeCoverageIgnoreStart -- free-build-only fallback; TC_Google_Sheets is autoloaded in this build.
                 return array();
+                // @codeCoverageIgnoreEnd
             }
             $gs  = \TC_Google_Sheets::get_instance();
             $csv = $gs->fetch_public_csv((string) ($def['url'] ?? ''));
@@ -132,7 +136,9 @@ class TC_Demo_Data
 
         if ($def['type'] === 'csv') {
             if (!class_exists('TC_CSV_Source')) {
+                // @codeCoverageIgnoreStart -- free-build-only fallback; TC_CSV_Source is autoloaded in this build.
                 return array();
+                // @codeCoverageIgnoreEnd
             }
             $rows = \TC_CSV_Source::get_cached($url);
             if (!is_array($rows) || empty($rows) || !is_array($rows[0])) {
@@ -142,7 +148,9 @@ class TC_Demo_Data
         }
 
         if (!class_exists('TC_JSON_Source_Service')) {
+            // @codeCoverageIgnoreStart -- free-build-only fallback; TC_JSON_Source_Service is autoloaded in this build.
             return array();
+            // @codeCoverageIgnoreEnd
         }
         $rows = \TC_JSON_Source_Service::fetch_from_url($url);
         if (!is_array($rows) || empty($rows)) {

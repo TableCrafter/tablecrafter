@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.31
+Stable tag: 8.0.33
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,12 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.33 =
+* Maintenance release. No functional changes to the free plugin (a Pro-only plugin-update-routing fix).
+
+= 8.0.32 =
+* Fixed: tables set to server-side processing rendered no rows. The entry-fetch guard used a check that never matched (`function_exists` on a class method), so every request returned an empty result. Server-side tables now load their entries.
 
 = 8.0.31 =
 * Improved (Pro): building a WooCommerce products table now auto-loads the product columns (Product, SKU, Price, Stock, Rating, Add to Cart) into the field picker and shows a live preview in the builder — previously the column picker and preview were empty.

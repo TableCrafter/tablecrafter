@@ -77,7 +77,9 @@ class TC_Embed {
 	}
 }
 
+// @codeCoverageIgnoreStart -- declaration-guard wrapper; file is loaded by the bootstrap before coverage instrumentation starts.
 if ( ! function_exists( 'tc_embed_template_redirect' ) ) {
+// @codeCoverageIgnoreEnd
 	/**
 	 * template_redirect handler — render the bare public embed page for
 	 * `?tc_embed=<id>` and exit. Calls wp_head()/wp_footer() so the table's
@@ -116,7 +118,9 @@ if ( ! function_exists( 'tc_embed_template_redirect' ) ) {
 	}
 }
 
+// @codeCoverageIgnoreStart -- declaration-guard wrapper; file is loaded by the bootstrap before coverage instrumentation starts.
 if ( ! function_exists( 'add_query_arg_simple' ) ) {
+// @codeCoverageIgnoreEnd
 	/**
 	 * Minimal query-arg appender so embed_code() works before WP loads (and in
 	 * the standalone tests). Mirrors add_query_arg() for the single-arg case.

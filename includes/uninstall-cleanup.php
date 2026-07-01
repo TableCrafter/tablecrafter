@@ -20,7 +20,9 @@ if (!defined('ABSPATH')) {
 }
 // @codeCoverageIgnoreEnd
 
+// @codeCoverageIgnoreStart -- declaration-guard wrapper; file is loaded by the bootstrap before coverage instrumentation starts.
 if (!function_exists('tc_uninstall_cleanup_site')) {
+// @codeCoverageIgnoreEnd
     /**
      * Remove all TableCrafter data for the current site/blog.
      */
@@ -58,7 +60,9 @@ if (!function_exists('tc_uninstall_cleanup_site')) {
     }
 }
 
+// @codeCoverageIgnoreStart -- declaration-guard wrapper; file is loaded by the bootstrap before coverage instrumentation starts.
 if (!function_exists('tc_run_uninstall_cleanup')) {
+// @codeCoverageIgnoreEnd
     /**
      * Freemius `after_uninstall` callback: run the cleanup across the network.
      */

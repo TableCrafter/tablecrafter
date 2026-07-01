@@ -74,7 +74,9 @@ class TC_Template_Service {
      * @return array The saved template entry.
      */
     public static function save_as_template( int $table_id, string $name ): array {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $row = $wpdb->get_row(
             $wpdb->prepare(

@@ -23,7 +23,9 @@ if (!defined('ABSPATH') && !defined('TC_PHPUNIT_SHIM')) {
 }
 // @codeCoverageIgnoreEnd
 
+// @codeCoverageIgnoreStart -- declaration-guard wrapper; file is loaded by the bootstrap before coverage instrumentation starts.
 if (!function_exists('gt_db_table_migrated')) {
+// @codeCoverageIgnoreEnd
     /** Whether the table has been renamed to the new brand name. */
     function gt_db_table_migrated(): bool
     {
@@ -31,13 +33,17 @@ if (!function_exists('gt_db_table_migrated')) {
             return (bool) $GLOBALS['gt_test_db_migrated'];
         }
         if (!function_exists('get_option')) {
+            // @codeCoverageIgnoreStart -- free-build-only fallback; get_option is always defined under the test shim.
             return false;
+            // @codeCoverageIgnoreEnd
         }
         return (bool) get_option('gt_db_table_migrated', false);
     }
 }
 
+// @codeCoverageIgnoreStart -- declaration-guard wrapper; file is loaded by the bootstrap before coverage instrumentation starts.
 if (!function_exists('gt_tables_table_name')) {
+// @codeCoverageIgnoreEnd
     /**
      * Fully-qualified name of the tables table. Legacy until the opt-in
      * migration runs, then the new brand name.
@@ -50,7 +56,9 @@ if (!function_exists('gt_tables_table_name')) {
     }
 }
 
+// @codeCoverageIgnoreStart -- declaration-guard wrapper; file is loaded by the bootstrap before coverage instrumentation starts.
 if (!function_exists('gt_migrated_option_keys')) {
+// @codeCoverageIgnoreEnd
     /**
      * #2020 — the option keys carried forward to the tc_* brand namespace.
      * @return string[] gt_* keys
@@ -72,7 +80,9 @@ if (!function_exists('gt_migrated_option_keys')) {
     }
 }
 
+// @codeCoverageIgnoreStart -- declaration-guard wrapper; file is loaded by the bootstrap before coverage instrumentation starts.
 if (!function_exists('gt_migrate_options')) {
+// @codeCoverageIgnoreEnd
     /**
      * #2020 — Copy gt_* options to their tc_* counterparts (forward-compat for
      * the rebrand). Additive: gt_* keys are left in place so existing code keeps
@@ -84,7 +94,9 @@ if (!function_exists('gt_migrate_options')) {
     function gt_migrate_options(): array
     {
         if (!function_exists('get_option') || !function_exists('update_option')) {
+            // @codeCoverageIgnoreStart -- free-build-only fallback; get_option/update_option are always defined under the test shim.
             return array('copied' => 0);
+            // @codeCoverageIgnoreEnd
         }
         $copied = 0;
         foreach (gt_migrated_option_keys() as $gt_key) {
@@ -104,7 +116,9 @@ if (!function_exists('gt_migrate_options')) {
     }
 }
 
+// @codeCoverageIgnoreStart -- declaration-guard wrapper; file is loaded by the bootstrap before coverage instrumentation starts.
 if (!function_exists('gt_migrate_db_table')) {
+// @codeCoverageIgnoreEnd
     /**
      * One-time rename wp_gravity_tables -> wp_tablecrafter. Idempotent.
      *

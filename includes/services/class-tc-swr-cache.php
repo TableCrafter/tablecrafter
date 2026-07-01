@@ -91,7 +91,9 @@ class TC_SWR_Cache
             add_action('shutdown', $cb, 5);
         } else {
             // No WP runtime (CLI/tests without the hook) — refresh inline.
+            // @codeCoverageIgnoreStart -- add_action is always defined under the test shim, so this no-WP fallback is unreachable here.
             $cb();
+            // @codeCoverageIgnoreEnd
         }
     }
 

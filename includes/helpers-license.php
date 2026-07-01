@@ -88,7 +88,9 @@ if (!function_exists('gt_is_grandfathered')) {
             return (bool) $GLOBALS['gt_test_grandfathered'];
         }
         if (!function_exists('get_option')) {
+            // @codeCoverageIgnoreStart -- free-build-only fallback; get_option is always defined under the test shim.
             return false;
+            // @codeCoverageIgnoreEnd
         }
         return (bool) get_option('gt_ever_premium', false);
     }

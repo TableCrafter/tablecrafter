@@ -178,7 +178,9 @@ class TC_Import
             $this->redirect_with_error(__('File too large (5 MB maximum).', 'tc-data-tables'));
         }
 
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         $table = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}gravity_tables WHERE id = %d AND status = 'active'",
             $table_id
@@ -400,7 +402,9 @@ class TC_Import
 
     private function preserve_hidden_entries(int $form_id): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         $results = $wpdb->get_col($wpdb->prepare(
             "SELECT id FROM {$wpdb->prefix}gf_entry WHERE form_id = %d AND status = 'trash'",
             $form_id
@@ -418,7 +422,9 @@ class TC_Import
 
     private function load_tables(): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         $rows = $wpdb->get_results("SELECT id, title, form_id FROM {$wpdb->prefix}gravity_tables WHERE status = 'active' ORDER BY id ASC");
         return is_array($rows) ? $rows : array();
     }

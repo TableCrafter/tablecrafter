@@ -35,9 +35,11 @@ if (!defined('ABSPATH')) { exit; }
 // #1636 — the CSV export handler neutralizes formula injection via
 // TC_CSV_Formula_Detector, which is loaded on-demand (not in the main
 // bootstrap list), so guarantee it is available here.
+// @codeCoverageIgnoreStart -- load-time guard; runs at file include before coverage instrumentation starts, and the detector is already loaded under the harness.
 if (!class_exists('TC_CSV_Formula_Detector')) {
     require_once __DIR__ . '/services/class-tc-csv-formula-detector.php';
 }
+// @codeCoverageIgnoreEnd
 
 class TC_Pagination_REST {
 

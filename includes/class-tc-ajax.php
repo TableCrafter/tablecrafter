@@ -2645,11 +2645,9 @@ class TC_Ajax
         $records_total = 0;
         $records_filtered = 0;
 
-        if (function_exists('GFAPI::get_entries')) {
-            // @codeCoverageIgnoreStart
+        if (class_exists('GFAPI')) {
             $records_total    = GFAPI::count_entries($form_id, array('status' => 'active'));
             $entries_filtered = GFAPI::get_entries($form_id, $search_criteria, $sorting, $paging, $records_filtered);
-            // @codeCoverageIgnoreEnd
         } else {
             // Fallback for non-GF environments / tests.
             $entries_filtered = array();
@@ -2657,16 +2655,12 @@ class TC_Ajax
 
         $data = array();
         foreach ((array) $entries_filtered as $entry) {
-            // @codeCoverageIgnoreStart
             $row = array();
             foreach ($columns as $col) {
                 $field_id = is_array($col) ? ($col['field_id'] ?? '') : $col;
                 $row[] = $this->gt_sanitize_cell_output(apply_filters('gravity_tables_column_value', $entry[$field_id] ?? '', $field_id, $entry, $table_settings));
-            // @codeCoverageIgnoreEnd
             }
-            // @codeCoverageIgnoreStart
             $data[] = $row;
-            // @codeCoverageIgnoreEnd
         }
 
         // #1735 — Compute per-column bar maxes for SSP data bars. We use
@@ -2702,12 +2696,10 @@ class TC_Ajax
                 }
                 $max = null;
                 foreach ((array) $entries_filtered as $entry) {
-                    // @codeCoverageIgnoreStart
                     $n = TC_Data_Bars_Service::parse_numeric($entry[$bar_field_id] ?? '');
                     if ($n !== null && ($max === null || $n > $max)) {
                         $max = $n;
                     }
-                    // @codeCoverageIgnoreEnd
                 }
                 if ($max !== null && $max > 0) {
                     $bar_maxes[$bar_field_id] = $max;
@@ -4609,6 +4601,11 @@ class TC_Ajax
             $start_entry = ($page - 1) * $per_page;
 
             if ($start_entry >= $max_entries_allowed) {
+                // @codeCoverageIgnoreStart
+                // Unreachable in the unit context: TC_FREE_MAX_ENTRIES is
+                // PHP_INT_MAX, so $start_entry can never reach the ceiling
+                // through real pagination. Body trips only if the constant is
+                // lowered in a future build.
                 // Beyond free limit, return empty with upgrade message
                 return array(
                     'data' => array(),
@@ -4621,6 +4618,7 @@ class TC_Ajax
                     ),
                     'upgrade_url' => function_exists('wgt_fs') ? wgt_fs()->get_upgrade_url() : ''
                 );
+                // @codeCoverageIgnoreEnd
             }
 
             // Adjust per_page if it would exceed limit

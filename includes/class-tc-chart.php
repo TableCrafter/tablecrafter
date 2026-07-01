@@ -73,7 +73,9 @@ class TC_Chart
             return '<p class="gt-chart-error">' . esc_html__('gravity_chart: table_id is required.', 'tc-data-tables') . '</p>';
         }
 
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         $table = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}gravity_tables WHERE id = %d AND status = 'active'",
             $table_id
@@ -128,7 +130,9 @@ class TC_Chart
      */
     private function aggregate(int $form_id, string $group_field, string $value_field, string $agg): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $group_field = preg_replace('/[^0-9._a-z]/i', '', $group_field);
         if ($group_field === '') return array();

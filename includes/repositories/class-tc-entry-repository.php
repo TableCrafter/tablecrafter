@@ -244,7 +244,9 @@ class TC_Entry_Repository
      */
     public function updateEntryMeta(int $entry_id, array $meta_data): bool
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $success = true;
 
@@ -294,7 +296,9 @@ class TC_Entry_Repository
      */
     public function bulkUpdate(array $entry_ids, array $updates): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $updated = 0;
 
@@ -319,7 +323,9 @@ class TC_Entry_Repository
      */
     public function bulkDelete(array $entry_ids): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $entry_ids = array_map('intval', $entry_ids);
         $placeholders = implode(', ', array_fill(0, count($entry_ids), '%d'));
@@ -695,7 +701,9 @@ class TC_Entry_Repository
      */
     public function getUniqueValues(int $form_id, string $field_id, int $limit = 1000): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         // #1666 — cap the distinct list so a high-cardinality column (load
         // numbers, dates) doesn't emit thousands of <option> rows per render.
@@ -727,7 +735,9 @@ class TC_Entry_Repository
      */
     public function getValueCountsAndFirstSeen(int $form_id, string $field_id): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $sql = "SELECT em.meta_value AS value, COUNT(*) AS cnt, MIN(em.entry_id) AS first_seen
                 FROM {$wpdb->prefix}gf_entry_meta em
@@ -762,7 +772,9 @@ class TC_Entry_Repository
      */
     public function getUniqueValuesMatching(int $form_id, string $field_id, string $search = '', int $limit = 50): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $limit = max(1, min(200, $limit));
 

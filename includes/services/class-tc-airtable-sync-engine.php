@@ -350,9 +350,11 @@ class TC_Airtable_Sync_Engine {
                 return wp_remote_get($url, $args);
             };
         }
+        // @codeCoverageIgnoreStart -- wp_remote_get is always defined under the test shim, so this no-WP fallback is unreachable here.
         return function (string $url, array $args) {
             return ['errors' => ['no-wp' => 'wp_remote_get unavailable']];
         };
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -421,7 +423,9 @@ class TC_Airtable_Sync_Engine {
     public static function list_tables(string $pat, string $base_id) {
         $base_id = class_exists('TC_Airtable_Request_Builder')
             ? TC_Airtable_Request_Builder::sanitize_id($base_id)
+            // @codeCoverageIgnoreStart -- TC_Airtable_Request_Builder is unconditionally required at bootstrap, so this fallback is unreachable.
             : preg_replace('/[^A-Za-z0-9_-]/', '', $base_id);
+            // @codeCoverageIgnoreEnd
 
         if ($base_id === '') {
             return new \WP_Error('gt_airtable_invalid_base_id', __('Invalid Airtable base ID.', 'tc-data-tables'));

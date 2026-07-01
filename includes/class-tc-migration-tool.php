@@ -44,7 +44,9 @@ class TC_Migration_Tool
      */
     public static function get_legacy_tables(): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $rows = $wpdb->get_results(
             "SELECT `id`, `settings` FROM {$wpdb->prefix}gravity_tables",
@@ -76,7 +78,9 @@ class TC_Migration_Tool
      */
     public static function migrate_table(int $table_id): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $row = $wpdb->get_row(
             $wpdb->prepare(

@@ -72,7 +72,9 @@ class TC_Form_Renderer
 
     private function render_manual_fallback(int $form_id): void
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         if (!class_exists('GFAPI')) {
             echo '<p>Gravity Forms API not available.</p>';

@@ -681,6 +681,16 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.33 — Correct Pro update source', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Pro no longer offered the free version as an update', 'tc-data-tables'); ?></strong> — <?php _e('WordPress was showing the wordpress.org free build as an update on Pro sites; updates now come through your license.', 'tc-data-tables'); ?></li>
+                </ul>
+
+                <h3><?php _e('v8.0.32 — Server-side processing fix', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Server-side tables show their rows again', 'tc-data-tables'); ?></strong> — <?php _e('tables set to server-side processing were rendering empty; the entry fetch is now wired up correctly.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.31 — WooCommerce builder (Pro)', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Build WooCommerce tables easily', 'tc-data-tables'); ?></strong> — <?php _e('the builder now auto-loads product columns into the field picker and shows a live preview.', 'tc-data-tables'); ?></li>

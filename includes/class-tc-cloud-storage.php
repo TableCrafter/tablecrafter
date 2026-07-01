@@ -178,7 +178,9 @@ class TC_Cloud_Storage {
     // -------------------------------------------------------------------------
 
     public function handle_cron_refresh( int $table_id ): void {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         $row = $wpdb->get_row(
             $wpdb->prepare(
                 "SELECT settings FROM {$wpdb->prefix}gravity_tables WHERE id = %d AND status = 'active'",

@@ -27,7 +27,9 @@ class TC_Config_Port_Service {
      * @return array|WP_Error  Export array on success, WP_Error if table not found.
      */
     public static function export_table( int $table_id ) {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $row = $wpdb->get_row(
             $wpdb->prepare(
@@ -109,7 +111,9 @@ class TC_Config_Port_Service {
         // Generate a shortcode slug from the title.
         $shortcode = '[tablecrafter id="__ID__"]';
 
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $inserted = $wpdb->insert(
             $wpdb->prefix . 'gravity_tables',

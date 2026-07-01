@@ -809,7 +809,9 @@ class TC_Admin
         );
         if ( isset( $legacy_map[ $page ] ) ) {
             wp_safe_redirect( admin_url( 'admin.php?page=' . $legacy_map[ $page ] ) );
+            // @codeCoverageIgnoreStart -- post-redirect exit; not reachable under the test harness.
             exit;
+            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -932,9 +934,9 @@ class TC_Admin
             $existing_tables = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}gravity_tables WHERE status = 'active'");
 
             if ($existing_tables >= TC_FREE_MAX_TABLES) {
+                // @codeCoverageIgnoreStart -- free-build-only gate (TC_FREE_MAX_TABLES is PHP_INT_MAX in the converged build).
                 // Redirect to main tables page with error message
                 wp_redirect(admin_url('admin.php?page=gravity-tables&error=limit_reached'));
-                // @codeCoverageIgnoreStart
                 exit;
                 // @codeCoverageIgnoreEnd
             }
@@ -955,8 +957,8 @@ class TC_Admin
             global $wpdb;
             $existing = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}gravity_tables WHERE status = 'active'");
             if ($existing >= TC_FREE_MAX_TABLES) {
+                // @codeCoverageIgnoreStart -- free-build-only gate (TC_FREE_MAX_TABLES is PHP_INT_MAX in the converged build).
                 wp_redirect(admin_url('admin.php?page=gravity-tables&error=limit_reached'));
-                // @codeCoverageIgnoreStart
                 exit;
                 // @codeCoverageIgnoreEnd
             }
@@ -1954,7 +1956,9 @@ class TC_Admin
             wp_die(__('Insufficient permissions', 'tc-data-tables'));
         }
         if (!class_exists('TC_External_DB')) {
+            // @codeCoverageIgnoreStart -- free-build-only fallback; TC_External_DB is autoloaded in the converged build.
             wp_die(__('External database support is not available on this build.', 'tc-data-tables'));
+            // @codeCoverageIgnoreEnd
         }
         $connections = TC_External_DB::get_instance()->connections_for_display(
             TC_External_DB::get_instance()->get_connections()

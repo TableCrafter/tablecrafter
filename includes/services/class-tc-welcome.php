@@ -8,9 +8,11 @@
  * the builder.
  */
 
+// @codeCoverageIgnoreStart -- ABSPATH guard; condition is always false under the test shim and runs pre-instrumentation.
 if (!defined('ABSPATH') && !defined('TC_PHPUNIT_SHIM')) {
     exit;
 }
+// @codeCoverageIgnoreEnd
 
 class TC_Welcome
 {
@@ -20,7 +22,9 @@ class TC_Welcome
     public static function boot(): void
     {
         if (!function_exists('add_action')) {
+            // @codeCoverageIgnoreStart -- add_action is always defined under the test shim.
             return;
+            // @codeCoverageIgnoreEnd
         }
         add_action('admin_init', array(__CLASS__, 'maybe_redirect'));
         add_action('admin_menu', array(__CLASS__, 'register_page'), 20);
@@ -49,7 +53,9 @@ class TC_Welcome
         }
         update_option(self::FLAG, 1, false);
         wp_safe_redirect(admin_url('admin.php?page=' . self::PAGE));
+        // @codeCoverageIgnoreStart -- post-redirect exit; not reachable under the test harness.
         exit;
+        // @codeCoverageIgnoreEnd
     }
 
     /** Register the hidden welcome page (not in the menu). */

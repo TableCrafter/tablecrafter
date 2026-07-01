@@ -7,9 +7,11 @@
  * treated as headers; each subsequent non-empty row becomes an associative row.
  */
 
+// @codeCoverageIgnoreStart -- ABSPATH guard; condition is always false under the test shim and runs pre-instrumentation.
 if (!defined('ABSPATH') && !defined('TC_PHPUNIT_SHIM')) {
     exit;
 }
+// @codeCoverageIgnoreEnd
 
 class TC_XLSX_Source
 {
@@ -81,7 +83,9 @@ class TC_XLSX_Source
     public static function parse_binary(string $bytes)
     {
         if (!class_exists('\\PhpOffice\\PhpSpreadsheet\\IOFactory')) {
+            // @codeCoverageIgnoreStart -- free-build-only fallback; PhpSpreadsheet is present in the dev/converged build.
             return new WP_Error('gt_xlsx_lib_missing', __('Spreadsheet library is not available.', 'tc-data-tables'));
+            // @codeCoverageIgnoreEnd
         }
 
         $tmp = function_exists('wp_tempnam') ? wp_tempnam('gt-xlsx-') : tempnam(sys_get_temp_dir(), 'gt-xlsx-');

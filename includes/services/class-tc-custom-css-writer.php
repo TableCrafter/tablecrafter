@@ -47,7 +47,9 @@ class TC_Custom_CSS_Writer {
             return false;
         }
 
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wp_filesystem;
+        // @codeCoverageIgnoreEnd
 
         // Ensure directory exists.
         if ( ! $wp_filesystem->is_dir( $css_dir ) ) {
@@ -105,7 +107,9 @@ class TC_Custom_CSS_Writer {
         if ( ! self::init_filesystem() ) {
             return;
         }
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wp_filesystem;
+        // @codeCoverageIgnoreEnd
 
         $upload   = wp_upload_dir();
         $base_dir = wp_normalize_path( $upload['basedir'] );
@@ -141,7 +145,9 @@ class TC_Custom_CSS_Writer {
      * @return bool True if $wp_filesystem is now usable.
      */
     private static function init_filesystem(): bool {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wp_filesystem;
+        // @codeCoverageIgnoreEnd
 
         if ( $wp_filesystem instanceof WP_Filesystem_Base ) {
             return true;

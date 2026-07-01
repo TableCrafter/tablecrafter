@@ -145,7 +145,9 @@ class TC_Lookup
      */
     private function lookup_custom($id, array $lookup_config): string
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         if (
             empty($lookup_config['table']) ||
@@ -302,7 +304,9 @@ class TC_Lookup
      */
     private function lookup_custom_batch(array $ids, array $lookup_config): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         if (
             empty($lookup_config['table']) ||
@@ -399,7 +403,9 @@ class TC_Lookup
      */
     private function get_user_options(array $lookup_config, ?int $form_id = null): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $field = isset($lookup_config['user_field']) ? $lookup_config['user_field'] : 'display_name';
         $user_roles = array();
@@ -492,7 +498,9 @@ class TC_Lookup
      */
     private function get_post_options(array $lookup_config, ?int $form_id = null): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $field = isset($lookup_config['post_field']) ? $lookup_config['post_field'] : 'post_title';
         $post_type = isset($lookup_config['post_type']) ? $lookup_config['post_type'] : 'post';
@@ -559,7 +567,9 @@ class TC_Lookup
      */
     private function get_custom_options(array $lookup_config, ?int $form_id = null): array
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         if (
             empty($lookup_config['table']) ||

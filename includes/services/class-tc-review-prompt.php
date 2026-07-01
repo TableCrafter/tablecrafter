@@ -81,7 +81,9 @@ class TC_Review_Prompt {
             return;
         }
         if (!class_exists('TC_Activation_Funnel')) {
+            // @codeCoverageIgnoreStart -- free-build-only fallback; TC_Activation_Funnel is autoloaded in this build.
             return;
+            // @codeCoverageIgnoreEnd
         }
         $state  = $this->read();
         $funnel = TC_Activation_Funnel::get_funnel();

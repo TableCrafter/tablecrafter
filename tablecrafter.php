@@ -3,7 +3,7 @@
  * Plugin Name: TableCrafter
  * Plugin URI: https://github.com/TableCrafter/tablecrafter
  * Description: TableCrafter — beautiful, responsive data tables for WordPress. Free: 3 tables, 8 columns, 500 entries. Pro: unlimited everything + frontend editing, bulk operations, advanced filters.
- * Version: 8.0.31
+ * Version: 8.0.33
  * Author: Fahad Murtaza @ iSuperCoder.com
  * Author URI: https://isupercoder.com/contact
  * License: GPL-2.0-or-later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('TC_VERSION', '8.0.31');
+define('TC_VERSION', '8.0.33');
 define('TC_PHP_COMPAT_VERSION', '8.1');
 define('TC_ELEMENTOR_MIN_VERSION', '3.5.0');
 define('TC_PLUGIN_URL', plugin_dir_url(__FILE__));

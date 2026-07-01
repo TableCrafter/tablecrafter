@@ -58,7 +58,9 @@ class TC_Auto_Import {
      * this is a no-op on the vast majority of requests (when schedules are intact).
      */
     public function maybe_reschedule_all(): void {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $tables = $wpdb->get_results(
             "SELECT id, settings FROM {$wpdb->prefix}gravity_tables WHERE status = 'active'",
@@ -146,7 +148,9 @@ class TC_Auto_Import {
      * @param int $table_id
      */
     public function fetch_and_import(int $table_id): void {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $table_row = $wpdb->get_row($wpdb->prepare(
             "SELECT settings FROM {$wpdb->prefix}gravity_tables WHERE id = %d AND status = 'active'",

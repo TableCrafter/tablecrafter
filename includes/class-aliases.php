@@ -17,7 +17,9 @@ if (!defined('ABSPATH') && !defined('TC_PHPUNIT_SHIM')) {
 }
 // @codeCoverageIgnoreEnd
 
+// @codeCoverageIgnoreStart -- declaration-guard wrapper; file is loaded by the bootstrap before coverage instrumentation starts.
 if (!function_exists('gt_register_brand_aliases')) {
+// @codeCoverageIgnoreEnd
     /**
      * Register the GT_* -> TC_* back-compat alias autoloader. Idempotent.
      */
@@ -27,7 +29,9 @@ if (!function_exists('gt_register_brand_aliases')) {
         if ($registered) {
             return;
         }
+        // @codeCoverageIgnoreStart -- one-time registration runs at bootstrap load before coverage instrumentation starts.
         $registered = true;
+        // @codeCoverageIgnoreEnd
 
         spl_autoload_register(function ($class) {
             if (strncmp($class, 'GT_', 3) !== 0) {
@@ -43,4 +47,6 @@ if (!function_exists('gt_register_brand_aliases')) {
     }
 }
 
+// @codeCoverageIgnoreStart -- one-time bootstrap call runs before coverage instrumentation starts.
 gt_register_brand_aliases();
+// @codeCoverageIgnoreEnd

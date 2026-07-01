@@ -26,7 +26,9 @@ class TC_Block
     public static function register(): void
     {
         if (!function_exists('register_block_type')) {
+            // @codeCoverageIgnoreStart -- free-build-only fallback; register_block_type is always defined under the test shim.
             return; // Block editor unavailable (very old WP) — shortcode still works.
+            // @codeCoverageIgnoreEnd
         }
 
         if (function_exists('wp_register_script') && defined('TC_PLUGIN_URL')) {

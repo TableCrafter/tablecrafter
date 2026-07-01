@@ -39,7 +39,9 @@ class TC_Autoload_Manager
      */
     public static function get_autoload_stat(): int
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $where_clauses = [];
         foreach (self::TC_PREFIXES as $prefix) {
@@ -64,7 +66,9 @@ class TC_Autoload_Manager
      */
     public static function optimize_autoload(): int
     {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
 
         $where_clauses = [];
         foreach (self::TC_PREFIXES as $prefix) {

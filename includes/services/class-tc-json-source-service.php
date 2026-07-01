@@ -310,7 +310,9 @@ class TC_JSON_Source_Service {
         $response = wp_remote_get($url, $args);
 
         if (is_wp_error($response)) {
-            @unlink($tmp); // @codeCoverageIgnore
+            // @codeCoverageIgnoreStart
+            @unlink($tmp);
+            // @codeCoverageIgnoreEnd
             return $response;
         }
 
@@ -410,7 +412,9 @@ class TC_JSON_Source_Service {
 
         // Fall back to the full-download path when allow_url_fopen is disabled.
         if (!ini_get('allow_url_fopen')) {
+            // @codeCoverageIgnoreStart -- environment-dependent fallback; allow_url_fopen is enabled in the test env.
             return self::fetch_from_url($url, $headers, 60, $dot_path);
+            // @codeCoverageIgnoreEnd
         }
 
         // Build the request headers. Range asks the server to send only the
@@ -496,11 +500,13 @@ class TC_JSON_Source_Service {
             // expected when Range cutoff or early break interrupts the stream.
             // Return whatever rows were parsed before the cutoff.
             if (empty($rows)) {
+                // @codeCoverageIgnoreStart -- live JSON-stream parse failure; the stubbed wp_remote_request cannot produce a real stream resource (integration-only).
                 fclose($stream);
                 return new \WP_Error(
                     'gt_json_source_malformed',
                     sprintf(__('Remote endpoint returned malformed JSON: %s', 'tc-data-tables'), $e->getMessage())
                 );
+                // @codeCoverageIgnoreEnd
             }
         } finally {
             fclose($stream);
@@ -533,8 +539,10 @@ class TC_JSON_Source_Service {
         // Auto-detect top-level structure by peeking at the first non-whitespace byte.
         $fh = fopen($path, 'r');
         if ($fh === false) {
+            // @codeCoverageIgnoreStart -- reached only after a live download writes a temp file; the no-HTTP harness never enters this branch (integration-only).
             return new \WP_Error('gt_json_source_read_error',
                 __('Could not open downloaded JSON temp file.', 'tc-data-tables'));
+            // @codeCoverageIgnoreEnd
         }
         $first = '';
         while (!feof($fh) && $first === '') {

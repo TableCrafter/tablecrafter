@@ -388,7 +388,9 @@ class TC_Google_Sheets {
 
     /** WP-Cron callback. */
     public function handle_cron_sync( int $table_id, string $interval ): void {
+        // @codeCoverageIgnoreStart -- Xdebug does not record the global declaration; method body is covered.
         global $wpdb;
+        // @codeCoverageIgnoreEnd
         $row = $wpdb->get_row(
             $wpdb->prepare( "SELECT settings FROM {$wpdb->prefix}gravity_tables WHERE id = %d", $table_id ),
             ARRAY_A

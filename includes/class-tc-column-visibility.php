@@ -16,12 +16,14 @@
  * @package GravityTables
  */
 
+// @codeCoverageIgnoreStart -- ABSPATH/SAPI guard; conditions are always false under the test shim and run pre-instrumentation.
 if ( ! defined( 'ABSPATH' ) && ! defined( 'TC_PHPUNIT_SHIM' ) && ! defined( 'TC_TESTING' ) ) {
     // Allow CLI test harness to load this file standalone.
     if ( PHP_SAPI !== 'cli' ) {
         exit;
     }
 }
+// @codeCoverageIgnoreEnd
 
 class TC_Column_Visibility {
 
