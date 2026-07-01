@@ -509,12 +509,6 @@ if ($table_id) {
                 </div>
             </div>
             
-            <!-- Section Save Button -->
-            <div class="gt-section-save">
-                <button type="button" class="button-primary gt-save-button" data-save-location="basic-settings">
-                    <?php _e('Save', 'tc-data-tables'); ?>
-                </button>
-            </div>
         </div>
 
         <!-- Step 2: Field Selection -->
@@ -1095,12 +1089,6 @@ if ($table_id) {
             </div>
             </div>
             
-            <!-- Section Save Button -->
-            <div class="gt-section-save">
-                <button type="button" class="button-primary gt-save-button" data-save-location="field-selection">
-                    <?php _e('Save', 'tc-data-tables'); ?>
-                </button>
-            </div>
         </div>
 
         <!-- Step 3: Table Features -->
@@ -2364,12 +2352,6 @@ if ($table_id) {
             </div>
             </div>
 
-            <!-- Section Save Button -->
-            <div class="gt-section-save">
-                <button type="button" class="button-primary gt-save-button" data-save-location="table-features">
-                    <?php _e('Save', 'tc-data-tables'); ?>
-                </button>
-            </div>
         </div>
 
         <!-- Step 4: Preview & Save -->

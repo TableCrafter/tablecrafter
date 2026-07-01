@@ -55,27 +55,35 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
     ? GFCommon::$version
     : ( defined( 'GF_PLUGIN_VERSION' ) ? GF_PLUGIN_VERSION : __( 'n/a', 'tc-data-tables' ) );
 
-// ── Recent changelog entries (hard-coded for last 3 versions) ─────────────
+// ── Recent changelog entries ─────────────────────────────────────────────
+// Keep the newest entry's version in step with the current release — the
+// #2232 guard (tests/test-issue-2232-dashboard-whats-new.php) fails if this
+// falls a whole minor version behind TC_VERSION. Update on every release
+// (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
-        'version' => '7.8.0',
-        'summary' => __( 'Docs page redesign: collapsible section cards, teal hero, sticky scroll-spy sidebar.', 'tc-data-tables' ),
+        'version' => '8.0.35',
+        'summary' => __( 'Cleaner table builder: removed the redundant per-step Save buttons.', 'tc-data-tables' ),
     ),
     array(
-        'version' => '7.7.9',
-        'summary' => __( 'Account page brand redesign: teal hero banner, Pro/Free badge, styled Freemius content.', 'tc-data-tables' ),
+        'version' => '8.0.34',
+        'summary' => __( 'Dashboard "Total" tables count no longer includes trashed tables.', 'tc-data-tables' ),
     ),
     array(
-        'version' => '7.7.8',
-        'summary' => __( 'License page brand redesign: teal hero, Dashicons feature list, enticing Pro CTA.', 'tc-data-tables' ),
+        'version' => '8.0.33',
+        'summary' => __( 'Pro installs are no longer offered the WordPress.org free version as an update.', 'tc-data-tables' ),
     ),
     array(
-        'version' => '7.7.5',
-        'summary' => __( 'Admin menu uses plugin teal instead of WordPress blue.', 'tc-data-tables' ),
+        'version' => '8.0.32',
+        'summary' => __( 'Server-side processing tables render their rows again.', 'tc-data-tables' ),
     ),
     array(
-        'version' => '7.7.4',
-        'summary' => __( 'Dashboard widget fixes: license detection, docs link, GF version.', 'tc-data-tables' ),
+        'version' => '8.0.31',
+        'summary' => __( 'WooCommerce table builder: product column picker + live preview.', 'tc-data-tables' ),
+    ),
+    array(
+        'version' => '8.0.30',
+        'summary' => __( 'WooCommerce product tables render (links, prices, stock, add-to-cart).', 'tc-data-tables' ),
     ),
 );
 ?>
