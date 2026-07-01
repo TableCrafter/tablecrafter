@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.33
+Stable tag: 8.0.34
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.34 =
+* Fixed: the dashboard "Total" tables count included trashed tables, so it could read much higher than the number of real tables. It now counts only your live tables.
 
 = 8.0.33 =
 * Maintenance release. No functional changes to the free plugin (a Pro-only plugin-update-routing fix).

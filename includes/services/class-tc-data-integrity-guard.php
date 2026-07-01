@@ -138,4 +138,28 @@ class TC_Data_Integrity_Guard {
         );
         return (int) $count;
     }
+
+    /**
+     * #2229 — count of all tables the user actually has: everything except
+     * soft-deleted (Trash) rows. This is the dashboard's "Total". A bare
+     * COUNT(*) counted trashed tables too, so Total ballooned past Active.
+     *
+     * Excludes BOTH soft-delete signals: `status = 'deleted'` and a set
+     * `deleted_at`. Real data can carry one without the other (a partial
+     * delete leaves status='deleted' with deleted_at NULL), so filtering on
+     * deleted_at alone would still count those trashed rows.
+     */
+    public static function count_all_tables($db = null): int {
+        if ($db === null) {
+            global $wpdb;
+            $db = $wpdb;
+        }
+        if (!$db || !is_object($db)) {
+            return 0;
+        }
+        $count = $db->get_var(
+            "SELECT COUNT(*) FROM {$db->prefix}gravity_tables WHERE status <> 'deleted' AND deleted_at IS NULL"
+        );
+        return (int) $count;
+    }
 }

@@ -17,9 +17,14 @@ global $wpdb;
 $table_count = (int) $wpdb->get_var(
     "SELECT COUNT(*) FROM {$wpdb->prefix}gravity_tables WHERE status = 'active'"
 );
-$all_tables  = (int) $wpdb->get_var(
-    "SELECT COUNT(*) FROM {$wpdb->prefix}gravity_tables"
-);
+// #2229 — "Total" is every table the user actually has, i.e. excluding
+// soft-deleted (Trash) rows. A bare COUNT(*) counted trashed tables too, so
+// Total ballooned past Active (e.g. 26 vs 4 with 22 trashed).
+$all_tables  = class_exists( 'TC_Data_Integrity_Guard' )
+    ? TC_Data_Integrity_Guard::count_all_tables( $wpdb )
+    : (int) $wpdb->get_var(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}gravity_tables WHERE status <> 'deleted' AND deleted_at IS NULL"
+    );
 
 // Count active tables per data_source_type (stored inside settings JSON).
 $_active_rows  = $wpdb->get_results(
