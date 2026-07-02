@@ -111,6 +111,12 @@ class TC_Ajax
         add_action('wp_ajax_nopriv_gt_get_wc_products', array($this, 'get_wc_products'));
         // #2200 — builder: load WooCommerce product columns into the field picker.
         add_action('wp_ajax_gt_preview_wc_source', array($this, 'preview_wc_source'));
+        // #2240 — builder: load Airtable columns into the field picker.
+        add_action('wp_ajax_gt_preview_airtable_source', array($this, 'preview_airtable_source'));
+        // #2241 — builder: load Notion columns into the field picker.
+        add_action('wp_ajax_gt_preview_notion_source', array($this, 'preview_notion_source'));
+        // #2242 — builder: load External DB columns into the field picker.
+        add_action('wp_ajax_gt_preview_external_db_source', array($this, 'preview_external_db_source'));
         add_action('wp_ajax_gt_get_lookup_options', array($this, 'get_lookup_options'));
         add_action('wp_ajax_nopriv_gt_get_lookup_options', array($this, 'get_lookup_options'));
         // Text-filter typeahead (4.7.57): distinct existing values for a form field, optionally search-filtered.
@@ -1668,9 +1674,19 @@ class TC_Ajax
                 wp_send_json_success(['html' => $this->preview_remote_source_html($settings_post, $data_source_type)]);
                 return;
             }
-            // Connection/auth-based sources still preview only after saving.
-            if (in_array($data_source_type, ['airtable', 'notion', 'external_db'], true)) {
-                wp_send_json_success(['html' => '<p>' . esc_html__('Save the table then view it on the frontend to preview this data source.', 'tc-data-tables') . '</p>']);
+            // #2240 — Airtable previews live using the entered (or saved) credentials.
+            if ($data_source_type === 'airtable') {
+                wp_send_json_success(['html' => $this->preview_airtable_source_html($settings_post)]);
+                return;
+            }
+            // #2241 — Notion previews live using the entered (or saved) token.
+            if ($data_source_type === 'notion') {
+                wp_send_json_success(['html' => $this->preview_notion_source_html($settings_post)]);
+                return;
+            }
+            // #2242 — External DB previews live via the saved connection + query.
+            if ($data_source_type === 'external_db') {
+                wp_send_json_success(['html' => $this->preview_external_db_source_html($settings_post)]);
                 return;
             }
             // #2200 — WooCommerce products preview live (no save needed).
@@ -2823,6 +2839,389 @@ class TC_Ajax
             $total
         )) . '</p>';
         return $html;
+    }
+
+    /**
+     * #2240 — Builder: connect to Airtable with the entered (or saved) config
+     * and return the inferred columns + sampled row count so the field picker
+     * populates, mirroring preview_wc_source / the JSON "Test connection" flow.
+     */
+    public function preview_airtable_source(): void
+    {
+        check_ajax_referer('gt_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Insufficient permissions', 'tc-data-tables')));
+        }
+        if (!class_exists('TC_Airtable_Sync_Engine')) {
+            wp_send_json_error(array('message' => __('Airtable integration is not available.', 'tc-data-tables')));
+        }
+
+        $base_id  = sanitize_text_field(wp_unslash((string) ($_POST['airtable_base_id'] ?? '')));
+        $table_at = sanitize_text_field(wp_unslash((string) ($_POST['airtable_table_id'] ?? '')));
+        if ($base_id === '' || $table_at === '') {
+            wp_send_json_error(array('message' => __('Base ID and Table ID are required.', 'tc-data-tables')));
+        }
+
+        $pat = $this->resolve_source_secret(
+            (string) ($_POST['airtable_pat'] ?? ''),
+            isset($_POST['table_id']) ? (int) $_POST['table_id'] : 0,
+            'airtable_pat'
+        );
+        if ($pat === '') {
+            wp_send_json_error(array('message' => __('Personal Access Token is required (enter one above, or save the table once so the stored token can be reused).', 'tc-data-tables')));
+        }
+
+        $result = TC_Airtable_Sync_Engine::fetch_records($base_id, $table_at, $pat, array('page_size' => 25, 'max_pages' => 1));
+        if (empty($result['ok'])) {
+            wp_send_json_error(array('message' => sprintf(
+                /* translators: 1: HTTP code, 2: error message. */
+                __('Airtable fetch failed (HTTP %1$s): %2$s', 'tc-data-tables'),
+                isset($result['http_code']) ? (string) $result['http_code'] : '?',
+                isset($result['error']) ? (string) $result['error'] : 'unknown'
+            )));
+        }
+
+        $rows = TC_Airtable_Sync_Engine::flatten_records((array) $result['records']);
+        if (empty($rows)) {
+            wp_send_json_error(array('message' => __('The Airtable table has no records to infer columns from.', 'tc-data-tables')));
+        }
+
+        $columns = array();
+        foreach ($this->union_row_keys($rows) as $key) {
+            $columns[] = array(
+                'id'   => $key,
+                'name' => TC_Shortcode::resolve_external_header_label($key, array()),
+            );
+        }
+
+        wp_send_json_success(array('columns' => $columns, 'row_count' => count($rows)));
+    }
+
+    /**
+     * #2240 — Build the in-builder live preview for an Airtable-source table,
+     * routed from preview_table() (replaces the "save then view on the
+     * frontend" placeholder). Fetches one page live with the entered (or
+     * saved) credentials and renders via the shared row-dict preview table.
+     */
+    private function preview_airtable_source_html(array $settings): string
+    {
+        if (!class_exists('TC_Airtable_Sync_Engine')) {
+            return '<p>' . esc_html__('Airtable integration is not available.', 'tc-data-tables') . '</p>';
+        }
+
+        $base_id  = isset($settings['airtable_base_id']) ? sanitize_text_field(wp_unslash((string) $settings['airtable_base_id'])) : '';
+        $table_at = isset($settings['airtable_table_id']) ? sanitize_text_field(wp_unslash((string) $settings['airtable_table_id'])) : '';
+        if ($base_id === '' || $table_at === '') {
+            return '<p>' . esc_html__('Enter the Airtable Personal Access Token, Base ID, and Table ID, then click "Load Airtable columns".', 'tc-data-tables') . '</p>';
+        }
+
+        $pat = $this->resolve_source_secret(
+            (string) ($settings['airtable_pat'] ?? ''),
+            isset($settings['table_id']) ? (int) $settings['table_id'] : 0,
+            'airtable_pat'
+        );
+        if ($pat === '') {
+            return '<p>' . esc_html__('Personal Access Token is required (enter one above, or save the table once so the stored token can be reused).', 'tc-data-tables') . '</p>';
+        }
+
+        $result = TC_Airtable_Sync_Engine::fetch_records($base_id, $table_at, $pat, array('page_size' => 25, 'max_pages' => 1));
+        if (empty($result['ok'])) {
+            return '<p class="gt-error">' . esc_html(sprintf(
+                /* translators: 1: HTTP code, 2: error message. */
+                __('Airtable fetch failed (HTTP %1$s): %2$s', 'tc-data-tables'),
+                isset($result['http_code']) ? (string) $result['http_code'] : '?',
+                isset($result['error']) ? (string) $result['error'] : 'unknown'
+            )) . '</p>';
+        }
+
+        $rows = TC_Airtable_Sync_Engine::flatten_records((array) $result['records']);
+        if (empty($rows)) {
+            return '<p>' . esc_html__('The Airtable table has no records yet.', 'tc-data-tables') . '</p>';
+        }
+
+        return $this->render_source_preview_html($rows, $settings);
+    }
+
+    /**
+     * #2241 — Builder: connect to Notion with the entered (or saved) token
+     * and return the inferred columns + sampled row count so the field picker
+     * populates, mirroring preview_airtable_source (#2240).
+     */
+    public function preview_notion_source(): void
+    {
+        check_ajax_referer('gt_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Insufficient permissions', 'tc-data-tables')));
+        }
+        if (!class_exists('TC_Notion_Sync_Engine')) {
+            wp_send_json_error(array('message' => __('Notion integration is not available.', 'tc-data-tables')));
+        }
+
+        $database_id = sanitize_text_field(wp_unslash((string) ($_POST['notion_database_id'] ?? '')));
+        if ($database_id === '') {
+            wp_send_json_error(array('message' => __('Database ID is required.', 'tc-data-tables')));
+        }
+
+        $token = $this->resolve_source_secret(
+            (string) ($_POST['notion_token'] ?? ''),
+            isset($_POST['table_id']) ? (int) $_POST['table_id'] : 0,
+            'notion_token'
+        );
+        if ($token === '') {
+            wp_send_json_error(array('message' => __('Notion API token is required (enter one above, or save the table once so the stored token can be reused).', 'tc-data-tables')));
+        }
+
+        $result = TC_Notion_Sync_Engine::fetch_database_rows($database_id, $token, array('page_size' => 25, 'max_pages' => 1));
+        if (empty($result['ok'])) {
+            wp_send_json_error(array('message' => sprintf(
+                /* translators: 1: HTTP code, 2: error message. */
+                __('Notion fetch failed (HTTP %1$s): %2$s', 'tc-data-tables'),
+                isset($result['http_code']) ? (string) $result['http_code'] : '?',
+                isset($result['error']) ? (string) $result['error'] : 'unknown'
+            )));
+        }
+
+        $rows = isset($result['rows']) && is_array($result['rows']) ? $result['rows'] : array();
+        if (empty($rows)) {
+            wp_send_json_error(array('message' => __('The Notion database has no rows to infer columns from.', 'tc-data-tables')));
+        }
+
+        $columns = array();
+        foreach ($this->union_row_keys($rows) as $key) {
+            $columns[] = array(
+                'id'   => $key,
+                'name' => TC_Shortcode::resolve_external_header_label($key, array()),
+            );
+        }
+
+        wp_send_json_success(array('columns' => $columns, 'row_count' => count($rows)));
+    }
+
+    /**
+     * #2241 — Build the in-builder live preview for a Notion-source table,
+     * routed from preview_table() (replaces the "save then view on the
+     * frontend" placeholder). Fetches one page live with the entered (or
+     * saved) token and renders via the shared row-dict preview table.
+     */
+    private function preview_notion_source_html(array $settings): string
+    {
+        if (!class_exists('TC_Notion_Sync_Engine')) {
+            return '<p>' . esc_html__('Notion integration is not available.', 'tc-data-tables') . '</p>';
+        }
+
+        $database_id = isset($settings['notion_database_id']) ? sanitize_text_field(wp_unslash((string) $settings['notion_database_id'])) : '';
+        if ($database_id === '') {
+            return '<p>' . esc_html__('Enter the Notion API token and Database ID, then click "Load Notion columns".', 'tc-data-tables') . '</p>';
+        }
+
+        $token = $this->resolve_source_secret(
+            (string) ($settings['notion_token'] ?? ''),
+            isset($settings['table_id']) ? (int) $settings['table_id'] : 0,
+            'notion_token'
+        );
+        if ($token === '') {
+            return '<p>' . esc_html__('Notion API token is required (enter one above, or save the table once so the stored token can be reused).', 'tc-data-tables') . '</p>';
+        }
+
+        $result = TC_Notion_Sync_Engine::fetch_database_rows($database_id, $token, array('page_size' => 25, 'max_pages' => 1));
+        if (empty($result['ok'])) {
+            return '<p class="gt-error">' . esc_html(sprintf(
+                /* translators: 1: HTTP code, 2: error message. */
+                __('Notion fetch failed (HTTP %1$s): %2$s', 'tc-data-tables'),
+                isset($result['http_code']) ? (string) $result['http_code'] : '?',
+                isset($result['error']) ? (string) $result['error'] : 'unknown'
+            )) . '</p>';
+        }
+
+        $rows = isset($result['rows']) && is_array($result['rows']) ? $result['rows'] : array();
+        if (empty($rows)) {
+            return '<p>' . esc_html__('The Notion database has no rows yet.', 'tc-data-tables') . '</p>';
+        }
+
+        return $this->render_source_preview_html($rows, $settings);
+    }
+
+    /**
+     * #2242 — Builder: run the entered read-only query against the selected
+     * saved connection and return the inferred columns + row count so the
+     * field picker populates, mirroring preview_airtable_source (#2240) /
+     * preview_notion_source (#2241). TC_External_DB::execute_query() enforces
+     * the gravity_tables_view_external capability + read-only guard.
+     */
+    public function preview_external_db_source(): void
+    {
+        check_ajax_referer('gt_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Insufficient permissions', 'tc-data-tables')));
+        }
+        if (!class_exists('TC_External_DB')) {
+            wp_send_json_error(array('message' => __('External database integration is not available.', 'tc-data-tables')));
+        }
+
+        $conn_raw = isset($_POST['external_db_connection']) ? (string) $_POST['external_db_connection'] : '';
+        if ($conn_raw === '' || !is_numeric($conn_raw)) {
+            wp_send_json_error(array('message' => __('Select a database connection first.', 'tc-data-tables')));
+        }
+        $query = isset($_POST['external_db_query']) ? trim((string) wp_unslash($_POST['external_db_query'])) : '';
+        if ($query === '') {
+            wp_send_json_error(array('message' => __('Enter a read-only SELECT query first.', 'tc-data-tables')));
+        }
+
+        $rows = TC_External_DB::get_instance()->execute_query((int) $conn_raw, $query);
+        if (is_wp_error($rows)) {
+            wp_send_json_error(array('message' => $rows->get_error_message()));
+        }
+        if (empty($rows)) {
+            wp_send_json_error(array('message' => __('The query returned no rows to infer columns from.', 'tc-data-tables')));
+        }
+
+        $columns = array();
+        foreach ($this->union_row_keys($rows) as $key) {
+            $columns[] = array(
+                'id'   => $key,
+                'name' => TC_Shortcode::resolve_external_header_label($key, array()),
+            );
+        }
+
+        wp_send_json_success(array('columns' => $columns, 'row_count' => count($rows)));
+    }
+
+    /**
+     * #2242 — Build the in-builder live preview for an External-DB-source
+     * table, routed from preview_table() (replaces the "save then view on
+     * the frontend" placeholder). Runs the query live and renders via the
+     * shared row-dict preview table.
+     */
+    private function preview_external_db_source_html(array $settings): string
+    {
+        if (!class_exists('TC_External_DB')) {
+            return '<p>' . esc_html__('External database integration is not available.', 'tc-data-tables') . '</p>';
+        }
+
+        $conn_raw = isset($settings['external_db_connection']) ? (string) $settings['external_db_connection'] : '';
+        $query    = isset($settings['external_db_query']) ? trim((string) wp_unslash($settings['external_db_query'])) : '';
+        if ($conn_raw === '' || !is_numeric($conn_raw) || $query === '') {
+            return '<p>' . esc_html__('Select a database connection and enter a read-only SELECT query, then click "Load database columns".', 'tc-data-tables') . '</p>';
+        }
+
+        $rows = TC_External_DB::get_instance()->execute_query((int) $conn_raw, $query);
+        if (is_wp_error($rows)) {
+            return '<p class="gt-error">' . esc_html(sprintf(
+                /* translators: %s: error message. */
+                __('External database error: %s', 'tc-data-tables'),
+                $rows->get_error_message()
+            )) . '</p>';
+        }
+        if (empty($rows)) {
+            return '<p>' . esc_html__('The query returned no rows.', 'tc-data-tables') . '</p>';
+        }
+
+        return $this->render_source_preview_html($rows, $settings);
+    }
+
+    /**
+     * #2240 — Resolve a builder-posted secret (Airtable PAT / Notion token).
+     * The builder posts the plaintext when the user typed one, and an EMPTY
+     * string when a saved secret sits behind the masked placeholder — in that
+     * case fall back to the saved table's encrypted setting and decrypt it.
+     */
+    private function resolve_source_secret(string $posted, int $table_id, string $settings_key): string
+    {
+        $posted = trim((string) wp_unslash($posted));
+        if ($posted !== '') {
+            return $posted;
+        }
+        if ($table_id <= 0 || !class_exists('TC_Airtable_Credential_Service')) {
+            return '';
+        }
+
+        global $wpdb;
+        $row = $wpdb->get_row($wpdb->prepare(
+            "SELECT settings FROM {$wpdb->prefix}gravity_tables WHERE id = %d",
+            $table_id
+        ));
+        if (!$row) {
+            return '';
+        }
+        $settings = json_decode((string) $row->settings, true);
+        $enc = (is_array($settings) && isset($settings[$settings_key])) ? (string) $settings[$settings_key] : '';
+        return $enc === '' ? '' : TC_Airtable_Credential_Service::decrypt($enc);
+    }
+
+    /**
+     * #2240 — Shared builder-preview table for flat row-dict sources
+     * (Airtable; Notion + External DB reuse it in #2241/#2242). Columns are
+     * the union of row keys, narrowed + ordered by the saved selection, with
+     * headers resolved through the #2205/#2245 humanize/label pipeline.
+     */
+    private function render_source_preview_html(array $rows, array $settings): string
+    {
+        $column_keys = $this->union_row_keys($rows);
+
+        $selected = isset($settings['selected_fields']) && is_array($settings['selected_fields'])
+            ? array_map('strval', $settings['selected_fields'])
+            : array();
+        if (empty($selected) && isset($settings['columns']) && is_array($settings['columns'])) {
+            $selected = array_map('strval', $settings['columns']);
+        }
+        if (!empty($selected)) {
+            $ordered = array_values(array_filter($selected, function ($k) use ($column_keys) {
+                return in_array($k, $column_keys, true);
+            }));
+            if (!empty($ordered)) {
+                $column_keys = $ordered;
+            }
+        }
+        if (empty($column_keys)) {
+            return '<p>' . esc_html__('No columns detected.', 'tc-data-tables') . '</p>';
+        }
+
+        $labels = (isset($settings['column_labels']) && is_array($settings['column_labels']))
+            ? $settings['column_labels'] : array();
+        $preview_rows = array_slice($rows, 0, 25);
+        $html = '<table class="widefat striped gt-preview-table"><thead><tr>';
+        foreach ($column_keys as $key) {
+            $html .= '<th>' . esc_html(TC_Shortcode::resolve_external_header_label((string) $key, $labels)) . '</th>';
+        }
+        $html .= '</tr></thead><tbody>';
+        foreach ($preview_rows as $row) {
+            $html .= '<tr>';
+            foreach ($column_keys as $key) {
+                $val = (is_array($row) && isset($row[$key])) ? $row[$key] : '';
+                if (is_array($val)) {
+                    $val = wp_json_encode($val);
+                }
+                $html .= '<td>' . esc_html((string) $val) . '</td>';
+            }
+            $html .= '</tr>';
+        }
+        $html .= '</tbody></table>';
+        $html .= '<p class="gt-preview-meta description">' . sprintf(
+            /* translators: 1: visible rows, 2: total rows */
+            esc_html__('Showing %1$d of %2$d sampled rows.', 'tc-data-tables'),
+            count($preview_rows),
+            count($rows)
+        ) . '</p>';
+
+        return $html;
+    }
+
+    /**
+     * Union of associative row keys in first-seen order — column inference
+     * for sparse row-dict sources (Airtable records omit empty fields).
+     */
+    private function union_row_keys(array $rows): array
+    {
+        $keys = array();
+        foreach ($rows as $row) {
+            foreach ((array) $row as $key => $_val) {
+                $key = (string) $key;
+                if (!in_array($key, $keys, true)) {
+                    $keys[] = $key;
+                }
+            }
+        }
+        return $keys;
     }
 
     /**

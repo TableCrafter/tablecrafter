@@ -62,6 +62,10 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
 // (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
+        'version' => '8.0.37',
+        'summary' => __( 'Airtable, Notion, and External Database tables now load columns + a live preview right in the builder; fixed External Database tables never rendering (unregistered capability).', 'tc-data-tables' ),
+    ),
+    array(
         'version' => '8.0.36',
         'summary' => __( 'External-source table headers now show readable labels (e.g. "Product Name") instead of raw keys, in the frontend and the builder preview.', 'tc-data-tables' ),
     ),

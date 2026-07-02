@@ -82,6 +82,24 @@
                     setTimeout(function () {
                         $('.gt-wc-load-columns').trigger('click');
                     }, 150);
+                } else if (srcType === 'airtable' && ($('input[name="airtable_base_id"]').val() || '')) {
+                    // #2240 — saved Airtable tables auto-load columns on edit; the
+                    // saved PAT is reused server-side via the table_id fallback.
+                    setTimeout(function () {
+                        $('.gt-airtable-load-columns').trigger('click');
+                    }, 150);
+                } else if (srcType === 'notion' && ($('input[name="notion_database_id"]').val() || '')) {
+                    // #2241 — saved Notion tables auto-load columns on edit; the
+                    // saved token is reused server-side via the table_id fallback.
+                    setTimeout(function () {
+                        $('.gt-notion-load-columns').trigger('click');
+                    }, 150);
+                } else if (srcType === 'external_db' && ($('textarea[name="external_db_query"]').val() || '')) {
+                    // #2242 — saved External DB tables auto-load columns on edit by
+                    // re-running the stored query against the saved connection.
+                    setTimeout(function () {
+                        $('.gt-external-db-load-columns').trigger('click');
+                    }, 150);
                 } else if (this.selectedFields.length > 0) {
                     // GF / already-known sources: render the saved selection + preview
                     // after a short delay to ensure the UI is ready.

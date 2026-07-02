@@ -33,6 +33,13 @@ class TC_Capabilities_Service {
         // auto-granted to administrators on activation, manageable
         // through the same role-grant UI as the rest of the GT caps.
         'export_gravity_tables',
+        // #2242 — TC_External_DB::execute_query() has gated on this cap
+        // since #2003, but it was never in this list, so NOTHING granted
+        // it: every external-DB query (frontend render included) came back
+        // permission_denied for every user, admins included. Registering
+        // it here self-heals existing installs via
+        // ensure_capabilities_for_version() on the next version bump.
+        'gravity_tables_view_external',
     ];
 
     // -------------------------------------------------------------------------

@@ -302,6 +302,14 @@ if ($table_id) {
                         <p class="description"><?php _e('Only SELECT statements run (enforced server-side in read-only mode).', 'tc-data-tables'); ?></p>
                     </div>
 
+                    <!-- #2242 — Load External DB columns into the field picker + live preview. -->
+                    <div class="gt-form-row gt-external-db-source-fields"
+                         style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'external_db') ? '' : 'display: none;'; ?>">
+                        <button type="button" class="button gt-external-db-load-columns"><?php esc_html_e('Load database columns', 'tc-data-tables'); ?></button>
+                        <span class="gt-external-db-load-result" style="margin-left:8px;"></span>
+                        <p class="description"><?php esc_html_e('Runs the query above against the selected connection and loads the result columns into the field picker + preview — no save needed.', 'tc-data-tables'); ?></p>
+                    </div>
+
                     <!-- #2200 — WooCommerce products source. Shown only when
                          data_source_type = woocommerce_products. Columns auto-load on
                          select/edit; the button refreshes. Toggle in admin/bind-events.js. -->
@@ -435,6 +443,14 @@ if ($table_id) {
                         <p class="description"><?php _e('Specific view to filter/sort by (leave empty to use the default view).', 'tc-data-tables'); ?></p>
                     </div>
 
+                    <!-- #2240 — Load Airtable columns into the field picker + live preview. -->
+                    <div class="gt-form-row gt-airtable-source-fields"
+                         style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'airtable') ? '' : 'display: none;'; ?>">
+                        <button type="button" class="button gt-airtable-load-columns"><?php esc_html_e('Load Airtable columns', 'tc-data-tables'); ?></button>
+                        <span class="gt-airtable-load-result" style="margin-left:8px;"></span>
+                        <p class="description"><?php esc_html_e('Connects with the config above (or the saved token) and loads the table\'s columns into the field picker + preview — no save needed.', 'tc-data-tables'); ?></p>
+                    </div>
+
                     <!-- #998 v4.175.0 — Notion connection foundation (phase 1 of #592). -->
                     <div class="gt-form-row gt-notion-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'notion') ? '' : 'display: none;'; ?>">
@@ -463,6 +479,14 @@ if ($table_id) {
                                placeholder="32-char hex (dashes optional)"
                                style="width: 100%; max-width: 360px; font-family: monospace;" />
                         <p class="description"><?php _e('The Notion database UUID. Open the database in Notion and find it in the URL: notion.so/.../<strong>DATABASE-ID</strong>?v=...', 'tc-data-tables'); ?></p>
+                    </div>
+
+                    <!-- #2241 — Load Notion columns into the field picker + live preview. -->
+                    <div class="gt-form-row gt-notion-source-fields"
+                         style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'notion') ? '' : 'display: none;'; ?>">
+                        <button type="button" class="button gt-notion-load-columns"><?php esc_html_e('Load Notion columns', 'tc-data-tables'); ?></button>
+                        <span class="gt-notion-load-result" style="margin-left:8px;"></span>
+                        <p class="description"><?php esc_html_e('Connects with the config above (or the saved token) and loads the database\'s columns into the field picker + preview — no save needed.', 'tc-data-tables'); ?></p>
                     </div>
 
                     <?php

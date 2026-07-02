@@ -76,6 +76,25 @@
                 if (val === 'woocommerce_products') {
                     setTimeout(function () { $('.gt-wc-load-columns').trigger('click'); }, 100);
                 }
+                // #2240 — Airtable needs per-table config; auto-load only when the
+                // base + table are already filled in (switching back to a
+                // configured source, or editing a saved table).
+                if (val === 'airtable'
+                    && ($('input[name="airtable_base_id"]').val() || '')
+                    && ($('input[name="airtable_table_id"]').val() || '')) {
+                    setTimeout(function () { $('.gt-airtable-load-columns').trigger('click'); }, 100);
+                }
+                // #2241 — same for Notion when the database id is filled in (the
+                // saved token rides the table_id fallback server-side).
+                if (val === 'notion' && ($('input[name="notion_database_id"]').val() || '')) {
+                    setTimeout(function () { $('.gt-notion-load-columns').trigger('click'); }, 100);
+                }
+                // #2242 — same for External DB when a connection + query are set.
+                if (val === 'external_db'
+                    && ($('select[name="external_db_connection"]').val() || '') !== ''
+                    && ($('textarea[name="external_db_query"]').val() || '')) {
+                    setTimeout(function () { $('.gt-external-db-load-columns').trigger('click'); }, 100);
+                }
                 $('.gt-sync-direction-field').toggle(isExternal);
                 // #2108 — the Gravity Form picker is only relevant for the
                 // gravity_forms source. Hide it (and drop its `required`) for
@@ -221,6 +240,113 @@
                     })
                     .fail(function () { $result.html('<span style="color:#d63638;">Network error</span>'); })
                     .always(function () { $btn.prop('disabled', false); });
+            });
+
+            // #2240 — Airtable: live-fetch columns with the entered (or saved)
+            // credentials into the field picker + preview, mirroring the WC flow.
+            // A blank PAT with a saved table falls back to the stored encrypted
+            // token server-side (via table_id).
+            $(document).on('click', '.gt-airtable-load-columns', function () {
+                var $btn    = $(this);
+                var $result = $('.gt-airtable-load-result');
+                var baseId  = $('input[name="airtable_base_id"]').val() || '';
+                var tableId = $('input[name="airtable_table_id"]').val() || '';
+                if (!baseId || !tableId) {
+                    $result.html('<span style="color:#d63638;">Base ID and Table ID are required.</span>');
+                    return;
+                }
+                $btn.prop('disabled', true);
+                $result.html('<span style="color:#50575e;">Connecting to Airtable…</span>');
+                $.post(gtAdmin.ajax_url, {
+                    action:            'gt_preview_airtable_source',
+                    nonce:             gtAdmin.nonce,
+                    airtable_pat:      $('input[name="airtable_pat"]').val() || '',
+                    airtable_base_id:  baseId,
+                    airtable_table_id: tableId,
+                    table_id:          $('input[name="table_id"]').val() || ''
+                }).done(function (resp) {
+                    if (resp && resp.success && resp.data && resp.data.columns) {
+                        var d = resp.data;
+                        $result.html('<span style="color:#00a32a;">✓ ' + d.row_count + ' rows sampled, '
+                            + d.columns.length + ' columns loaded into the field picker.</span>');
+                        if (typeof self.loadJsonColumns === 'function') {
+                            self.loadJsonColumns(d.columns);
+                        }
+                    } else {
+                        var m = (resp && resp.data && resp.data.message) || 'Could not load Airtable columns';
+                        $result.html('<span style="color:#d63638;">✗ ' + m + '</span>');
+                    }
+                }).fail(function () { $result.html('<span style="color:#d63638;">Network error</span>'); })
+                  .always(function () { $btn.prop('disabled', false); });
+            });
+
+            // #2241 — Notion: live-fetch columns with the entered (or saved)
+            // token into the field picker + preview, mirroring the Airtable flow.
+            $(document).on('click', '.gt-notion-load-columns', function () {
+                var $btn    = $(this);
+                var $result = $('.gt-notion-load-result');
+                var dbId    = $('input[name="notion_database_id"]').val() || '';
+                if (!dbId) {
+                    $result.html('<span style="color:#d63638;">Database ID is required.</span>');
+                    return;
+                }
+                $btn.prop('disabled', true);
+                $result.html('<span style="color:#50575e;">Connecting to Notion…</span>');
+                $.post(gtAdmin.ajax_url, {
+                    action:             'gt_preview_notion_source',
+                    nonce:              gtAdmin.nonce,
+                    notion_token:       $('input[name="notion_token"]').val() || '',
+                    notion_database_id: dbId,
+                    table_id:           $('input[name="table_id"]').val() || ''
+                }).done(function (resp) {
+                    if (resp && resp.success && resp.data && resp.data.columns) {
+                        var d = resp.data;
+                        $result.html('<span style="color:#00a32a;">✓ ' + d.row_count + ' rows sampled, '
+                            + d.columns.length + ' columns loaded into the field picker.</span>');
+                        if (typeof self.loadJsonColumns === 'function') {
+                            self.loadJsonColumns(d.columns);
+                        }
+                    } else {
+                        var m = (resp && resp.data && resp.data.message) || 'Could not load Notion columns';
+                        $result.html('<span style="color:#d63638;">✗ ' + m + '</span>');
+                    }
+                }).fail(function () { $result.html('<span style="color:#d63638;">Network error</span>'); })
+                  .always(function () { $btn.prop('disabled', false); });
+            });
+
+            // #2242 — External DB: run the entered query against the selected
+            // saved connection and load the result columns into the field
+            // picker + preview, mirroring the Airtable / Notion flow.
+            $(document).on('click', '.gt-external-db-load-columns', function () {
+                var $btn    = $(this);
+                var $result = $('.gt-external-db-load-result');
+                var conn    = $('select[name="external_db_connection"]').val() || '';
+                var query   = $('textarea[name="external_db_query"]').val() || '';
+                if (conn === '' || !query) {
+                    $result.html('<span style="color:#d63638;">Select a connection and enter a SELECT query first.</span>');
+                    return;
+                }
+                $btn.prop('disabled', true);
+                $result.html('<span style="color:#50575e;">Running query…</span>');
+                $.post(gtAdmin.ajax_url, {
+                    action:                 'gt_preview_external_db_source',
+                    nonce:                  gtAdmin.nonce,
+                    external_db_connection: conn,
+                    external_db_query:      query
+                }).done(function (resp) {
+                    if (resp && resp.success && resp.data && resp.data.columns) {
+                        var d = resp.data;
+                        $result.html('<span style="color:#00a32a;">✓ ' + d.row_count + ' rows, '
+                            + d.columns.length + ' columns loaded into the field picker.</span>');
+                        if (typeof self.loadJsonColumns === 'function') {
+                            self.loadJsonColumns(d.columns);
+                        }
+                    } else {
+                        var m = (resp && resp.data && resp.data.message) || 'Could not load database columns';
+                        $result.html('<span style="color:#d63638;">✗ ' + m + '</span>');
+                    }
+                }).fail(function () { $result.html('<span style="color:#d63638;">Network error</span>'); })
+                  .always(function () { $btn.prop('disabled', false); });
             });
 
             // #2063 — one-click demo table creation.

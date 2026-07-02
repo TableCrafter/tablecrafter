@@ -681,6 +681,12 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.37 -- Airtable / Notion / External DB in the builder', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Load columns + live preview', 'tc-data-tables'); ?></strong> -- <?php _e('Airtable, Notion, and External Database sources now have a "Load columns" button in the builder that connects with your entered (or saved) credentials, fills the field picker, and shows a live sample preview -- no save-first required. Saved tables auto-load on edit.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('External Database rendering fixed', 'tc-data-tables'); ?></strong> -- <?php _e('the capability gating external-DB queries was never registered, so these tables never rendered for anyone. It is now granted to administrators automatically and manageable per role.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.36 -- Readable external-source headers', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Friendly column headers', 'tc-data-tables'); ?></strong> -- <?php _e('external-source tables (JSON, CSV, XML, Airtable, Notion, External DB) now show readable headers like "Product Name" instead of raw keys, in both the frontend and the builder preview. Saved labels still win; acronyms (ID, URL, SKU) stay upper-case.', 'tc-data-tables'); ?></li>

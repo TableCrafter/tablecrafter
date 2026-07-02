@@ -36,7 +36,10 @@ class TC_Airtable_Sync_Engine {
      * @param string        $base_id   e.g. "appAbc123"
      * @param string        $table_id  table name or id
      * @param string        $token     Airtable API key / PAT
-     * @param array         $opts      ['page_size' => int]
+     * @param array         $opts      ['page_size' => int, 'max_pages' => int]
+     *                                 max_pages caps pagination (#2240 — the
+     *                                 builder preview samples one page instead
+     *                                 of pulling the whole table).
      * @param callable|null $http      injectable transport with the
      *                                 wp_remote_get(url, args) shape;
      *                                 defaults to wp_remote_get when WP loaded
@@ -48,11 +51,15 @@ class TC_Airtable_Sync_Engine {
         $http = $http ?: self::default_http();
         $headers = TC_Airtable_Request_Builder::build_headers($token);
 
+        $max_pages = isset($opts['max_pages'])
+            ? max(1, min(self::MAX_PAGES, (int) $opts['max_pages']))
+            : self::MAX_PAGES;
+
         $records = [];
         $offset = '';
         $http_code = null;
 
-        for ($page = 0; $page < self::MAX_PAGES; $page++) {
+        for ($page = 0; $page < $max_pages; $page++) {
             $params = [];
             if (!empty($opts['page_size'])) {
                 $params['page_size'] = (int) $opts['page_size'];
@@ -267,11 +274,23 @@ class TC_Airtable_Sync_Engine {
             );
         }
 
-        // Normalize Airtable record shape -> flat rows.
-        // Airtable record: {id: 'recXXX', createdTime: '...', fields: {Name: 'Foo', Email: 'a@b'}}
-        // Flat row: {airtable_id: 'recXXX', airtable_created_time: '...', Name: 'Foo', Email: 'a@b'}
+        $rows = self::flatten_records($result['records']);
+
+        set_transient($transient_key, $rows, $ttl);
+
+        return $rows;
+    }
+
+    /**
+     * Normalize the Airtable record shape -> flat rows.
+     * Airtable record: {id: 'recXXX', createdTime: '...', fields: {Name: 'Foo', Email: 'a@b'}}
+     * Flat row: {airtable_id: 'recXXX', airtable_created_time: '...', Name: 'Foo', Email: 'a@b'}
+     *
+     * Shared by the per-table cache path above and the builder preview (#2240).
+     */
+    public static function flatten_records(array $records): array {
         $rows = array();
-        foreach ($result['records'] as $rec) {
+        foreach ($records as $rec) {
             $flat = array();
             if (isset($rec['id'])) {
                 $flat['airtable_id'] = (string) $rec['id'];
@@ -286,9 +305,6 @@ class TC_Airtable_Sync_Engine {
             }
             $rows[] = $flat;
         }
-
-        set_transient($transient_key, $rows, $ttl);
-
         return $rows;
     }
 

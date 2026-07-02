@@ -141,6 +141,20 @@
                     xml_url:             $('input[name="xml_url"]').val() || '',
                     xml_row_path:        $('input[name="xml_row_path"]').val() || '',
                     google_sheets_url:   $('input[name="google_sheets_url"]').val() || '',
+                    // #2240 — Airtable live preview config. A blank PAT means "use
+                    // the saved token" — the server falls back via table_id.
+                    airtable_pat:        $('input[name="airtable_pat"]').val() || '',
+                    airtable_base_id:    $('input[name="airtable_base_id"]').val() || '',
+                    airtable_table_id:   $('input[name="airtable_table_id"]').val() || '',
+                    // #2241 — Notion live preview config (same blank-token → saved-
+                    // token fallback via table_id).
+                    notion_token:        $('input[name="notion_token"]').val() || '',
+                    notion_database_id:  $('input[name="notion_database_id"]').val() || '',
+                    // #2242 — External DB live preview config (saved connection
+                    // index + read-only query).
+                    external_db_connection: $('select[name="external_db_connection"]').val() || '',
+                    external_db_query:      $('textarea[name="external_db_query"]').val() || '',
+                    table_id:            $('input[name="table_id"]').val() || '',
                     data_source_type:    $('select[name="data_source_type"]').val() || 'gravity_forms',
                     column_labels: fieldLabels,
                     lookup_fields: lookupFields,
