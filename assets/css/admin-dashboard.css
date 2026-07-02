@@ -99,10 +99,11 @@
     border: none;
 }
 
-/* Stats widget */
+/* Stats widget. #2257 — the card count varies (Total/Active/Trash + one per
+   data source in use), so let the grid flow instead of fixing 3 columns. */
 .gt-stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
     gap: 14px;
 }
 .gt-stat-item {

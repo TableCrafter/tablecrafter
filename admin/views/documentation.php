@@ -681,6 +681,12 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.38 -- Dashboard stats you can trust', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Redesigned stats cards', 'tc-data-tables'); ?></strong> -- <?php _e('Total, In use (tables actually embedded on a page), one card per data source in use, and Trash (hidden when empty, matching the Trash tab exactly). The old GF Tables card showed the wrong number.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Trash self-heal', 'tc-data-tables'); ?></strong> -- <?php _e('tables deleted before the Trash system existed were invisible everywhere; they now surface in the Trash tab as restorable entries.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.37 -- Airtable / Notion / External DB in the builder', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Load columns + live preview', 'tc-data-tables'); ?></strong> -- <?php _e('Airtable, Notion, and External Database sources now have a "Load columns" button in the builder that connects with your entered (or saved) credentials, fills the field picker, and shows a live sample preview -- no save-first required. Saved tables auto-load on edit.', 'tc-data-tables'); ?></li>

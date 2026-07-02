@@ -14,30 +14,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 global $wpdb;
 
 // ── Stats ──────────────────────────────────────────────────────────────────
-$table_count = (int) $wpdb->get_var(
-    "SELECT COUNT(*) FROM {$wpdb->prefix}gravity_tables WHERE status = 'active'"
-);
 // #2229 — "Total" is every table the user actually has, i.e. excluding
-// soft-deleted (Trash) rows. A bare COUNT(*) counted trashed tables too, so
-// Total ballooned past Active (e.g. 26 vs 4 with 22 trashed).
-$all_tables  = class_exists( 'TC_Data_Integrity_Guard' )
-    ? TC_Data_Integrity_Guard::count_all_tables( $wpdb )
-    : (int) $wpdb->get_var(
-        "SELECT COUNT(*) FROM {$wpdb->prefix}gravity_tables WHERE status <> 'deleted' AND deleted_at IS NULL"
-    );
+// soft-deleted (Trash) rows. #2257 — all counts now come from
+// TC_Data_Integrity_Guard so the cards, the tables list, and the Trash tab
+// share one definition of each population.
+$table_count  = TC_Data_Integrity_Guard::count_active_tables( $wpdb );
+$all_tables   = TC_Data_Integrity_Guard::count_all_tables( $wpdb );
+$trash_count  = TC_Data_Integrity_Guard::count_trashed_tables( $wpdb );
+// "In use" = live tables actually embedded on a post/page (where-used scan,
+// #542). More telling than Active, which mirrors Total on healthy data.
+$in_use_count = TC_Data_Integrity_Guard::count_tables_in_use( $wpdb );
 
-// Count active tables per data_source_type (stored inside settings JSON).
-$_active_rows  = $wpdb->get_results(
-    "SELECT settings FROM {$wpdb->prefix}gravity_tables WHERE status = 'active'"
-);
-$_src_counts   = [];
-foreach ( $_active_rows as $_row ) {
-    $_s   = json_decode( $_row->settings, true );
-    $_src = ( isset( $_s['data_source_type'] ) && $_s['data_source_type'] )
-        ? $_s['data_source_type']
-        : 'gravity_forms';
-    $_src_counts[ $_src ] = ( $_src_counts[ $_src ] ?? 0 ) + 1;
-}
+// #2257 — active tables grouped by data_source_type (settings JSON; absent
+// key defaults to gravity_forms). Feeds the per-source stat cards AND the
+// Data Sources widget below.
+$_src_counts   = TC_Data_Integrity_Guard::count_active_by_source( $wpdb );
+$_src_labels   = TC_Data_Integrity_Guard::source_labels();
 $gf_count       = $_src_counts['gravity_forms'] ?? 0;
 $json_count     = $_src_counts['json']           ?? 0;
 $airtable_count = $_src_counts['airtable']       ?? 0;
@@ -61,6 +53,10 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
 // falls a whole minor version behind TC_VERSION. Update on every release
 // (per the docs-per-release policy), newest first.
 $changelog = array(
+    array(
+        'version' => '8.0.38',
+        'summary' => __( 'Dashboard stats redesigned: Total, In use, per-source counts, and Trash (hidden when empty); orphaned pre-Trash-system deletes now surface in the Trash tab.', 'tc-data-tables' ),
+    ),
     array(
         'version' => '8.0.37',
         'summary' => __( 'Airtable, Notion, and External Database tables now load columns + a live preview right in the builder; fixed External Database tables never rendering (unregistered capability).', 'tc-data-tables' ),
@@ -122,19 +118,37 @@ $changelog = array(
             <?php /* ── #1925 Tables stats ── */ ?>
             <div class="gt-widget">
                 <h3><?php esc_html_e( 'Tables', 'tc-data-tables' ); ?></h3>
+                <?php /* #2257 — Total, Active, Trash, then a card per data
+                       source in use. The old third card ("GF Tables") echoed
+                       $table_count — the Active count — instead of the
+                       per-source tally. */ ?>
                 <div class="gt-stats-grid">
-                    <div class="gt-stat-item">
-                        <span class="gt-stat-number"><?php echo esc_html( $table_count ); ?></span>
-                        <span class="gt-stat-label"><?php esc_html_e( 'Active', 'tc-data-tables' ); ?></span>
-                    </div>
                     <div class="gt-stat-item">
                         <span class="gt-stat-number"><?php echo esc_html( $all_tables ); ?></span>
                         <span class="gt-stat-label"><?php esc_html_e( 'Total', 'tc-data-tables' ); ?></span>
                     </div>
                     <div class="gt-stat-item">
-                        <span class="gt-stat-number"><?php echo esc_html( $gf_active ? $table_count : '–' ); ?></span>
-                        <span class="gt-stat-label"><?php esc_html_e( 'GF Tables', 'tc-data-tables' ); ?></span>
+                        <span class="gt-stat-number"><?php echo esc_html( $in_use_count ); ?></span>
+                        <span class="gt-stat-label"><?php esc_html_e( 'In use', 'tc-data-tables' ); ?></span>
                     </div>
+                    <?php foreach ( $_src_counts as $_src => $_n ) :
+                        if ( $_n < 1 ) {
+                            continue;
+                        }
+                        $_label = $_src_labels[ $_src ] ?? ucwords( str_replace( '_', ' ', (string) $_src ) );
+                        ?>
+                    <div class="gt-stat-item gt-stat-source">
+                        <span class="gt-stat-number"><?php echo esc_html( $_n ); ?></span>
+                        <span class="gt-stat-label"><?php echo esc_html( $_label ); ?></span>
+                    </div>
+                    <?php endforeach; ?>
+                    <?php // #2259 — an empty Trash card tells the admin nothing; hide at zero
+                    if ( $trash_count > 0 ) : ?>
+                    <div class="gt-stat-item">
+                        <span class="gt-stat-number"><?php echo esc_html( $trash_count ); ?></span>
+                        <span class="gt-stat-label"><?php esc_html_e( 'Trash', 'tc-data-tables' ); ?></span>
+                    </div>
+                    <?php endif; ?>
                 </div>
                 <p style="margin:14px 0 0;font-size:12px;">
                     <a href="<?php echo esc_url( admin_url( 'admin.php?page=gravity-tables' ) ); ?>">

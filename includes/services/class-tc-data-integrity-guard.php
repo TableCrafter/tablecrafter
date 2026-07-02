@@ -123,7 +123,11 @@ class TC_Data_Integrity_Guard {
 
     /**
      * Tally helper used by the autobackup-before-mutate machinery
-     * (future slice). Returns the count of currently-active tables.
+     * (future slice) and the dashboard "Active" stat. Returns the count of
+     * currently-active tables. #2257 — also requires deleted_at IS NULL so a
+     * row carrying both an active status and a trash timestamp (should not
+     * exist, but real data has held inconsistent soft-delete signals before)
+     * can never inflate Active.
      */
     public static function count_active_tables($db = null): int {
         if ($db === null) {
@@ -134,9 +138,145 @@ class TC_Data_Integrity_Guard {
             return 0;
         }
         $count = $db->get_var(
-            "SELECT COUNT(*) FROM {$db->prefix}gravity_tables WHERE status = 'active'"
+            "SELECT COUNT(*) FROM {$db->prefix}gravity_tables WHERE status = 'active' AND deleted_at IS NULL"
         );
         return (int) $count;
+    }
+
+    /**
+     * #2257 — count of trashed tables for the dashboard "Trash" stat. The
+     * WHERE clause mirrors the Trash tab list query (get_trashed_tables in
+     * class-tc-admin.php) exactly, so the card and the tab always agree.
+     */
+    public static function count_trashed_tables($db = null): int {
+        if ($db === null) {
+            global $wpdb;
+            $db = $wpdb;
+        }
+        if (!$db || !is_object($db)) {
+            return 0;
+        }
+        $count = $db->get_var(
+            "SELECT COUNT(*) FROM {$db->prefix}gravity_tables WHERE status = 'deleted' AND deleted_at IS NOT NULL"
+        );
+        return (int) $count;
+    }
+
+    /**
+     * #2257 — active-table counts grouped by data_source_type (stored inside
+     * each row's settings JSON; absent/empty means gravity_forms, the same
+     * default the builder and preview paths use). Feeds both the stats cards
+     * and the Data Sources widget on the dashboard.
+     *
+     * @return array<string,int> e.g. ['gravity_forms' => 2, 'json' => 2]
+     */
+    public static function count_active_by_source($db = null): array {
+        if ($db === null) {
+            global $wpdb;
+            $db = $wpdb;
+        }
+        if (!$db || !is_object($db)) {
+            return array();
+        }
+        $rows = $db->get_results(
+            "SELECT settings FROM {$db->prefix}gravity_tables WHERE status = 'active' AND deleted_at IS NULL"
+        );
+        $counts = array();
+        foreach ((array) $rows as $row) {
+            $settings = json_decode((string) ($row->settings ?? ''), true);
+            $source   = (is_array($settings) && !empty($settings['data_source_type']))
+                ? (string) $settings['data_source_type']
+                : 'gravity_forms';
+            $counts[$source] = ($counts[$source] ?? 0) + 1;
+        }
+        return $counts;
+    }
+
+    /**
+     * #2257 — count of live tables actually embedded somewhere (shortcode or
+     * block in a post/page), via TC_Where_Used_Service (#542). A table count
+     * alone reads meaningless when demo tables pile up — "In use" is what
+     * admins actually want to know. The where-used candidate query is cached
+     * per request, so this costs one posts query + a regex per live table.
+     */
+    public static function count_tables_in_use($db = null): int {
+        if ($db === null) {
+            global $wpdb;
+            $db = $wpdb;
+        }
+        if (!$db || !is_object($db)) {
+            return 0;
+        }
+        // The where-used service is lazily required by the tables-list view
+        // only — on the dashboard it isn't loaded yet, and a bare
+        // class_exists() bail made this count silently read 0.
+        if (!class_exists('TC_Where_Used_Service')) {
+            $svc_path = __DIR__ . '/class-tc-where-used-service.php';
+            if (is_readable($svc_path)) {
+                require_once $svc_path;
+            }
+        }
+        if (!class_exists('TC_Where_Used_Service')) {
+            return 0;
+        }
+        $ids = $db->get_col(
+            "SELECT id FROM {$db->prefix}gravity_tables WHERE status = 'active' AND deleted_at IS NULL"
+        );
+        $in_use = 0;
+        foreach ((array) $ids as $id) {
+            if (!empty(TC_Where_Used_Service::find_usages((int) $id))) {
+                $in_use++;
+            }
+        }
+        return $in_use;
+    }
+
+    /**
+     * #2257 — friendly display labels for every supported data_source_type.
+     * Unknown/future types should fall back to ucwords at the call site.
+     *
+     * @return array<string,string>
+     */
+    public static function source_labels(): array {
+        return array(
+            'gravity_forms'        => __('Gravity Forms', 'tc-data-tables'),
+            'json'                 => __('JSON / REST', 'tc-data-tables'),
+            'csv'                  => __('CSV', 'tc-data-tables'),
+            'xlsx'                 => __('Excel (XLSX)', 'tc-data-tables'),
+            'xml'                  => __('XML', 'tc-data-tables'),
+            'google_sheets'        => __('Google Sheets', 'tc-data-tables'),
+            'airtable'             => __('Airtable', 'tc-data-tables'),
+            'notion'               => __('Notion', 'tc-data-tables'),
+            'external_db'          => __('External Database', 'tc-data-tables'),
+            'woocommerce_products' => __('WooCommerce', 'tc-data-tables'),
+        );
+    }
+
+    /**
+     * #2257 — one-time self-heal for legacy "ghost" rows: soft-deletes from
+     * before the #593 deleted_at trash system carry status='deleted' with
+     * deleted_at NULL, which matches NEITHER the tables-list query NOR the
+     * Trash tab query — the rows are invisible everywhere and counted
+     * nowhere. Backfilling deleted_at folds them into the Trash tab
+     * (restorable / purgeable). NOW() rather than updated_at so they get a
+     * full retention window before the auto-purge cron may remove them.
+     *
+     * Idempotent: matches zero rows once every deleted row is timestamped.
+     *
+     * @return int rows updated
+     */
+    public static function backfill_legacy_trash($db = null): int {
+        if ($db === null) {
+            global $wpdb;
+            $db = $wpdb;
+        }
+        if (!$db || !is_object($db)) {
+            return 0;
+        }
+        $updated = $db->query(
+            "UPDATE {$db->prefix}gravity_tables SET deleted_at = NOW() WHERE status = 'deleted' AND deleted_at IS NULL" // DATA_INTEGRITY_OK: repairs orphaned soft-deletes into the Trash tab, see method docblock
+        );
+        return (int) $updated;
     }
 
     /**

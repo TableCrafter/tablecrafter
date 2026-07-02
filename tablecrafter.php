@@ -3,7 +3,7 @@
  * Plugin Name: TableCrafter
  * Plugin URI: https://github.com/TableCrafter/tablecrafter
  * Description: TableCrafter — beautiful, responsive data tables for WordPress. Free: 3 tables, 8 columns, 500 entries. Pro: unlimited everything + frontend editing, bulk operations, advanced filters.
- * Version: 8.0.37
+ * Version: 8.0.38
  * Author: Fahad Murtaza @ iSuperCoder.com
  * Author URI: https://isupercoder.com/contact
  * License: GPL-2.0-or-later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('TC_VERSION', '8.0.37');
+define('TC_VERSION', '8.0.38');
 define('TC_PHP_COMPAT_VERSION', '8.1');
 define('TC_ELEMENTOR_MIN_VERSION', '3.5.0');
 define('TC_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -525,6 +525,19 @@ class Gravity_Tables_Plugin
         // so the migration executes once on upgrade from any pre-7.6.3 version.
         if ($stored_version === '' || version_compare($stored_version, '7.6.3', '<')) {
             delete_option('gt_shortcode_migration_done');
+            $needs_version_bump = true;
+        }
+
+        // #2257 v8.0.38 — fold legacy "ghost" soft-deletes into the Trash tab.
+        // Rows deleted before the #593 deleted_at trash system carry
+        // status='deleted' with deleted_at NULL, matching neither the tables
+        // list nor the Trash tab. Backfill deleted_at so they surface as
+        // restorable Trash and the dashboard counts reconcile. Idempotent —
+        // the UPDATE matches zero rows once every deleted row is timestamped.
+        if ($stored_version === '' || version_compare($stored_version, '8.0.38', '<')) {
+            if (class_exists('TC_Data_Integrity_Guard')) {
+                TC_Data_Integrity_Guard::backfill_legacy_trash();
+            }
             $needs_version_bump = true;
         }
 

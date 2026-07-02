@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.37
+Stable tag: 8.0.38
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.38 =
+* **Dashboard stats redesigned.** Cards now show Total, In use (tables actually embedded on a post/page), one card per data source in use, and Trash (hidden when empty; matches the Trash tab). Plus a one-time self-heal that folds orphaned pre-Trash-system deletes into the Trash tab as restorable entries.
 
 = 8.0.37 =
 * **Pro data sources configure live in the builder.** In TableCrafter Pro, Airtable, Notion, and External Database tables now load their columns into the field picker and show a live sample preview without saving first. Also fixes a Pro bug where External Database tables never rendered due to an unregistered capability.
