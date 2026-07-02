@@ -2197,6 +2197,93 @@ class TC_Shortcode
     }
 
     /**
+     * #2205 — Resolve a display header label for an external-source column.
+     * Saved column_labels / field_labels always win; when none is set (or it
+     * is blank) the raw data key is humanized so headers read "Product Name"
+     * instead of "product_name". WooCommerce / Gravity Forms already provide
+     * labels, so they never reach the humanize fallback.
+     *
+     * @param string               $key    Raw column/data key.
+     * @param array<string,mixed>  $labels Saved label map (key => label).
+     */
+    public static function resolve_external_header_label(string $key, array $labels): string
+    {
+        if (isset($labels[$key]) && (string) $labels[$key] !== '') {
+            return (string) $labels[$key];
+        }
+        return self::humanize_label($key);
+    }
+
+    /**
+     * #2205 — Convert a raw data key into a human-readable Title Case label.
+     * Handles snake_case, kebab-case, dotted json-flatten keys, and
+     * camelCase/PascalCase; preserves ALL-CAPS acronyms (SKU, ID) and is
+     * idempotent on already-humanized input ("Product Name").
+     */
+    public static function humanize_label(string $key): string
+    {
+        if ($key === '') {
+            return '';
+        }
+        // Split camelCase / PascalCase boundaries.
+        $s = preg_replace('/([a-z0-9])([A-Z])/', '$1 $2', $key);
+        // Split an acronym run followed by a TitleCase word ("HTTPStatus" -> "HTTP Status").
+        $s = preg_replace('/([A-Z]+)([A-Z][a-z])/', '$1 $2', (string) $s);
+        // Separators -> spaces, then collapse.
+        $s = preg_replace('/[_\-.]+/', ' ', (string) $s);
+        $s = trim(preg_replace('/\s+/', ' ', (string) $s));
+        if ($s === '') {
+            return '';
+        }
+        $acronyms = self::header_acronyms();
+        $words    = explode(' ', $s);
+        foreach ($words as &$word) {
+            // Preserve all-caps acronyms already spelled uppercase (SKU, ID).
+            if (preg_match('/^[A-Z0-9]+$/', $word) && preg_match('/[A-Z]/', $word)) {
+                continue;
+            }
+            $lower = strtolower($word);
+            // Upper-case a known acronym that arrived lowercase (id -> ID).
+            if (isset($acronyms[$lower])) {
+                $word = strtoupper($word);
+                continue;
+            }
+            $word = ucfirst($lower);
+        }
+        unset($word);
+        return implode(' ', $words);
+    }
+
+    /**
+     * #2205 — Lowercase-keyed set of known acronyms that should render
+     * UPPER-CASE in a humanized header (so `order_id` -> "Order ID", not
+     * "Order Id"). Extend or trim for site-specific acronyms via the
+     * `tablecrafter_header_acronyms` filter (pass a flat array of tokens).
+     *
+     * @return array<string,bool>
+     */
+    private static function header_acronyms(): array
+    {
+        $acronyms = array(
+            'id', 'url', 'uri', 'api', 'sku', 'http', 'https', 'ftp',
+            'json', 'xml', 'html', 'css', 'csv', 'pdf', 'sql', 'db',
+            'ip', 'gps', 'isbn', 'uuid', 'ssn', 'ein', 'vat', 'ai',
+            'usd', 'eur', 'gbp', 'cpu', 'ram', 'faq', 'seo', 'utc',
+        );
+        if (function_exists('apply_filters')) {
+            $filtered = apply_filters('tablecrafter_header_acronyms', $acronyms);
+            if (is_array($filtered)) {
+                $acronyms = $filtered;
+            }
+        }
+        $set = array();
+        foreach ($acronyms as $a) {
+            $set[strtolower((string) $a)] = true;
+        }
+        return $set;
+    }
+
+    /**
      * #1008 v4.180.0 — Shared HTML generation for the external data-source
      * render methods. Takes pre-flattened rows + column keys + a source-kind
      * slug ('json' / 'airtable' / 'notion') and emits the standard wrapper /
@@ -2297,8 +2384,8 @@ class TC_Shortcode
 
         $html .= '<thead><tr>';
         foreach ($column_keys as $key) {
-            $label = (isset($labels[$key]) && $labels[$key] !== '') ? $labels[$key] : $key;
-            $html .= '<th>' . esc_html((string) $label) . '</th>';
+            $label = self::resolve_external_header_label((string) $key, $labels);
+            $html .= '<th>' . esc_html($label) . '</th>';
         }
         $html .= '</tr></thead>';
 

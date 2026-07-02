@@ -62,6 +62,10 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
 // (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
+        'version' => '8.0.36',
+        'summary' => __( 'External-source table headers now show readable labels (e.g. "Product Name") instead of raw keys, in the frontend and the builder preview.', 'tc-data-tables' ),
+    ),
+    array(
         'version' => '8.0.35',
         'summary' => __( 'Cleaner table builder: removed the redundant per-step Save buttons.', 'tc-data-tables' ),
     ),

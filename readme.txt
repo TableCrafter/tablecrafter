@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.35
+Stable tag: 8.0.36
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.36 =
+* **Readable headers for external-source tables (#2205, #2245).** JSON / CSV / XML / Google Sheets tables now humanize raw column keys in their headers -- `product_name` shows as "Product Name", saved column labels win, and known acronyms (ID, URL, SKU) stay upper-case. Applies to both the frontend table and the builder live preview.
 
 = 8.0.35 =
 * Cleaner table builder: removed the redundant per-step Save buttons (the floating Save covers every step).

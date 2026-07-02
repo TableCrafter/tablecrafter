@@ -681,6 +681,11 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.36 -- Readable external-source headers', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Friendly column headers', 'tc-data-tables'); ?></strong> -- <?php _e('external-source tables (JSON, CSV, XML, Airtable, Notion, External DB) now show readable headers like "Product Name" instead of raw keys, in both the frontend and the builder preview. Saved labels still win; acronyms (ID, URL, SKU) stay upper-case.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.35 — Cleaner table builder', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Less clutter in the builder', 'tc-data-tables'); ?></strong> — <?php _e('removed the redundant per-step Save buttons; the floating Save covers all steps.', 'tc-data-tables'); ?></li>

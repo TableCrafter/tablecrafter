@@ -1784,10 +1784,14 @@ class TC_Ajax
             return '<p>' . esc_html__('No columns detected in JSON response.', 'tc-data-tables') . '</p>';
         }
 
+        // #2245 — humanize / apply saved column_labels so the builder preview
+        // headers match the frontend (#2205) instead of showing raw keys.
+        $labels = (isset($settings['column_labels']) && is_array($settings['column_labels']))
+            ? $settings['column_labels'] : array();
         $preview_rows = array_slice($flat, 0, 25);
         $html = '<table class="widefat striped gt-preview-table"><thead><tr>';
         foreach ($column_keys as $key) {
-            $html .= '<th>' . esc_html($key) . '</th>';
+            $html .= '<th>' . esc_html(TC_Shortcode::resolve_external_header_label((string) $key, $labels)) . '</th>';
         }
         $html .= '</tr></thead><tbody>';
         foreach ($preview_rows as $row) {
@@ -1874,10 +1878,14 @@ class TC_Ajax
             return '<p>' . esc_html__('No columns detected.', 'tc-data-tables') . '</p>';
         }
 
+        // #2245 — humanize / apply saved column_labels so the builder preview
+        // headers match the frontend (#2205) instead of showing raw keys.
+        $labels = (isset($settings['column_labels']) && is_array($settings['column_labels']))
+            ? $settings['column_labels'] : array();
         $preview_rows = array_slice($rows, 0, 25);
         $html = '<table class="widefat striped gt-preview-table"><thead><tr>';
         foreach ($column_keys as $key) {
-            $html .= '<th>' . esc_html($key) . '</th>';
+            $html .= '<th>' . esc_html(TC_Shortcode::resolve_external_header_label((string) $key, $labels)) . '</th>';
         }
         $html .= '</tr></thead><tbody>';
         foreach ($preview_rows as $row) {
