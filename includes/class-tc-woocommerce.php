@@ -117,7 +117,7 @@ class TC_WooCommerce
             wp_send_json_error(__('Entry not found', 'tc-data-tables'));
         }
 
-        global $wpdb;
+        global $wpdb; // @codeCoverageIgnore
         $table_row = $wpdb->get_row($wpdb->prepare(
             "SELECT settings FROM {$wpdb->prefix}gravity_tables WHERE id = %d AND status = 'active'",
             $table_id

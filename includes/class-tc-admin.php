@@ -1153,6 +1153,8 @@ class TC_Admin
                 'filter_user_entries',
                 'enable_vertical_scroll',
                 'show_table_summary',
+                // #2254 — per-table external DB public-render opt-in.
+                'external_db_public_render',
             ];
 
             // Handle responsive mode (extends responsive_table boolean)

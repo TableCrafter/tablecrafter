@@ -163,6 +163,11 @@
                     $('input[name="allow_url_filters"]').prop('checked', !!tableData.settings.allow_url_filters);
                 }
 
+                // #2254 — per-table external DB public render opt-in. Off by default.
+                if (typeof tableData.settings.external_db_public_render !== 'undefined') {
+                    $('input[name="external_db_public_render"]').prop('checked', !!tableData.settings.external_db_public_render);
+                }
+
                 // TC_Row_Height_Service — three flat string settings.
                 ['row_height', 'header_height'].forEach(function (key) {
                     if (typeof tableData.settings[key] !== 'undefined') {

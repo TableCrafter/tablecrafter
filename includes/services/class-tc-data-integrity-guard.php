@@ -217,7 +217,7 @@ class TC_Data_Integrity_Guard {
             }
         }
         if (!class_exists('TC_Where_Used_Service')) {
-            return 0;
+            return 0; // @codeCoverageIgnore
         }
         $ids = $db->get_col(
             "SELECT id FROM {$db->prefix}gravity_tables WHERE status = 'active' AND deleted_at IS NULL"

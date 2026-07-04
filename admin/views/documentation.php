@@ -681,6 +681,12 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.39 -- External DB public viewing + readable builder chips', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('External Database tables: public viewing opt-in', 'tc-data-tables'); ?></strong> -- <?php _e('each External DB table now has an "Allow public viewing" checkbox in the builder. When enabled, logged-out visitors see the table normally. When disabled, they see a clean "This table is not available." message instead of a blank or broken page.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Readable field-picker chips for JSON, CSV, XML, and Google Sheets', 'tc-data-tables'); ?></strong> -- <?php _e('the column picker now shows humanized labels ("Product Name" instead of product_name) for all external sources, matching the behaviour added for Airtable, Notion, and External DB in 8.0.36-8.0.37.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.38 -- Dashboard stats you can trust', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Redesigned stats cards', 'tc-data-tables'); ?></strong> -- <?php _e('Total, In use (tables actually embedded on a page), one card per data source in use, and Trash (hidden when empty, matching the Trash tab exactly). The old GF Tables card showed the wrong number.', 'tc-data-tables'); ?></li>

@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.38
+Stable tag: 8.0.39
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,10 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.39 =
+* **Readable field-picker chip labels for JSON, CSV, XML, and Google Sheets (#2247).** The column picker in the table builder now shows humanized labels (e.g. "Product Name" instead of product_name) for these sources, consistent with Airtable, Notion, and External DB chips added in 8.0.36-8.0.37.
+* **Pro: External Database tables can now be viewed by the public (#2254).** Each table has a new "Allow public viewing" checkbox. When disabled, logged-out visitors see a clean "This table is not available." message.
 
 = 8.0.38 =
 * **Dashboard stats redesigned.** Cards now show Total, In use (tables actually embedded on a post/page), one card per data source in use, and Trash (hidden when empty; matches the Trash tab). Plus a one-time self-heal that folds orphaned pre-Trash-system deletes into the Trash tab as restorable entries.

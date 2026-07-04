@@ -310,6 +310,19 @@ if ($table_id) {
                         <p class="description"><?php esc_html_e('Runs the query above against the selected connection and loads the result columns into the field picker + preview — no save needed.', 'tc-data-tables'); ?></p>
                     </div>
 
+                    <!-- #2254 — Public render opt-in for external DB tables. -->
+                    <div class="gt-form-row gt-external-db-source-fields"
+                         style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'external_db') ? '' : 'display: none;'; ?>">
+                        <label>
+                            <input type="checkbox"
+                                   name="external_db_public_render"
+                                   value="1"
+                                   <?php checked(!empty($table_settings['external_db_public_render'])); ?> />
+                            <?php esc_html_e('Allow public viewing (render this table for visitors without the external data capability)', 'tc-data-tables'); ?>
+                        </label>
+                        <p class="description"><?php esc_html_e('When unchecked (default), only users with the external data capability can see this table. When checked, anyone can view the query results. The builder, query editing, and write operations remain capability-gated regardless of this setting.', 'tc-data-tables'); ?></p>
+                    </div>
+
                     <!-- #2200 — WooCommerce products source. Shown only when
                          data_source_type = woocommerce_products. Columns auto-load on
                          select/edit; the button refreshes. Toggle in admin/bind-events.js. -->

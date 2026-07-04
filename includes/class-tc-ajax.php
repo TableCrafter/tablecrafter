@@ -1221,6 +1221,15 @@ class TC_Ajax
             $flat[] = TC_JSON_Source_Service::flatten_row(is_array($row) ? $row : array());
         }
         $columns = TC_JSON_Source_Service::infer_columns($flat);
+        // #2247 — expose a humanized `name` so the field-picker JS
+        // (loadJsonColumns reads col.name) renders readable chip labels instead
+        // of raw data keys. Use resolve_external_header_label (Title Case +
+        // acronym support) for parity with Airtable/Notion/ExternalDB sources.
+        // `id` stays as the raw key for data addressing.
+        $columns = array_map(function (array $col): array {
+            $col['name'] = TC_Shortcode::resolve_external_header_label($col['id'], array());
+            return $col;
+        }, $columns);
 
         wp_send_json_success(array(
             'columns'   => $columns,
@@ -1420,7 +1429,14 @@ class TC_Ajax
         }
         $columns = array();
         foreach ($column_keys as $key) {
-            $columns[] = array('id' => $key, 'name' => $key, 'type' => 'text');
+            // #2247 — humanize the chip label (matches Airtable/Notion/ExternalDB
+            // which already call resolve_external_header_label). `id` stays as the
+            // raw key so the builder can address columns by their data key.
+            $columns[] = array(
+                'id'   => $key,
+                'name' => TC_Shortcode::resolve_external_header_label($key, array()),
+                'type' => 'text',
+            );
         }
 
         wp_send_json_success(array(

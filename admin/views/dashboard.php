@@ -54,6 +54,10 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
 // (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
+        'version' => '8.0.39',
+        'summary' => __( 'External Database tables now support a per-table public viewing opt-in; field-picker chips in the builder show readable labels for JSON, CSV, XML, and Google Sheets sources.', 'tc-data-tables' ),
+    ),
+    array(
         'version' => '8.0.38',
         'summary' => __( 'Dashboard stats redesigned: Total, In use, per-source counts, and Trash (hidden when empty); orphaned pre-Trash-system deletes now surface in the Trash tab.', 'tc-data-tables' ),
     ),
@@ -315,7 +319,8 @@ $changelog = array(
             <div class="gt-widget gt-changelog">
                 <h3><?php esc_html_e( "What's New", 'tc-data-tables' ); ?></h3>
                 <ul class="gt-changelog-list">
-                    <?php foreach ( $changelog as $entry ) : ?>
+                    <?php // #2263 — the array grows every release; show only the 5 newest.
+                    foreach ( array_slice( $changelog, 0, 5 ) as $entry ) : ?>
                         <li class="gt-changelog-item">
                             <div class="gt-changelog-version">v<?php echo esc_html( $entry['version'] ); ?></div>
                             <p class="gt-changelog-desc"><?php echo esc_html( $entry['summary'] ); ?></p>

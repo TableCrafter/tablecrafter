@@ -379,8 +379,10 @@
                     csv_url:            $('input[name="csv_url"]').val() || '',
                     xlsx_url:           $('input[name="xlsx_url"]').val() || '',
                     // #2003 — External database connection index + read-only query.
-                    external_db_connection: $('select[name="external_db_connection"]').val() || '',
-                    external_db_query:      $('textarea[name="external_db_query"]').val() || '',
+                    external_db_connection:     $('select[name="external_db_connection"]').val() || '',
+                    external_db_query:          $('textarea[name="external_db_query"]').val() || '',
+                    // #2254 — per-table public render opt-in for external DB tables.
+                    external_db_public_render:  $('input[name="external_db_public_render"]').is(':checked') ? true : false,
                     // #985 v4.168.0 — JSON data source payload (slice 3b-2 of #512).
                     // Convert the textarea "Key: Value" lines back to an associative
                     // array for the server; the server-side sanitizer also handles
