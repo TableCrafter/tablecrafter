@@ -54,6 +54,10 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
 // (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
+        'version' => '8.0.40',
+        'summary' => __( 'The All Tables list now shows each table\'s data source (Gravity Forms, JSON, Google Sheets, External Database, and more) instead of a Gravity-Forms-only column that read "Form ID: 0" for other sources.', 'tc-data-tables' ),
+    ),
+    array(
         'version' => '8.0.39',
         'summary' => __( 'External Database tables now support a per-table public viewing opt-in; field-picker chips in the builder show readable labels for JSON, CSV, XML, and Google Sheets sources.', 'tc-data-tables' ),
     ),

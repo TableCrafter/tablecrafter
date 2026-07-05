@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.39
+Stable tag: 8.0.40
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 5. One-click demo tables to get started in seconds.
 
 == Changelog ==
+
+= 8.0.40 =
+* **The All Tables list now shows each table's data source (#2271).** The old "Gravity Form" column rendered "Form ID: 0" for every non-Gravity-Forms table. The new "Source" column shows the actual source -- Gravity Forms (with the form name), JSON / REST, CSV, Google Sheets, Airtable, Notion, External Database, WooCommerce -- so mixed-source sites can tell tables apart at a glance.
 
 = 8.0.39 =
 * **Readable field-picker chip labels for JSON, CSV, XML, and Google Sheets (#2247).** The column picker in the table builder now shows humanized labels (e.g. "Product Name" instead of product_name) for these sources, consistent with Airtable, Notion, and External DB chips added in 8.0.36-8.0.37.

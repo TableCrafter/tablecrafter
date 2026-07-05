@@ -310,7 +310,7 @@ foreach ($forms as $form) {
                 <thead>
                     <tr>
                         <th scope="col" class="manage-column column-title column-primary"><?php _e('Title', 'tc-data-tables'); ?></th>
-                        <th scope="col" class="manage-column column-form"><?php _e('Gravity Form', 'tc-data-tables'); ?></th>
+                        <th scope="col" class="manage-column column-source"><?php _e('Source', 'tc-data-tables'); ?></th>
                         <th scope="col" class="manage-column column-shortcode"><?php _e('Shortcode', 'tc-data-tables'); ?></th>
                         <th scope="col" class="manage-column column-date"><?php _e('Last Modified', 'tc-data-tables'); ?></th>
                         <th scope="col" class="manage-column column-used-in"><?php _e('Used in', 'tc-data-tables'); ?></th>
@@ -326,6 +326,11 @@ foreach ($forms as $form) {
                             require_once $mt_path;
                         }
                     }
+                    // #2271 — compact display labels for the Source column,
+                    // resolved once for the whole list.
+                    $gt_source_labels = class_exists('TC_Data_Integrity_Guard')
+                        ? TC_Data_Integrity_Guard::source_labels()
+                        : array();
                     ?>
                     <?php foreach ($tables as $table): ?>
                         <?php
@@ -421,12 +426,26 @@ foreach ($forms as $form) {
                                 ?>
                                 <button type="button" class="toggle-row" aria-expanded="false"><span class="screen-reader-text"><?php _e('Show more details', 'tc-data-tables'); ?></span></button>
                             </td>
-                            <td class="form column-form" data-colname="<?php _e('Gravity Form', 'tc-data-tables'); ?>">
-                                <?php 
-                                if (isset($form_titles[$table->form_id])) {
-                                    echo esc_html($form_titles[$table->form_id]);
-                                } else {
-                                    echo __('Form ID: ', 'tc-data-tables') . $table->form_id;
+                            <td class="source column-source" data-colname="<?php esc_attr_e('Source', 'tc-data-tables'); ?>">
+                                <?php
+                                // #2271 — show the table's data source instead of the old
+                                // "Gravity Form" column, which rendered a meaningless
+                                // numeric form-id fallback for every non-GF table.
+                                // Settings are stored as JSON; an absent data_source_type
+                                // means Gravity Forms (pre-convergence tables never wrote
+                                // the key).
+                                $gt_src_settings = json_decode((string) ($table->settings ?? ''), true);
+                                $gt_source_key   = (is_array($gt_src_settings) && !empty($gt_src_settings['data_source_type']))
+                                    ? (string) $gt_src_settings['data_source_type']
+                                    : 'gravity_forms';
+                                $gt_source_label = isset($gt_source_labels[$gt_source_key])
+                                    ? $gt_source_labels[$gt_source_key]
+                                    : ucwords(str_replace('_', ' ', $gt_source_key));
+                                echo esc_html($gt_source_label);
+                                // For GF-source tables the form title is the useful
+                                // detail — keep it visible next to the source name.
+                                if ($gt_source_key === 'gravity_forms' && isset($form_titles[$table->form_id])) {
+                                    echo ': ' . esc_html($form_titles[$table->form_id]);
                                 }
                                 ?>
                             </td>
