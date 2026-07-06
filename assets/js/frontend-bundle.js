@@ -58,12 +58,12 @@
 (function (window) {
     'use strict';
 
-    var VERSION = '8.0.41';
+    var VERSION = '8.0.42';
     // TC_JS_VERSION preserved as a top-level literal so the pre-#831 file-grep
     // contract in #99 (script must declare a quoted-semver var named TC_JS_VERSION)
     // keeps matching the bundle. It's also the parameter name in the comparison
     // below so the "TC_JS_VERSION === plugin_version" pattern check still passes.
-    var TC_JS_VERSION = '8.0.41';
+    var TC_JS_VERSION = '8.0.42';
 
     // Internal names retained as gtNaturalSort / gtParseCurrency /
     // gtCurrencySort / gtCheckVersionMismatch so the pre-#831 file-grep
@@ -165,7 +165,7 @@
     // .parseCurrency / .currencySort / .checkVersionMismatch / .VERSION.
     // TC_JS_VERSION kept here as a local alias for the few existing call
     // sites in this file (init() still references it via the namespace).
-    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.41';
+    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.42';
 
     // Initialize all tables on the page
     $(document).ready(function () {
@@ -6966,7 +6966,16 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
      * @param {string} value
      * @returns {{valid: boolean, message: string}}
      */
-    GravityTable.prototype.validateCell = function (fieldId, value) {
+    /**
+     * Validate a cell value against column_validations config.
+     *
+     * @param {string|number} fieldId
+     * @param {string} value
+     * @param {number|string} [entryId]  Current entry ID — used by the unique rule to exclude
+     *                                   the row being edited from the duplicate scan.
+     * @returns {{valid: boolean, message: string}}
+     */
+    GravityTable.prototype.validateCell = function (fieldId, value, entryId) {
         var config = this.config || {};
         var validations = config.column_validations;
         if (!validations || typeof validations !== 'object') {
@@ -7018,6 +7027,65 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             if (parseFloat(str) > parseFloat(rules.max_value)) {
                 return { valid: false, message: 'Maximum value is ' + rules.max_value + '.' };
             }
+        }
+
+        // #2282 — oneOf: value must be in the allowed list (strict string comparison).
+        // An empty oneOf array means no restriction (skip the rule).
+        if (rules.oneOf && Array.isArray(rules.oneOf) && rules.oneOf.length > 0) {
+            if (rules.oneOf.indexOf(str) === -1) {
+                return { valid: false, message: 'Value is not one of the allowed options.' };
+            }
+        }
+
+        // #2282 — notOneOf: value must NOT be in the blocked list (strict string comparison).
+        if (rules.notOneOf && Array.isArray(rules.notOneOf) && rules.notOneOf.length > 0) {
+            if (rules.notOneOf.indexOf(str) !== -1) {
+                return { valid: false, message: 'Value is not allowed.' };
+            }
+        }
+
+        // #2282 — phone validation: dual mode — permissive or E.164.
+        if (rules.phone) {
+            if (rules.phone === 'permissive') {
+                // Permissive: strip formatting chars (spaces, parens, dots, +, dashes),
+                // then require 7–15 remaining digit characters.
+                var stripped = str.replace(/[\s().+\-]/g, '');
+                if (!/^\d{7,15}$/.test(stripped)) {
+                    return { valid: false, message: 'Please enter a valid phone number.' };
+                }
+            } else {
+                // E.164 mode: optional + prefix, first significant digit [1-9], 1–14 more digits.
+                if (!/^\+?[1-9]\d{1,14}$/.test(str)) {
+                    return { valid: false, message: 'Please enter a valid phone number (E.164 format).' };
+                }
+            }
+        }
+
+        // #2282 — unique: client-side pre-check by scanning this.config.table_data.
+        //
+        // In non-SSP mode, when table_data is available (pre-loaded rows array), scan
+        // it synchronously to catch obvious duplicates before the AJAX save round-trip.
+        // The server enforces the authoritative unique constraint via GFAPI::get_entries
+        // or via the gt_check_unique endpoint (used for SSP and any missed client cases).
+        //
+        // Skip in server-side processing (SSP) mode — all rows are not loaded locally.
+        if (rules.unique) {
+            var tableData = config.table_data;
+            var isSSP = config.processing_mode === 'server';
+            if (!isSSP && tableData && Array.isArray(tableData)) {
+                var currentEntryId = entryId !== undefined ? String(entryId) : null;
+                var fieldIdStr = String(fieldId);
+                for (var i = 0; i < tableData.length; i++) {
+                    var row = tableData[i];
+                    if (currentEntryId !== null && String(row.entry_id) === currentEntryId) {
+                        continue; // exclude current entry from duplicate check
+                    }
+                    if (String(row[fieldIdStr] || '') === str) {
+                        return { valid: false, message: 'This value must be unique.' };
+                    }
+                }
+            }
+            // SSP mode or no table_data — skip client-side check; server enforces.
         }
 
         return { valid: true, message: '' };
@@ -8951,7 +9019,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                 var newValue = $(this).val();
                 //console.log('GT Edit: Dropdown changed to:', newValue);
                 if (newValue !== currentValue) {
-                    var vd = self.validateCell ? self.validateCell(fieldId, newValue) : { valid: true };
+                    var vd = self.validateCell ? self.validateCell(fieldId, newValue, entryId) : { valid: true };
                     if (!vd.valid) {
                         if (self.showValidationError) self.showValidationError($field, $input, vd.message);
                         return;
@@ -9162,7 +9230,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                         if (self.showValidationError) self.showValidationError($field, $input, urlErr);
                         return;
                     }
-                    var vEnter = self.validateCell ? self.validateCell(fieldId, newValue) : { valid: true };
+                    var vEnter = self.validateCell ? self.validateCell(fieldId, newValue, entryId) : { valid: true };
                     if (!vEnter.valid) {
                         if (self.showValidationError) self.showValidationError($field, $input, vEnter.message);
                         return;
@@ -9179,7 +9247,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                     if (self.showValidationError) self.showValidationError($field, $input, urlErrT);
                     return;
                 }
-                var vTab = self.validateCell ? self.validateCell(fieldId, newValueT) : { valid: true };
+                var vTab = self.validateCell ? self.validateCell(fieldId, newValueT, entryId) : { valid: true };
                 if (!vTab.valid) {
                     if (self.showValidationError) self.showValidationError($field, $input, vTab.message);
                     return;
@@ -9215,7 +9283,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                             if (self.showValidationError) self.showValidationError($field, $input, urlErrBlur);
                             return;
                         }
-                        var vBlur = self.validateCell ? self.validateCell(fieldId, newValue) : { valid: true };
+                        var vBlur = self.validateCell ? self.validateCell(fieldId, newValue, entryId) : { valid: true };
                         if (!vBlur.valid) {
                             if (self.showValidationError) self.showValidationError($field, $input, vBlur.message);
                             return;

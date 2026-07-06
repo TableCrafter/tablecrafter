@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.41
+Stable tag: 8.0.42
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,10 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 6. Mobile view: fully responsive tables with touch friendly interactions on any screen size.
 
 == Changelog ==
+
+= 8.0.42 =
+* New inline-editing validation rules: oneOf (restrict a cell to an allowed list of values), notOneOf (block specific values), phone (built-in format check or your own custom pattern), and unique (instant in-browser duplicate check plus an authoritative server-side check that ignores the row being edited).
+* Developers can add custom cell validation rules via the new tablecrafter_validate_cell filter.
 
 = 8.0.41 =
 * JSON export option added alongside CSV and Excel download.

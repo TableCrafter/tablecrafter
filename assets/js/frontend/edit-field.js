@@ -244,7 +244,7 @@
                 var newValue = $(this).val();
                 //console.log('GT Edit: Dropdown changed to:', newValue);
                 if (newValue !== currentValue) {
-                    var vd = self.validateCell ? self.validateCell(fieldId, newValue) : { valid: true };
+                    var vd = self.validateCell ? self.validateCell(fieldId, newValue, entryId) : { valid: true };
                     if (!vd.valid) {
                         if (self.showValidationError) self.showValidationError($field, $input, vd.message);
                         return;
@@ -455,7 +455,7 @@
                         if (self.showValidationError) self.showValidationError($field, $input, urlErr);
                         return;
                     }
-                    var vEnter = self.validateCell ? self.validateCell(fieldId, newValue) : { valid: true };
+                    var vEnter = self.validateCell ? self.validateCell(fieldId, newValue, entryId) : { valid: true };
                     if (!vEnter.valid) {
                         if (self.showValidationError) self.showValidationError($field, $input, vEnter.message);
                         return;
@@ -472,7 +472,7 @@
                     if (self.showValidationError) self.showValidationError($field, $input, urlErrT);
                     return;
                 }
-                var vTab = self.validateCell ? self.validateCell(fieldId, newValueT) : { valid: true };
+                var vTab = self.validateCell ? self.validateCell(fieldId, newValueT, entryId) : { valid: true };
                 if (!vTab.valid) {
                     if (self.showValidationError) self.showValidationError($field, $input, vTab.message);
                     return;
@@ -508,7 +508,7 @@
                             if (self.showValidationError) self.showValidationError($field, $input, urlErrBlur);
                             return;
                         }
-                        var vBlur = self.validateCell ? self.validateCell(fieldId, newValue) : { valid: true };
+                        var vBlur = self.validateCell ? self.validateCell(fieldId, newValue, entryId) : { valid: true };
                         if (!vBlur.valid) {
                             if (self.showValidationError) self.showValidationError($field, $input, vBlur.message);
                             return;

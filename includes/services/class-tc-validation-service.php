@@ -306,6 +306,128 @@ class TC_Validation_Service {
         return [ 'valid' => true, 'message' => '' ];
     }
 
+    // ── Per-column cell-value validation (#2282) ──────────────────────────
+
+    /**
+     * Validate a single cell value against a per-column rule set.
+     *
+     * Supported rules (in addition to the existing rules handled by validate()):
+     *   oneOf       (string[]) — value must be in this list (strict comparison)
+     *   notOneOf    (string[]) — value must NOT be in this list (strict comparison)
+     *   phone       (bool|'permissive') — E.164 when true; permissive digit-strip when 'permissive'
+     *   unique      (bool) — value must not appear in any other entry for this field/form
+     *
+     * After all built-in rules pass, the filter hook fires:
+     *
+     *   apply_filters( 'tablecrafter_validate_cell', true, $value, $col_config, $entry_id, $table_id )
+     *
+     *   Hook contract: return a WP_Error to veto the save; return the unmodified
+     *   first argument (true) to pass. The hook fires ONLY when all built-in rules
+     *   have already passed; a built-in rejection short-circuits before the hook.
+     *
+     * TOCTOU note (unique): There is no DB-level unique constraint. Two concurrent
+     * saves could both pass this check and both commit. This race is acceptable
+     * for editorial use (not transactional/inventory). Callers needing stricter
+     * guarantees should add their own DB-level constraints or use a distributed lock.
+     *
+     * @param string $field_id   Gravity Forms field ID.
+     * @param string $value      Raw cell value (string; arrays handled by callers).
+     * @param array  $col_config Per-column config (may contain 'choices' etc.).
+     * @param array  $rules      Sanitized rule set for this column.
+     * @param int    $entry_id   Current entry being edited (excluded from unique scan).
+     * @param int    $form_id    Gravity Forms form ID (for GFAPI unique query). 0 = skip.
+     * @param int    $table_id   TableCrafter table ID (passed to filter hook). 0 = unknown.
+     * @return true|\WP_Error true on pass; WP_Error on reject.
+     * @since 8.0.42
+     */
+    public static function validate_cell_value(
+        string $field_id,
+        string $value,
+        array $col_config,
+        array $rules,
+        int $entry_id,
+        int $form_id = 0,
+        int $table_id = 0
+    ): true|\WP_Error {
+
+        // ── oneOf ──────────────────────────────────────────────────────────
+        if ( isset( $rules['oneOf'] ) && is_array( $rules['oneOf'] ) && ! empty( $rules['oneOf'] ) ) {
+            if ( ! in_array( $value, $rules['oneOf'], true ) ) {
+                return new \WP_Error(
+                    'validation_failed',
+                    __( 'Value is not one of the allowed options.', 'tc-data-tables' )
+                );
+            }
+        }
+
+        // ── notOneOf ───────────────────────────────────────────────────────
+        if ( isset( $rules['notOneOf'] ) && is_array( $rules['notOneOf'] ) && ! empty( $rules['notOneOf'] ) ) {
+            if ( in_array( $value, $rules['notOneOf'], true ) ) {
+                return new \WP_Error(
+                    'validation_failed',
+                    __( 'This value is not allowed.', 'tc-data-tables' )
+                );
+            }
+        }
+
+        // ── phone ──────────────────────────────────────────────────────────
+        if ( ! empty( $rules['phone'] ) ) {
+            if ( $rules['phone'] === 'permissive' ) {
+                // Permissive mode: strip formatting chars then require 7–15 digits.
+                $stripped = preg_replace( '/[\s().+\-]/', '', $value );
+                if ( ! preg_match( '/^\d{7,15}$/', $stripped ) ) {
+                    return new \WP_Error(
+                        'invalid_phone',
+                        __( 'Please enter a valid phone number.', 'tc-data-tables' )
+                    );
+                }
+            } else {
+                // E.164 mode: optional + then [1-9] followed by 1–14 more digits.
+                if ( ! preg_match( '/^\+?[1-9]\d{1,14}$/', $value ) ) {
+                    return new \WP_Error(
+                        'invalid_phone',
+                        __( 'Please enter a valid phone number (E.164 format).', 'tc-data-tables' )
+                    );
+                }
+            }
+        }
+
+        // ── unique ─────────────────────────────────────────────────────────
+        if ( ! empty( $rules['unique'] ) && $form_id > 0 ) {
+            if ( class_exists( 'GFAPI' ) ) {
+                $search_criteria = [
+                    'field_filters' => [
+                        [ 'key' => $field_id, 'value' => $value, 'operator' => 'is' ],
+                    ],
+                ];
+                $entries = GFAPI::get_entries( $form_id, $search_criteria );
+                if ( is_array( $entries ) ) {
+                    foreach ( $entries as $e ) {
+                        if ( (int) ( $e['id'] ?? 0 ) !== $entry_id ) {
+                            return new \WP_Error(
+                                'not_unique',
+                                __( 'This value must be unique.', 'tc-data-tables' )
+                            );
+                        }
+                    }
+                }
+            }
+            // When GFAPI is unavailable (e.g. test environment), skip the check.
+            // The server is still the authoritative guard; the client-side also checks.
+        }
+
+        // ── developer filter hook ──────────────────────────────────────────
+        // Fires AFTER all built-in rules pass. Callbacks return WP_Error to veto
+        // or return the unmodified $result (true) to pass.
+        // Signature: ( bool|WP_Error $result, string $value, array $col_config, int $entry_id, int $table_id )
+        $filter_result = apply_filters( 'tablecrafter_validate_cell', true, $value, $col_config, $entry_id, $table_id );
+        if ( is_wp_error( $filter_result ) ) {
+            return $filter_result;
+        }
+
+        return true;
+    }
+
     /**
      * Sanitize a raw column_validations map from POST data or stored settings.
      *
@@ -343,6 +465,34 @@ class TC_Validation_Service {
             }
             if ( isset( $rules['max_value'] ) && is_numeric( $rules['max_value'] ) ) {
                 $r['max_value'] = (float) $rules['max_value'];
+            }
+            // #2282 — unique (bool)
+            if ( isset( $rules['unique'] ) ) {
+                $r['unique'] = (bool) $rules['unique'];
+            }
+            // #2282 — oneOf (string[])
+            if ( isset( $rules['oneOf'] ) && is_array( $rules['oneOf'] ) && ! empty( $rules['oneOf'] ) ) {
+                $clean = [];
+                foreach ( $rules['oneOf'] as $v ) {
+                    $clean[] = sanitize_text_field( (string) $v );
+                }
+                if ( ! empty( $clean ) ) {
+                    $r['oneOf'] = $clean;
+                }
+            }
+            // #2282 — notOneOf (string[])
+            if ( isset( $rules['notOneOf'] ) && is_array( $rules['notOneOf'] ) && ! empty( $rules['notOneOf'] ) ) {
+                $clean = [];
+                foreach ( $rules['notOneOf'] as $v ) {
+                    $clean[] = sanitize_text_field( (string) $v );
+                }
+                if ( ! empty( $clean ) ) {
+                    $r['notOneOf'] = $clean;
+                }
+            }
+            // #2282 — phone (bool|'permissive')
+            if ( isset( $rules['phone'] ) ) {
+                $r['phone'] = ( $rules['phone'] === 'permissive' ) ? 'permissive' : (bool) $rules['phone'];
             }
             if ( ! empty( $r ) ) {
                 $out[ (string) $field_id ] = $r;

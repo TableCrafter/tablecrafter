@@ -54,6 +54,10 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
 // (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
+        'version' => '8.0.42',
+        'summary' => __( 'Inline editing gains oneOf, notOneOf, phone, and unique validation rules (unique pairs an instant in-browser check with an authoritative server check that ignores the row being edited); new tablecrafter_validate_cell filter for custom developer validation rules.', 'tc-data-tables' ),
+    ),
+    array(
         'version' => '8.0.41',
         'summary' => __( 'JSON export joins CSV and Excel; advanced search operators (quotes, exclusions, field:value, comparisons) in the search box; inline editing gains url, datetime, multiselect, checkbox_group, and color cell types with type-aware validation.', 'tc-data-tables' ),
     ),

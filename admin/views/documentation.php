@@ -681,6 +681,14 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.42 -- New validation rules: oneOf, notOneOf, phone, unique', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Value-list rules', 'tc-data-tables'); ?></strong> -- <?php _e('oneOf restricts a cell to an allowed list of values; notOneOf blocks specific values.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Phone validation', 'tc-data-tables'); ?></strong> -- <?php _e('validate phone numbers with the built-in format check or your own custom pattern.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Unique values', 'tc-data-tables'); ?></strong> -- <?php _e('the unique rule rejects duplicates with an instant in-browser check plus an authoritative server-side check that ignores the row being edited.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Developer hook', 'tc-data-tables'); ?></strong> -- <?php _e('the new tablecrafter_validate_cell filter lets developers add custom cell validation rules.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.41 -- JSON export, advanced search operators, inline cell-type parity', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('JSON export', 'tc-data-tables'); ?></strong> -- <?php _e('the export button now offers CSV, Excel, and JSON. JSON export applies the same column visibility and search filters as the other formats.', 'tc-data-tables'); ?></li>

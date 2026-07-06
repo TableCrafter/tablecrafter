@@ -130,6 +130,9 @@ class TC_Ajax
 
         add_action('wp_ajax_gt_update_entry_fields', array($this, 'update_entry_fields'));
         add_action('wp_ajax_nopriv_gt_update_entry_fields', array($this, 'update_entry_fields'));
+        // #2282 — authoritative uniqueness check endpoint (client async + SSP fallback).
+        add_action('wp_ajax_gt_check_unique', array($this, 'check_unique'));
+        add_action('wp_ajax_nopriv_gt_check_unique', array($this, 'check_unique'));
         add_action('wp_ajax_gt_bulk_action', array($this, 'bulk_action'));
         add_action('wp_ajax_nopriv_gt_bulk_action', array($this, 'bulk_action'));
         add_action('wp_ajax_gt_get_form_html', array($this, 'get_form_html'));
@@ -3627,10 +3630,36 @@ class TC_Ajax
         // #2281 — Load column_config for type-aware sanitization. The table_id
         // was already consumed for the permission check above; re-read from POST
         // so admin-cap users (who skip the permission block) also benefit.
-        $update_table_id   = intval($_POST['table_id'] ?? 0);
-        $update_col_config = $this->load_column_config($update_table_id);
+        $update_table_id        = intval($_POST['table_id'] ?? 0);
+        $update_col_config      = $this->load_column_config($update_table_id);
+        // #2282 — Load per-column validation rules (oneOf, notOneOf, phone, unique, hook).
+        $update_col_validations = $this->load_column_validations($update_table_id);
 
         foreach ($updates as $field_id => $value) {
+            // #2282 — validate before sanitizing; built-in rules + developer hook.
+            $field_val_rules = is_array($update_col_validations[(string) $field_id] ?? null)
+                ? $update_col_validations[(string) $field_id]
+                : array();
+            if ( ! empty($field_val_rules) && class_exists('TC_Validation_Service') ) {
+                $val_result = \TC_Validation_Service::validate_cell_value(
+                    (string) $field_id,
+                    (string) $value,
+                    is_array($update_col_config[(string) $field_id] ?? null)
+                        ? $update_col_config[(string) $field_id]
+                        : array(),
+                    $field_val_rules,
+                    $entry_id,
+                    $audit_form_id,
+                    $update_table_id
+                );
+                if ( is_wp_error($val_result) ) {
+                    wp_send_json_error(array(
+                        'message'  => $val_result->get_error_message(),
+                        'field_id' => (string) $field_id,
+                    ));
+                }
+            }
+
             // #2281 — resolve per-field col_type before sanitizing.
             $field_col_cfg  = is_array($update_col_config[(string) $field_id] ?? null)
                 ? $update_col_config[(string) $field_id]
@@ -4296,10 +4325,37 @@ class TC_Ajax
         $updated_fields = array();
 
         // #2281 — Load column_config for type-aware sanitization.
-        $fields_table_id   = intval($_POST['table_id'] ?? 0);
-        $fields_col_config = $this->load_column_config($fields_table_id);
+        $fields_table_id        = intval($_POST['table_id'] ?? 0);
+        $fields_col_config      = $this->load_column_config($fields_table_id);
+        // #2282 — Load per-column validation rules (oneOf, notOneOf, phone, unique, hook).
+        $fields_col_validations = $this->load_column_validations($fields_table_id);
+        $fields_form_id         = intval($entry['form_id'] ?? 0);
 
         foreach ($fields as $field_id => $value) {
+            // #2282 — validate before sanitizing; built-in rules + developer hook.
+            $fld_val_rules = is_array($fields_col_validations[(string) $field_id] ?? null)
+                ? $fields_col_validations[(string) $field_id]
+                : array();
+            if ( ! empty($fld_val_rules) && class_exists('TC_Validation_Service') ) {
+                $fld_val_result = \TC_Validation_Service::validate_cell_value(
+                    (string) $field_id,
+                    (string) $value,
+                    is_array($fields_col_config[(string) $field_id] ?? null)
+                        ? $fields_col_config[(string) $field_id]
+                        : array(),
+                    $fld_val_rules,
+                    $entry_id,
+                    $fields_form_id,
+                    $fields_table_id
+                );
+                if ( is_wp_error($fld_val_result) ) {
+                    wp_send_json_error(array(
+                        'message'  => $fld_val_result->get_error_message(),
+                        'field_id' => (string) $field_id,
+                    ));
+                }
+            }
+
             // #2281 — resolve per-field col_type before sanitizing.
             $field_col_cfg   = is_array($fields_col_config[(string) $field_id] ?? null)
                 ? $fields_col_config[(string) $field_id]
@@ -6876,6 +6932,10 @@ class TC_Ajax
             ),
             ARRAY_A
         );
+        // Defensive: test stubs may return stdClass even when ARRAY_A is requested.
+        if (is_object($row)) {
+            $row = (array) $row;
+        }
         if (!$row || empty($row['settings'])) {
             return array();
         }
@@ -6916,6 +6976,127 @@ class TC_Ajax
             }
         }
         return $result;
+    }
+
+    /**
+     * Load the column_validations map from a table's stored settings (#2282).
+     *
+     * Used by update_entry / update_entry_fields to run per-column validation
+     * rules (oneOf, notOneOf, phone, unique, tablecrafter_validate_cell hook)
+     * before type-aware sanitization.
+     *
+     * @param int $table_id Gravity Tables post/table ID.
+     * @return array<string, array<string, mixed>> Keyed by field_id string; empty on miss.
+     */
+    private function load_column_validations(int $table_id): array
+    {
+        if ($table_id <= 0) {
+            return array();
+        }
+        global $wpdb;
+        $row = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT settings FROM {$wpdb->prefix}gravity_tables WHERE id = %d",
+                $table_id
+            ),
+            ARRAY_A
+        );
+        // Defensive: test stubs may return stdClass even when ARRAY_A is requested.
+        if (is_object($row)) {
+            $row = (array) $row;
+        }
+        if (!$row || empty($row['settings'])) {
+            return array();
+        }
+        $raw = $row['settings'];
+        if (is_array($raw)) {
+            $settings = $raw;
+        } elseif (is_string($raw)) {
+            $settings = json_decode($raw, true);
+            if (!is_array($settings)) {
+                $settings = maybe_unserialize($raw);
+            }
+        } else {
+            $settings = null;
+        }
+        if (!is_array($settings)) {
+            return array();
+        }
+        $col_val = $settings['column_validations'] ?? null;
+        return is_array($col_val) ? $col_val : array();
+    }
+
+    /**
+     * AJAX endpoint: authoritative uniqueness check for a field value (#2282).
+     *
+     * Used by the client as the authoritative async check after the synchronous
+     * client-side scan of this.config.table_data, and as the sole check in SSP
+     * mode where not all rows are loaded client-side.
+     *
+     * POST params:
+     *   nonce     (string) gravity_tables_nonce
+     *   field_id  (string) Gravity Forms field ID
+     *   value     (string) Value to check for uniqueness
+     *   form_id   (int)    Gravity Forms form ID
+     *   entry_id  (int)    Current entry being edited (excluded from duplicate scan)
+     *
+     * Response on success: { unique: bool, message?: string }
+     * Response on error:   standard WP JSON error
+     *
+     * TOCTOU note: no DB-level unique constraint; two concurrent saves can both
+     * pass this check and commit. Accepted for editorial use.
+     */
+    public function check_unique(): void
+    {
+        check_ajax_referer('gravity_tables_nonce', 'nonce');
+
+        if (gt_is_free_plan()) {
+            wp_send_json_error(array(
+                'message' => __('Unique validation is a Pro feature.', 'tc-data-tables'),
+                'upgrade_required' => true,
+            ));
+        }
+
+        $field_id = sanitize_text_field(wp_unslash($_POST['field_id'] ?? ''));
+        $value    = wp_unslash($_POST['value'] ?? '');
+        $form_id  = intval($_POST['form_id'] ?? 0);
+        $entry_id = intval($_POST['entry_id'] ?? 0);
+
+        if ($field_id === '' || $form_id <= 0) {
+            wp_send_json_error(array('message' => __('Missing required parameters.', 'tc-data-tables')));
+        }
+
+        if (!class_exists('GFAPI')) {
+            // Cannot query entries without GFAPI; assume unique to avoid blocking edits.
+            wp_send_json_success(array('unique' => true));
+        }
+
+        $search_criteria = array(
+            'field_filters' => array(
+                array('key' => $field_id, 'value' => $value, 'operator' => 'is'),
+            ),
+        );
+
+        $entries  = GFAPI::get_entries($form_id, $search_criteria);
+        $is_unique = true;
+
+        if (is_array($entries)) {
+            foreach ($entries as $e) {
+                if ((int) ($e['id'] ?? 0) !== $entry_id) {
+                    $is_unique = false;
+                    break;
+                }
+            }
+        }
+
+        if ($is_unique) {
+            wp_send_json_success(array('unique' => true));
+        } else {
+            wp_send_json_success(array(
+                'unique'   => false,
+                'message'  => __('This value must be unique.', 'tc-data-tables'),
+            ));
+        }
     }
 
     /**
