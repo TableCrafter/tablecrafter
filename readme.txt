@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.40
+Stable tag: 8.0.41
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,13 +112,20 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 
 == Screenshots ==
 
-1. Inline, spreadsheet-style editing of your data right on the frontend.
-2. Build a table from any source - Gravity Forms, Google Sheets, Airtable, CSV, JSON or WooCommerce.
-3. Sorting, live search, filtering and pagination out of the box.
-4. Responsive layout that adapts to phones and tablets.
-5. One-click demo tables to get started in seconds.
+1. Table dashboard: live, searchable tables from any data source with one click column sorting.
+2. Inline editing: click any cell to edit directly in the table, just like a spreadsheet.
+3. Source picker: connect Gravity Forms, Google Sheets, Airtable, Notion, CSV, JSON or an external database in seconds.
+4. Column builder: configure display labels, field mapping, filters, and visibility per column with drag and drop ordering.
+5. Export: download filtered table data as CSV, Excel, or JSON with a single click.
+6. Mobile view: fully responsive tables with touch friendly interactions on any screen size.
 
 == Changelog ==
+
+= 8.0.41 =
+* JSON export option added alongside CSV and Excel download.
+* Advanced search grammar: type quoted phrases, -word to exclude, field:value, or comparison operators (>, <, >=, <=) directly in the search box on standard tables.
+* Inline editing cell-type parity: url, datetime, multiselect, checkbox_group, and color cells now render dedicated input widgets with type-aware validation when editing inline.
+* WP.org listing screenshot captions updated to reflect current feature set.
 
 = 8.0.40 =
 * **The All Tables list now shows each table's data source (#2271).** The old "Gravity Form" column rendered "Form ID: 0" for every non-Gravity-Forms table. The new "Source" column shows the actual source -- Gravity Forms (with the form name), JSON / REST, CSV, Google Sheets, Airtable, Notion, External Database, WooCommerce -- so mixed-source sites can tell tables apart at a glance.
@@ -259,4 +266,4 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 * CSV / XML / Google Sheets builder parity (auto-load columns + inline preview).
 * Feature-based plans (no row/column caps on the free tier).
 
-Full history: https://github.com/TableCrafter/tablecrafter/blob/main/docs/CHANGELOG.md
+Full history: https://github.com/TableCrafter/tablecrafter-pro/blob/main/docs/CHANGELOG.md

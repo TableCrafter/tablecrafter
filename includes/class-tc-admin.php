@@ -2573,6 +2573,17 @@ class TC_Admin
                 $sanitized_config['width'] = sanitize_text_field($config['width']);
             }
 
+            // #2281 — column_type override for type-aware inline-edit sanitization
+            // and frontend editor selection. Whitelist matches the types handled
+            // by sanitize_field_value and edit-field.js.
+            if (isset($config['column_type']) && is_string($config['column_type'])) {
+                $allowed_column_types = array('text', 'textarea', 'email', 'url', 'number', 'date', 'datetime', 'select', 'multiselect', 'checkbox_group', 'toggle', 'color');
+                $ct = sanitize_key($config['column_type']);
+                if (in_array($ct, $allowed_column_types, true)) {
+                    $sanitized_config['column_type'] = $ct;
+                }
+            }
+
             $sanitized[sanitize_text_field($field_id)] = $sanitized_config;
         }
 

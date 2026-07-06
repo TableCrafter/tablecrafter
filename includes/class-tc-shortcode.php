@@ -181,6 +181,17 @@ class TC_Shortcode
             true
         );
 
+        // #2278 Phase 1 — advanced client-side search grammar.
+        // Tokenizer + AST evaluator for non-SSP tables: field:value,
+        // -negation, "quoted phrase", OR, comparison operators, wildcards.
+        wp_register_script(
+            'gravity-tables-frontend-search-grammar',
+            TC_PLUGIN_URL . 'assets/js/frontend/search-grammar.js',
+            array('jquery'),
+            TC_VERSION,
+            true
+        );
+
         // #834 slice 2 — advanced filter panel controls.
         wp_register_script(
             'gravity-tables-frontend-filter-panel',
@@ -848,6 +859,7 @@ class TC_Shortcode
                 'gravity-tables-frontend-a11y-keyboard',
                 'gravity-tables-frontend-detail-popup',
                 'gravity-tables-frontend-search',
+                'gravity-tables-frontend-search-grammar',
                 'gravity-tables-frontend-filter-panel',
                 'gravity-tables-frontend-sort',
                 'gravity-tables-frontend-filter-apply',
@@ -2823,6 +2835,26 @@ class TC_Shortcode
         $filter_configurations = isset($atts['filter_configurations']) ? $atts['filter_configurations'] : array();
         $lookup_configurations = isset($atts['lookup_fields']) ? $atts['lookup_fields'] : array();
         $field_configurations = isset($atts['field_configurations']) ? $atts['field_configurations'] : array();
+        // #2281: per-column type overrides. Two storage paths:
+        // (a) settings.column_config[field_id]['type'] — programmatic / future admin UI.
+        // (b) settings.field_configurations[field_id]['column_type'] — admin builder path
+        //     (field_configurations is already persisted; 'column_type' is a new sub-key).
+        $saved_column_types = array();
+        if (isset($atts['column_config']) && is_array($atts['column_config'])) {
+            foreach ($atts['column_config'] as $cc_fid => $cc_cfg) {
+                if (isset($cc_cfg['type']) && is_string($cc_cfg['type'])) {
+                    $saved_column_types[(string) $cc_fid] = $cc_cfg['type'];
+                }
+            }
+        }
+        // field_configurations['column_type'] wins over column_config['type'] when both are set.
+        if (isset($atts['field_configurations']) && is_array($atts['field_configurations'])) {
+            foreach ($atts['field_configurations'] as $fc_fid => $fc_cfg) {
+                if (isset($fc_cfg['column_type']) && is_string($fc_cfg['column_type']) && $fc_cfg['column_type'] !== '') {
+                    $saved_column_types[(string) $fc_fid] = $fc_cfg['column_type'];
+                }
+            }
+        }
 
         // Debug: Log incoming field configurations
         if (!empty($field_configurations)) {
@@ -2988,7 +3020,7 @@ class TC_Shortcode
 
             $config[$field_id] = array(
                 'label' => $label,
-                'type' => $field ? $field->type : 'text',
+                'type' => $saved_column_types[$field_id] ?? ($field ? $field->type : 'text'),
                 'editable' => $is_editable,
                 'sortable' => !empty($sortable_fields) ? in_array($field_id, $sortable_fields) : true,
                 'filterable' => $is_filterable,

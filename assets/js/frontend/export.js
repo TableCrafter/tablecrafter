@@ -47,6 +47,12 @@
             e.preventDefault();
             self.toolbarDownloadPDF();
         });
+
+        // #2285 — visible-rows JSON export button.
+        $wrapper.on('click', '.gt-toolbar-json-btn', function (e) {
+            e.preventDefault();
+            self.toolbarDownloadJSON();
+        });
     };
 
     // Toolbar export helpers moved to assets/js/frontend/toolbar-export.js

@@ -804,7 +804,9 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                 $show_toolbar_csv   = isset($atts['show_toolbar_csv'])   ? filter_var($atts['show_toolbar_csv'],   FILTER_VALIDATE_BOOLEAN) : false;
                 $show_toolbar_excel = isset($atts['show_toolbar_excel']) ? filter_var($atts['show_toolbar_excel'], FILTER_VALIDATE_BOOLEAN) : false;
                 $show_pdf_export    = isset($atts['show_pdf_export'])    ? filter_var($atts['show_pdf_export'],    FILTER_VALIDATE_BOOLEAN) : false;
-                $gt_show_visible_exports = ($show_toolbar_copy || $show_toolbar_csv || $show_toolbar_excel || $show_pdf_export) && $gt_tv_visible('export_buttons');
+                // #2285 — visible-rows JSON export (opt-in, mirrors other toolbar exports).
+                $show_toolbar_json  = isset($atts['show_toolbar_json'])  ? filter_var($atts['show_toolbar_json'],  FILTER_VALIDATE_BOOLEAN) : false;
+                $gt_show_visible_exports = ($show_toolbar_copy || $show_toolbar_csv || $show_toolbar_excel || $show_pdf_export || $show_toolbar_json) && $gt_tv_visible('export_buttons');
 
                 // #1680 — crisp inline SVG icons for the export menu (replaces
                 // the inconsistent emoji glyphs). Feather-style, 16px,
@@ -845,6 +847,11 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                     <span class="gt-format-icon"><?php echo gt_export_icon('grid'); ?></span>
                                     <?php esc_html_e('Export as Excel (all data)', 'tc-data-tables'); ?>
                                 </a>
+                                <?php /* #2285 — JSON all-data export, alongside CSV and Excel. */ ?>
+                                <a href="#" class="gt-export-option" data-format="json">
+                                    <span class="gt-format-icon"><?php echo gt_export_icon('file'); ?></span>
+                                    <?php esc_html_e('Export as JSON (all data)', 'tc-data-tables'); ?>
+                                </a>
                                 <?php endif; ?>
                                 <?php if ($gt_show_visible_exports): ?>
                                 <div class="gt-toolbar-export" role="group" aria-label="<?php esc_attr_e('Export visible rows', 'tc-data-tables'); ?>">
@@ -878,6 +885,14 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                             title="<?php esc_attr_e('Save as PDF (uses your browser\'s print dialog)', 'tc-data-tables'); ?>">
                                         <span class="gt-format-icon"><?php echo gt_export_icon('printer'); ?></span>
                                         <?php esc_html_e('Save as PDF', 'tc-data-tables'); ?>
+                                    </button>
+                                    <?php endif; ?>
+                                    <?php if ($show_toolbar_json): ?>
+                                    <button type="button" class="gt-toolbar-json-btn gt-export-menu-item"
+                                            aria-label="<?php esc_attr_e('Download visible table data as JSON', 'tc-data-tables'); ?>"
+                                            title="<?php esc_attr_e('Download JSON', 'tc-data-tables'); ?>">
+                                        <span class="gt-format-icon"><?php echo gt_export_icon('file'); ?></span>
+                                        <?php esc_html_e('JSON (visible rows)', 'tc-data-tables'); ?>
                                     </button>
                                     <?php endif; ?>
                                 </div>

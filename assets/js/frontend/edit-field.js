@@ -84,8 +84,10 @@
         //console.log('GT Edit: Is backward compat lookup field?', isLookupField);
         //console.log('GT Edit: Lookup config for field:', this.config.lookup_fields ? this.config.lookup_fields[fieldId] : 'No lookup fields config');
 
-        // Check if this field has predefined choices (dropdown/select fields from form configuration)
-        var hasChoices = this.config.column_config && this.config.column_config[fieldId] && this.config.column_config[fieldId].choices && Array.isArray(this.config.column_config[fieldId].choices) && this.config.column_config[fieldId].choices.length > 0;
+        // Check if this field has predefined choices (dropdown/select fields from form configuration).
+        // #2281: exclude multiselect and checkbox_group — those types own their choices rendering
+        // in the switch block below and must NOT be caught here by the single-select path.
+        var hasChoices = fieldType !== 'multiselect' && fieldType !== 'checkbox_group' && this.config.column_config && this.config.column_config[fieldId] && this.config.column_config[fieldId].choices && Array.isArray(this.config.column_config[fieldId].choices) && this.config.column_config[fieldId].choices.length > 0;
         //console.log('GT Edit: Has predefined choices?', hasChoices);
         //console.log('GT Edit: Choices:', this.config.column_config[fieldId] ? this.config.column_config[fieldId].choices : 'No column config');
 
@@ -165,6 +167,64 @@
                 case 'number':
                     inputHtml = '<input type="number" class="gt-edit-input" value="' + this.escapeHtml(currentValue) + '">';
                     break;
+                // ── #2281 new cell-type editors ────────────────────────────────
+                case 'url':
+                    inputHtml = '<input type="url" class="gt-edit-input gt-url-input" value="' + this.escapeHtml(currentValue) + '" placeholder="https://">';
+                    break;
+                case 'datetime':
+                    var dtDateFmt = colCfg.date_format || this.config.date_format || 'm/d/Y';
+                    var dtTimeFmt = colCfg.time_format || 'H:i';
+                    var dtPlaceholder = dtDateFmt.toUpperCase().replace(/[A-Z]/g, function (match) {
+                        switch (match) {
+                            case 'M': return 'MM';
+                            case 'D': return 'DD';
+                            case 'Y': return 'YYYY';
+                            /* c8 ignore next */
+                            default: return match;
+                        }
+                    }) + ' ' + dtTimeFmt.replace(/i/g, 'MM').replace(/H/g, 'HH').replace(/h/g, 'hh').toUpperCase();
+                    inputHtml = '<input type="text" class="gt-edit-input gt-datetime-input"'
+                        + ' value="' + this.escapeHtml(currentValue) + '"'
+                        + ' placeholder="' + this.escapeHtml(dtPlaceholder) + '"'
+                        + ' data-date-format="' + this.escapeHtml(dtDateFmt) + '"'
+                        + ' data-time-format="' + this.escapeHtml(dtTimeFmt) + '">';
+                    break;
+                case 'multiselect':
+                    (function () {
+                        var msChoices = colCfg.choices || [];
+                        var msSelected = [];
+                        try { msSelected = JSON.parse(currentValue); } catch (e) { msSelected = []; }
+                        inputHtml = '<select multiple class="gt-edit-input gt-multiselect-input">';
+                        msChoices.forEach(function (choice) {
+                            var v = (choice && choice.value !== undefined) ? choice.value : (typeof choice === 'string' ? choice : '');
+                            var t = (choice && (choice.text || choice.label)) || v;
+                            var sel = msSelected.indexOf(v) !== -1 ? ' selected' : '';
+                            inputHtml += '<option value="' + self.escapeHtml(v) + '"' + sel + '>' + self.escapeHtml(t) + '</option>';
+                        });
+                        inputHtml += '</select>';
+                    }());
+                    break;
+                case 'checkbox_group':
+                    (function () {
+                        var cbChoices = colCfg.choices || [];
+                        var cbSelected = [];
+                        try { cbSelected = JSON.parse(currentValue); } catch (e) { cbSelected = []; }
+                        inputHtml = '<div class="gt-edit-input gt-checkbox-group-input">';
+                        cbChoices.forEach(function (choice) {
+                            var v = (choice && choice.value !== undefined) ? choice.value : (typeof choice === 'string' ? choice : '');
+                            var t = (choice && (choice.text || choice.label)) || v;
+                            var chk = cbSelected.indexOf(v) !== -1 ? ' checked' : '';
+                            inputHtml += '<label class="gt-cb-label">'
+                                + '<input type="checkbox" value="' + self.escapeHtml(v) + '"' + chk + '> '
+                                + self.escapeHtml(t) + '</label>';
+                        });
+                        inputHtml += '</div>';
+                    }());
+                    break;
+                case 'color':
+                    inputHtml = '<input type="color" class="gt-edit-input gt-color-input" value="' + this.escapeHtml(currentValue || '#000000') + '">';
+                    break;
+                // ── end #2281 ──────────────────────────────────────────────────
                 default:
                     inputHtml = '<input type="text" class="gt-edit-input" value="' + this.escapeHtml(currentValue) + '">';
             }
@@ -239,6 +299,93 @@
             return;
         }
 
+        // ── #2281 multiselect: save JSON array on change ────────────────────
+        if ($input.hasClass('gt-multiselect-input')) {
+            $input.on('change', function () {
+                var selected = [];
+                $input.find('option:selected').each(function () {
+                    selected.push($(this).val());
+                });
+                var newValue = JSON.stringify(selected);
+                self.saveField(entryId, fieldId, newValue, $field);
+            });
+            $input.on('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    $field.html(self.escapeHtml(currentValue));
+                    if ($field.hasClass('gt-editable-cell') && $field.data('original-padding')) {
+                        $field.css('padding', $field.data('original-padding'));
+                        $field.removeData('original-padding');
+                    }
+                }
+            });
+            setTimeout(function () { $input.focus(); }, 100);
+            return;
+        }
+
+        // ── #2281 checkbox_group: save JSON array on change ─────────────────
+        if ($input.hasClass('gt-checkbox-group-input')) {
+            var collectCbValues = function () {
+                var checked = [];
+                $input.find('input[type="checkbox"]:checked').each(function () {
+                    checked.push($(this).val());
+                });
+                return JSON.stringify(checked);
+            };
+            $input.on('change', 'input[type="checkbox"]', function () {
+                self.saveField(entryId, fieldId, collectCbValues(), $field);
+            });
+            $input.on('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    $field.html(self.escapeHtml(currentValue));
+                    if ($field.hasClass('gt-editable-cell') && $field.data('original-padding')) {
+                        $field.css('padding', $field.data('original-padding'));
+                        $field.removeData('original-padding');
+                    }
+                }
+            });
+            return;
+        }
+
+        // ── #2281 color: auto-save on change (browser guarantees valid hex) ─
+        if ($input.hasClass('gt-color-input')) {
+            $input.on('change', function () {
+                var newValue = $input.val();
+                if (newValue !== currentValue) {
+                    self.saveField(entryId, fieldId, newValue, $field);
+                }
+            });
+            $input.on('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    $field.html(self.escapeHtml(currentValue));
+                    if ($field.hasClass('gt-editable-cell') && $field.data('original-padding')) {
+                        $field.css('padding', $field.data('original-padding'));
+                        $field.removeData('original-padding');
+                    }
+                }
+            });
+            $input.on('blur', function () {
+                setTimeout(function () {
+                    if ($field.find('.gt-edit-input').length > 0) {
+                        var newValue = $input.val();
+                        if (newValue !== currentValue) {
+                            self.saveField(entryId, fieldId, newValue, $field);
+                        } else {
+                            $field.html(self.escapeHtml(currentValue));
+                            if ($field.hasClass('gt-editable-cell') && $field.data('original-padding')) {
+                                $field.css('padding', $field.data('original-padding'));
+                                $field.removeData('original-padding');
+                            }
+                        }
+                    }
+                }, 100);
+            });
+            setTimeout(function () { $input.focus(); }, 100);
+            return;
+        }
+
         // Focus and select text for better experience
         setTimeout(function () {
             $input.focus();
@@ -281,12 +428,33 @@
             }
         }, 100);
 
+        // #2281 — client-side URL guard. Fires before saveField for url-type
+        // inputs (type="url"). Returns an error message string on invalid input,
+        // null when the value is valid or the input is not a URL field.
+        var checkUrlValidity = function (val) {
+            if ($input.hasClass('gt-url-input') && val !== '') {
+                try {
+                    // eslint-disable-next-line no-new
+                    new URL(val);
+                    return null; // valid
+                } catch (e) {
+                    return 'Please enter a valid URL (include https://).';
+                }
+            }
+            return null;
+        };
+
         // Enhanced keyboard handling
         $input.on('keydown', function (e) {
             if (e.key === 'Enter' && !e.shiftKey) { // Enter key (allow Shift+Enter for textarea)
                 if (fieldType !== 'textarea' || !e.shiftKey) {
                     e.preventDefault();
                     var newValue = $input.val();
+                    var urlErr = checkUrlValidity(newValue);
+                    if (urlErr) {
+                        if (self.showValidationError) self.showValidationError($field, $input, urlErr);
+                        return;
+                    }
                     var vEnter = self.validateCell ? self.validateCell(fieldId, newValue) : { valid: true };
                     if (!vEnter.valid) {
                         if (self.showValidationError) self.showValidationError($field, $input, vEnter.message);
@@ -299,6 +467,11 @@
             } else if (e.key === 'Tab') { // Tab key (with or without shift)
                 e.preventDefault();
                 var newValueT = $input.val();
+                var urlErrT = checkUrlValidity(newValueT);
+                if (urlErrT) {
+                    if (self.showValidationError) self.showValidationError($field, $input, urlErrT);
+                    return;
+                }
                 var vTab = self.validateCell ? self.validateCell(fieldId, newValueT) : { valid: true };
                 if (!vTab.valid) {
                     if (self.showValidationError) self.showValidationError($field, $input, vTab.message);
@@ -329,6 +502,12 @@
 
                     // Only save if value actually changed and is not empty (unless original was empty)
                     if (newValue !== originalValue && (newValue !== '' || originalValue !== '')) {
+                        // #2281 — URL guard on blur
+                        var urlErrBlur = checkUrlValidity(newValue);
+                        if (urlErrBlur) {
+                            if (self.showValidationError) self.showValidationError($field, $input, urlErrBlur);
+                            return;
+                        }
                         var vBlur = self.validateCell ? self.validateCell(fieldId, newValue) : { valid: true };
                         if (!vBlur.valid) {
                             if (self.showValidationError) self.showValidationError($field, $input, vBlur.message);

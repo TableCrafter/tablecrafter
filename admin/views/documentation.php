@@ -681,6 +681,13 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.41 -- JSON export, advanced search operators, inline cell-type parity', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('JSON export', 'tc-data-tables'); ?></strong> -- <?php _e('the export button now offers CSV, Excel, and JSON. JSON export applies the same column visibility and search filters as the other formats.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Advanced search grammar', 'tc-data-tables'); ?></strong> -- <?php _e('the search box on standard tables now accepts quoted phrases, -word exclusions, field:value targeting, and numeric comparisons (>, <, >=, <=). Parsed client-side with no extra server requests.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Inline cell-type parity', 'tc-data-tables'); ?></strong> -- <?php _e('url, datetime, multiselect, checkbox_group, and color cells now use dedicated input widgets with type-aware validation when editing inline, matching the display-mode renderers.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.40 -- All Tables list shows each table\'s data source', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('New Source column', 'tc-data-tables'); ?></strong> -- <?php _e('the All Tables screen now shows each table\'s actual data source (Gravity Forms with the form name, JSON / REST, CSV, Google Sheets, Airtable, Notion, External Database, WooCommerce) instead of the old "Gravity Form" column, which showed "Form ID: 0" for every non-Gravity-Forms table.', 'tc-data-tables'); ?></li>

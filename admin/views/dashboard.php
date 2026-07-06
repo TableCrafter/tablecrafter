@@ -54,6 +54,10 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
 // (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
+        'version' => '8.0.41',
+        'summary' => __( 'JSON export joins CSV and Excel; advanced search operators (quotes, exclusions, field:value, comparisons) in the search box; inline editing gains url, datetime, multiselect, checkbox_group, and color cell types with type-aware validation.', 'tc-data-tables' ),
+    ),
+    array(
         'version' => '8.0.40',
         'summary' => __( 'The All Tables list now shows each table\'s data source (Gravity Forms, JSON, Google Sheets, External Database, and more) instead of a Gravity-Forms-only column that read "Form ID: 0" for other sources.', 'tc-data-tables' ),
     ),

@@ -145,6 +145,43 @@
                 return;
             }
             window.print();
+        },
+
+        // #2285 — JSON visible-rows export helpers.
+
+        /**
+         * toolbarBuildJSON(rows)
+         *
+         * Takes a 2D array of cell values (same shape as getVisibleTableData)
+         * and returns a pretty-printed JSON string — an array of objects keyed
+         * by the column headers from the first row.
+         *
+         * @param  {string[][]} rows  2D array; rows[0] is the header row.
+         * @return {string}           JSON string.
+         */
+        toolbarBuildJSON: function (rows) {
+            if (!rows.length) { return '[]'; }
+            var headers = rows[0];
+            var data = rows.slice(1).map(function (row) {
+                var obj = {};
+                headers.forEach(function (h, i) {
+                    obj[h] = row[i] !== undefined ? row[i] : '';
+                });
+                return obj;
+            });
+            return JSON.stringify(data, null, 2);
+        },
+
+        /**
+         * toolbarDownloadJSON()
+         *
+         * Orchestrator: getVisibleTableData → toolbarBuildJSON →
+         * toolbarTriggerDownload as application/json.
+         */
+        toolbarDownloadJSON: function () {
+            var rows = this.getVisibleTableData();
+            var json = this.toolbarBuildJSON(rows);
+            this.toolbarTriggerDownload(json, 'table-export.json', 'application/json;charset=utf-8;');
         }
 
     });

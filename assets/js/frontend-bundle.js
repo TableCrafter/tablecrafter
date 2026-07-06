@@ -58,12 +58,12 @@
 (function (window) {
     'use strict';
 
-    var VERSION = '8.0.40';
+    var VERSION = '8.0.41';
     // TC_JS_VERSION preserved as a top-level literal so the pre-#831 file-grep
     // contract in #99 (script must declare a quoted-semver var named TC_JS_VERSION)
     // keeps matching the bundle. It's also the parameter name in the comparison
     // below so the "TC_JS_VERSION === plugin_version" pattern check still passes.
-    var TC_JS_VERSION = '8.0.40';
+    var TC_JS_VERSION = '8.0.41';
 
     // Internal names retained as gtNaturalSort / gtParseCurrency /
     // gtCurrencySort / gtCheckVersionMismatch so the pre-#831 file-grep
@@ -165,7 +165,7 @@
     // .parseCurrency / .currencySort / .checkVersionMismatch / .VERSION.
     // TC_JS_VERSION kept here as a local alias for the few existing call
     // sites in this file (init() still references it via the namespace).
-    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.40';
+    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.41';
 
     // Initialize all tables on the page
     $(document).ready(function () {
@@ -1649,6 +1649,481 @@
                     self.persistFilterStateLocal();
                     self.loadEntries();
                 }
+            });
+        }
+
+    });
+
+})(window);
+
+/* ===== assets/js/frontend/search-grammar.js ===== */
+/**
+ * TableCrafter — frontend/search-grammar.js
+ *
+ * #2278 Phase 1 — advanced global search grammar (client-side only).
+ *
+ * Ports the query tokenizer and AST evaluator from tablecrafter.js
+ * (_tokenizeQuery / _evalQueryAst) into a frontend module attached to
+ * GravityTable.prototype. Covers: implicit AND, OR (case-insensitive),
+ * -negation, "quoted phrases", field:value with column-label resolution,
+ * comparison operators (> >= < <=), wildcards (* ?), regex.
+ *
+ * Non-SSP wire-in: when the global search term contains grammar
+ * operators the main search path (load-entries.js) calls
+ * grammarFilterEntries() to evaluate the AST client-side over the
+ * loaded row set; server-side LIKE search is suppressed so the grammar
+ * filter operates over the full (unfiltered) page. Plain queries fall
+ * through to the existing behavior byte-identical.
+ *
+ * Fuzzy mode: when enable_fuzzy_search is set and the AST contains any
+ * `field`, `not`, or `or` node, grammar evaluation wins over fuzzy.
+ * Collect highlight terms via _getGrammarHighlightTerms() — returns []
+ * when fuzzy-disable nodes are present (per spec, suppress highlighting
+ * for not/comparison/or nodes).
+ *
+ * Field resolution: matched against col.label (case-insensitive,
+ * whitespace collapsed to _) and col.field_id. Falls back to raw key
+ * lookup in the row object.
+ *
+ * Surface (attached to GravityTable.prototype via Object.assign):
+ *   _hasGrammarOperators(query)
+ *   parseSearchGrammarQuery(input)         — returns AST root
+ *   _evalGrammarAst(node, row)
+ *   _resolveColumnValue(row, fieldName)
+ *   _grammarAstHasFuzzyDisableNode(ast)
+ *   _getGrammarHighlightTerms(ast)
+ *   grammarFilterEntries(entries, query)
+ */
+(function (window) {
+    'use strict';
+
+    /* c8 ignore next 4 */
+    if (typeof window.GravityTable !== 'function') {
+        window.GravityTable = function GravityTable() {};
+    }
+
+    // ── Closure-private helpers ─────────────────────────────────────────
+
+    /**
+     * Convert a glob-style wildcard pattern (* ?) into a RegExp.
+     * Anchored to full string; case-insensitive.
+     */
+    function wildcardToRegex(pattern) {
+        var escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+            .replace(/\*/g, '.*')
+            .replace(/\?/g, '.');
+        return new RegExp('^' + escaped + '$', 'i');
+    }
+
+    /**
+     * Evaluate a resolved field value against the operator/value from
+     * a `field` AST node.  Ported from tablecrafter.js _evalFieldNode.
+     */
+    function evalFieldNode(node, raw) {
+        var op    = node.op;
+        var value = node.value;
+
+        if (op === 'regex') {
+            try {
+                var m  = value.match(/^\/(.*)\/([gimsuy]*)$/);
+                var re = m ? new RegExp(m[1], m[2]) : new RegExp(value, 'i');
+                return re.test(String(raw == null ? '' : raw));
+            } catch (_) {
+                return String(raw == null ? '' : raw).toLowerCase().indexOf(value.toLowerCase()) !== -1;
+            }
+        }
+
+        if (op === 'gt' || op === 'gte' || op === 'lt' || op === 'lte') {
+            var num = parseFloat(raw);
+            var cmp = parseFloat(value);
+            if (isNaN(num) || isNaN(cmp)) { return false; }
+            if (op === 'gt')  { return num > cmp; }
+            if (op === 'gte') { return num >= cmp; }
+            if (op === 'lt')  { return num < cmp; }
+            /* op === 'lte' */ return num <= cmp;
+        }
+
+        var cellStr = String(raw == null ? '' : raw);
+        var valStr  = String(value);
+
+        if (op === 'eq') {
+            if (valStr.indexOf('*') !== -1 || valStr.indexOf('?') !== -1) {
+                return wildcardToRegex(valStr).test(cellStr);
+            }
+            return cellStr.toLowerCase().indexOf(valStr.toLowerCase()) !== -1;
+        }
+
+        return cellStr.toLowerCase().indexOf(valStr.toLowerCase()) !== -1;
+    }
+
+    /**
+     * Read a double-quoted string starting at startIdx.
+     * Returns { value, next } where next is the index after the
+     * closing quote (or end-of-string when unclosed).
+     */
+    function readQuoted(s, startIdx) {
+        var end = s.indexOf('"', startIdx + 1);
+        if (end === -1) {
+            return { value: s.slice(startIdx + 1), next: s.length };
+        }
+        return { value: s.slice(startIdx + 1, end), next: end + 1 };
+    }
+
+    /**
+     * Tokenize a search query string.
+     * Ported from tablecrafter.js _tokenizeQuery.
+     *
+     * Token shapes:
+     *   { type: 'not' }
+     *   { type: 'or' }
+     *   { type: 'phrase', value: string }
+     *   { type: 'term',   value: string }
+     *   { type: 'field',  field: string, op: string, value: string }
+     */
+    function tokenizeQuery(s) {
+        var tokens = [];
+        var i      = 0;
+
+        while (i < s.length) {
+            var ch = s[i];
+
+            // Skip whitespace
+            if (/\s/.test(ch)) { i++; continue; }
+
+            // Negation prefix: - immediately followed by non-whitespace
+            if (ch === '-' && i + 1 < s.length && !/\s/.test(s[i + 1])) {
+                tokens.push({ type: 'not' });
+                i++;
+                continue;
+            }
+
+            // Quoted phrase
+            if (ch === '"') {
+                var q = readQuoted(s, i);
+                tokens.push({ type: 'phrase', value: q.value });
+                i = q.next;
+                continue;
+            }
+
+            // Read a bare word (stops at whitespace, quote, colon)
+            var wordStart = i;
+            while (i < s.length && !/[\s":]/.test(s[i])) { i++; }
+            var word = s.slice(wordStart, i);
+
+            // OR keyword (case-insensitive)
+            if (word.toUpperCase() === 'OR') {
+                tokens.push({ type: 'or' });
+                continue;
+            }
+
+            // field: prefix
+            if (i < s.length && s[i] === ':') {
+                i++; // consume colon
+                var fieldValue = '';
+                var op = 'eq';
+
+                // Comparison operators immediately after colon
+                if (i < s.length) {
+                    if (s[i] === '>' && i + 1 < s.length && s[i + 1] === '=') { op = 'gte'; i += 2; }
+                    else if (s[i] === '<' && i + 1 < s.length && s[i + 1] === '=') { op = 'lte'; i += 2; }
+                    else if (s[i] === '>') { op = 'gt'; i++; }
+                    else if (s[i] === '<') { op = 'lt'; i++; }
+                    else if (s[i] === '=') { op = 'eq'; i++; }
+                }
+
+                // Quoted value
+                if (i < s.length && s[i] === '"') {
+                    var qv = readQuoted(s, i);
+                    fieldValue = qv.value;
+                    i = qv.next;
+                } else if (i < s.length && s[i] === '/') {
+                    // Regex literal: /pattern/flags
+                    op = 'regex';
+                    var regexStart = i;
+                    i++; // skip opening /
+                    while (i < s.length && s[i] !== '/' && s[i] !== ' ') { i++; }
+                    if (i < s.length && s[i] === '/') {
+                        i++; // skip closing /
+                        while (i < s.length && /[gimsuy]/.test(s[i])) { i++; }
+                    }
+                    fieldValue = s.slice(regexStart, i);
+                } else {
+                    // Bare value: read to next whitespace
+                    var valueStart = i;
+                    while (i < s.length && !/\s/.test(s[i])) { i++; }
+                    fieldValue = s.slice(valueStart, i);
+                }
+
+                tokens.push({ type: 'field', field: word, op: op, value: fieldValue });
+                continue;
+            }
+
+            // Plain term
+            if (word.length > 0) {
+                tokens.push({ type: 'term', value: word });
+            }
+        }
+
+        return tokens;
+    }
+
+    /**
+     * Consume one logical node from the token stream starting at index i.
+     * Returns { node, next } where next is the updated token index.
+     */
+    function consumeQueryNode(tokens, i) {
+        var tok = tokens[i];
+
+        if (tok.type === 'not') {
+            if (i + 1 >= tokens.length) {
+                return { node: { type: 'term', value: '' }, next: i + 1 };
+            }
+            var inner = consumeQueryNode(tokens, i + 1);
+            return { node: { type: 'not', child: inner.node }, next: inner.next };
+        }
+
+        if (tok.type === 'phrase') {
+            return { node: { type: 'phrase', value: tok.value }, next: i + 1 };
+        }
+
+        if (tok.type === 'field') {
+            return {
+                node: { type: 'field', field: tok.field, op: tok.op || 'eq', value: tok.value },
+                next: i + 1
+            };
+        }
+
+        // default: term
+        return { node: { type: 'term', value: tok.value }, next: i + 1 };
+    }
+
+    /**
+     * Build an AST from a token stream.
+     * Handles implicit AND (juxtaposition) and explicit OR.
+     * Returns a root { type: 'and', children } node.
+     * Ported from tablecrafter.js parseQuery.
+     */
+    function buildAst(tokens) {
+        var children = [];
+        var i = 0;
+
+        while (i < tokens.length) {
+            var tok = tokens[i];
+
+            if (tok.type === 'or') {
+                var prev = children.pop();
+                i++;
+                if (i >= tokens.length) {
+                    if (prev) { children.push(prev); }
+                    break;
+                }
+                var consumed = consumeQueryNode(tokens, i);
+                i = consumed.next;
+                var orNode;
+                if (prev && prev.type === 'or') {
+                    orNode = { type: 'or', children: prev.children.concat([consumed.node]) };
+                } else {
+                    orNode = { type: 'or', children: [prev || { type: 'term', value: '' }, consumed.node] };
+                }
+                children.push(orNode);
+            } else {
+                var c = consumeQueryNode(tokens, i);
+                i = c.next;
+                children.push(c.node);
+            }
+        }
+
+        return { type: 'and', children: children };
+    }
+
+    /**
+     * Normalize a column label for field name matching.
+     * Lowercases and collapses whitespace runs to a single underscore.
+     */
+    function normalizeLabel(s) {
+        return String(s == null ? '' : s).toLowerCase().replace(/\s+/g, '_');
+    }
+
+    // ── Prototype surface ───────────────────────────────────────────────
+
+    Object.assign(window.GravityTable.prototype, {
+
+        /**
+         * Returns true when the query string contains any grammar operator
+         * tokens: colon (field:), double-quote (phrase), word-OR, or
+         * leading-dash negation (-word).
+         *
+         * Plain term-only queries return false so existing LIKE-based
+         * search runs unchanged.
+         */
+        _hasGrammarOperators: function (query) {
+            if (typeof query !== 'string' || query.trim() === '') { return false; }
+            if (query.indexOf('"') !== -1 || query.indexOf(':') !== -1) { return true; }
+            if (/\bOR\b/i.test(query)) { return true; }
+            // -word: dash not followed by whitespace (negation prefix)
+            if (/-[^\s]/.test(query)) { return true; }
+            return false;
+        },
+
+        /**
+         * Tokenize and parse a query string into an AST.
+         * Public entry-point for tests and callers that need the AST directly.
+         */
+        parseSearchGrammarQuery: function (input) {
+            var s = String(input == null ? '' : input);
+            return buildAst(tokenizeQuery(s));
+        },
+
+        /**
+         * Resolve a field name token (from field:value) to the raw cell
+         * value stored in the row object.
+         *
+         * Priority order:
+         *  1. Column whose label (normalised) matches fieldName
+         *  2. Column whose field_id matches fieldName exactly
+         *  3. Raw key lookup in the row object (fallback)
+         */
+        _resolveColumnValue: function (row, fieldName) {
+            var cols = this.config && Array.isArray(this.config.columns)
+                ? this.config.columns : [];
+            var norm = normalizeLabel(fieldName);
+
+            for (var i = 0; i < cols.length; i++) {
+                var col = cols[i];
+                if (normalizeLabel(col.label) === norm) {
+                    return row[col.field_id];
+                }
+                if (String(col.field_id) === String(fieldName)) {
+                    return row[col.field_id];
+                }
+            }
+
+            // Raw key fallback (allows direct field-id or arbitrary key lookup)
+            return row[fieldName];
+        },
+
+        /**
+         * Evaluate an AST node against a single row object.
+         *
+         * Ported from tablecrafter.js _evalQueryAst, extended with
+         * column-label field resolution via _resolveColumnValue.
+         */
+        _evalGrammarAst: function (node, row) {
+            var self = this;
+
+            switch (node.type) {
+                case 'and':
+                    return node.children.every(function (c) {
+                        return self._evalGrammarAst(c, row);
+                    });
+
+                case 'or':
+                    return node.children.some(function (c) {
+                        return self._evalGrammarAst(c, row);
+                    });
+
+                case 'not':
+                    return !self._evalGrammarAst(node.child, row);
+
+                case 'phrase': {
+                    var needle = node.value.toLowerCase();
+                    return Object.values(row).some(function (v) {
+                        return v != null && String(v).toLowerCase().indexOf(needle) !== -1;
+                    });
+                }
+
+                case 'term': {
+                    var pattern = node.value;
+                    if (pattern.indexOf('*') !== -1 || pattern.indexOf('?') !== -1) {
+                        var re = wildcardToRegex(pattern);
+                        return Object.values(row).some(function (v) {
+                            return v != null && re.test(String(v));
+                        });
+                    }
+                    var termNeedle = pattern.toLowerCase();
+                    return Object.values(row).some(function (v) {
+                        return v != null && String(v).toLowerCase().indexOf(termNeedle) !== -1;
+                    });
+                }
+
+                case 'field': {
+                    var raw = self._resolveColumnValue(row, node.field);
+                    return evalFieldNode(node, raw);
+                }
+
+                default:
+                    return true;
+            }
+        },
+
+        /**
+         * Returns true when the AST contains any node whose type would
+         * disable fuzzy search: 'field', 'not', or 'or'.
+         *
+         * Used by callers to gate enable_fuzzy_search: if this returns
+         * true, grammar evaluation takes precedence over fuzzy matching.
+         */
+        _grammarAstHasFuzzyDisableNode: function (ast) {
+            if (!ast) { return false; }
+            var self = this;
+            if (ast.type === 'field' || ast.type === 'not' || ast.type === 'or') {
+                return true;
+            }
+            if (Array.isArray(ast.children)) {
+                if (ast.children.some(function (c) {
+                    return self._grammarAstHasFuzzyDisableNode(c);
+                })) { return true; }
+            }
+            if (ast.child && self._grammarAstHasFuzzyDisableNode(ast.child)) {
+                return true;
+            }
+            return false;
+        },
+
+        /**
+         * Collect leaf term/phrase values from the AST for DOM highlighting.
+         *
+         * Returns [] when the AST contains any fuzzy-disable node (field,
+         * not, or), because highlighting is suppressed in those cases
+         * (per spec: "Suppress highlighting when not, comparison operators,
+         * or or nodes are present").
+         */
+        _getGrammarHighlightTerms: function (ast) {
+            if (!ast) { return []; }
+            if (this._grammarAstHasFuzzyDisableNode(ast)) { return []; }
+
+            var terms = [];
+            (function collect(node) {
+                if ((node.type === 'term' || node.type === 'phrase') && node.value) {
+                    terms.push(node.value);
+                }
+                if (Array.isArray(node.children)) { node.children.forEach(collect); }
+                if (node.child) { collect(node.child); }
+            }(ast));
+
+            return terms;
+        },
+
+        /**
+         * Filter an entries array by evaluating the grammar AST for query.
+         *
+         * When query contains no grammar operators the original array
+         * reference is returned unchanged so the existing LIKE-based
+         * search path is byte-identical for plain queries (regression-safe).
+         *
+         * When grammar operators are present, the query is parsed into an
+         * AST and each entry is evaluated against it. Only matching entries
+         * are returned (new array).
+         */
+        grammarFilterEntries: function (entries, query) {
+            if (!Array.isArray(entries) || entries.length === 0) { return entries; }
+            if (!this._hasGrammarOperators(query)) { return entries; }
+
+            var ast  = buildAst(tokenizeQuery(String(query)));
+            var self = this;
+
+            return entries.filter(function (row) {
+                return self._evalGrammarAst(ast, row);
             });
         }
 
@@ -4541,6 +5016,43 @@
                 return;
             }
             window.print();
+        },
+
+        // #2285 — JSON visible-rows export helpers.
+
+        /**
+         * toolbarBuildJSON(rows)
+         *
+         * Takes a 2D array of cell values (same shape as getVisibleTableData)
+         * and returns a pretty-printed JSON string — an array of objects keyed
+         * by the column headers from the first row.
+         *
+         * @param  {string[][]} rows  2D array; rows[0] is the header row.
+         * @return {string}           JSON string.
+         */
+        toolbarBuildJSON: function (rows) {
+            if (!rows.length) { return '[]'; }
+            var headers = rows[0];
+            var data = rows.slice(1).map(function (row) {
+                var obj = {};
+                headers.forEach(function (h, i) {
+                    obj[h] = row[i] !== undefined ? row[i] : '';
+                });
+                return obj;
+            });
+            return JSON.stringify(data, null, 2);
+        },
+
+        /**
+         * toolbarDownloadJSON()
+         *
+         * Orchestrator: getVisibleTableData → toolbarBuildJSON →
+         * toolbarTriggerDownload as application/json.
+         */
+        toolbarDownloadJSON: function () {
+            var rows = this.getVisibleTableData();
+            var json = this.toolbarBuildJSON(rows);
+            this.toolbarTriggerDownload(json, 'table-export.json', 'application/json;charset=utf-8;');
         }
 
     });
@@ -8279,8 +8791,10 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         //console.log('GT Edit: Is backward compat lookup field?', isLookupField);
         //console.log('GT Edit: Lookup config for field:', this.config.lookup_fields ? this.config.lookup_fields[fieldId] : 'No lookup fields config');
 
-        // Check if this field has predefined choices (dropdown/select fields from form configuration)
-        var hasChoices = this.config.column_config && this.config.column_config[fieldId] && this.config.column_config[fieldId].choices && Array.isArray(this.config.column_config[fieldId].choices) && this.config.column_config[fieldId].choices.length > 0;
+        // Check if this field has predefined choices (dropdown/select fields from form configuration).
+        // #2281: exclude multiselect and checkbox_group — those types own their choices rendering
+        // in the switch block below and must NOT be caught here by the single-select path.
+        var hasChoices = fieldType !== 'multiselect' && fieldType !== 'checkbox_group' && this.config.column_config && this.config.column_config[fieldId] && this.config.column_config[fieldId].choices && Array.isArray(this.config.column_config[fieldId].choices) && this.config.column_config[fieldId].choices.length > 0;
         //console.log('GT Edit: Has predefined choices?', hasChoices);
         //console.log('GT Edit: Choices:', this.config.column_config[fieldId] ? this.config.column_config[fieldId].choices : 'No column config');
 
@@ -8360,6 +8874,64 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                 case 'number':
                     inputHtml = '<input type="number" class="gt-edit-input" value="' + this.escapeHtml(currentValue) + '">';
                     break;
+                // ── #2281 new cell-type editors ────────────────────────────────
+                case 'url':
+                    inputHtml = '<input type="url" class="gt-edit-input gt-url-input" value="' + this.escapeHtml(currentValue) + '" placeholder="https://">';
+                    break;
+                case 'datetime':
+                    var dtDateFmt = colCfg.date_format || this.config.date_format || 'm/d/Y';
+                    var dtTimeFmt = colCfg.time_format || 'H:i';
+                    var dtPlaceholder = dtDateFmt.toUpperCase().replace(/[A-Z]/g, function (match) {
+                        switch (match) {
+                            case 'M': return 'MM';
+                            case 'D': return 'DD';
+                            case 'Y': return 'YYYY';
+                            /* c8 ignore next */
+                            default: return match;
+                        }
+                    }) + ' ' + dtTimeFmt.replace(/i/g, 'MM').replace(/H/g, 'HH').replace(/h/g, 'hh').toUpperCase();
+                    inputHtml = '<input type="text" class="gt-edit-input gt-datetime-input"'
+                        + ' value="' + this.escapeHtml(currentValue) + '"'
+                        + ' placeholder="' + this.escapeHtml(dtPlaceholder) + '"'
+                        + ' data-date-format="' + this.escapeHtml(dtDateFmt) + '"'
+                        + ' data-time-format="' + this.escapeHtml(dtTimeFmt) + '">';
+                    break;
+                case 'multiselect':
+                    (function () {
+                        var msChoices = colCfg.choices || [];
+                        var msSelected = [];
+                        try { msSelected = JSON.parse(currentValue); } catch (e) { msSelected = []; }
+                        inputHtml = '<select multiple class="gt-edit-input gt-multiselect-input">';
+                        msChoices.forEach(function (choice) {
+                            var v = (choice && choice.value !== undefined) ? choice.value : (typeof choice === 'string' ? choice : '');
+                            var t = (choice && (choice.text || choice.label)) || v;
+                            var sel = msSelected.indexOf(v) !== -1 ? ' selected' : '';
+                            inputHtml += '<option value="' + self.escapeHtml(v) + '"' + sel + '>' + self.escapeHtml(t) + '</option>';
+                        });
+                        inputHtml += '</select>';
+                    }());
+                    break;
+                case 'checkbox_group':
+                    (function () {
+                        var cbChoices = colCfg.choices || [];
+                        var cbSelected = [];
+                        try { cbSelected = JSON.parse(currentValue); } catch (e) { cbSelected = []; }
+                        inputHtml = '<div class="gt-edit-input gt-checkbox-group-input">';
+                        cbChoices.forEach(function (choice) {
+                            var v = (choice && choice.value !== undefined) ? choice.value : (typeof choice === 'string' ? choice : '');
+                            var t = (choice && (choice.text || choice.label)) || v;
+                            var chk = cbSelected.indexOf(v) !== -1 ? ' checked' : '';
+                            inputHtml += '<label class="gt-cb-label">'
+                                + '<input type="checkbox" value="' + self.escapeHtml(v) + '"' + chk + '> '
+                                + self.escapeHtml(t) + '</label>';
+                        });
+                        inputHtml += '</div>';
+                    }());
+                    break;
+                case 'color':
+                    inputHtml = '<input type="color" class="gt-edit-input gt-color-input" value="' + this.escapeHtml(currentValue || '#000000') + '">';
+                    break;
+                // ── end #2281 ──────────────────────────────────────────────────
                 default:
                     inputHtml = '<input type="text" class="gt-edit-input" value="' + this.escapeHtml(currentValue) + '">';
             }
@@ -8434,6 +9006,93 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             return;
         }
 
+        // ── #2281 multiselect: save JSON array on change ────────────────────
+        if ($input.hasClass('gt-multiselect-input')) {
+            $input.on('change', function () {
+                var selected = [];
+                $input.find('option:selected').each(function () {
+                    selected.push($(this).val());
+                });
+                var newValue = JSON.stringify(selected);
+                self.saveField(entryId, fieldId, newValue, $field);
+            });
+            $input.on('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    $field.html(self.escapeHtml(currentValue));
+                    if ($field.hasClass('gt-editable-cell') && $field.data('original-padding')) {
+                        $field.css('padding', $field.data('original-padding'));
+                        $field.removeData('original-padding');
+                    }
+                }
+            });
+            setTimeout(function () { $input.focus(); }, 100);
+            return;
+        }
+
+        // ── #2281 checkbox_group: save JSON array on change ─────────────────
+        if ($input.hasClass('gt-checkbox-group-input')) {
+            var collectCbValues = function () {
+                var checked = [];
+                $input.find('input[type="checkbox"]:checked').each(function () {
+                    checked.push($(this).val());
+                });
+                return JSON.stringify(checked);
+            };
+            $input.on('change', 'input[type="checkbox"]', function () {
+                self.saveField(entryId, fieldId, collectCbValues(), $field);
+            });
+            $input.on('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    $field.html(self.escapeHtml(currentValue));
+                    if ($field.hasClass('gt-editable-cell') && $field.data('original-padding')) {
+                        $field.css('padding', $field.data('original-padding'));
+                        $field.removeData('original-padding');
+                    }
+                }
+            });
+            return;
+        }
+
+        // ── #2281 color: auto-save on change (browser guarantees valid hex) ─
+        if ($input.hasClass('gt-color-input')) {
+            $input.on('change', function () {
+                var newValue = $input.val();
+                if (newValue !== currentValue) {
+                    self.saveField(entryId, fieldId, newValue, $field);
+                }
+            });
+            $input.on('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    $field.html(self.escapeHtml(currentValue));
+                    if ($field.hasClass('gt-editable-cell') && $field.data('original-padding')) {
+                        $field.css('padding', $field.data('original-padding'));
+                        $field.removeData('original-padding');
+                    }
+                }
+            });
+            $input.on('blur', function () {
+                setTimeout(function () {
+                    if ($field.find('.gt-edit-input').length > 0) {
+                        var newValue = $input.val();
+                        if (newValue !== currentValue) {
+                            self.saveField(entryId, fieldId, newValue, $field);
+                        } else {
+                            $field.html(self.escapeHtml(currentValue));
+                            if ($field.hasClass('gt-editable-cell') && $field.data('original-padding')) {
+                                $field.css('padding', $field.data('original-padding'));
+                                $field.removeData('original-padding');
+                            }
+                        }
+                    }
+                }, 100);
+            });
+            setTimeout(function () { $input.focus(); }, 100);
+            return;
+        }
+
         // Focus and select text for better experience
         setTimeout(function () {
             $input.focus();
@@ -8476,12 +9135,33 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             }
         }, 100);
 
+        // #2281 — client-side URL guard. Fires before saveField for url-type
+        // inputs (type="url"). Returns an error message string on invalid input,
+        // null when the value is valid or the input is not a URL field.
+        var checkUrlValidity = function (val) {
+            if ($input.hasClass('gt-url-input') && val !== '') {
+                try {
+                    // eslint-disable-next-line no-new
+                    new URL(val);
+                    return null; // valid
+                } catch (e) {
+                    return 'Please enter a valid URL (include https://).';
+                }
+            }
+            return null;
+        };
+
         // Enhanced keyboard handling
         $input.on('keydown', function (e) {
             if (e.key === 'Enter' && !e.shiftKey) { // Enter key (allow Shift+Enter for textarea)
                 if (fieldType !== 'textarea' || !e.shiftKey) {
                     e.preventDefault();
                     var newValue = $input.val();
+                    var urlErr = checkUrlValidity(newValue);
+                    if (urlErr) {
+                        if (self.showValidationError) self.showValidationError($field, $input, urlErr);
+                        return;
+                    }
                     var vEnter = self.validateCell ? self.validateCell(fieldId, newValue) : { valid: true };
                     if (!vEnter.valid) {
                         if (self.showValidationError) self.showValidationError($field, $input, vEnter.message);
@@ -8494,6 +9174,11 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             } else if (e.key === 'Tab') { // Tab key (with or without shift)
                 e.preventDefault();
                 var newValueT = $input.val();
+                var urlErrT = checkUrlValidity(newValueT);
+                if (urlErrT) {
+                    if (self.showValidationError) self.showValidationError($field, $input, urlErrT);
+                    return;
+                }
                 var vTab = self.validateCell ? self.validateCell(fieldId, newValueT) : { valid: true };
                 if (!vTab.valid) {
                     if (self.showValidationError) self.showValidationError($field, $input, vTab.message);
@@ -8524,6 +9209,12 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
                     // Only save if value actually changed and is not empty (unless original was empty)
                     if (newValue !== originalValue && (newValue !== '' || originalValue !== '')) {
+                        // #2281 — URL guard on blur
+                        var urlErrBlur = checkUrlValidity(newValue);
+                        if (urlErrBlur) {
+                            if (self.showValidationError) self.showValidationError($field, $input, urlErrBlur);
+                            return;
+                        }
                         var vBlur = self.validateCell ? self.validateCell(fieldId, newValue) : { valid: true };
                         if (!vBlur.valid) {
                             if (self.showValidationError) self.showValidationError($field, $input, vBlur.message);
@@ -9657,6 +10348,12 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             e.preventDefault();
             self.toolbarDownloadPDF();
         });
+
+        // #2285 — visible-rows JSON export button.
+        $wrapper.on('click', '.gt-toolbar-json-btn', function (e) {
+            e.preventDefault();
+            self.toolbarDownloadJSON();
+        });
     };
 
     // Toolbar export helpers moved to assets/js/frontend/toolbar-export.js
@@ -10417,6 +11114,21 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         // skeleton rows mirroring the real column/row count.
         self.showLoadingSkeleton($wrapper);
 
+        // #2278 Phase 1 — grammar query detection.
+        // When the search term contains grammar operators (field:, -, OR, ""),
+        // suppress the server-side LIKE filter (which would match the raw
+        // operator string literally) and apply grammar evaluation client-side
+        // after the server returns the full row set for the page.
+        // Plain queries are not affected: grammarQuery stays '' and the
+        // existing server LIKE path runs unchanged.
+        var grammarQuery = '';
+        var serverSearch = this.searchTerm;
+        if (typeof self._hasGrammarOperators === 'function'
+                && self._hasGrammarOperators(self.searchTerm)) {
+            grammarQuery = self.searchTerm;
+            serverSearch = ''; // let server return all rows unfiltered
+        }
+
         // Prepare data
         var data = {
             action: 'gt_get_entries',
@@ -10425,7 +11137,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             table_id: this.config.table_id,
             page: this.currentPage,
             per_page: this.config.per_page,
-            search: this.searchTerm,
+            search: serverSearch,
             sort_field: this.sortField,
             sort_order: this.sortOrder,
             // #565 — pass the full multi-sort stack as JSON. Server validates
@@ -10468,7 +11180,14 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             $wrapper.removeClass('gt-table-loading');
             self.releaseColumnWidths($wrapper);
             if (response.success) {
-                self.renderEntries(response.data);
+                // #2278 Phase 1 — apply grammar filter client-side when active.
+                var renderData = response.data;
+                if (grammarQuery && typeof self.grammarFilterEntries === 'function'
+                        && renderData && Array.isArray(renderData.entries)) {
+                    renderData = jQuery.extend({}, renderData);
+                    renderData.entries = self.grammarFilterEntries(renderData.entries, grammarQuery);
+                }
+                self.renderEntries(renderData);
             } else {
                 $tbody.html('<tr><td colspan="' + ($wrapper.find('thead th').length) + '"><div class="gt-error">Error loading entries: ' + response.data + '</div></td></tr>');
             }

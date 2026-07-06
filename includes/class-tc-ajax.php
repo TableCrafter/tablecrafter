@@ -3624,8 +3624,27 @@ class TC_Ajax
 
         $gt_blocked_fields = array();
 
+        // #2281 — Load column_config for type-aware sanitization. The table_id
+        // was already consumed for the permission check above; re-read from POST
+        // so admin-cap users (who skip the permission block) also benefit.
+        $update_table_id   = intval($_POST['table_id'] ?? 0);
+        $update_col_config = $this->load_column_config($update_table_id);
+
         foreach ($updates as $field_id => $value) {
-            $sanitized_value = $this->sanitize_field_value($value, $field_id);
+            // #2281 — resolve per-field col_type before sanitizing.
+            $field_col_cfg  = is_array($update_col_config[(string) $field_id] ?? null)
+                ? $update_col_config[(string) $field_id]
+                : array();
+            $inferred_type  = isset($field_col_cfg['type']) ? (string) $field_col_cfg['type'] : '';
+            $sanitized_value = $this->sanitize_field_value($value, (string) $field_id, $inferred_type, $field_col_cfg);
+
+            // Surface type-check rejections as a JSON error via the toast path.
+            if (is_wp_error($sanitized_value)) {
+                wp_send_json_error(array(
+                    'message'  => $sanitized_value->get_error_message(),
+                    'field_id' => (string) $field_id,
+                ));
+            }
 
             // Check if field exists first
             $existing = $wpdb->get_var($wpdb->prepare(
@@ -4276,9 +4295,25 @@ class TC_Ajax
         $success = true;
         $updated_fields = array();
 
+        // #2281 — Load column_config for type-aware sanitization.
+        $fields_table_id   = intval($_POST['table_id'] ?? 0);
+        $fields_col_config = $this->load_column_config($fields_table_id);
+
         foreach ($fields as $field_id => $value) {
-            // Sanitize the value based on field type
-            $sanitized_value = $this->sanitize_field_value($value, $field_id);
+            // #2281 — resolve per-field col_type before sanitizing.
+            $field_col_cfg   = is_array($fields_col_config[(string) $field_id] ?? null)
+                ? $fields_col_config[(string) $field_id]
+                : array();
+            $inferred_type   = isset($field_col_cfg['type']) ? (string) $field_col_cfg['type'] : '';
+            $sanitized_value = $this->sanitize_field_value($value, (string) $field_id, $inferred_type, $field_col_cfg);
+
+            // Surface type-check rejections as a JSON error via the toast path.
+            if (is_wp_error($sanitized_value)) {
+                wp_send_json_error(array(
+                    'message'  => $sanitized_value->get_error_message(),
+                    'field_id' => (string) $field_id,
+                ));
+            }
 
             // For Gravity Forms, we need to check if this field already has an entry in entry_meta
             $existing = $wpdb->get_var($wpdb->prepare(
@@ -6821,10 +6856,86 @@ class TC_Ajax
     }
 
     /**
-     * Sanitize field value based on field type and content
-     * Provides proper sanitization for different field types instead of just text
+     * Load the column_config array from a table's stored settings (#2281).
+     * Used by update_entry / update_entry_fields to pass type info to
+     * sanitize_field_value so sanitization is type-aware rather than heuristic.
+     *
+     * @param int $table_id Gravity Tables post/table ID.
+     * @return array<string, array<string, mixed>> Keyed by field_id string; empty on miss.
      */
-    private function sanitize_field_value($value, string $field_id): string|array
+    private function load_column_config(int $table_id): array
+    {
+        if ($table_id <= 0) {
+            return array();
+        }
+        global $wpdb;
+        $row = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT settings FROM {$wpdb->prefix}gravity_tables WHERE id = %d",
+                $table_id
+            ),
+            ARRAY_A
+        );
+        if (!$row || empty($row['settings'])) {
+            return array();
+        }
+        // Settings are stored as JSON (wp_json_encode); json_decode → array.
+        // maybe_unserialize only handles PHP serialized strings, not JSON,
+        // so it always missed here. Keep it as a legacy fallback for rows
+        // written before the JSON storage format, and accept arrays directly
+        // (some call paths / test seams hand back a decoded array).
+        $raw = $row['settings'];
+        if (is_array($raw)) {
+            $settings = $raw;
+        } elseif (is_string($raw)) {
+            $settings = json_decode($raw, true);
+            if (!is_array($settings)) {
+                $settings = maybe_unserialize($raw);
+            }
+        } else {
+            $settings = null;
+        }
+        if (!is_array($settings)) {
+            return array();
+        }
+        // Primary: explicit column_config key (set programmatically or via future admin UI).
+        $col_cfg = $settings['column_config'] ?? null;
+        $result = is_array($col_cfg) ? $col_cfg : array();
+
+        // Secondary: merge column_type overrides from field_configurations (admin builder
+        // already persists field_configurations; #2281 adds 'column_type' as a new sub-key).
+        $field_cfgs = $settings['field_configurations'] ?? null;
+        if (is_array($field_cfgs)) {
+            foreach ($field_cfgs as $fid => $fcfg) {
+                if (isset($fcfg['column_type']) && is_string($fcfg['column_type']) && $fcfg['column_type'] !== '') {
+                    if (!isset($result[(string) $fid])) {
+                        $result[(string) $fid] = array();
+                    }
+                    $result[(string) $fid]['type'] = $fcfg['column_type'];
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Sanitize field value based on field type and content.
+     *
+     * Provides proper sanitization for different field types instead of just text.
+     *
+     * #2281: Added $col_type and $col_config parameters for type-aware dispatch.
+     * When $col_type is a known type, the appropriate sanitizer + rejection
+     * guard fires before the legacy heuristic fallback. Callers that do not
+     * pass $col_type (e.g. bulk_edit_entries, submit_new_entry) continue to
+     * use the existing heuristic path unchanged.
+     *
+     * @param mixed  $value      Raw value from the request.
+     * @param string $field_id   Gravity Forms field ID (for logging).
+     * @param string $col_type   Column type declared in column_config (empty = heuristic).
+     * @param array  $col_config Full column_config entry for this field.
+     * @return string|array|\WP_Error Sanitized value, or WP_Error on type-check reject.
+     */
+    private function sanitize_field_value($value, string $field_id, string $col_type = '', array $col_config = []): string|array|\WP_Error
     {
         // Only enable debugging if debug parameter is set in the current request
         $debug_enabled = isset($_POST['debug']) && $_POST['debug'] === 'true';
@@ -6862,6 +6973,116 @@ class TC_Ajax
 
         // Convert to string for processing
         $value = strval($value);
+
+        // #2281 — Type-aware dispatch. Fires only when $col_type was explicitly
+        // set by the caller (update_entry / update_entry_fields). Falls through
+        // to the existing heuristic when $col_type is '' (default).
+        if ($col_type !== '') {
+            switch ($col_type) {
+                case 'email':
+                    $clean = sanitize_email($value);
+                    if (!is_email($clean)) {
+                        return new \WP_Error(
+                            'invalid_email',
+                            __('Please enter a valid email address.', 'tc-data-tables')
+                        );
+                    }
+                    return $clean;
+
+                case 'url':
+                    $clean = esc_url_raw($value);
+                    if ($clean === '') {
+                        return new \WP_Error(
+                            'invalid_url',
+                            __('Please enter a valid URL.', 'tc-data-tables')
+                        );
+                    }
+                    return $clean;
+
+                case 'number':
+                    // Strip locale thousands separators (e.g. "1,234.56" → "1234.56")
+                    // then validate BEFORE sanitizing so mixed strings like "12abc"
+                    // are rejected rather than silently stripped to "12".
+                    $stripped = str_replace(',', '', $value);
+                    if (!is_numeric($stripped)) {
+                        return new \WP_Error(
+                            'invalid_number',
+                            __('Please enter a valid number.', 'tc-data-tables')
+                        );
+                    }
+                    // Sanitize: strip any residual non-numeric chars (locale signs etc.)
+                    $clean = filter_var(
+                        $stripped,
+                        FILTER_SANITIZE_NUMBER_FLOAT,
+                        FILTER_FLAG_ALLOW_FRACTION
+                    );
+                    return (string) $clean;
+
+                case 'datetime':
+                    // Determine the expected format from the column config.
+                    if (!empty($col_config['datetime_format'])) {
+                        $dt_format = (string) $col_config['datetime_format'];
+                    } else {
+                        $date_fmt  = isset($col_config['date_format']) ? (string) $col_config['date_format'] : 'm/d/Y';
+                        $time_fmt  = isset($col_config['time_format']) ? (string) $col_config['time_format'] : 'H:i';
+                        $dt_format = $date_fmt . ' ' . $time_fmt;
+                    }
+                    $dt = \DateTime::createFromFormat($dt_format, $value);
+                    if ($dt === false) {
+                        return new \WP_Error(
+                            'invalid_datetime',
+                            __('Please enter a valid date/time value.', 'tc-data-tables')
+                        );
+                    }
+                    return sanitize_text_field($value);
+
+                case 'multiselect':
+                case 'checkbox_group':
+                    // Value arrives as a JSON-encoded array from the client.
+                    $decoded = json_decode($value, true);
+                    if (!is_array($decoded)) {
+                        // Graceful fallback: comma-separated list.
+                        $decoded = array_values(array_filter(array_map('trim', explode(',', $value)), 'strlen'));
+                    }
+                    // Whitelist each item against the column's declared choices.
+                    $allowed = array();
+                    foreach ((array) ($col_config['choices'] ?? array()) as $choice) {
+                        if (is_array($choice) && isset($choice['value'])) {
+                            $allowed[] = (string) $choice['value'];
+                        } elseif (is_string($choice)) {
+                            $allowed[] = $choice;
+                        }
+                    }
+                    if (!empty($allowed)) {
+                        foreach ($decoded as $item) {
+                            if (!in_array((string) $item, $allowed, true)) {
+                                return new \WP_Error(
+                                    'invalid_choice',
+                                    sprintf(
+                                        /* translators: %s = disallowed option value */
+                                        __('"%s" is not a valid option.', 'tc-data-tables'),
+                                        sanitize_text_field((string) $item)
+                                    )
+                                );
+                            }
+                        }
+                    }
+                    return (string) wp_json_encode(
+                        array_values(array_map('sanitize_text_field', $decoded))
+                    );
+
+                case 'color':
+                    $clean = sanitize_hex_color($value);
+                    if ($clean === null || $clean === '') {
+                        return new \WP_Error(
+                            'invalid_color',
+                            __('Please enter a valid hex color (e.g. #ff0000).', 'tc-data-tables')
+                        );
+                    }
+                    return $clean;
+            }
+            // Unknown col_type: fall through to heuristic below.
+        }
 
         // Detect field type based on value patterns and format
 
@@ -7485,6 +7706,21 @@ class TC_Ajax
             return;
         }
 
+        // #2285 — JSON export: same single-batch pattern as Excel (bounded at
+        // 10 000 rows). JSON encoding is fast enough that streaming is not
+        // required at this scale; revisit if large-dataset requests arise.
+        if ($format === 'json') {
+            $entries_result = $this->get_gravity_forms_entries(
+                $form_id, 1, 10000, $search, '', '', '', $sort_field, $sort_order,
+                $export_columns, array(), $filters, $table_config
+            );
+            if (!$entries_result || !isset($entries_result['entries'])) {
+                wp_die('No data to export');
+            }
+            $this->export_json($entries_result['entries'], $form, $export_columns, $table_config);
+            return;
+        }
+
         $this->export_csv_streamed(
             $form, $form_id, $export_columns, $table_config,
             $search, $sort_field, $sort_order, $filters
@@ -7709,6 +7945,44 @@ class TC_Ajax
         // Save to output
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $writer->save('php://output');
+        exit;
+        // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * #2285 — Export data as JSON.
+     *
+     * Produces an array of objects keyed by column label (matching the column
+     * header displayed to the user, not raw field IDs). Column order follows
+     * the configured $columns sequence. Hidden columns — those absent from
+     * $columns — are never included. Encoded with JSON_PRETTY_PRINT |
+     * JSON_UNESCAPED_UNICODE; no UTF-8 BOM is emitted.
+     */
+    private function export_json($entries, $form, $columns, $table_config): void
+    {
+        // @codeCoverageIgnoreStart
+        $filename = $this->resolve_export_filename($table_config, 'json');
+
+        $headers = $this->get_export_headers($form, $columns, $table_config);
+
+        $rows = array();
+        foreach ($entries as $entry) {
+            $row_values = $this->get_export_row($entry, $form, $columns, $table_config);
+            $obj = array();
+            foreach ($headers as $i => $header) {
+                $obj[$header] = $row_values[$i] ?? '';
+            }
+            $rows[] = $obj;
+        }
+
+        $json = json_encode($rows, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo $json;
         exit;
         // @codeCoverageIgnoreEnd
     }

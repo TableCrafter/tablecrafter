@@ -38,6 +38,21 @@
         // skeleton rows mirroring the real column/row count.
         self.showLoadingSkeleton($wrapper);
 
+        // #2278 Phase 1 — grammar query detection.
+        // When the search term contains grammar operators (field:, -, OR, ""),
+        // suppress the server-side LIKE filter (which would match the raw
+        // operator string literally) and apply grammar evaluation client-side
+        // after the server returns the full row set for the page.
+        // Plain queries are not affected: grammarQuery stays '' and the
+        // existing server LIKE path runs unchanged.
+        var grammarQuery = '';
+        var serverSearch = this.searchTerm;
+        if (typeof self._hasGrammarOperators === 'function'
+                && self._hasGrammarOperators(self.searchTerm)) {
+            grammarQuery = self.searchTerm;
+            serverSearch = ''; // let server return all rows unfiltered
+        }
+
         // Prepare data
         var data = {
             action: 'gt_get_entries',
@@ -46,7 +61,7 @@
             table_id: this.config.table_id,
             page: this.currentPage,
             per_page: this.config.per_page,
-            search: this.searchTerm,
+            search: serverSearch,
             sort_field: this.sortField,
             sort_order: this.sortOrder,
             // #565 — pass the full multi-sort stack as JSON. Server validates
@@ -89,7 +104,14 @@
             $wrapper.removeClass('gt-table-loading');
             self.releaseColumnWidths($wrapper);
             if (response.success) {
-                self.renderEntries(response.data);
+                // #2278 Phase 1 — apply grammar filter client-side when active.
+                var renderData = response.data;
+                if (grammarQuery && typeof self.grammarFilterEntries === 'function'
+                        && renderData && Array.isArray(renderData.entries)) {
+                    renderData = jQuery.extend({}, renderData);
+                    renderData.entries = self.grammarFilterEntries(renderData.entries, grammarQuery);
+                }
+                self.renderEntries(renderData);
             } else {
                 $tbody.html('<tr><td colspan="' + ($wrapper.find('thead th').length) + '"><div class="gt-error">Error loading entries: ' + response.data + '</div></td></tr>');
             }
