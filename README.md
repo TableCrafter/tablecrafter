@@ -15,7 +15,7 @@
 
 ---
 
-## What you get free
+## Features
 
 Connect any of the four built-in data sources and paste one shortcode. No API keys, no database schema, no row limits.
 
@@ -110,7 +110,9 @@ Use the visual builder under **TableCrafter > Create New** to generate your shor
 
 ## Development
 
-This repository is the public distribution mirror for the free edition of TableCrafter. All source development, issue tracking, and pull requests live in the private upstream repository. Each release is produced by `tools/build-free.sh` and synced here as a direct commit -- plugin files in this repo should not be edited directly.
+This repository is the canonical public home of TableCrafter. All source development happens in the private `tablecrafter-pro` repository; every release is synced here as a direct commit. Plugin files in this repo should not be edited directly.
+
+This is the free plugin. Pro features -- inline editing, live Gravity Forms and WooCommerce integration, external database connectors, and more -- are available at [tablecrafter.com](https://tablecrafter.com).
 
 To report a bug or request a feature:
 
