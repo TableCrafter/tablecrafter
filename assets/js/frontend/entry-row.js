@@ -55,6 +55,11 @@
                 html += self.renderDetailToggleCellHtml(entry.entry_id, detailRowId);
             }
 
+            // #2340 — index cell: 1-based counter, renumbers on sort/filter/page.
+            if (ctx.hasIndexHeader) {
+                html += '<td class="gt-index-cell">' + (ctx.rowIndex || 0) + '</td>';
+            }
+
             // Per-column cell dispatch (#832 slice 10).
             var columns = (self.config && self.config.columns) ? self.config.columns : [];
             for (var i = 0; i < columns.length; i++) {

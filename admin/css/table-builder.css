@@ -110,3 +110,169 @@ label.gt-checkbox-label {
         font-size: 12px;
     }
 }
+
+/* =========================================================
+   Manual grid editor — row/col operations UI (#2368)
+   ========================================================= */
+
+/* Drag-handle gutter column */
+.gt-manual-grid .gt-grid-row-gutter {
+    width: 28px;
+    padding: 2px 4px;
+    text-align: center;
+    background: #f9f9f9;
+    border-right: 1px solid #e0e0e0;
+}
+
+.gt-row-drag-handle {
+    cursor: grab;
+    display: inline-block;
+    color: #999;
+    font-size: 16px;
+    line-height: 1;
+    user-select: none;
+    padding: 2px 4px;
+}
+
+.gt-row-drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Row placeholder while dragging */
+.gt-row-placeholder > td {
+    background: #e5f3ff !important;
+    opacity: 0.5;
+}
+
+/* Row-number column with action button */
+.gt-manual-grid .gt-grid-rowidx {
+    position: relative;
+    min-width: 36px;
+    text-align: center;
+    padding: 2px 4px;
+}
+
+.gt-rowidx-num {
+    font-size: 11px;
+    color: #666;
+}
+
+.gt-row-menu-btn {
+    display: none;
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    font-size: 16px;
+    padding: 2px 4px;
+    line-height: 1;
+}
+
+.gt-manual-grid tr:hover .gt-row-menu-btn {
+    display: inline-block;
+}
+
+/* Row dropdown menu */
+.gt-row-menu {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    z-index: 9999;
+    min-width: 130px;
+}
+
+.gt-row-menu button,
+.gt-col-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 6px 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    color: #2c3338;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.gt-row-menu button:hover,
+.gt-col-menu button:hover {
+    background: #f0f6fc;
+    color: #135e96;
+}
+
+/* Column header with action button */
+.gt-col-header-inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.gt-col-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    font-size: 11px;
+    padding: 2px 3px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.gt-manual-grid th.gt-grid-header:hover .gt-col-menu-btn {
+    display: inline-block;
+}
+
+/* Column dropdown menu */
+.gt-col-menu {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    z-index: 9999;
+    min-width: 130px;
+}
+
+/* =========================================================
+   Manual grid editor — visibility toggles UI (#2370)
+   ========================================================= */
+
+.gt-manual-grid tr.gt-grid-row-hidden > td {
+    opacity: 0.4;
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.gt-manual-grid .gt-grid-header.gt-grid-col-hidden {
+    opacity: 0.4;
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.gt-manual-grid td.gt-grid-cell.gt-grid-col-hidden {
+    opacity: 0.4;
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.gt-visibility-hidden-marker {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1;
+    vertical-align: text-bottom;
+    color: #999;
+    margin-left: 4px;
+    cursor: default;
+}

@@ -23,6 +23,11 @@
 // @codeCoverageIgnoreStart
 if (!defined('ABSPATH')) { exit; }
 // @codeCoverageIgnoreEnd
+// #2312's TC_Bool coercion is a hard dependency; require it directly so the
+// class also works when this file is loaded in isolation (PHPUnit shims,
+// direct includes) rather than via the plugin's full boot sequence.
+require_once __DIR__ . '/class-tc-bool.php';
+
 class TC_Print_Settings_Service {
 
     public static function defaults(): array {
@@ -44,13 +49,15 @@ class TC_Print_Settings_Service {
         $out = $defaults;
 
         if (array_key_exists('enabled', $settings)) {
-            $out['enabled'] = (bool) $settings['enabled'];
+            // Use TC_Bool::cast() so string "false" from jQuery $.param() is
+            // treated as false, not true. (#2308)
+            $out['enabled'] = TC_Bool::cast($settings['enabled']);
         }
         if (array_key_exists('repeat_header', $settings)) {
-            $out['repeat_header'] = (bool) $settings['repeat_header'];
+            $out['repeat_header'] = TC_Bool::cast($settings['repeat_header']);
         }
         if (array_key_exists('row_striping', $settings)) {
-            $out['row_striping'] = (bool) $settings['row_striping'];
+            $out['row_striping'] = TC_Bool::cast($settings['row_striping']);
         }
         if (array_key_exists('paper_size', $settings)) {
             $size = (string) $settings['paper_size'];
@@ -71,7 +78,8 @@ class TC_Print_Settings_Service {
     }
 
     public static function is_enabled(array $settings): bool {
-        return !empty($settings['enabled']);
+        // Use TC_Bool::cast() so string "false" is treated as false. (#2308)
+        return TC_Bool::cast($settings['enabled'] ?? false);
     }
 
     public static function is_column_excluded(string $column_id, array $settings): bool {

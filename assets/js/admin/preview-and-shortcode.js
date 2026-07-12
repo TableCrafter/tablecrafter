@@ -212,7 +212,19 @@
                         price: $('select[name="wc_mapping[price]"]').val() || '',
                         sku: $('select[name="wc_mapping[sku]"]').val() || '',
                         description: $('select[name="wc_mapping[description]"]').val() || ''
-                    }
+                    },
+                    // #2323 — arbitrary cell merges. Parse the JSON textarea so
+                    // the server receives an array (not a JSON string); jQuery
+                    // $.post serialises it into the PHP-array form automatically.
+                    cell_merges: (function () {
+                        try {
+                            var raw = $('textarea[name="cell_merges"]').val() || '[]';
+                            var parsed = JSON.parse(raw);
+                            return Array.isArray(parsed) ? parsed : [];
+                        } catch (e) {
+                            return [];
+                        }
+                    })()
                 }
             };
 

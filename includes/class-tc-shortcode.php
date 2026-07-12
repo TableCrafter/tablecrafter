@@ -31,6 +31,83 @@ class TC_Shortcode
         return self::$instance;
     }
 
+    /**
+     * Build the shortcode_overrides array for a DB-backed table render (#2357).
+     *
+     * Encapsulates the #658/#659 unlock-key pass AND the block-attr translation
+     * that maps the legacy inline-source keys ('search', 'filters') emitted by
+     * TC_Block::build_block_shortcode() to the DB-settings keys ('show_search',
+     * 'show_per_column_filters') that actually gate the rendered output.
+     *
+     * Public + static so unit tests can call it without WordPress or the
+     * form-entry APIs loaded. Called from render_table() in the DB-backed
+     * path. (Wording note: test-issue-342 asserts the unknown-type guard
+     * precedes the first entry-API reference in this FILE by string
+     * position — don't name those APIs in comments above the guard.)
+     *
+     * Contract:
+     *   - Non-empty shortcode attr → override value applied over DB setting.
+     *   - Empty string (shortcode_atts() default) → DB setting wins unchanged.
+     *   - Legacy 'search'/'filters' attrs translate to 'show_search' /
+     *     'show_per_column_filters' only when the direct DB-key versions are
+     *     absent, so explicit show_search="…" takes priority over search="…".
+     *
+     * @param array $atts Raw shortcode attributes from shortcode_atts().
+     * @return array Override key-value pairs to merge over DB settings.
+     */
+    public static function build_db_table_overrides( array $atts ): array
+    {
+        $overrides = [];
+
+        // #658/#659 — unlock keys: shortcode_atts() defaults these to '' so
+        // non-empty means the customer explicitly set the attr.
+        // #2357: show_search, show_per_column_filters, per_page added.
+        $unlock_keys = array(
+            'row_link_template',
+            'row_link_open_new_tab',
+            'print_all_rows',
+            'enable_vertical_scroll',
+            'vertical_scroll_max_height',
+            'horizontal_scroll',
+            'expiry_field_id',
+            'expiry_behavior',
+            'expiry_grace_days',
+            'expiry_inverse',
+            // #659:
+            'table_width',
+            'css_class',
+            'show_export',
+            'show_print',
+            'show_pagination_info',
+            'table_style',
+            // #2357 — direct DB-settings key overrides (power-user shortcode path):
+            'show_search',
+            'show_per_column_filters',
+            'per_page',
+        );
+        foreach ( $unlock_keys as $key ) {
+            if ( isset( $atts[ $key ] ) && $atts[ $key ] !== '' ) {
+                $overrides[ $key ] = $atts[ $key ];
+            }
+        }
+
+        // #2357 — Translate block-emitted legacy shortcode attrs to DB settings keys.
+        // TC_Block::build_block_shortcode() emits 'search' and 'filters' using the
+        // #2142 inline-source attr names. For DB-backed tables those legacy names are
+        // unknown to the DB settings layer; translate them to the real DB-side toggle
+        // keys so the block's Inspector controls take effect after the settings merge.
+        // The direct-key variants ('show_search', 'show_per_column_filters') set
+        // above take priority: translation is skipped when the key is already present.
+        if ( isset( $atts['search'] ) && $atts['search'] !== '' && ! array_key_exists( 'show_search', $overrides ) ) {
+            $overrides['show_search'] = filter_var( $atts['search'], FILTER_VALIDATE_BOOLEAN );
+        }
+        if ( isset( $atts['filters'] ) && $atts['filters'] !== '' && ! array_key_exists( 'show_per_column_filters', $overrides ) ) {
+            $overrides['show_per_column_filters'] = filter_var( $atts['filters'], FILTER_VALIDATE_BOOLEAN );
+        }
+
+        return $overrides;
+    }
+
     private function __construct()
     {
         add_shortcode('gravity_table', array($this, 'render_deprecated_table'));
@@ -1014,9 +1091,18 @@ class TC_Shortcode
         $is_preview = defined('DOING_AJAX') && DOING_AJAX && isset($_POST['action']) && $_POST['action'] === 'gt_preview_table';
 
         if ($is_preview) {
-            // For preview, use the posted settings directly
+            // For preview, use the posted settings directly.
+            // IMPORTANT: the preview_table() AJAX handler pre-fetches GF entries
+            // and stores them in $atts['preview_data'] before calling render_table().
+            // If we overwrote $atts wholesale from $_POST['settings'] we would lose
+            // preview_data (since it is added in PHP, not posted by the browser).
+            // Carry it forward so the template's $is_preview render path can use it.
+            $gt_preview_data_carry = isset($atts['preview_data']) ? $atts['preview_data'] : null;
             $atts = $_POST['settings'] ?? array();
             $atts['form_id'] = intval($_POST['form_id'] ?? 1);
+            if ($gt_preview_data_carry !== null) {
+                $atts['preview_data'] = $gt_preview_data_carry;
+            }
             // Use the per_page setting from the form, or default from plugin settings
             if (!isset($atts['per_page'])) {
                 $plugin_settings = get_option('gt_settings', array());
@@ -1061,6 +1147,12 @@ class TC_Shortcode
                 'show_print'           => '', // print toolbar button toggle (default true)
                 'show_pagination_info' => '', // "Showing X of Y" text toggle (default true)
                 'table_style'          => '', // style slug appended to gt_table_classes (default 'default')
+                // #2357 — DB-settings key overrides for direct shortcode use.
+                // Also the translation target for the block's legacy 'search' /
+                // 'filters' attrs (see build_db_table_overrides()). Registered
+                // here so shortcode_atts() keeps them instead of stripping.
+                'show_search'              => '', // search bar visibility (default true)
+                'show_per_column_filters'  => '', // per-column filter inputs (default false)
                 // #2139 — legacy 3.5.x inline-source params. When `source` is set
                 // and `id` is not, the shortcode renders the URL live (JSON / CSV
                 // / public Google Sheet) so pre-v8 shortcodes keep working.
@@ -1199,6 +1291,11 @@ class TC_Shortcode
                 }
             }
 
+            // #2366 — Manual / static data source.
+            if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'manual') {
+                return $this->render_manual_source_table((int) $atts['id'], $settings);
+            }
+
             if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'json') {
                 return $this->render_json_source_table((int) $atts['id'], $settings);
             }
@@ -1282,41 +1379,16 @@ class TC_Shortcode
                 $db_settings = $settings;
             }
 
-            // Merge database settings with shortcode overrides (shortcode takes priority)
+            // Merge database settings with shortcode overrides (shortcode takes priority).
+            // #2357: build_db_table_overrides() handles unlock_keys + block-attr translation.
             $shortcode_overrides = [];
             if (!empty($atts['allowed_user_roles']) && is_array($atts['allowed_user_roles'])) {
                 $shortcode_overrides['allowed_user_roles'] = $atts['allowed_user_roles'];
             }
-            // Carry through customer-set unlock shortcode attributes (#658).
-            // Until v4.8.6 the merge below silently dropped every shortcode
-            // attribute that wasn't `allowed_user_roles`, so the unlocks
-            // landed in v4.8.1 (#655) / v4.8.2 (#656) / v4.8.3 (#657) never
-            // actually reached runtime. shortcode_atts() defaults each of
-            // these to '' so non-empty == customer explicitly passed it.
-            $unlock_keys = array(
-                'row_link_template',
-                'row_link_open_new_tab',
-                'print_all_rows',
-                'enable_vertical_scroll',
-                'vertical_scroll_max_height',
-                'horizontal_scroll',
-                'expiry_field_id',
-                'expiry_behavior',
-                'expiry_grace_days',
-                'expiry_inverse',
-                // #659:
-                'table_width',
-                'css_class',
-                'show_export',
-                'show_print',
-                'show_pagination_info',
-                'table_style',
+            $shortcode_overrides = array_merge(
+                $shortcode_overrides,
+                self::build_db_table_overrides( $atts )
             );
-            foreach ($unlock_keys as $override_key) {
-                if (isset($atts[$override_key]) && $atts[$override_key] !== '') {
-                    $shortcode_overrides[$override_key] = $atts[$override_key];
-                }
-            }
 
             $atts = array_merge($db_settings, $shortcode_overrides);
 
@@ -1962,6 +2034,99 @@ class TC_Shortcode
      * header-keyed associative rows (or a WP_Error), so column keys are the
      * union of row keys — same shape as the XML source.
      */
+
+    /**
+     * #2366 — Render a manual / static data source table.
+     *
+     * Rows are stored in {prefix}tablecrafter_manual_rows via
+     * TC_Manual_Rows_Service. Column definitions come from settings JSON
+     * (manual_columns: [{key, label, type}]). The data flows through
+     * render_external_source_table_html() — same pipeline as CSV/JSON —
+     * so sort/search/pagination all work without any new frontend module.
+     *
+     * When no rows exist yet (brand-new table), we render an empty-state
+     * message with a note pointing to the upcoming grid editor (#2367).
+     */
+    private function render_manual_source_table(int $table_id, array $settings): string
+    {
+        if (!class_exists('TC_Manual_Rows_Service')) {
+            return '<p class="gt-manual-source-empty">'
+                . esc_html__('Manual rows service unavailable.', 'tc-data-tables')
+                . '</p>';
+        }
+
+        $result = TC_Manual_Rows_Service::get_rows($table_id, array());
+        $rows   = $result['rows'];
+
+        // #2370 — filter out rows hidden from frontend display.
+        $rows = TC_Manual_Rows_Service::filter_visible_rows( $rows );
+
+        // Derive column keys from manual_columns setting (preferred) or
+        // fall back to the union of keys across all rows.
+        $column_keys = array();
+        if (!empty($settings['manual_columns']) && is_array($settings['manual_columns'])) {
+            // #2370 — exclude columns hidden from frontend display.
+            $visible_cols = TC_Manual_Rows_Service::filter_visible_columns( $settings['manual_columns'] );
+            foreach ($visible_cols as $col_def) {
+                if (!empty($col_def['key'])) {
+                    $column_keys[] = (string) $col_def['key'];
+                }
+            }
+        }
+        if (empty($column_keys) && !empty($rows)) {
+            foreach ($rows as $row) {
+                foreach ((array) $row as $key => $_val) {
+                    $key = (string) $key;
+                    if (!in_array($key, $column_keys, true)) {
+                        $column_keys[] = $key;
+                    }
+                }
+            }
+        }
+
+        // Empty-state: no rows yet (provisioning hasn't happened or table
+        // was just created). Show a friendly placeholder until #2367 ships.
+        if (empty($rows) || empty($column_keys)) {
+            return '<div class="gt-manual-source-empty" style="padding:16px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;">'
+                . '<p><strong>' . esc_html__('Manual table — no data yet.', 'tc-data-tables') . '</strong></p>'
+                . '<p>' . esc_html__('Use the grid editor to add rows and columns (coming soon — issue #2367).', 'tc-data-tables') . '</p>'
+                . '</div>';
+        }
+
+        // #2369 — route every cell through TC_Cell_Content_Service::render_cell_value
+        // so the save path and render path share a single implementation. The service
+        // applies do_shortcode (when the opt-in is enabled) and wp_kses_post in the
+        // correct order. A second wp_kses_post from the allow_html branch below is
+        // safe and intentional (idempotent for well-formed HTML).
+        if ( class_exists( 'TC_Cell_Content_Service' ) ) {
+            $render_shortcodes = ! empty( $settings['manual_render_shortcodes'] );
+            $rows = array_map(
+                function ( $row ) use ( $render_shortcodes ) {
+                    $out = array();
+                    foreach ( (array) $row as $k => $v ) {
+                        $out[ $k ] = is_string( $v )
+                            ? TC_Cell_Content_Service::render_cell_value( $v, $render_shortcodes )
+                            : $v;
+                    }
+                    return $out;
+                },
+                $rows
+            );
+        }
+
+        // #2369 — pass allow_html so stored HTML is output via wp_kses_post
+        // rather than being double-escaped by TC_Auto_Format::format_cell.
+        return $this->render_external_source_table_html(
+            $rows,
+            $column_keys,
+            'manual',
+            isset($settings['table_title']) ? (string) $settings['table_title'] : '',
+            $table_id,
+            _n('%d row from manual source.', '%d rows from manual source.', count($rows), 'tc-data-tables'),
+            array( 'allow_html' => true )
+        );
+    }
+
     private function render_csv_source_table(int $table_id, array $settings): string
     {
         $url = isset($settings['csv_url']) ? trim((string) $settings['csv_url']) : '';
@@ -2379,6 +2544,20 @@ class TC_Shortcode
             }
         }
 
+        // #2381 — external/data-source tables (CSV/JSON/Sheets/Excel/XML/inline)
+        // all flow through this shared renderer but historically never enqueued
+        // the plugin stylesheet, so they rendered completely unstyled on the
+        // front end (unlike GF/manual tables, which enqueue it in
+        // templates/table.php). Both handles are registered in register_scripts()
+        // on wp_enqueue_scripts; the 'gravity-tables-frontend' handle already
+        // honours the css_framework setting (default / minimal / none). This
+        // render only runs when a table is actually present, so it is inherently
+        // gated the same way page_has_table() gates the sitewide enqueue (#1673).
+        if (function_exists('wp_enqueue_style')) {
+            wp_enqueue_style('gravity-tables-frontend');
+            wp_enqueue_style('gravity-tables-data-source-render');
+        }
+
         // #2143 — emit refresh data-attributes + the source atts needed to
         // re-render. Only present when auto-refresh is enabled.
         $refresh_attr = '';
@@ -2581,6 +2760,11 @@ class TC_Shortcode
             // @codeCoverageIgnoreStart
             return null; // Service missing — fail-open rather than break the page.
             // @codeCoverageIgnoreEnd
+        }
+
+        // Administrators bypass the password gate entirely. (#2352)
+        if (current_user_can('manage_options')) {
+            return null;
         }
 
         $cookie_name = TC_Table_Password_Service::cookie_name($table_id);

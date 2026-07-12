@@ -2,9 +2,40 @@
 /**
  * Safe expression evaluator for formula columns and aggregation footer rows.
  *
- * Formulas reference row values via {field:N} tokens and support basic arithmetic
- * and a curated set of functions. No dynamic code evaluation is used — expressions are tokenized
- * and evaluated via a recursive-descent parser.
+ * ## Formula dispatch model
+ *
+ * Formulas reference row values via {field:N} tokens. Two evaluation paths exist:
+ *
+ * 1. FAST PATH (legacy): formulas WITHOUT a leading '=' use the built-in
+ *    recursive-descent parser. Supports arithmetic, ROUND, ABS, IF, CONCAT.
+ *    Zero external dependencies; always available.
+ *
+ * 2. PHPSPREADSHEET PATH (#2321): formulas that start with '=' are evaluated
+ *    by PhpOffice\PhpSpreadsheet\Calculation\Calculation after {field:N}
+ *    token substitution. This unlocks the full Excel-compatible function set
+ *    (UPPER, LOWER, TRIM, CONCATENATE, TEXTJOIN, IF nesting, MOD, POWER,
+ *    SQRT, AND, OR, NOT, TEXT, LEN, DATE functions, …).
+ *
+ * ## Escape convention
+ * A leading single-quote before '=' ('=…) signals "display as literal text".
+ * The single-quote is consumed and the remainder (starting with '=') is
+ * returned verbatim without evaluation. This mirrors TablePress behaviour.
+ *
+ * ## Security and trust model
+ * Formulas come exclusively from admin-authored table configuration stored in
+ * wp_options — visitor input NEVER reaches the evaluator. PhpSpreadsheet's
+ * Calculation engine cannot execute PHP code (it is a pure formula parser).
+ * Additional guards:
+ *  - Formula length is capped at MAX_FORMULA_LENGTH characters before eval.
+ *  - All PhpSpreadsheet evaluation is wrapped in try/catch; errors render as
+ *    the safe inline token '#FORMULA?' (never a fatal or stack trace).
+ *  - The singleton's calculation cache is disabled for per-row evaluation so
+ *    identical formula text with different substituted values never collides.
+ *  - CSV/XLSX export injection protection (TC_CSV_Formula_Detector) operates
+ *    on OUTPUT values and is unaffected — computed-column results that happen
+ *    to start with '=' are still neutralized before export.
+ *
+ * No dynamic code evaluation is used on either path — no PHP eval.
  */
 
 // @codeCoverageIgnoreStart
@@ -18,6 +49,41 @@ class TC_Formula_Service {
 
     // Supported formula functions (case-insensitive)
     const SUPPORTED_FUNCTIONS = ['ROUND', 'ABS', 'IF', 'CONCAT'];
+
+    /**
+     * Maximum formula string length accepted before PhpSpreadsheet evaluation.
+     * Admin-authored formulas longer than this are rejected with #FORMULA?.
+     */
+    const MAX_FORMULA_LENGTH = 2000;
+
+    // ---------------------------------------------------------------------------
+    // PhpSpreadsheet singleton (lazy, cache-disabled)
+    // ---------------------------------------------------------------------------
+
+    /** @var \PhpOffice\PhpSpreadsheet\Calculation\Calculation|null */
+    private static $ps_calc = null;
+
+    /**
+     * Return the PhpSpreadsheet Calculation singleton with cache disabled.
+     * Lazy-loaded so the class can be loaded in environments where the vendor
+     * library is absent (e.g. the free build without xlsx support) without
+     * fataling. Returns null if PhpSpreadsheet is not available.
+     *
+     * @return \PhpOffice\PhpSpreadsheet\Calculation\Calculation|null
+     */
+    private static function ps_calc() {
+        if (self::$ps_calc !== null) {
+            return self::$ps_calc;
+        }
+        if (!class_exists('PhpOffice\\PhpSpreadsheet\\Calculation\\Calculation')) {
+            return null;
+        }
+        self::$ps_calc = \PhpOffice\PhpSpreadsheet\Calculation\Calculation::getInstance();
+        // Disable cache so repeated evaluations with different substituted values
+        // never collide even when the formula text is identical across rows.
+        self::$ps_calc->disableCalculationCache();
+        return self::$ps_calc;
+    }
 
     // ---------------------------------------------------------------------------
     // Aggregation
@@ -65,23 +131,49 @@ class TC_Formula_Service {
     /**
      * Evaluate a formula expression against a single row.
      *
-     * Tokens like {field:3} are replaced with the corresponding value from $row
-     * (keyed by field ID as string). The resulting expression is then evaluated
-     * by the safe recursive-descent parser.
+     * Dispatch model (see class docblock for full design rationale):
      *
-     * @param string $formula   e.g. '{field:3} * {field:4}' or 'ROUND({field:5}, 2)'
+     *  '=…  →  literal text (single-quote escape; no evaluation)
+     *  =…   →  PhpSpreadsheet Calculation (Excel-compatible, #2321)
+     *  …    →  built-in recursive-descent parser (legacy fast path)
+     *
+     * {field:N} tokens are substituted BEFORE dispatch on both paths.
+     *
+     * @param string $formula   e.g. '{field:3} * {field:4}', '=UPPER({field:1})', "'=literal"
      * @param array  $row       Row values keyed by field ID string, e.g. ['3' => '10.5', '4' => '2']
      * @return string
      */
     public static function evaluate_expression(string $formula, array $row): string {
-        // Strip leading '=' so spreadsheet-style "=SUM(...)" and "=2+3" both work.
-        $formula = ltrim(trim($formula), '=');
+        $formula = trim($formula);
 
-        // Replace {field:N} tokens with row values
+        // --- '= escape: return literal text (e.g. "'=FORMULA" → "=FORMULA") ---
+        if (substr($formula, 0, 2) === "'=") {
+            return substr($formula, 1);
+        }
+
+        // --- Length guard: reject overly long formulas before any evaluation ---
+        if (strlen($formula) > self::MAX_FORMULA_LENGTH) {
+            return '#FORMULA?';
+        }
+
+        // --- Detect PhpSpreadsheet path: formula starts with '=' ---
+        $is_excel = (strlen($formula) > 0 && $formula[0] === '=');
+
+        // Substitute {field:N} tokens in the raw formula string (both paths).
         $expr = preg_replace_callback('/\{field:(\d+)\}/', function ($m) use ($row) {
             $val = $row[$m[1]] ?? '0';
             return is_numeric($val) ? $val : '"' . addslashes($val) . '"';
         }, $formula);
+
+        // --- PhpSpreadsheet path ---
+        if ($is_excel) {
+            return self::evaluate_via_phpspreadsheet($expr);
+        }
+
+        // --- Legacy fast-path (recursive-descent parser) ---
+        // Strip a leading '=' that legacy formulas may have (existing behaviour,
+        // kept for backward compat with any stored formulas using that style).
+        $expr = ltrim($expr, '=');
 
         try {
             $result = self::parse($expr);
@@ -95,6 +187,57 @@ class TC_Formula_Service {
             return rtrim(rtrim(number_format($result, 10, '.', ''), '0'), '.');
         }
         return (string) $result;
+    }
+
+    /**
+     * Evaluate an Excel-style formula string via PhpSpreadsheet's Calculation
+     * engine. The $expr must already have {field:N} tokens substituted.
+     *
+     * When PhpSpreadsheet is unavailable (free build without xlsx support),
+     * falls back to the built-in recursive-descent parser so that simple
+     * arithmetic formulas like "=2+3" continue to work.
+     *
+     * Returns '#FORMULA?' on any error (parse failure, unknown function, etc.)
+     * so a single bad cell never crashes the table render.
+     *
+     * @internal Called only from evaluate_expression().
+     * @param  string $expr Formula with '=' prefix, tokens already substituted.
+     * @return string
+     */
+    private static function evaluate_via_phpspreadsheet(string $expr): string {
+        $calc = self::ps_calc();
+        if ($calc === null) {
+            // PhpSpreadsheet unavailable — fall back to the fast-path parser
+            // for backward compat with simple arithmetic formulas using '=' prefix.
+            $fallback = ltrim($expr, '=');
+            try {
+                $result = self::parse($fallback);
+            } catch (\Throwable $e) {
+                return '#ERR';
+            }
+            if (is_float($result) && floor($result) != $result) {
+                return rtrim(rtrim(number_format($result, 10, '.', ''), '0'), '.');
+            }
+            return (string) $result;
+        }
+        try {
+            $raw = $calc->calculateFormula($expr);
+            // PhpSpreadsheet returns '#DIV/0!', '#VALUE!', etc. as strings for
+            // formula-level errors (not exceptions). Surface them as '#FORMULA?'
+            // for a uniform, safe error token in the UI.
+            if (is_string($raw) && strlen($raw) > 0 && $raw[0] === '#') {
+                error_log('[TC] PhpSpreadsheet formula error: ' . $raw . ' | formula: ' . $expr);
+                return '#FORMULA?';
+            }
+            // Normalise numeric floats the same way the fast path does.
+            if (is_float($raw) && floor($raw) != $raw) {
+                return rtrim(rtrim(number_format($raw, 10, '.', ''), '0'), '.');
+            }
+            return (string) $raw;
+        } catch (\Throwable $e) {
+            error_log('[TC] PhpSpreadsheet evaluation threw: ' . $e->getMessage() . ' | formula: ' . $expr);
+            return '#FORMULA?';
+        }
     }
 
     // ---------------------------------------------------------------------------

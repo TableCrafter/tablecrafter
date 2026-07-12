@@ -61,7 +61,8 @@
             $(document).on('change', '#gt-data-source-type', function () {
                 var val = $(this).val();
                 // #2002 — google_sheets joins the external-source set.
-                var isExternal = (val === 'json' || val === 'airtable' || val === 'notion' || val === 'google_sheets' || val === 'xml' || val === 'csv' || val === 'external_db' || val === 'xlsx');
+                var isExternal = (val === 'json' || val === 'airtable' || val === 'notion' || val === 'google_sheets' || val === 'xml' || val === 'csv' || val === 'external_db' || val === 'xlsx' || val === 'manual');
+                $('.gt-manual-source-fields').toggle(val === 'manual'); // #2366
                 $('.gt-json-source-fields').toggle(val === 'json');
                 $('.gt-airtable-source-fields').toggle(val === 'airtable');
                 $('.gt-notion-source-fields').toggle(val === 'notion');

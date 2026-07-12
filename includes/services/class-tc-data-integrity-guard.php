@@ -239,6 +239,7 @@ class TC_Data_Integrity_Guard {
      */
     public static function source_labels(): array {
         return array(
+            'manual'               => __('Manual', 'tc-data-tables'), // #2366
             'gravity_forms'        => __('Gravity Forms', 'tc-data-tables'),
             'json'                 => __('JSON / REST', 'tc-data-tables'),
             'csv'                  => __('CSV', 'tc-data-tables'),

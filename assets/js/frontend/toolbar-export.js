@@ -60,17 +60,30 @@
             var $wrapper = $('#' + this.wrapperId);
             var rows = [];
             var headers = [];
+            // #2340 — track which column indices are excluded from export so
+            // the corresponding td cells are skipped in the data rows.
+            // Columns marked data-export-exclude="true" (e.g. the index column)
+            // must not appear in CSV/copy/Excel exports.
+            var excludedColIndices = [];
+            var colIdx = 0;
 
             $wrapper.find('.gt-table thead th').each(function () {
-                var text = $(this).clone().find('.gt-sort-arrows, input').remove().end().text().trim();
-                headers.push(text);
+                if ($(this).attr('data-export-exclude') === 'true') {
+                    excludedColIndices.push(colIdx);
+                } else {
+                    var text = $(this).clone().find('.gt-sort-arrows, input').remove().end().text().trim();
+                    headers.push(text);
+                }
+                colIdx++;
             });
             if (headers.length) rows.push(headers);
 
             $wrapper.find('.gt-table tbody tr:visible').each(function () {
                 var row = [];
-                $(this).find('td').each(function () {
-                    row.push($(this).text().trim().replace(/\s+/g, ' '));
+                $(this).find('td').each(function (tdIdx) {
+                    if (excludedColIndices.indexOf(tdIdx) === -1) {
+                        row.push($(this).text().trim().replace(/\s+/g, ' '));
+                    }
                 });
                 if (row.length) rows.push(row);
             });

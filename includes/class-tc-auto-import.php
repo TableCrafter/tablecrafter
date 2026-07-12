@@ -168,6 +168,14 @@ class TC_Auto_Import {
             return;
         }
 
+        // #2322 — Apply share-URL fixups (Google Sheets, OneDrive, Dropbox)
+        // before SSRF validation so the resolved direct-download URL is what
+        // we actually fetch. fix_share_url() only converts known share-link
+        // patterns to canonical CDN/export URLs from the same provider.
+        if (class_exists('TC_Import_Format_Detector')) {
+            $source_url = TC_Import_Format_Detector::fix_share_url($source_url);
+        }
+
         $state          = $this->get_state($table_id);
 
         // #1075 — SSRF gate. auto_refresh_url is admin-set but we run

@@ -6088,3 +6088,39 @@ body.gt-resizing-active {
 .gt-table tbody td[data-gt-bar-pct][style*="background-color"]::after {
     display: none;
 }
+
+/* ── Row Grouping (#2338) ─────────────────────────────────────────────────
+   Group-header rows are injected by assets/js/frontend/row-grouping.js
+   after each AJAX render. Each header spans the full column width via
+   colspan and is styled as a sub-heading that visually separates groups.
+   Level classes (gt-row-group-level-1, etc.) indent nested headers for
+   hierarchical multi-column grouping.
+   ------------------------------------------------------------------- */
+.gt-table tbody tr.gt-row-group-header {
+    background-color: #f3f4f6;
+    cursor: default;
+}
+.gt-table tbody tr.gt-row-group-header > th {
+    font-weight: 600;
+    font-size: 0.875em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #374151;
+    padding: 8px 12px;
+    border-top: 2px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+}
+/* Level-1 sub-group: slightly darker + indented */
+.gt-table tbody tr.gt-row-group-level-1 {
+    background-color: #e9eaec;
+}
+.gt-table tbody tr.gt-row-group-level-1 > th {
+    padding-left: 24px;
+    font-size: 0.8125em;
+    color: #4b5563;
+    border-top-width: 1px;
+}
+/* Collapsible group rows — data rows below a collapsed header are hidden */
+.gt-table tbody tr.gt-row-group-header[aria-expanded="false"] ~ tr:not(.gt-row-group-header) {
+    /* JS toggles hidden attribute; CSS provides the base style. */
+}

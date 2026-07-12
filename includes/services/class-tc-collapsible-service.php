@@ -17,6 +17,11 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 // @codeCoverageIgnoreEnd
+// #2312's TC_Bool coercion is a hard dependency; require it directly so the
+// class also works when this file is loaded in isolation (PHPUnit shims,
+// direct includes) rather than via the plugin's full boot sequence.
+require_once __DIR__ . '/class-tc-bool.php';
+
 class TC_Collapsible_Service {
 
     /**
@@ -26,7 +31,9 @@ class TC_Collapsible_Service {
      * @return bool
      */
     public static function is_enabled( array $settings ): bool {
-        return ! empty( $settings['collapsible_enabled'] );
+        // Use TC_Bool::cast() so string "false" from jQuery $.param()
+        // serialisation is treated as false, not true. (#2308)
+        return TC_Bool::cast( $settings['collapsible_enabled'] ?? false );
     }
 
     /**
@@ -36,7 +43,8 @@ class TC_Collapsible_Service {
      * @return bool
      */
     public static function is_default_collapsed( array $settings ): bool {
-        return ! empty( $settings['collapsible_default_collapsed'] );
+        // Same coercion guard as is_enabled() — string "false" must be false.
+        return TC_Bool::cast( $settings['collapsible_default_collapsed'] ?? false );
     }
 
     /**

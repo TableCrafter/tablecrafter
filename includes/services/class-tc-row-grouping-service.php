@@ -21,19 +21,45 @@ class TC_Row_Grouping_Service {
     /**
      * Whether row grouping is enabled for this table.
      *
+     * Enabled when either the single-column `group_by_column` setting OR
+     * the multi-column `group_by_columns` array (non-empty) is present.
+     *
      * @param array $settings Table settings array.
      */
     public static function is_enabled( array $settings ): bool {
+        if ( ! empty( $settings['group_by_columns'] ) && is_array( $settings['group_by_columns'] ) ) {
+            return true;
+        }
         return ! empty( $settings['group_by_column'] );
     }
 
     /**
      * Return the column ID configured as the group-by column, or empty string.
      *
+     * For single-column grouping. Use get_group_columns() for the full list.
+     *
      * @param array $settings Table settings array.
      */
     public static function get_group_column( array $settings ): string {
         return sanitize_key( $settings['group_by_column'] ?? '' );
+    }
+
+    /**
+     * Return an ordered list of column IDs to group by.
+     *
+     * Prefers the `group_by_columns` array (multi-column / hierarchical).
+     * Falls back to `group_by_column` wrapped in a single-element array.
+     * Returns an empty array when neither setting is configured.
+     *
+     * @param array $settings Table settings array.
+     * @return string[]
+     */
+    public static function get_group_columns( array $settings ): array {
+        if ( ! empty( $settings['group_by_columns'] ) && is_array( $settings['group_by_columns'] ) ) {
+            return array_values( array_filter( array_map( 'sanitize_key', $settings['group_by_columns'] ) ) );
+        }
+        $single = self::get_group_column( $settings );
+        return $single !== '' ? [ $single ] : [];
     }
 
     /**
@@ -65,6 +91,50 @@ class TC_Row_Grouping_Service {
         }
 
         return $groups;
+    }
+
+    // -------------------------------------------------------------------------
+    // Hierarchical server-side grouping
+    // -------------------------------------------------------------------------
+
+    /**
+     * Group a flat row list into a nested map by one or more column IDs.
+     *
+     * With a single column ID the result is identical to group_rows().
+     * With multiple column IDs the result is a nested map:
+     *   level-0-value => level-1-value => [...rows]
+     *
+     * Rows are collected under their group key in order of first encounter
+     * (no pre-sorting required from the caller).
+     *
+     * @param array    $rows       Flat array of row data (each row is an assoc array).
+     * @param string[] $column_ids Ordered list of column IDs to group by (level 0 first).
+     * @return array Nested group map, or flat rows array when $column_ids is empty.
+     */
+    public static function group_rows_hierarchical( array $rows, array $column_ids ): array {
+        if ( empty( $column_ids ) ) {
+            return $rows;
+        }
+
+        $first_col = array_shift( $column_ids );
+        $buckets   = [];
+
+        foreach ( $rows as $row ) {
+            $key            = (string) ( $row[ $first_col ] ?? '' );
+            $buckets[ $key ][] = $row;
+        }
+
+        if ( empty( $column_ids ) ) {
+            // Leaf level — return the flat bucket map.
+            return $buckets;
+        }
+
+        // Recurse for each bucket.
+        $nested = [];
+        foreach ( $buckets as $key => $bucket_rows ) {
+            $nested[ $key ] = self::group_rows_hierarchical( $bucket_rows, $column_ids );
+        }
+        return $nested;
     }
 
     // -------------------------------------------------------------------------
@@ -108,18 +178,22 @@ class TC_Row_Grouping_Service {
      * @param string $group_value The display value for this group (e.g. "Electronics").
      * @param int    $col_span    Number of table columns (for the colspan attribute).
      * @param array  $settings    Table settings (used for label prefix etc.).
+     * @param int    $level       Nesting depth (0 = top-level). Adds gt-row-group-level-{N} class when > 0.
      * @return string HTML for the <tr> group header row.
      */
-    public static function get_group_header_html( string $group_value, int $col_span, array $settings = [] ): string {
-        $col_span = max( 1, (int) $col_span );
-        $label    = $settings['group_label_prefix'] ?? '';
-        $display  = $label !== '' ? $label . ' ' . esc_html( $group_value ) : esc_html( $group_value );
+    public static function get_group_header_html( string $group_value, int $col_span, array $settings = [], int $level = 0 ): string {
+        $col_span    = max( 1, (int) $col_span );
+        $label       = $settings['group_label_prefix'] ?? '';
+        $display     = $label !== '' ? $label . ' ' . esc_html( $group_value ) : esc_html( $group_value );
+        $level_class = $level > 0 ? ' gt-row-group-level-' . (int) $level : '';
 
         return sprintf(
-            '<tr class="gt-row-group-header" data-group="%s">' .
+            '<tr class="gt-row-group-header%s" data-group="%s" data-level="%d">' .
             '<th colspan="%d" scope="colgroup" role="rowheader">%s</th>' .
             '</tr>',
+            $level_class,
             esc_attr( $group_value ),
+            (int) $level,
             $col_span,
             $display
         );

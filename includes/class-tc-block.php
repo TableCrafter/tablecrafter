@@ -14,6 +14,18 @@ class TC_Block
     const LEGACY_BLOCK_NAME = 'tablecrafter/data-table';
     const SCRIPT_HANDLE = 'gt-block-editor';
 
+    /**
+     * Defaults for the Inspector display params (#2351).
+     * Mirrors the block attribute defaults declared in block.js.
+     */
+    const PARAM_DEFAULTS = array(
+        'perPage'            => 25,
+        'search'             => true,
+        'showExport'         => true,
+        'filters'            => false,
+        'showPaginationInfo' => true,
+    );
+
     /** Hook block registration on init. */
     public static function boot(): void
     {
@@ -44,7 +56,13 @@ class TC_Block
         register_block_type(self::BLOCK_NAME, array(
             'api_version'     => 2,
             'attributes'      => array(
-                'tableId' => array('type' => 'number', 'default' => 0),
+                'tableId'            => array('type' => 'number',  'default' => 0),
+                // Inspector display params (#2351)
+                'perPage'            => array('type' => 'number',  'default' => 25),
+                'search'             => array('type' => 'boolean', 'default' => true),
+                'showExport'         => array('type' => 'boolean', 'default' => true),
+                'filters'            => array('type' => 'boolean', 'default' => false),
+                'showPaginationInfo' => array('type' => 'boolean', 'default' => true),
             ),
             'render_callback' => array(__CLASS__, 'render_block'),
             'editor_script'   => self::SCRIPT_HANDLE,
@@ -134,14 +152,65 @@ class TC_Block
     }
 
     /**
-     * Server-side render: delegate to the [tablecrafter] shortcode.
+     * Build a [tablecrafter …] shortcode string from block attributes (#2351).
      *
-     * @param array $attributes Block attributes ({ tableId }).
+     * Only non-default Inspector params are included so the shortcode stays
+     * readable and the DB-stored table settings remain authoritative for
+     * anything the block does not override.
+     *
+     * @param array $attributes Block attributes (camelCase keys).
+     * @return string e.g. '[tablecrafter id="5" per_page="50" search="false"]'
+     */
+    public static function build_block_shortcode(array $attributes): string
+    {
+        $table_id = absint($attributes['tableId'] ?? 0);
+        $parts    = array('id="' . $table_id . '"');
+        $defaults = self::PARAM_DEFAULTS;
+
+        // per_page — emit when it differs from the default (25).
+        $per_page = isset($attributes['perPage']) ? (int) $attributes['perPage'] : $defaults['perPage'];
+        if ($per_page !== $defaults['perPage']) {
+            $parts[] = 'per_page="' . $per_page . '"';
+        }
+
+        // search — emit "false" only when explicitly disabled; default is shown.
+        $search = isset($attributes['search']) ? (bool) $attributes['search'] : $defaults['search'];
+        if ($search !== $defaults['search']) {
+            $parts[] = 'search="' . ($search ? 'true' : 'false') . '"';
+        }
+
+        // show_export — emit "false" only when explicitly disabled.
+        $show_export = isset($attributes['showExport']) ? (bool) $attributes['showExport'] : $defaults['showExport'];
+        if ($show_export !== $defaults['showExport']) {
+            $parts[] = 'show_export="' . ($show_export ? 'true' : 'false') . '"';
+        }
+
+        // filters — emit "true" only when explicitly enabled; default is hidden.
+        $filters = isset($attributes['filters']) ? (bool) $attributes['filters'] : $defaults['filters'];
+        if ($filters !== $defaults['filters']) {
+            $parts[] = 'filters="' . ($filters ? 'true' : 'false') . '"';
+        }
+
+        // show_pagination_info — emit "false" only when explicitly disabled.
+        $show_pagination_info = isset($attributes['showPaginationInfo']) ? (bool) $attributes['showPaginationInfo'] : $defaults['showPaginationInfo'];
+        if ($show_pagination_info !== $defaults['showPaginationInfo']) {
+            $parts[] = 'show_pagination_info="' . ($show_pagination_info ? 'true' : 'false') . '"';
+        }
+
+        return '[tablecrafter ' . implode(' ', $parts) . ']';
+    }
+
+    /**
+     * Server-side render: delegate to the [tablecrafter] shortcode (#2351).
+     * Passes through all Inspector display params as shortcode attributes.
+     *
+     * @param array $attributes Block attributes (camelCase keys).
      * @return string
      */
     public static function render_block($attributes): string
     {
-        $table_id = isset($attributes['tableId']) ? absint($attributes['tableId']) : 0;
+        $attributes = is_array($attributes) ? $attributes : array();
+        $table_id   = absint($attributes['tableId'] ?? 0);
 
         if ($table_id <= 0) {
             // Show a hint in the editor; render nothing on the front end.
@@ -153,6 +222,6 @@ class TC_Block
             return '';
         }
 
-        return do_shortcode('[tablecrafter id="' . $table_id . '"]');
+        return do_shortcode(self::build_block_shortcode($attributes));
     }
 }

@@ -81,11 +81,15 @@
         if (data.entries && data.entries.length > 0) {
             // Per-row HTML builder moved to assets/js/frontend/entry-row.js (#832 slice 11).
             // DOM probes resolved once here so the helper stays jQuery-free.
+            // #2340 — rowOffset: (page-1)*perPage so index cells show 1-based
+            // global counter that renumbers on every sort/filter/page change.
+            var rowOffset = (self.currentPage - 1) * (self.config.per_page || 25);
             var ctx = {
                 rowLinkTpl: (self.config && self.config.row_link_template) ? String(self.config.row_link_template) : '',
                 hasSelectionHeader: $wrapper.find('.gt-selection-header').length > 0,
                 hasDetailHeader: $wrapper.find('.gt-detail-toggle-header').length > 0,
                 hasActionsHeader: $wrapper.find('.gt-actions-header').length > 0,
+                hasIndexHeader: $wrapper.find('.gt-index-header').length > 0,
                 detailColCount: $wrapper.find('thead tr').first().find('th').length || $wrapper.find('thead th').length,
             };
             // #1049 Option 2 v4.222.0 — hot-loop perf refactor. Behavior
@@ -98,6 +102,7 @@
             //    string list grows past ~50 items.
             var parts = [];
             for (var i = 0, n = data.entries.length; i < n; i++) {
+                ctx.rowIndex = rowOffset + i + 1;
                 parts.push(self.renderEntryRowHtml(data.entries[i], ctx));
             }
             html = parts.join('');
@@ -138,6 +143,15 @@
         // inverse mode). Runs BEFORE auto-merge so merger sees the
         // expiry-filtered DOM.
         self.applyRowExpiry();
+
+        // #2338 — row grouping: inject group-header <tr> rows before the
+        // first data row of each group. Runs BEFORE auto-merge so that
+        // the merge pass sees the correct row positions after headers are
+        // inserted. typeof guard keeps harnesses without the module on the
+        // old path.
+        if (typeof self.applyRowGrouping === 'function') {
+            self.applyRowGrouping(data, $tbody);
+        }
 
         // #518 slice 1: post-render rowspan auto-merge.
         // Walks each column flagged column_auto_merge[field_id]=true and

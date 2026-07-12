@@ -3,7 +3,7 @@
  * Plugin Name: TableCrafter
  * Plugin URI: https://github.com/TableCrafter/tablecrafter-pro
  * Description: TableCrafter — beautiful, responsive data tables for WordPress. Free: 3 tables, 8 columns, 500 entries. Pro: unlimited everything + frontend editing, bulk operations, advanced filters.
- * Version: 8.0.43
+ * Version: 8.0.44
  * Author: Fahad Murtaza @ iSuperCoder.com
  * Author URI: https://isupercoder.com/contact
  * License: GPL-2.0-or-later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('TC_VERSION', '8.0.43');
+define('TC_VERSION', '8.0.44');
 define('TC_PHP_COMPAT_VERSION', '8.1');
 define('TC_ELEMENTOR_MIN_VERSION', '3.5.0');
 define('TC_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -261,6 +261,8 @@ require_once TC_PLUGIN_PATH . 'includes/services/class-tc-inline-shortcode-compa
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-api-key-service.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-json-source-service.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-source-registry.php';
+require_once TC_PLUGIN_PATH . 'includes/services/class-tc-manual-rows-service.php'; // #2366
+require_once TC_PLUGIN_PATH . 'includes/services/class-tc-cell-content-service.php'; // #2369
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-csv-source.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-xlsx-source.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-demo-data.php';
@@ -273,6 +275,7 @@ require_once TC_PLUGIN_PATH . 'includes/services/class-tc-tsv-parser-service.php
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-airtable-field-mapper.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-airtable-request-builder.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-airtable-sync-engine.php';
+require_once TC_PLUGIN_PATH . 'includes/services/class-tc-table-password-service.php'; // #2352
 // #2027 — strip-safe require: load a premium-only file only if it's present, so
 // the Freemius free build (which strips @fs_premium_only files at build time)
 // boots without a missing-file fatal. The premium build ships the files.
@@ -314,6 +317,10 @@ require_once TC_PLUGIN_PATH . 'includes/services/class-tc-time-field-renderer.ph
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-consent-field-renderer.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-fileupload-edit-guard.php';
 require_once TC_PLUGIN_PATH . 'includes/class-tc-pagination-rest.php';
+// #2307/#2308 — shared boolean coercion helper; must load before any
+// service that calls TC_Bool::cast() (collapsible, toolbar-visibility,
+// print-settings).
+require_once TC_PLUGIN_PATH . 'includes/services/class-tc-bool.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-toolbar-visibility-service.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-bulk-migration-bundle-service.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-media-folder-adapter.php';
@@ -432,6 +439,8 @@ require_once TC_PLUGIN_PATH . 'includes/class-tc-ajax.php';
 require_once TC_PLUGIN_PATH . 'includes/class-tc-table-builder.php';
 require_once TC_PLUGIN_PATH . 'includes/class-tc-lookup.php';
 require_once TC_PLUGIN_PATH . 'includes/class-tc-rest-api.php';
+require_once TC_PLUGIN_PATH . 'includes/services/class-tc-import-format-detector.php'; // #2322 multi-format import
+require_once TC_PLUGIN_PATH . 'includes/services/class-tc-multi-format-parser.php';    // #2322 multi-format import
 require_once TC_PLUGIN_PATH . 'includes/class-tc-import.php';
 require_once TC_PLUGIN_PATH . 'includes/class-tc-chart.php';
 require_once TC_PLUGIN_PATH . 'includes/class-tc-map.php';
@@ -538,6 +547,14 @@ class Gravity_Tables_Plugin
             if (class_exists('TC_Data_Integrity_Guard')) {
                 TC_Data_Integrity_Guard::backfill_legacy_trash();
             }
+            $needs_version_bump = true;
+        }
+
+        // #2366 v8.1.0 — create the manual rows table for sites upgrading
+        // from pre-8.1.0 (activation hook does not fire on plugin updates).
+        // dbDelta is idempotent — no-op if the table already exists.
+        if ($stored_version === '' || version_compare($stored_version, '8.1.0', '<')) {
+            $this->create_tables();
             $needs_version_bump = true;
         }
 
@@ -1118,6 +1135,13 @@ class Gravity_Tables_Plugin
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
         dbDelta($audit_sql);
+
+        // #2366 — manual rows table. dbDelta is idempotent; safe to run on
+        // every upgrade path so new installs AND upgrades from pre-8.1.0
+        // both get the table.
+        if (class_exists('TC_Manual_Rows_Service')) {
+            TC_Manual_Rows_Service::install_schema();
+        }
     }
 
     public function gravity_forms_notice()

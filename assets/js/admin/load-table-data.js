@@ -168,6 +168,11 @@
                     $('input[name="external_db_public_render"]').prop('checked', !!tableData.settings.external_db_public_render);
                 }
 
+                // #2369 — shortcode expansion opt-in for manual-table cells. Off by default.
+                if (typeof tableData.settings.manual_render_shortcodes !== 'undefined') {
+                    $('input[name="manual_render_shortcodes"]').prop('checked', !!tableData.settings.manual_render_shortcodes);
+                }
+
                 // TC_Row_Height_Service — three flat string settings.
                 ['row_height', 'header_height'].forEach(function (key) {
                     if (typeof tableData.settings[key] !== 'undefined') {

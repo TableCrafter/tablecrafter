@@ -1,6 +1,6 @@
 <?php
 /**
- * TableCrafter Dashboard view — admin/views/dashboard.php
+ * TableCrafter Dashboard view - admin/views/dashboard.php
  *
  * Renders widgets for issues #1924-#1931.
  *
@@ -14,8 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 global $wpdb;
 
 // ── Stats ──────────────────────────────────────────────────────────────────
-// #2229 — "Total" is every table the user actually has, i.e. excluding
-// soft-deleted (Trash) rows. #2257 — all counts now come from
+// #2229 - "Total" is every table the user actually has, i.e. excluding
+// soft-deleted (Trash) rows. #2257 - all counts now come from
 // TC_Data_Integrity_Guard so the cards, the tables list, and the Trash tab
 // share one definition of each population.
 $table_count  = TC_Data_Integrity_Guard::count_active_tables( $wpdb );
@@ -25,7 +25,7 @@ $trash_count  = TC_Data_Integrity_Guard::count_trashed_tables( $wpdb );
 // #542). More telling than Active, which mirrors Total on healthy data.
 $in_use_count = TC_Data_Integrity_Guard::count_tables_in_use( $wpdb );
 
-// #2257 — active tables grouped by data_source_type (settings JSON; absent
+// #2257 - active tables grouped by data_source_type (settings JSON; absent
 // key defaults to gravity_forms). Feeds the per-source stat cards AND the
 // Data Sources widget below.
 $_src_counts   = TC_Data_Integrity_Guard::count_active_by_source( $wpdb );
@@ -48,14 +48,18 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
     : ( defined( 'GF_PLUGIN_VERSION' ) ? GF_PLUGIN_VERSION : __( 'n/a', 'tc-data-tables' ) );
 
 // ── Recent changelog entries ─────────────────────────────────────────────
-// Keep the newest entry's version in step with the current release — the
+// Keep the newest entry's version in step with the current release - the
 // #2232 guard (tests/test-issue-2232-dashboard-whats-new.php) fails if this
 // falls a whole minor version behind TC_VERSION. Update on every release
 // (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
+        'version' => '8.0.44',
+        'summary' => __( 'TablePress-parity wave 1: block editor sidebar controls that work on every table type, cell merging with overlap validation, row grouping with collapsible sub-headings, and a pagination-aware index counter column excluded from exports.', 'tc-data-tables' ),
+    ),
+    array(
         'version' => '8.0.43',
-        'summary' => __( 'Fixed an activation fatal on PHP 8.1 hosts: several methods used a PHP 8.2-only "true" return type, which stopped the plugin from activating on the supported PHP 8.1 floor. No functional changes.', 'tc-data-tables' ),
+        'summary' => __( 'Fixed an activation fatal on PHP 8.1 hosts: a PHP 8.2-only "true" return type stopped the plugin from activating on the supported PHP 8.1 floor. No functional changes.', 'tc-data-tables' ),
     ),
     array(
         'version' => '8.0.42',
@@ -138,9 +142,9 @@ $changelog = array(
             <?php /* ── #1925 Tables stats ── */ ?>
             <div class="gt-widget">
                 <h3><?php esc_html_e( 'Tables', 'tc-data-tables' ); ?></h3>
-                <?php /* #2257 — Total, Active, Trash, then a card per data
+                <?php /* #2257 - Total, Active, Trash, then a card per data
                        source in use. The old third card ("GF Tables") echoed
-                       $table_count — the Active count — instead of the
+                       $table_count - the Active count - instead of the
                        per-source tally. */ ?>
                 <div class="gt-stats-grid">
                     <div class="gt-stat-item">
@@ -162,7 +166,7 @@ $changelog = array(
                         <span class="gt-stat-label"><?php echo esc_html( $_label ); ?></span>
                     </div>
                     <?php endforeach; ?>
-                    <?php // #2259 — an empty Trash card tells the admin nothing; hide at zero
+                    <?php // #2259 - an empty Trash card tells the admin nothing; hide at zero
                     if ( $trash_count > 0 ) : ?>
                     <div class="gt-stat-item">
                         <span class="gt-stat-number"><?php echo esc_html( $trash_count ); ?></span>
@@ -282,7 +286,7 @@ $changelog = array(
                     <div class="gt-license-status active">
                         <span class="gt-license-icon">✅</span>
                         <div class="gt-license-text">
-                            <strong><?php esc_html_e( 'Pro — Active', 'tc-data-tables' ); ?></strong>
+                            <strong><?php esc_html_e( 'Pro - Active', 'tc-data-tables' ); ?></strong>
                             <span><?php esc_html_e( 'All Pro features unlocked', 'tc-data-tables' ); ?></span>
                         </div>
                     </div>
@@ -335,7 +339,7 @@ $changelog = array(
             <div class="gt-widget gt-changelog">
                 <h3><?php esc_html_e( "What's New", 'tc-data-tables' ); ?></h3>
                 <ul class="gt-changelog-list">
-                    <?php // #2263 — the array grows every release; show only the 5 newest.
+                    <?php // #2263 - the array grows every release; show only the 5 newest.
                     foreach ( array_slice( $changelog, 0, 5 ) as $entry ) : ?>
                         <li class="gt-changelog-item">
                             <div class="gt-changelog-version">v<?php echo esc_html( $entry['version'] ); ?></div>

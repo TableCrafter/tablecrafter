@@ -176,6 +176,10 @@ class TC_Ajax
         add_action('wp_ajax_gt_bulk_fill_column', array($this, 'bulk_fill_column'));
         // #1747 — one-click entry duplicate (Pro). Authenticated only.
         add_action('wp_ajax_gt_duplicate_entry', array($this, 'duplicate_entry'));
+
+        // #2367 — manual tables grid editor: save rows + get rows for builder hydration.
+        add_action('wp_ajax_gt_save_manual_rows', array($this, 'save_manual_rows'));
+        add_action('wp_ajax_gt_get_manual_rows',  array($this, 'get_manual_rows'));
     }
 
     private function get_filter_presets_meta_key(int $table_id): string
@@ -1147,6 +1151,11 @@ class TC_Ajax
             ['%d']
         );
 
+        // #2366 — copy manual rows from source to the new duplicate table.
+        if (class_exists('TC_Manual_Rows_Service')) {
+            TC_Manual_Rows_Service::copy_rows($table_id, $new_id);
+        }
+
         wp_send_json_success([
             'redirect_url' => admin_url('admin.php?page=gravity-tables-new&id=' . $new_id),
         ]);
@@ -1684,6 +1693,63 @@ class TC_Ajax
 
             // External sources don't have a Gravity Forms form_id — route them
             // before the GF-specific validation and entry-fetch path.
+
+            // #2366 — Manual source preview: show a placeholder (the grid editor
+            // that lets you add real data ships in #2367; for now the builder
+            // preview mirrors the frontend empty-state).
+            if ($data_source_type === 'manual') {
+                $table_id_preview = isset($_POST['table_id']) ? intval($_POST['table_id']) : 0;
+                if ($table_id_preview > 0 && class_exists('TC_Manual_Rows_Service')) {
+                    $r    = TC_Manual_Rows_Service::get_rows($table_id_preview, array());
+                    // #2370 — exclude hidden rows from builder preview.
+                    $rows = TC_Manual_Rows_Service::filter_visible_rows( $r['rows'] );
+                    // #2370 — exclude hidden columns from builder preview.
+                    $visible_cols = TC_Manual_Rows_Service::filter_visible_columns(
+                        ( isset($settings_post['manual_columns']) && is_array($settings_post['manual_columns']) ) ? $settings_post['manual_columns'] : array()
+                    );
+                    $cols = array();
+                    foreach ($visible_cols as $col_def) {
+                        if (!empty($col_def['key'])) {
+                            $cols[] = (string) $col_def['key'];
+                        }
+                    }
+                    if (!empty($rows) && !empty($cols)) {
+                        $header_html = '<tr>';
+                        foreach ($cols as $col_key) {
+                            $label = $col_key;
+                            foreach ($visible_cols as $cd) {
+                                if (isset($cd['key']) && $cd['key'] === $col_key && !empty($cd['label'])) {
+                                    $label = $cd['label'];
+                                }
+                            }
+                            $header_html .= '<th>' . esc_html($label) . '</th>';
+                        }
+                        $header_html .= '</tr>';
+                        $body_html = '';
+                        foreach (array_slice($rows, 0, 5) as $row) {
+                            $body_html .= '<tr>';
+                            foreach ($cols as $col_key) {
+                                $body_html .= '<td>' . esc_html((string) ($row[$col_key] ?? '')) . '</td>';
+                            }
+                            $body_html .= '</tr>';
+                        }
+                        $html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">'
+                            . '<thead>' . $header_html . '</thead>'
+                            . '<tbody>' . $body_html . '</tbody>'
+                            . '</table>';
+                        wp_send_json_success(['html' => $html]);
+                        return;
+                    }
+                }
+                wp_send_json_success(['html' =>
+                    '<div style="padding:12px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;">'
+                    . '<strong>' . esc_html__('Manual table', 'tc-data-tables') . '</strong><br>'
+                    . esc_html__('Use the grid editor to add data (available in the next release).', 'tc-data-tables')
+                    . '</div>'
+                ]);
+                return;
+            }
+
             if ($data_source_type === 'json') {
                 wp_send_json_success(['html' => $this->preview_json_source_html($settings_post)]);
                 return;
@@ -2138,6 +2204,42 @@ class TC_Ajax
             $sort_order  = sanitize_text_field($raw_query_args['sort_order']);
             $columns      = $_POST['columns'] ?? array();
             $lookup_fields = $_POST['lookup_fields'] ?? array();
+
+            // #2338 — row grouping sort injection. When row grouping is enabled,
+            // inject the group column(s) as primary sort entries before any
+            // visitor-requested sort. This ensures entries arrive in group order
+            // so the JS module can insert group-header rows without a client-side
+            // sort pass. The visitor's sort_field becomes a secondary sort within
+            // groups (multi-sort stack handles this transparently).
+            if (class_exists('TC_Row_Grouping_Service')
+                && TC_Row_Grouping_Service::is_enabled(is_array($table_config) ? $table_config : array())
+            ) {
+                // @codeCoverageIgnoreStart
+                $gt_rg_group_cols = TC_Row_Grouping_Service::get_group_columns(is_array($table_config) ? $table_config : array());
+                if (!empty($gt_rg_group_cols)) {
+                    $gt_rg_primary = array();
+                    foreach ($gt_rg_group_cols as $gt_rg_col) {
+                        $gt_rg_primary[] = array('column_id' => $gt_rg_col, 'direction' => 'asc');
+                    }
+                    // Prepend group columns before any visitor sort stack entry.
+                    if (!empty($gt_sort_stack)) {
+                        $gt_sort_stack = array_merge($gt_rg_primary, $gt_sort_stack);
+                    } else {
+                        // Single-sort path: push the visitor sort as a secondary stack entry.
+                        if ($sort_field !== '' && $sort_field !== 'date_created') {
+                            $gt_sort_stack = array_merge(
+                                $gt_rg_primary,
+                                array(array('column_id' => $sort_field, 'direction' => $sort_order === 'desc' ? 'desc' : 'asc'))
+                            );
+                        } else {
+                            $gt_sort_stack = $gt_rg_primary;
+                        }
+                        $sort_field = $gt_rg_group_cols[0];
+                        $sort_order = 'asc';
+                    }
+                }
+                // @codeCoverageIgnoreEnd
+            }
 
             // #568 slice 4 — drilldown filters (col:val chips) for cross-page persistence.
             $drilldown_filters_raw = $_POST['drilldown_filters'] ?? '';
@@ -7717,6 +7819,26 @@ class TC_Ajax
                 'user_roles'     => $currentUser->roles
             ], 403);
         }
+
+        // Password gate (#2352): check after the role gate so manage_options
+        // users (already returned true by canCurrentUserViewTable) bypass it.
+        if (class_exists('TC_Table_Password_Service') && !current_user_can('manage_options')) {
+            $stored_hash = isset($table_config_array['table_password_hash'])
+                ? (string) $table_config_array['table_password_hash']
+                : '';
+            if ($stored_hash !== '') {
+                $resolved_table_id = $table_id > 0 ? $table_id : (int) $table_data->id;
+                if (!TC_Table_Password_Service::request_is_unlocked($resolved_table_id, $stored_hash)) {
+                    wp_send_json_error(
+                        [
+                            'code'    => 'gt_password_required',
+                            'message' => 'Password required to access this table.',
+                        ],
+                        401
+                    );
+                }
+            }
+        }
     }
 
     /**
@@ -9200,6 +9322,249 @@ class TC_Ajax
         wp_send_json_success( array(
             'message'      => __( 'Entry duplicated.', 'tc-data-tables' ),
             'new_entry_id' => $new_id,
+        ) );
+    }
+
+    // =========================================================================
+    // #2367 — Manual tables grid editor AJAX handlers
+    // =========================================================================
+
+    /**
+     * gt_save_manual_rows
+     *
+     * Saves the full row set for a manual table from the grid editor.
+     *
+     * POST params:
+     *   nonce               (gt_admin_nonce)
+     *   table_id            int
+     *   rows                JSON-encoded array of key→value row objects
+     *   manual_columns      JSON-encoded array of {key, label, type} (updated labels from header edits)
+     *
+     * Scaling seam: this handler performs a full replace (DELETE + bulk INSERT).
+     * Acceptable for ≤2 k rows at MVP. For larger tables, migrate to a delta
+     * endpoint that only writes changed rows by row_index — the service's
+     * replace_rows is the seam to swap out.
+     *
+     * Non-manual tables are rejected (data_source_type guard) so the endpoint
+     * cannot be used to overwrite GF / CSV / etc. row data.
+     */
+    public function save_manual_rows(): void
+    {
+        check_ajax_referer( 'gt_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'tc-data-tables' ) ) );
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+
+        $table_id = isset( $_POST['table_id'] ) ? absint( $_POST['table_id'] ) : 0;
+        if ( ! $table_id ) {
+            wp_send_json_error( array( 'message' => __( 'Missing table_id', 'tc-data-tables' ) ) );
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'gravity_tables';
+
+        // Load the table record to verify data_source_type.
+        $row = $wpdb->get_row(
+            $wpdb->prepare( "SELECT settings FROM {$table_name} WHERE id = %d", $table_id ),
+            ARRAY_A
+        );
+
+        if ( ! $row ) {
+            wp_send_json_error( array( 'message' => __( 'Table not found', 'tc-data-tables' ) ) );
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+
+        $settings = json_decode( (string) $row['settings'], true );
+        if ( ! is_array( $settings ) ) {
+            $settings = array();
+        }
+
+        // Guard: only manual tables may be written via this endpoint.
+        if ( ( $settings['data_source_type'] ?? '' ) !== 'manual' ) {
+            wp_send_json_error( array( 'message' => __( 'Table is not a manual data source', 'tc-data-tables' ) ) );
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+
+        if ( ! class_exists( 'TC_Manual_Rows_Service' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Manual rows service unavailable', 'tc-data-tables' ) ) );
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+
+        // Decode and sanitize rows payload.
+        $rows_raw = isset( $_POST['rows'] ) ? wp_unslash( (string) $_POST['rows'] ) : '[]';
+        $rows     = json_decode( $rows_raw, true );
+        if ( ! is_array( $rows ) ) {
+            $rows = array();
+        }
+
+        // Sanitize each row: keys and values must be strings; strip HTML.
+        $known_keys = array();
+        if ( ! empty( $settings['manual_columns'] ) && is_array( $settings['manual_columns'] ) ) {
+            foreach ( $settings['manual_columns'] as $col_def ) {
+                if ( isset( $col_def['key'] ) ) {
+                    $known_keys[] = sanitize_key( (string) $col_def['key'] );
+                }
+            }
+        }
+        // #2370 — allow the row-visibility metadata key. Track whether real
+        // column keys exist first: when manual_columns is empty the guard below
+        // must stay bypassed (accept all keys), matching pre-#2370 behavior.
+        $has_column_keys = ! empty( $known_keys );
+        $known_keys[]    = '_tc_hidden';
+
+        $sanitized_rows = array();
+        foreach ( $rows as $row_data ) {
+            if ( ! is_array( $row_data ) ) {
+                continue;
+            }
+            $clean = array();
+            foreach ( $row_data as $k => $v ) {
+                $key = sanitize_key( (string) $k );
+                // Only accept known column keys (prevents arbitrary key injection).
+                if ( $has_column_keys && ! in_array( $key, $known_keys, true ) ) {
+                    continue;
+                }
+                if ( $key === '_tc_hidden' ) {
+                    // Boolean metadata — only store when true so visible rows
+                    // never carry the key (keeps it out of the legacy
+                    // union-of-row-keys column fallback in the shortcode).
+                    if ( (bool) $v ) {
+                        $clean[ $key ] = true;
+                    }
+                    continue;
+                }
+                // #2369 — capability-gated sanitization (TablePress model):
+                // unfiltered_html users store raw HTML; everyone else gets kses.
+                $clean[ $key ] = self::sanitize_manual_cell_value(
+                    (string) $v,
+                    current_user_can( 'unfiltered_html' )
+                );
+            }
+            $sanitized_rows[] = $clean;
+        }
+
+        // Write rows via the service (full replace).
+        TC_Manual_Rows_Service::replace_rows( $table_id, $sanitized_rows );
+
+        // Update manual_columns labels if provided.
+        $cols_raw = isset( $_POST['manual_columns'] ) ? wp_unslash( (string) $_POST['manual_columns'] ) : '';
+        if ( $cols_raw !== '' ) {
+            $incoming_cols = json_decode( $cols_raw, true );
+            if ( is_array( $incoming_cols ) ) {
+                // Merge labels into existing column definitions (preserves key + type).
+                $existing_cols = is_array( $settings['manual_columns'] ) ? $settings['manual_columns'] : array();
+                // Build label + full-column maps for the merge.
+                $label_map  = array();
+                $col_by_key = array();
+                foreach ( $incoming_cols as $col ) {
+                    if ( isset( $col['key'] ) ) {
+                        $ek = sanitize_key( (string) $col['key'] );
+                        if ( isset( $col['label'] ) ) {
+                            $label_map[ $ek ] = sanitize_text_field( (string) $col['label'] );
+                        }
+                        $col_by_key[ $ek ] = $col;
+                    }
+                }
+                foreach ( $existing_cols as &$ec ) {
+                    $ek = sanitize_key( (string) ( $ec['key'] ?? '' ) );
+                    if ( isset( $label_map[ $ek ] ) ) {
+                        $ec['label'] = $label_map[ $ek ];
+                    }
+                    // #2370 — preserve hidden flag from incoming columns.
+                    if ( isset( $col_by_key[ $ek ] ) && array_key_exists( 'hidden', $col_by_key[ $ek ] ) ) {
+                        $ec['hidden'] = (bool) $col_by_key[ $ek ]['hidden'];
+                    }
+                }
+                unset( $ec );
+                $settings['manual_columns'] = $existing_cols;
+                $wpdb->update(
+                    $table_name,
+                    array( 'settings' => wp_json_encode( $settings ), 'updated_at' => current_time( 'mysql' ) ),
+                    array( 'id' => $table_id ),
+                    array( '%s', '%s' ),
+                    array( '%d' )
+                );
+                wp_cache_delete( 'gt_table_' . $table_id, 'gravity_tables' );
+            }
+        }
+
+        wp_send_json_success( array(
+            'message'   => __( 'Manual rows saved', 'tc-data-tables' ),
+            'row_count' => count( $sanitized_rows ),
+        ) );
+    }
+
+    /**
+     * Sanitize a manual-table cell value at save time.
+     *
+     * Public static so shim tests can call it directly without mocking
+     * current_user_can. The $can_unfiltered param receives the result of
+     * the unfiltered_html capability check result from the caller.
+     *
+     * Delegates to TC_Cell_Content_Service::sanitize_cell_value.
+     *
+     * @since 8.1.0 (#2369)
+     * @param string $value          Raw cell value.
+     * @param bool   $can_unfiltered Whether the current user has unfiltered_html.
+     * @return string
+     */
+    public static function sanitize_manual_cell_value( string $value, bool $can_unfiltered ): string {
+        return TC_Cell_Content_Service::sanitize_cell_value( $value, $can_unfiltered );
+    }
+
+    /**
+     * gt_get_manual_rows
+     *
+     * Returns the current rows for a manual table (for builder grid hydration).
+     *
+     * POST params:
+     *   nonce     (gt_admin_nonce)
+     *   table_id  int
+     */
+    public function get_manual_rows(): void
+    {
+        check_ajax_referer( 'gt_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'tc-data-tables' ) ) );
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+
+        $table_id = isset( $_POST['table_id'] ) ? absint( $_POST['table_id'] ) : 0;
+        if ( ! $table_id ) {
+            wp_send_json_error( array( 'message' => __( 'Missing table_id', 'tc-data-tables' ) ) );
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+
+        if ( ! class_exists( 'TC_Manual_Rows_Service' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Manual rows service unavailable', 'tc-data-tables' ) ) );
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+
+        $result = TC_Manual_Rows_Service::get_rows( $table_id, array() );
+
+        wp_send_json_success( array(
+            'rows'  => $result['rows'],
+            'total' => $result['total'],
         ) );
     }
 

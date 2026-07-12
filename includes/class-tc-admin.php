@@ -620,6 +620,47 @@ class TC_Admin
             true
         );
 
+        // #2367 — Manual tables grid editor. Loaded ONLY on the builder screen
+        // for manual-source tables (conditional below). Admin-side only; no
+        // frontend weight. No vendored dependency (see engine decision in PR #2374).
+        $gt_is_builder_page = isset( $_GET['page'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            sanitize_text_field( wp_unslash( (string) $_GET['page'] ) ) === 'gravity-tables-new'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $gt_grid_table_id   = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $gt_is_manual_table = false;
+        $gt_manual_grid_data = null;
+        if ( $gt_is_builder_page && $gt_grid_table_id > 0 && class_exists( 'TC_Manual_Rows_Service' ) ) {
+            $gt_check_row = $this->get_table( $gt_grid_table_id );
+            if ( $gt_check_row ) {
+                $gt_check_settings = json_decode( (string) $gt_check_row->settings, true );
+                if ( is_array( $gt_check_settings ) && ( $gt_check_settings['data_source_type'] ?? '' ) === 'manual' ) {
+                    $gt_is_manual_table = true;
+                    $gt_result          = TC_Manual_Rows_Service::get_rows( $gt_grid_table_id );
+                    $gt_manual_grid_data = array(
+                        'table_id' => $gt_grid_table_id,
+                        'columns'  => is_array( $gt_check_settings['manual_columns'] ?? null ) ? $gt_check_settings['manual_columns'] : array(),
+                        'rows'     => $gt_result['rows'],
+                        'nonce'    => wp_create_nonce( 'gt_admin_nonce' ),
+                        'ajax_url' => admin_url( 'admin-ajax.php' ),
+                    );
+                }
+            }
+        }
+        if ( $gt_is_manual_table ) {
+            wp_enqueue_media();
+            wp_enqueue_script(
+                'gravity-tables-admin-manual-grid-editor',
+                TC_PLUGIN_URL . 'assets/js/admin/manual-grid-editor.js',
+                array( 'jquery', 'gravity-tables-admin' ),
+                TC_VERSION,
+                true
+            );
+            wp_localize_script(
+                'gravity-tables-admin-manual-grid-editor',
+                'gtManualGridData',
+                $gt_manual_grid_data
+            );
+        }
+
         // Auto-save draft state in the admin editor (#455).
         wp_enqueue_script(
             'gt-admin-autosave',
@@ -1067,6 +1108,40 @@ class TC_Admin
     }
 
     /**
+     * #2376 — merge grid-editor header renames into manual column definitions.
+     *
+     * save-table.js posts `manual_columns_labels` as {colKey: label} (built
+     * from the grid model). Pure helper: applies label changes by key, keeps
+     * key/type untouched, sanitizes labels, and treats blank/garbage input
+     * as a no-op so a failed payload can never wipe existing labels.
+     *
+     * @param array        $manual_columns Stored column definitions ({key,label,type} each).
+     * @param array|string $labels_map     Key→label map, or its JSON-string form.
+     * @return array Updated column definitions.
+     */
+    public static function apply_manual_column_labels(array $manual_columns, $labels_map): array
+    {
+        if (is_string($labels_map)) {
+            $decoded = json_decode(wp_unslash($labels_map), true);
+            $labels_map = is_array($decoded) ? $decoded : array();
+        }
+        if (!is_array($labels_map) || $labels_map === array()) {
+            return $manual_columns;
+        }
+        foreach ($manual_columns as $i => $col) {
+            $key = isset($col['key']) ? (string) $col['key'] : '';
+            if ($key === '' || !array_key_exists($key, $labels_map)) {
+                continue;
+            }
+            $label = sanitize_text_field((string) $labels_map[$key]);
+            if ($label !== '') {
+                $manual_columns[$i]['label'] = $label;
+            }
+        }
+        return $manual_columns;
+    }
+
+    /**
      * Recursively sanitize values destined for wp_json_encode in inline &lt;script&gt;.
      * Prevents encode failures from NAN/INF floats or stray objects from corrupt payloads.
      *
@@ -1155,6 +1230,25 @@ class TC_Admin
                 'show_table_summary',
                 // #2254 — per-table external DB public-render opt-in.
                 'external_db_public_render',
+                // #2308 — boolean keys missing from the list; jQuery $.param()
+                // serialises JS false as the string "false" which PHP's (bool)
+                // or !empty() reads as true. filter_var handles strings correctly.
+                'collapsible_enabled',
+                'collapsible_default_collapsed',
+                'show_column_totals',
+                'show_toolbar_csv',
+                'show_toolbar_copy',
+                'show_toolbar_excel',
+                'show_pdf_export',
+                'enable_multi_sort',
+                'persist_filters_localstorage',
+                'show_length_selector',
+                'show_column_picker',
+                'enable_duplicate',
+                // #2340 — index column (1..n display-order counter).
+                'show_index_column',
+                // #2369 — opt-in shortcode expansion in manual-table cells.
+                'manual_render_shortcodes',
             ];
 
             // Handle responsive mode (extends responsive_table boolean)
@@ -1184,6 +1278,31 @@ class TC_Admin
                     $settings[$field] = filter_var($settings[$field], FILTER_VALIDATE_BOOLEAN);
                     // error_log("GT Admin: Boolean field '$field' - Original: " . var_export($original_value, true) . " -> Converted: " . var_export($settings[$field], true));
                 }
+            }
+
+            // #2307/#2308 — Normalise nested compound settings that carry boolean
+            // sub-keys. These arrive as nested arrays within $data['settings']
+            // when the builder posts its payload via jQuery $.param(). The
+            // top-level sanitiser blocks further down in save_table() handle the
+            // same keys when they arrive at the top level ($data['toolbar_visibility']
+            // etc.), but those blocks never see the nested variant.
+
+            // toolbar_visibility — six-component bool map. Delegate to the
+            // service's normalize() which now uses TC_Bool::cast() internally.
+            if (isset($settings['toolbar_visibility']) && is_array($settings['toolbar_visibility'])
+                && class_exists('TC_Toolbar_Visibility_Service')) {
+                $settings['toolbar_visibility'] = TC_Toolbar_Visibility_Service::normalize(
+                    $settings['toolbar_visibility']
+                );
+            }
+
+            // print_settings — enabled / repeat_header / row_striping sub-booleans.
+            // Delegate to the service's normalize() which now uses TC_Bool::cast().
+            if (isset($settings['print_settings']) && is_array($settings['print_settings'])
+                && class_exists('TC_Print_Settings_Service')) {
+                $settings['print_settings'] = TC_Print_Settings_Service::normalize(
+                    $settings['print_settings']
+                );
             }
 
             // Ensure numeric values are properly handled
@@ -1390,6 +1509,46 @@ class TC_Admin
                 function ($v) { return filter_var($v, FILTER_VALIDATE_BOOLEAN); },
                 $data['column_auto_merge']
             );
+        }
+
+        // #2323 — arbitrary cell merges (rowspan/colspan). Storage shape:
+        //   cell_merges: [{row, col, rowspan, colspan}, ...]  (0-based indices)
+        // Each entry is validated by TC_Cell_Merge_Service::validate_merge to
+        // guarantee non-overlapping rectangles. Invalid or overlapping entries
+        // are silently dropped so a bad payload can never corrupt the table.
+        // Sorting interaction: merges are applied in the server-side preview
+        // render only; when the DataTables JS is active (sorting/filtering on)
+        // the arbitrary merge positions no longer match re-ordered rows.
+        // The builder UI shows a note about this constraint.
+        $settings['cell_merges'] = [];
+        if (isset($data['cell_merges']) && is_string($data['cell_merges']) && $data['cell_merges'] !== '') {
+            $raw_merges = json_decode(stripslashes($data['cell_merges']), true);
+            if (is_array($raw_merges) && class_exists('TC_Cell_Merge_Service')) {
+                $accumulated = [];
+                foreach ($raw_merges as $m) {
+                    if (
+                        !is_array($m)
+                        || !isset($m['row'], $m['col'], $m['rowspan'], $m['colspan'])
+                    ) {
+                        continue;
+                    }
+                    $row     = (int) $m['row'];
+                    $col     = (int) $m['col'];
+                    $rowspan = (int) $m['rowspan'];
+                    $colspan = (int) $m['colspan'];
+                    $validation = TC_Cell_Merge_Service::validate_merge($row, $col, $rowspan, $colspan, $accumulated);
+                    if (is_wp_error($validation)) {
+                        continue; // drop overlapping / invalid entry
+                    }
+                    $accumulated[] = [
+                        'row'     => $row,
+                        'col'     => $col,
+                        'rowspan' => $rowspan,
+                        'colspan' => $colspan,
+                    ];
+                }
+                $settings['cell_merges'] = $accumulated;
+            }
         }
 
         // #568 slice 2: click-to-filter per-column opt-in. Storage shape
@@ -1655,6 +1814,34 @@ class TC_Admin
             }
         }
 
+        // #2366 — For manual-source tables, provision an empty grid on first
+        // save (when manual_columns hasn't been set yet). Stores the column
+        // definitions in settings; actual row data goes to tablecrafter_manual_rows
+        // via TC_Manual_Rows_Service::provision_empty_grid().
+        // Deferred to after-insert because we need the table_id for the rows table.
+        $gt_needs_manual_provision = (
+            class_exists('TC_Manual_Rows_Service')
+            && isset($settings['data_source_type'])
+            && $settings['data_source_type'] === 'manual'
+            && empty($settings['manual_columns'])
+        );
+        $gt_manual_initial_rows = isset($settings['manual_initial_rows']) ? max(1, (int) $settings['manual_initial_rows']) : 5;
+        $gt_manual_initial_cols = isset($settings['manual_initial_cols']) ? max(1, (int) $settings['manual_initial_cols']) : 3;
+
+        // #2376 — grid-editor header renames. Without this the posted
+        // manual_columns_labels map was silently dropped and renames
+        // reverted on builder reload.
+        if (
+            isset($data['manual_columns_labels'])
+            && isset($settings['data_source_type']) && $settings['data_source_type'] === 'manual'
+            && !empty($settings['manual_columns']) && is_array($settings['manual_columns'])
+        ) {
+            $settings['manual_columns'] = self::apply_manual_column_labels(
+                $settings['manual_columns'],
+                $data['manual_columns_labels']
+            );
+        }
+
         $table_data = array(
             'title' => sanitize_text_field($data['title']),
             'form_id' => intval($data['form_id']),
@@ -1678,6 +1865,24 @@ class TC_Admin
                 $table_id = intval($data['table_id']);
                 $user_id  = get_current_user_id();
                 wp_cache_delete('gt_table_' . $table_id, 'gravity_tables');
+                // #2366 — provision empty grid on first update of manual table
+                // if column definitions weren't set yet (e.g. race on create).
+                if ($gt_needs_manual_provision && $table_id > 0) {
+                    $manual_cols = TC_Manual_Rows_Service::provision_empty_grid(
+                        $table_id,
+                        $gt_manual_initial_rows,
+                        $gt_manual_initial_cols
+                    );
+                    $settings['manual_columns'] = $manual_cols;
+                    $wpdb->update(
+                        $table_name,
+                        array('settings' => wp_json_encode($settings), 'updated_at' => current_time('mysql')),
+                        array('id' => $table_id),
+                        array('%s', '%s'),
+                        array('%d')
+                    );
+                    wp_cache_delete('gt_table_' . $table_id, 'gravity_tables');
+                }
                 // #519 slice 3 — reconcile scheduled export cron.
                 if (isset($data['scheduled_export_enabled']) && class_exists('TC_Scheduled_Export_Service')) {
                     // @codeCoverageIgnoreStart
@@ -1718,6 +1923,27 @@ class TC_Admin
                     array('%s'),
                     array('%d')
                 );
+
+                // #2366 — provision empty grid for new manual tables.
+                if ($gt_needs_manual_provision && $table_id > 0) {
+                    $manual_cols = TC_Manual_Rows_Service::provision_empty_grid(
+                        $table_id,
+                        $gt_manual_initial_rows,
+                        $gt_manual_initial_cols
+                    );
+                    // Persist column definitions back into settings so the
+                    // render path and future saves have them.
+                    $settings['manual_columns'] = $manual_cols;
+                    $wpdb->update(
+                        $table_name,
+                        array('settings' => wp_json_encode($settings)),
+                        array('id' => $table_id),
+                        array('%s'),
+                        array('%d')
+                    );
+                    wp_cache_delete('gt_table_' . $table_id, 'gravity_tables');
+                }
+
                 $user_id = get_current_user_id();
                 // #519 slice 3 — reconcile scheduled export cron for newly created tables.
                 if (isset($data['scheduled_export_enabled']) && class_exists('TC_Scheduled_Export_Service')) {
@@ -1837,6 +2063,10 @@ class TC_Admin
 
         if ($result !== false) {
             wp_cache_delete('gt_table_' . intval($id), 'gravity_tables');
+            // #2366 — purge manual rows for this table on permanent delete.
+            if (class_exists('TC_Manual_Rows_Service')) {
+                TC_Manual_Rows_Service::delete_rows($id);
+            }
         }
 
         return $result;
@@ -1889,6 +2119,10 @@ class TC_Admin
 
         foreach ($ids as $id) {
             wp_cache_delete('gt_table_' . $id, 'gravity_tables');
+            // #2366 — purge manual rows for each expired table.
+            if (class_exists('TC_Manual_Rows_Service')) {
+                TC_Manual_Rows_Service::delete_rows($id);
+            }
         }
 
         do_action('gravity_tables_after_cron_purge', $count, $cutoff);
@@ -1930,6 +2164,10 @@ class TC_Admin
 
         foreach ($ids as $id) {
             wp_cache_delete('gt_table_' . $id, 'gravity_tables');
+            // #2366 — purge manual rows for each empty-trash table.
+            if (class_exists('TC_Manual_Rows_Service')) {
+                TC_Manual_Rows_Service::delete_rows($id);
+            }
         }
 
         return $count;
@@ -2251,6 +2489,36 @@ class TC_Admin
         if (isset($data['collapsible_default_collapsed'])) {
             $settings['collapsible_default_collapsed'] = filter_var($data['collapsible_default_collapsed'], FILTER_VALIDATE_BOOLEAN);
         }
+        // #2338 — TC_Row_Grouping_Service: group rows under sub-heading rows.
+        // group_by_column  : single field_id (string, sanitize_key).
+        // group_by_columns : ordered field_id array for hierarchical grouping.
+        // group_default_collapsed : whether groups start collapsed (bool).
+        // group_label_prefix      : optional text prepended to each group value.
+        if (isset($data['group_by_column'])) {
+            $settings['group_by_column'] = sanitize_key((string) $data['group_by_column']);
+        }
+        if (isset($data['group_by_columns']) && is_array($data['group_by_columns'])) {
+            $clean_cols = array();
+            foreach ($data['group_by_columns'] as $col_id) {
+                $k = sanitize_key((string) $col_id);
+                if ($k !== '') {
+                    $clean_cols[] = $k;
+                }
+            }
+            $settings['group_by_columns'] = $clean_cols;
+        }
+        if (isset($data['group_default_collapsed'])) {
+            $settings['group_default_collapsed'] = filter_var($data['group_default_collapsed'], FILTER_VALIDATE_BOOLEAN);
+        }
+        if (isset($data['group_label_prefix'])) {
+            $settings['group_label_prefix'] = sanitize_text_field((string) $data['group_label_prefix']);
+        }
+
+        // #2340 — index column label (plain text, defaults to "#" on the frontend).
+        if (isset($data['index_column_label'])) {
+            $settings['index_column_label'] = sanitize_text_field((string) $data['index_column_label']);
+        }
+
         // Visitor-side length selector (off by default; CSV options whitelisted to ints).
         if (isset($data['show_length_selector'])) {
             $settings['show_length_selector'] = filter_var($data['show_length_selector'], FILTER_VALIDATE_BOOLEAN);

@@ -1,10 +1,10 @@
-=== TableCrafter – Data to Beautiful Tables ===
+=== TableCrafter - Data to Beautiful Tables ===
 Contributors: fahdi
 Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.43
+Stable tag: 8.0.44
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,17 +112,28 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 
 == Screenshots ==
 
-1. Table dashboard: live, searchable tables from any data source with one click column sorting.
-2. Inline editing: click any cell to edit directly in the table, just like a spreadsheet.
-3. Source picker: connect Gravity Forms, Google Sheets, Airtable, Notion, CSV, JSON or an external database in seconds.
-4. Column builder: configure display labels, field mapping, filters, and visibility per column with drag and drop ordering.
-5. Export: download filtered table data as CSV, Excel, or JSON with a single click.
-6. Mobile view: fully responsive tables with touch friendly interactions on any screen size.
+1. Live tables on your site: instant search and one-click column sorting from JSON, CSV, Google Sheets or Excel.
+2. Admin dashboard: manage all your tables, data sources and shortcodes in one place.
+3. Source picker: connect JSON / REST, CSV, Google Sheets or Excel in seconds (Gravity Forms, WooCommerce, Airtable, Notion and external databases on Pro).
+4. Column builder: choose fields, rename headers, and set widths and visibility with drag-and-drop ordering.
+5. One-click demo tables and prebuilt templates to get started in seconds.
+6. Mobile-friendly: your tables stay readable on any screen size.
 
 == Changelog ==
 
+= 8.0.44 =
+* New: Manual tables - build a table by typing into a spreadsheet-style grid, no external data source required. Insert, delete, duplicate, and move rows and columns; rich cell content; per-row, per-column, and per-cell visibility; and CSV import straight into a manual table.
+* New: Import from many formats - Excel (XLSX/XLS), OpenDocument (ODS), HTML tables, JSON, and ZIP archives, with append and replace modes.
+* New: Excel-compatible formulas - evaluate spreadsheet formulas in cells.
+* New: Password-protected tables - gate a table behind a password with a signed unlock cookie.
+* New: Block editor upgrade - real sidebar controls (rows per page, search, export buttons, column filters, pagination info), shortcode-to-block conversion, and proper preview states, on every table type.
+* New: Merge cells across rows or columns (with overlap validation), row grouping under collapsible sub-headings, and an auto-renumbering index column (pagination-aware, excluded from exports).
+* Fixed: data-source tables (JSON, CSV, Google Sheets, Excel) now load the plugin stylesheet on the front end - styled tables instead of bare ones.
+* Fixed: saving a table no longer hides it via a misread boolean setting; toolbar visibility choices (pagination, search, filters, export menu, length selector, entry-count label) are now enforced on the live table.
+* Reliability: full PHP 8.0-8.4 compatibility is verified on every release via a Docker activation matrix (fresh WordPress + plugin activation, per PHP version).
+
 = 8.0.43 =
-* Fixed: activation fatal on PHP 8.1 hosts. Several methods declared a `true|WP_Error` return type, which is only valid on PHP 8.2+; on the supported PHP 8.1 floor this caused a "Cannot use 'true' as class name" compile error and the plugin could not be activated. Changed to the equivalent `bool|WP_Error`. Every release is now PHP 8.1 lint-gated. No functional changes.
+* Fixed: activation fatal on PHP 8.1 hosts - a PHP 8.2-only `true` return type prevented the plugin from activating on the supported PHP 8.1 floor. No functional changes.
 
 = 8.0.42 =
 * New inline-editing validation rules: oneOf (restrict a cell to an allowed list of values), notOneOf (block specific values), phone (built-in format check or your own custom pattern), and unique (instant in-browser duplicate check plus an authoritative server-side check that ignores the row being edited).
@@ -164,7 +175,7 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 * Fixed: tables set to server-side processing rendered no rows. The entry-fetch guard used a check that never matched (`function_exists` on a class method), so every request returned an empty result. Server-side tables now load their entries.
 
 = 8.0.31 =
-* Improved (Pro): building a WooCommerce products table now auto-loads the product columns (Product, SKU, Price, Stock, Rating, Add to Cart) into the field picker and shows a live preview in the builder — previously the column picker and preview were empty.
+* Improved (Pro): building a WooCommerce products table now auto-loads the product columns (Product, SKU, Price, Stock, Rating, Add to Cart) into the field picker and shows a live preview in the builder - previously the column picker and preview were empty.
 
 = 8.0.30 =
 * Fixed (Pro): WooCommerce product tables now render. They previously showed "Gravity Forms is required for this table" because the render path had no WooCommerce case. Product links, prices, stock and add-to-cart now display.
@@ -182,10 +193,10 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 * Fixed: the "Rate plugin" link now opens the WordPress.org review form so you can actually leave a review (it previously just landed on the plugin page).
 
 = 8.0.26 =
-* Fixed: the License &amp; Account page had inaccurate upgrade copy — it priced Pro at $9.99/mo (it's $7.99), advertised a 10-day trial (it's 7), and listed Free features (unlimited tables, JSON) as Pro. Corrected the pricing, trial length, and Pro feature list, and added a clearer price display.
+* Fixed: the License &amp; Account page had inaccurate upgrade copy - it priced Pro at $9.99/mo (it's $7.99), advertised a 10-day trial (it's 7), and listed Free features (unlimited tables, JSON) as Pro. Corrected the pricing, trial length, and Pro feature list, and added a clearer price display.
 
 = 8.0.25 =
-* Improved: redesigned the in-plugin upgrade card with an on-brand look and an accurate Pro pitch (frontend editing, bulk operations, advanced filters, and premium data sources) — no longer lists "unlimited tables" as a Pro perk, since that's free.
+* Improved: redesigned the in-plugin upgrade card with an on-brand look and an accurate Pro pitch (frontend editing, bulk operations, advanced filters, and premium data sources) - no longer lists "unlimited tables" as a Pro perk, since that's free.
 
 = 8.0.24 =
 * Fixed: the "Gravity Forms is not active" admin notice now lists the correct free data sources (JSON, CSV, Google Sheets, Excel) and notes that Gravity Forms entry tables are a Pro feature.
@@ -195,46 +206,46 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 * Fixed: free activation on a fresh site. The Freemius opt-in was missing the WordPress.org-compliant flag, so "Allow & Continue" could error with an invalid-license message; free installs now connect (or skip) cleanly.
 
 = 8.0.22 =
-* Changed: the premium integrations — Gravity Forms, WooCommerce and Airtable — are now Pro features (joining Notion, XML and External DB). The free tier covers JSON, CSV, Google Sheets and Excel. Free users opening a Pro-source table see an upgrade prompt.
+* Changed: the premium integrations - Gravity Forms, WooCommerce and Airtable - are now Pro features (joining Notion, XML and External DB). The free tier covers JSON, CSV, Google Sheets and Excel. Free users opening a Pro-source table see an upgrade prompt.
 
 = 8.0.21 =
 * Fixed: a packaging issue forced PHP 8.3 even though the plugin supports lower. The plugin now correctly runs on PHP 8.1+ (the bundled spreadsheet library's floor). Resolves a fatal error on PHP 8.1/8.2 sites.
 * Changed: minimum PHP is now stated as 8.1 (matches the bundled libraries).
 
 = 8.0.20 =
-* Fixed: inline table auto-refresh (auto_refresh / refresh_interval) now works again — the settings were being dropped before they took effect. Live tables poll and update on schedule as intended.
+* Fixed: inline table auto-refresh (auto_refresh / refresh_interval) now works again - the settings were being dropped before they took effect. Live tables poll and update on schedule as intended.
 
 = 8.0.19 =
 * New (Pro, foundation): a Support area in the admin to manage customer support threads. This is phase one of an AI-assisted support system with human takeover coming in future updates.
 
 = 8.0.18 =
-* Performance: large external-source tables now stay fast — only the current page's rows are kept in the page at a time, so tables with thousands of rows sort, filter, and paginate smoothly.
+* Performance: large external-source tables now stay fast - only the current page's rows are kept in the page at a time, so tables with thousands of rows sort, filter, and paginate smoothly.
 
 = 8.0.17 =
-* New: "Start from a template" — create a ready-to-edit table in one click from 5 prebuilt templates (Inventory, Business Directory, CRM Pipeline, Event List, Load Tracker), each with sample data and columns already set up.
+* New: "Start from a template" - create a ready-to-edit table in one click from 5 prebuilt templates (Inventory, Business Directory, CRM Pipeline, Event List, Load Tracker), each with sample data and columns already set up.
 
 = 8.0.16 =
 * New: embed any table on another website. Each table now has a "Copy embed code" button that gives you an <iframe> snippet; the embedded view is public and read-only, with a small "Made with TableCrafter" link (removed on Pro).
 
 = 8.0.15 =
-* New: tables now auto-format your data into beautiful cells — ISO dates become readable dates, large numbers get thousands separators, and links become clickable, all automatically (years and short IDs are left untouched).
+* New: tables now auto-format your data into beautiful cells - ISO dates become readable dates, large numbers get thousands separators, and links become clickable, all automatically (years and short IDs are left untouched).
 
 = 8.0.14 =
 * New: a "Plans: Free vs Pro" section in the docs with a clear Free/Pro badge on every data source and feature, so you can see at a glance what's included and what Pro unlocks.
-* New: when you pick a Pro-only data source in the table builder, an in-context note now explains it's a Pro feature with an upgrade link — no more guessing.
+* New: when you pick a Pro-only data source in the table builder, an in-context note now explains it's a Pro feature with an upgrade link - no more guessing.
 
 = 8.0.13 =
-* Fixed: the plugin's uninstall cleanup now runs through the licensing SDK's uninstall hook instead of a separate uninstall.php, so updates deploy cleanly. Same result — deleting the plugin removes its tables, options and scheduled tasks.
+* Fixed: the plugin's uninstall cleanup now runs through the licensing SDK's uninstall hook instead of a separate uninstall.php, so updates deploy cleanly. Same result - deleting the plugin removes its tables, options and scheduled tasks.
 
 = 8.0.12 =
-* New: inline tables can auto-refresh again — the classic `auto_refresh`, `refresh_interval`, `refresh_indicator`, `refresh_countdown` and `refresh_last_updated` settings now poll the source and update the table in place.
-* New: restored inline Airtable sources (`source="airtable://base/table?token=..."`) from the previous major version — Airtable display stays in the free version.
+* New: inline tables can auto-refresh again - the classic `auto_refresh`, `refresh_interval`, `refresh_indicator`, `refresh_countdown` and `refresh_last_updated` settings now poll the source and update the table in place.
+* New: restored inline Airtable sources (`source="airtable://base/table?token=..."`) from the previous major version - Airtable display stays in the free version.
 * Fixed: old admin bookmarks (`?page=tablecrafter-wp-data-tables`) now redirect to the current screen instead of 404ing.
 * Fixed: inline tables again carry the classic `.tablecrafter-container` wrapper class, so theme CSS that targeted it keeps working.
 * Added: an `uninstall.php` so deleting the plugin fully removes its tables, options and scheduled tasks.
 
 = 8.0.11 =
-* Fixed: Elementor "TableCrafter Table" widgets built on an inline data-source URL (from the previous major version) render again — the inline Data Source URL / columns / toggles controls are back and take precedence over Table ID.
+* Fixed: Elementor "TableCrafter Table" widgets built on an inline data-source URL (from the previous major version) render again - the inline Data Source URL / columns / toggles controls are back and take precedence over Table ID.
 
 = 8.0.10 =
 * Fixed: the free build now bundles the licensing SDK (it could be missing in some builds, causing a fatal error) and no longer ships internal development files. The SDK load is also guarded so it can never fatal.

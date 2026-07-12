@@ -381,8 +381,10 @@
         var cardHtml = '<div class="gt-entry-card" data-entry-id="' + entryId + '">';
 
         // Process each table cell to create card fields
-        var $cells = $row.find('td:not(.gt-checkbox-cell):not(.gt-actions-column)');
-        var $headers = $row.closest('table').find('thead th:not(.gt-selection-header):not(.gt-actions-header)');
+        // #2340 — skip the index cell; it has no semantic label and the counter
+        // is meaningless in the card layout.
+        var $cells = $row.find('td:not(.gt-checkbox-cell):not(.gt-actions-column):not(.gt-index-cell)');
+        var $headers = $row.closest('table').find('thead th:not(.gt-selection-header):not(.gt-actions-header):not(.gt-index-header)');
 
         // Find date created value for the header - prioritize date_created field or first date type field
         var dateCreatedValue = '';

@@ -34,6 +34,11 @@
 // @codeCoverageIgnoreStart
 if (!defined('ABSPATH')) { exit; }
 // @codeCoverageIgnoreEnd
+// #2312's TC_Bool coercion is a hard dependency; require it directly so the
+// class also works when this file is loaded in isolation (PHPUnit shims,
+// direct includes) rather than via the plugin's full boot sequence.
+require_once __DIR__ . '/class-tc-bool.php';
+
 class TC_Toolbar_Visibility_Service {
 
     /**
@@ -73,7 +78,9 @@ class TC_Toolbar_Visibility_Service {
         $out = self::defaults();
         foreach (self::components() as $c) {
             if (array_key_exists($c, $settings)) {
-                $out[$c] = (bool) $settings[$c];
+                // Use TC_Bool::cast() so string "false" from jQuery $.param()
+                // serialisation is treated as false, not true. (#2307)
+                $out[$c] = TC_Bool::cast($settings[$c]);
             }
         }
         return $out;
@@ -97,7 +104,9 @@ class TC_Toolbar_Visibility_Service {
         if (!array_key_exists($component, $settings)) {
             return true;
         }
-        return (bool) $settings[$component];
+        // Use TC_Bool::cast() so string "false" stored from older saves
+        // is treated as false, not true. (#2307)
+        return TC_Bool::cast($settings[$component]);
     }
 
     public static function is_known_component(string $component): bool {

@@ -173,6 +173,12 @@ $table_config = array(
     'column_auto_merge' => isset($atts['column_auto_merge']) && is_array($atts['column_auto_merge'])
         ? $atts['column_auto_merge']
         : (isset($table_settings['column_auto_merge']) && is_array($table_settings['column_auto_merge']) ? $table_settings['column_auto_merge'] : array()),
+    // #2323: arbitrary cell merges — per-anchor rowspan/colspan definitions stored as
+    // [{row, col, rowspan, colspan}, ...] with 0-based indices. Precomputed into a
+    // skip-set + attrs-map in the preview render loop (see ~line 1775 below).
+    'cell_merges' => isset($atts['cell_merges']) && is_array($atts['cell_merges'])
+        ? $atts['cell_merges']
+        : (isset($table_settings['cell_merges']) && is_array($table_settings['cell_merges']) ? $table_settings['cell_merges'] : array()),
     // #568 slice 3: click-to-filter cell drill-down — flat list of field_id strings
     // for which clicking a cell value adds a "filter by example" chip above the
     // table (slice-2 ships the admin opt-in). frontend.js reads this from
@@ -203,6 +209,9 @@ $table_config = array(
     'is_preview' => $is_preview,
     'preview_settings' => $is_preview ? $atts : null,
     'show_column_totals' => isset($atts['show_column_totals']) ? filter_var($atts['show_column_totals'], FILTER_VALIDATE_BOOLEAN) : (isset($table_settings['show_column_totals']) ? $table_settings['show_column_totals'] : false),
+    // #2340 — index column: 1..n display-order counter, renumbers on sort/filter/page.
+    'show_index_column' => isset($atts['show_index_column']) ? filter_var($atts['show_index_column'], FILTER_VALIDATE_BOOLEAN) : (isset($table_settings['show_index_column']) ? filter_var($table_settings['show_index_column'], FILTER_VALIDATE_BOOLEAN) : false),
+    'index_column_label' => isset($atts['index_column_label']) ? sanitize_text_field($atts['index_column_label']) : (isset($table_settings['index_column_label']) ? sanitize_text_field($table_settings['index_column_label']) : '#'),
     'ajs_toolkit' => array(
         'active' => class_exists('AJS_Trucking_Toolkit'),
         'ajax_url' => admin_url('admin-ajax.php'),
@@ -299,8 +308,16 @@ $table_config = array(
         : 'asc',
     // Persistent filters via browser localStorage. Off by default.
     'persist_filters_localstorage' => (is_array($table_settings) && !empty($table_settings['persist_filters_localstorage'])),
-    // Visitor-side length selector toggle + options. Off by default.
-    'show_length_selector' => (is_array($table_settings) && !empty($table_settings['show_length_selector'])),
+    // Visitor-side length selector toggle + options. OFF by default — this is
+    // a feature-enable gate (builder checkbox), distinct from the
+    // toolbar_visibility override which only hides enabled components.
+    // Defaulting it on would surprise legacy tables with a new UI control.
+    // TC_Bool::cast so the string "false" older builder saves stored (#2308)
+    // reads as off, unlike the previous !empty() check.
+    'show_length_selector' => (is_array($table_settings)
+        && (class_exists('TC_Bool')
+            ? TC_Bool::cast($table_settings['show_length_selector'] ?? false)
+            : !empty($table_settings['show_length_selector']))),
     // Per-column filter row beneath the header (the legacy "filter row"
     // path at line 1495). Was previously read by the template gate but
     // never populated here, so the gate evaluated `empty()` and the
@@ -315,6 +332,28 @@ $table_config = array(
     'length_selector_options' => (is_array($table_settings) && isset($table_settings['length_selector_options']) && $table_settings['length_selector_options'] !== '')
         ? (string) $table_settings['length_selector_options']
         : '10,25,50,100,-1',
+    // #2338 — TC_Row_Grouping_Service. The JS module reads these three keys
+    // to determine whether grouping is active and which column(s) to group by.
+    // group_by_column  : single column field_id (legacy / simple path).
+    // group_by_columns : ordered array of field_ids for hierarchical grouping.
+    // group_default_collapsed : whether groups start collapsed on first render.
+    // group_label_prefix      : optional text prefixed to each group value.
+    // Sort policy: the AJAX handler forces the group column(s) as primary sort
+    //   when grouping is enabled; visitor sorts become secondary within groups.
+    // Pagination policy: groups spanning a page boundary show the header on
+    //   each page (simplest correct behavior — no cross-page group awareness).
+    'group_by_column' => class_exists('TC_Row_Grouping_Service')
+        ? TC_Row_Grouping_Service::get_group_column(is_array($table_settings) ? $table_settings : array())
+        : (is_array($table_settings) && isset($table_settings['group_by_column']) ? sanitize_key((string) $table_settings['group_by_column']) : ''),
+    'group_by_columns' => (is_array($table_settings) && isset($table_settings['group_by_columns']) && is_array($table_settings['group_by_columns']))
+        ? array_values(array_filter(array_map('sanitize_key', $table_settings['group_by_columns'])))
+        : array(),
+    'group_default_collapsed' => class_exists('TC_Row_Grouping_Service')
+        ? TC_Row_Grouping_Service::is_default_collapsed(is_array($table_settings) ? $table_settings : array())
+        : ! empty($table_settings['group_default_collapsed']),
+    'group_label_prefix' => (is_array($table_settings) && isset($table_settings['group_label_prefix']))
+        ? sanitize_text_field((string) $table_settings['group_label_prefix'])
+        : '',
 );
 
 /**
@@ -763,8 +802,13 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
         // ANDed with the legacy gates: both must be true for the component to
         // render. Default for unset tables: every component visible (per
         // slice-1 service contract), so legacy installs see no change.
-        $gt_tv_settings = (isset($table_config['toolbar_visibility']) && is_array($table_config['toolbar_visibility']))
-            ? $table_config['toolbar_visibility']
+        // #2307 — toolbar_visibility lives in the DB settings row ($table_settings /
+        // $atts), NOT in the explicit $table_config JS-config array built above.
+        // Reading from $table_config['toolbar_visibility'] always returned null
+        // (key not present in that array), so $gt_tv_settings was always empty and
+        // the is_visible() guard was always skipped. Fixed to read $table_settings.
+        $gt_tv_settings = (isset($table_settings['toolbar_visibility']) && is_array($table_settings['toolbar_visibility']))
+            ? $table_settings['toolbar_visibility']
             : array();
         $gt_tv_visible = function ($component) use ($gt_tv_settings) {
             if (!class_exists('TC_Toolbar_Visibility_Service')) {
@@ -829,7 +873,14 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                 }
                 ?>
                 <!-- Export Controls (#1680: one consolidated menu) -->
-                <?php if ($show_export || $show_toolbar_copy || $show_toolbar_csv || $show_toolbar_excel || $show_pdf_export): ?>
+                <?php
+                // #2307 — the whole consolidated Export menu (including the
+                // all-data CSV/Excel/JSON options driven by show_export) is the
+                // "export_buttons" toolbar component. Previously only the inner
+                // visible-rows block was gated, so toolbar_visibility.
+                // export_buttons=false left .gt-export-container rendered.
+                ?>
+                <?php if (($show_export || $show_toolbar_copy || $show_toolbar_csv || $show_toolbar_excel || $show_pdf_export) && $gt_tv_visible('export_buttons')): ?>
                     <div class="gt-export-container">
                         <div class="gt-export-dropdown">
                             <button type="button" class="gt-export-btn">
@@ -1588,11 +1639,17 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                 if ($gt_dval) { $gt_has_detail_cols = true; break; }
             }
         }
+        // #2340 — index column: 1..n display-order counter.
+        $show_index_column = !empty($table_config['show_index_column']);
+        $index_column_label = isset($table_config['index_column_label']) && $table_config['index_column_label'] !== ''
+            ? $table_config['index_column_label']
+            : '#';
         ?>
         <table class="<?php echo $gt_table_classes; ?>" data-datatable-initialize="false">
             <colgroup>
                 <?php if ($show_selection): ?><col class="gt-col-selection"><?php endif; ?>
                 <?php if ($gt_has_detail_cols): ?><col class="gt-col-detail-toggle"><?php endif; ?>
+                <?php if ($show_index_column): ?><col class="gt-col-index"><?php endif; ?>
                 <?php foreach ($column_config as $cg_field_id => $cg_config): ?>
                     <col class="gt-col-<?php echo esc_attr($cg_field_id); ?>"
                         <?php if (!empty($cg_config['width'])): ?>
@@ -1610,6 +1667,9 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                     <?php endif; ?>
                     <?php if ($gt_has_detail_cols): ?>
                         <th class="gt-detail-toggle-header" aria-hidden="true"></th>
+                    <?php endif; ?>
+                    <?php if ($show_index_column): ?>
+                        <th class="gt-index-header" data-export-exclude="true"><?php echo esc_html($index_column_label); ?></th>
                     <?php endif; ?>
 
                     <?php foreach ($column_config as $field_id => $config): ?>
@@ -1689,6 +1749,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                 <tr class="gt-filter-row">
                     <?php if ($show_selection): ?><th class="gt-filter-cell gt-checkbox-cell"></th><?php endif; ?>
                     <?php if ($gt_has_detail_cols): ?><th class="gt-filter-cell gt-detail-toggle-header" aria-hidden="true"></th><?php endif; ?>
+                    <?php if ($show_index_column): ?><th class="gt-filter-cell gt-index-header" aria-hidden="true"></th><?php endif; ?>
                     <?php
                     // #599 slice 3 — read the configured cascading-filter chain
                     // from $atts (which the shortcode handler populates from
@@ -1752,8 +1813,82 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                             $gt_auto_merge_directives[$field_id] = TC_Rowspan_Merge_Service::directives($col_values);
                         }
                     }
+                    // #2323 — arbitrary cell merges. Build skip-set and anchor-attr map
+                    // from the cell_merges setting (array of {row,col,rowspan,colspan}).
+                    // These are 0-based row × column-index positions (column-index =
+                    // position in $column_config, NOT field_id). We pre-compute two
+                    // structures for O(1) lookup during the render loop:
+                    //   $gt_cell_merges_skip  : set of "row:col_idx" strings that must be omitted
+                    //   $gt_cell_merges_attrs : "row:col_idx" => ' rowspan="N" colspan="M"' strings
+                    $gt_cell_merges_skip  = [];
+                    $gt_cell_merges_attrs = [];
+                    if (
+                        class_exists('TC_Cell_Merge_Service')
+                        && !empty($table_config['cell_merges'])
+                        && is_array($table_config['cell_merges'])
+                    ) {
+                        foreach ($table_config['cell_merges'] as $gt_cm) {
+                            if (!is_array($gt_cm) || !isset($gt_cm['row'], $gt_cm['col'], $gt_cm['rowspan'], $gt_cm['colspan'])) {
+                                continue;
+                            }
+                            $gt_cm_row = (int) $gt_cm['row'];
+                            $gt_cm_col = (int) $gt_cm['col'];
+                            $gt_cm_rs  = (int) $gt_cm['rowspan'];
+                            $gt_cm_cs  = (int) $gt_cm['colspan'];
+                            // Register anchor attributes.
+                            $gt_cell_merges_attrs["{$gt_cm_row}:{$gt_cm_col}"] = TC_Cell_Merge_Service::render_merged_cell_attrs($gt_cm_rs, $gt_cm_cs);
+                            // Register all covered (non-anchor) cells.
+                            for ($gt_cr = $gt_cm_row; $gt_cr < $gt_cm_row + $gt_cm_rs; $gt_cr++) {
+                                for ($gt_cc = $gt_cm_col; $gt_cc < $gt_cm_col + $gt_cm_cs; $gt_cc++) {
+                                    if ($gt_cr === $gt_cm_row && $gt_cc === $gt_cm_col) {
+                                        continue; // anchor cell — not in skip set
+                                    }
+                                    $gt_cell_merges_skip["{$gt_cr}:{$gt_cc}"] = true;
+                                }
+                            }
+                        }
+                    }
+
+                    // #2338 — pre-compute row-grouping state for the preview path.
+                    // The JS module handles the live AJAX path; here we produce
+                    // the same group-header <tr> rows for the builder preview.
+                    $gt_rg_enabled  = class_exists('TC_Row_Grouping_Service')
+                        && TC_Row_Grouping_Service::is_enabled(is_array($table_settings) ? $table_settings : []);
+                    $gt_rg_columns  = $gt_rg_enabled
+                        ? TC_Row_Grouping_Service::get_group_columns(is_array($table_settings) ? $table_settings : [])
+                        : [];
+                    $gt_rg_col_span = count($column_config)
+                        + ($show_selection ? 1 : 0)
+                        + ($show_bulk_actions ? 1 : 0)
+                        + ($show_index_column ? 1 : 0);
+                    $gt_rg_prev_keys = [];
+
                     $gt_auto_merge_row_idx = 0;
                     foreach ($preview_entries as $entry):
+                        // #2338 — emit group-header rows when the group key changes.
+                        if ($gt_rg_enabled && !empty($gt_rg_columns)) {
+                            $gt_rg_keys = array_map(function ($col) use ($entry) {
+                                return (string) ($entry[$col] ?? '');
+                            }, $gt_rg_columns);
+                            $gt_rg_change_level = -1;
+                            foreach ($gt_rg_keys as $gt_rg_lv => $gt_rg_key) {
+                                if (!isset($gt_rg_prev_keys[$gt_rg_lv]) || $gt_rg_prev_keys[$gt_rg_lv] !== $gt_rg_key) {
+                                    $gt_rg_change_level = $gt_rg_lv;
+                                    break;
+                                }
+                            }
+                            if ($gt_rg_change_level !== -1) {
+                                for ($gt_rg_insert_lv = $gt_rg_change_level; $gt_rg_insert_lv < count($gt_rg_columns); $gt_rg_insert_lv++) {
+                                    echo TC_Row_Grouping_Service::get_group_header_html(
+                                        $gt_rg_keys[$gt_rg_insert_lv],
+                                        $gt_rg_col_span,
+                                        is_array($table_settings) ? $table_settings : [],
+                                        $gt_rg_insert_lv
+                                    );
+                                    $gt_rg_prev_keys[$gt_rg_insert_lv] = $gt_rg_keys[$gt_rg_insert_lv];
+                                }
+                            }
+                        }
                         ?>
                         <tr data-entry-id="<?php echo esc_attr($entry['entry_id']); ?>">
                             <?php if ($show_selection): ?>
@@ -1765,8 +1900,27 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                             <?php if ($gt_has_detail_cols): ?>
                                 <td class="gt-detail-toggle-cell" aria-hidden="true"></td>
                             <?php endif; ?>
+                            <?php if ($show_index_column): ?>
+                                <td class="gt-index-cell"><?php echo $gt_auto_merge_row_idx + 1; ?></td>
+                            <?php endif; ?>
 
-                            <?php foreach ($column_config as $field_id => $config): ?>
+                            <?php
+                            // #2323 — track physical column index for arbitrary merge lookup.
+                            $gt_col_idx = 0;
+                            foreach ($column_config as $field_id => $config):
+                                // #2323 — skip cells covered by an arbitrary merge. Covered cells
+                                // are omitted entirely; the anchor cell's rowspan/colspan takes up
+                                // their space. Check BEFORE auto-rowspan so both features coexist
+                                // (arbitrary merges are column-position-based; auto-rowspan is
+                                // field-id + consecutive-value-based; they operate on disjoint axes).
+                                $gt_cm_key = "{$gt_auto_merge_row_idx}:{$gt_col_idx}";
+                                if (!empty($gt_cell_merges_skip[$gt_cm_key])) {
+                                    $gt_col_idx++;
+                                    continue;
+                                }
+                                // Extra merge attrs for anchor cells (empty string when not an anchor).
+                                $gt_arbitrary_merge_attrs = $gt_cell_merges_attrs[$gt_cm_key] ?? '';
+                            ?>
                                 <?php
                                 // #518 slice 3: consult the per-row directive before emitting <td>.
                                 // render=false means we're inside a rowspan'd run after the first row;
@@ -1774,6 +1928,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                 if (isset($gt_auto_merge_directives[$field_id][$gt_auto_merge_row_idx])) {
                                     $gt_directive = $gt_auto_merge_directives[$field_id][$gt_auto_merge_row_idx];
                                     if (empty($gt_directive['render'])) {
+                                        $gt_col_idx++;
                                         continue;
                                     }
                                     $gt_rowspan_attr = ($gt_directive['rowspan'] > 1) ? ' rowspan="' . (int) $gt_directive['rowspan'] . '"' : '';
@@ -1842,7 +1997,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                 $cell_lang = (class_exists('TC_Wrap_Mode_Service')) ? TC_Wrap_Mode_Service::lang_for_mode($cell_wrap_mode) : '';
                                 $cell_lang_attr = !empty($cell_lang) ? ' lang="' . esc_attr($cell_lang) . '"' : '';
                                 ?>
-                                <td class="<?php echo esc_attr($cell_class_attr); ?>" data-wrap-mode="<?php echo esc_attr($cell_wrap_mode); ?>"<?php echo $cell_align_style; ?><?php echo $cell_lang_attr; ?><?php echo isset($gt_rowspan_attr) ? $gt_rowspan_attr : ''; ?>>
+                                <td class="<?php echo esc_attr($cell_class_attr); ?>" data-wrap-mode="<?php echo esc_attr($cell_wrap_mode); ?>"<?php echo $cell_align_style; ?><?php echo $cell_lang_attr; ?><?php echo isset($gt_rowspan_attr) ? $gt_rowspan_attr : ''; ?><?php echo $gt_arbitrary_merge_attrs; ?>>
                                     <?php
                                     $value = "";
                                     if ($field_id === "entry_id") {
@@ -1958,7 +2113,10 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                     }
                                     ?>
                                 </td>
-                            <?php endforeach; ?>
+                            <?php
+                            // #2323 — advance physical column index after each column is emitted.
+                            $gt_col_idx++;
+                            endforeach; ?>
 
                                 <td class="gt-actions-column">
                                     <div class="gt-actions">
@@ -2000,7 +2158,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                     <?php if (empty($preview_entries)): ?>
                         <tr>
                             <td
-                                colspan="<?php echo count($column_config) + ($show_selection ? 1 : 0) + ($show_bulk_actions ? 1 : 0); ?>">
+                                colspan="<?php echo count($column_config) + ($show_selection ? 1 : 0) + ($show_bulk_actions ? 1 : 0) + ($show_index_column ? 1 : 0); ?>">
                                 <div class="gt-no-entries">
                                     <?php esc_html_e('No entries found with current filter settings.', 'tc-data-tables'); ?>
                                 </div>
@@ -2014,7 +2172,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                     // the columns. The JS (showLoadingSkeleton) re-paints the
                     // same skeleton on the post-init AJAX, so the transition is
                     // seamless.
-                    $gt_skel_cols = count($column_config) + ($show_selection ? 1 : 0) + ($show_bulk_actions ? 1 : 0);
+                    $gt_skel_cols = count($column_config) + ($show_selection ? 1 : 0) + ($show_bulk_actions ? 1 : 0) + ($show_index_column ? 1 : 0);
                     $gt_skel_rows = max(3, min(12, (int) ($table_config['per_page'] ?? 10)));
                     for ($gt_sr = 0; $gt_sr < $gt_skel_rows; $gt_sr++): ?>
                     <tr class="gt-skeleton-row" aria-hidden="true">

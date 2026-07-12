@@ -32,6 +32,15 @@ class TC_Source_Registry
     public static function all(): array
     {
         $sources = array(
+            'manual' => array(
+                'label'       => self::t('Manual / Static table'),
+                'requires_gf' => false,
+                'pro'         => false, // #2366 — manual tables are a free-tier feature (TablePress parity P1-1)
+                'in_wizard'   => true,
+                'wizard_icon' => 'dashicons-editor-table',
+                'wizard_badge' => self::t('New'),
+                'description' => self::t('Enter data directly — no external source needed. Edit rows in the grid editor (coming soon).'),
+            ),
             'gravity_forms' => array(
                 'label'          => self::t('Gravity Forms entries'),
                 'requires_gf'    => true,

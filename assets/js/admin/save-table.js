@@ -271,6 +271,9 @@
                 column_detail_only: columnDetailOnly, // TC_Detail_Rows_Service per-column detail-only flag
                 column_auto_merge: columnAutoMerge, // TC_Rowspan_Merge_Service per-column auto-merge flag (#518 slice 2)
                 drilldown_columns: drilldownColumns, // TC_Drilldown_Filter_Service flat list (#568 slice 2)
+                // #2323 — arbitrary cell merges. JSON string from the builder
+                // textarea; server sanitizer validates via TC_Cell_Merge_Service.
+                cell_merges: $('textarea[name="cell_merges"]').val() || '[]',
                 // #501 slice 2 — row-expiry admin opt-in. Posted at top-level
                 // of formData so they land in $_POST where save_table's
                 // sanitizer block (class-tc-admin.php:709-726) reads them
@@ -294,6 +297,11 @@
                 // top-level so class-tc-admin.php sanitizers (line ~760)
                 // can read them from $data and reconcile the WP-Cron
                 // queue via TC_Scheduled_Export_Service.
+                // #2338 — row grouping. Same top-level contract: the
+                // class-tc-admin.php sanitizers read these from $data.
+                group_by_column:          $('select[name="group_by_column"]').val() || '',
+                group_default_collapsed:  $('input[name="group_default_collapsed"]').is(':checked') ? true : false,
+                group_label_prefix:       $('input[name="group_label_prefix"]').val() || '',
                 scheduled_export_enabled:           $('input[name="scheduled_export_enabled"]').is(':checked') ? true : false,
                 scheduled_export_recurrence:        $('select[name="scheduled_export_recurrence"]').val() || 'daily',
                 scheduled_export_format:            $('select[name="scheduled_export_format"]').val() || 'csv',
@@ -355,6 +363,9 @@
                     show_deleted_entries: $('input[name="show_deleted_entries"]').is(':checked') ? true : false,
                     filter_user_entries: $('input[name="filter_user_entries"]').is(':checked') ? true : false,
                     show_column_totals: $('input[name="show_column_totals"]').is(':checked') ? true : false,
+                    // #2340 — index column: 1..n display-order counter.
+                    show_index_column: $('input[name="show_index_column"]').is(':checked') ? true : false,
+                    index_column_label: $('input[name="index_column_label"]').val() || '#',
                     // Export toolbar buttons + processing/template/data-source
                     // (#654). These named UI controls existed in
                     // admin/views/table-builder.php but were never in this
@@ -370,6 +381,8 @@
                     processing_mode:    $('select[name="processing_mode"]').val() || 'client',
                     template_type:      $('select[name="template_type"]').val() || 'standard',
                     data_source_type:   $('select[name="data_source_type"]').val() || 'gravity_forms',
+                    // #2369 — opt-in shortcode expansion in manual-table cells.
+                    manual_render_shortcodes: $('#gt-manual-render-shortcodes').is(':checked'),
                     // #2002 — Google Sheets data source URL.
                     google_sheets_url:  $('input[name="google_sheets_url"]').val() || '',
                     // #2004 — XML data source URL + repeating-element path.
@@ -417,6 +430,22 @@
                     // #998 v4.175.0 — Notion data source payload (phase 1 of #592).
                     notion_token:       $('input[name="notion_token"]').val() || '',
                     notion_database_id: $('input[name="notion_database_id"]').val() || '',
+                    // #2366 — manual data source: initial dimension hints + column defs.
+                    // manual_columns is owned by the server on first save (provisioned
+                    // via TC_Manual_Rows_Service::provision_empty_grid); subsequent saves
+                    // post the persisted value back so it isn't clobbered.
+                    manual_initial_rows: parseInt($('input[name="manual_initial_rows"]').val(), 10) || 5,
+                    manual_initial_cols: parseInt($('input[name="manual_initial_cols"]').val(), 10) || 3,
+                    // #2367 — grid editor: collect updated column labels so header edits
+                    // are included in the main save payload. The grid editor may also
+                    // call gt_save_manual_rows independently (for row data); this key
+                    // only carries label changes that came through the column-header inputs.
+                    manual_columns_labels: (function () {
+                        var $editor = $('#gt-manual-grid-editor');
+                        if (!$editor.length || !$editor.data('gtGridEditor')) { return {}; }
+                        var editor = $editor.data('gtGridEditor');
+                        return editor.model.getColumnLabelsMap();
+                    })(),
                     // #1010 v4.181.0 — sync_direction (phase 1 of #613 two-way sync).
                     sync_direction:     $('select[name="sync_direction"]').val() || 'pull',
                     bulk_actions: bulkActions,
@@ -562,6 +591,45 @@
                             $('input[name="table_id"]').val(response.data.table_id);
                             // Update the shortcode to show the correct ID
                             self.generatePreview();
+                        }
+
+                        // #2367 — if a manual grid editor is active and dirty, save
+                        // its rows via gt_save_manual_rows. This is a fire-and-forget
+                        // secondary POST; failures surface a console warning but don't
+                        // block the primary save success UX.
+                        var $editor = $('#gt-manual-grid-editor');
+                        var gridEditor = $editor.length ? $editor.data('gtGridEditor') : null;
+                        if (gridEditor && gridEditor.model && gridEditor.model.isDirty()) {
+                            var resolvedTableId = $('input[name="table_id"]').val() || '';
+                            if (resolvedTableId) {
+                                $.ajax({
+                                    url: gtAdmin.ajax_url,
+                                    method: 'POST',
+                                    data: {
+                                        action: 'gt_save_manual_rows',
+                                        nonce:  gtAdmin.nonce,
+                                        table_id: resolvedTableId,
+                                        rows:   JSON.stringify(gridEditor.model.getRows()),
+                                        manual_columns: JSON.stringify(
+                                            gridEditor.model.getColumns().map(function (c) {
+                                                return { key: c.key, label: c.label, hidden: c.hidden || false };
+                                            })
+                                        )
+                                    },
+                                    success: function (rowsResp) {
+                                        if (rowsResp.success) {
+                                            gridEditor.model.resetDirty();
+                                            $editor.attr('data-dirty', '0');
+                                            $editor.data('gtGridEditor', gridEditor);
+                                        } else {
+                                            console.warn('[TC] gt_save_manual_rows failed:', rowsResp);
+                                        }
+                                    },
+                                    error: function () {
+                                        console.warn('[TC] gt_save_manual_rows network error');
+                                    }
+                                });
+                            }
                         }
 
                         // Show success message and re-enable button

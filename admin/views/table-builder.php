@@ -333,6 +333,72 @@ if ($table_id) {
                         <span class="gt-wc-load-result" style="margin-left:8px;"></span>
                     </div>
 
+                    <!-- #2366 — Manual / static data source fields. -->
+                    <!-- Shown only when data_source_type = manual. Toggle wired in admin/bind-events.js. -->
+                    <div class="gt-form-row gt-manual-source-fields"
+                         style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'manual') ? '' : 'display: none;'; ?>">
+                        <?php
+                        $gt_num_rows = isset($table_settings['manual_initial_rows']) ? (int) $table_settings['manual_initial_rows'] : 5;
+                        $gt_num_cols = isset($table_settings['manual_initial_cols']) ? (int) $table_settings['manual_initial_cols'] : 3;
+                        $gt_is_new_table = empty($table_settings['manual_columns']);
+                        if ($gt_is_new_table) :
+                        ?>
+                        <p class="description">
+                            <?php esc_html_e('Choose how many rows and columns to start with. You can add or remove them later.', 'tc-data-tables'); ?>
+                        </p>
+                        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+                            <label style="display:flex;align-items:center;gap:6px;">
+                                <?php esc_html_e('Rows', 'tc-data-tables'); ?>
+                                <input type="number"
+                                       id="gt-manual-num-rows"
+                                       name="manual_initial_rows"
+                                       value="<?php echo esc_attr($gt_num_rows); ?>"
+                                       min="1" max="500" step="1"
+                                       style="width:80px;" />
+                            </label>
+                            <label style="display:flex;align-items:center;gap:6px;">
+                                <?php esc_html_e('Columns', 'tc-data-tables'); ?>
+                                <input type="number"
+                                       id="gt-manual-num-cols"
+                                       name="manual_initial_cols"
+                                       value="<?php echo esc_attr($gt_num_cols); ?>"
+                                       min="1" max="52" step="1"
+                                       style="width:80px;" />
+                            </label>
+                        </div>
+                        <?php else : ?>
+                        <p class="description" id="gt-manual-grid-placeholder">
+                            <?php
+                            $gt_col_count = is_array($table_settings['manual_columns']) ? count($table_settings['manual_columns']) : 0;
+                            printf(
+                                esc_html__('This manual table has %d column(s). Click cells in the grid below to edit them.', 'tc-data-tables'),
+                                $gt_col_count
+                            );
+                            ?>
+                        </p>
+                        <?php endif; ?>
+                        <!-- #2367 — Spreadsheet grid editor container. Rendered by manual-grid-editor.js
+                             via the gtManualGridData payload; hidden until JS hydrates it. -->
+                        <div id="gt-manual-grid-editor"
+                             style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'manual' && !empty($table_settings['manual_columns'])) ? '' : 'display:none;'; ?>"
+                             data-dirty="0">
+                        </div>
+
+                        <!-- #2369 — Shortcode expansion opt-in for manual-table cells. -->
+                        <div class="gt-form-row" style="margin-top:8px;">
+                            <label>
+                                <input type="checkbox"
+                                       name="manual_render_shortcodes"
+                                       id="gt-manual-render-shortcodes"
+                                       <?php checked( ! empty( $table_settings['manual_render_shortcodes'] ) ); ?> />
+                                <?php esc_html_e( 'Render shortcodes in cells', 'tc-data-tables' ); ?>
+                            </label>
+                            <p class="description">
+                                <?php esc_html_e( 'When enabled, WordPress shortcodes in cell values are expanded at display time. Shortcode output is filtered through wp_kses_post for safety.', 'tc-data-tables' ); ?>
+                            </p>
+                        </div>
+                    </div>
+
                     <!-- #985 v4.168.0 — JSON data source fields (slice 3b-2 of #512). -->
                     <!-- Shown only when data_source_type = json. The toggle is wired in admin/bind-events.js. -->
                     <div class="gt-form-row gt-json-source-fields"
@@ -1173,6 +1239,19 @@ if ($table_id) {
                         <?php _e('Show column totals row', 'tc-data-tables'); ?>
                         <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Displays a summary row at the bottom with totals for numeric columns', 'tc-data-tables'); ?>"></span>
                     </label>
+
+                    <label class="gt-checkbox-label">
+                        <input type="checkbox" name="show_index_column"
+                               <?php checked(isset($table_settings['show_index_column']) ? $table_settings['show_index_column'] : false); ?>>
+                        <?php _e('Show index column', 'tc-data-tables'); ?>
+                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Adds a numbered counter column (1, 2, 3…) that renumbers automatically on sort, filter, and pagination changes', 'tc-data-tables'); ?>"></span>
+                    </label>
+                    <div class="gt-form-row gt-index-column-label-row" style="margin-top: 4px; margin-bottom: 4px;">
+                        <label for="gt-index-column-label"><?php _e('Index column header label', 'tc-data-tables'); ?></label>
+                        <input type="text" id="gt-index-column-label" name="index_column_label"
+                               value="<?php echo esc_attr(isset($table_settings['index_column_label']) ? $table_settings['index_column_label'] : '#'); ?>"
+                               placeholder="#" style="width: 100%; max-width: 120px;">
+                    </div>
 
                     <label class="gt-checkbox-label">
                         <input type="checkbox" name="show_length_selector"
@@ -2203,6 +2282,53 @@ if ($table_id) {
                 </div>
 
                 <div class="gt-feature-group">
+                    <h4><?php _e('Row Grouping (#2338)', 'tc-data-tables'); ?></h4>
+                    <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Group rows under sub-heading rows by shared column values. Select one column for flat grouping or multiple columns for hierarchical (nested) grouping. Rows are automatically sorted by the group column(s) as the primary sort.', 'tc-data-tables'); ?>"></span>
+                    <?php
+                    // Resolve current settings for the UI.
+                    $gt_rg_column  = isset($table_settings['group_by_column']) ? sanitize_key((string) $table_settings['group_by_column']) : '';
+                    $gt_rg_columns = (isset($table_settings['group_by_columns']) && is_array($table_settings['group_by_columns']))
+                        ? $table_settings['group_by_columns']
+                        : array();
+                    $gt_rg_collapsed = !empty($table_settings['group_default_collapsed']);
+                    $gt_rg_prefix    = isset($table_settings['group_label_prefix']) ? (string) $table_settings['group_label_prefix'] : '';
+                    // Source form fields for the column picker.
+                    $gt_rg_fields = array();
+                    if (!empty($table_data->form_id) && class_exists('GFAPI')) {
+                        $gt_rg_form = GFAPI::get_form((int) $table_data->form_id);
+                        if ($gt_rg_form && !is_wp_error($gt_rg_form) && !empty($gt_rg_form['fields'])) {
+                            foreach ($gt_rg_form['fields'] as $gt_rg_f) {
+                                $gt_rg_fields[(string) $gt_rg_f->id] = (string) $gt_rg_f->label;
+                            }
+                        }
+                    }
+                    // Primary group column (single-column / legacy path).
+                    ?>
+                    <div class="gt-form-row">
+                        <label for="gt-rg-column"><?php _e('Group by column', 'tc-data-tables'); ?></label>
+                        <select id="gt-rg-column" name="group_by_column">
+                            <option value=""><?php _e('— None (disabled) —', 'tc-data-tables'); ?></option>
+                            <?php foreach ($gt_rg_fields as $gt_rg_fid => $gt_rg_label): ?>
+                                <option value="<?php echo esc_attr($gt_rg_fid); ?>" <?php selected($gt_rg_column, $gt_rg_fid); ?>>
+                                    <?php echo esc_html($gt_rg_label . ' (#' . $gt_rg_fid . ')'); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <label class="gt-checkbox-label">
+                        <input type="checkbox" name="group_default_collapsed" value="1" <?php checked($gt_rg_collapsed); ?>>
+                        <?php _e('Start groups collapsed', 'tc-data-tables'); ?>
+                    </label>
+                    <div class="gt-form-row">
+                        <label for="gt-rg-prefix"><?php _e('Group label prefix', 'tc-data-tables'); ?></label>
+                        <input type="text" id="gt-rg-prefix" name="group_label_prefix"
+                               style="width: 200px;"
+                               placeholder="<?php esc_attr_e('e.g. Status:', 'tc-data-tables'); ?>"
+                               value="<?php echo esc_attr($gt_rg_prefix); ?>">
+                    </div>
+                </div>
+
+                <div class="gt-feature-group">
                     <h4><?php _e('Server-side pagination (#560)', 'tc-data-tables'); ?></h4>
                     <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Switch the table to server-side pagination via the REST endpoint /wp-json/gt/v1/tables/{id}/rows. Best for tables with 1000+ rows where loading the full dataset on every page view is slow. Slice 3 will bind DataTables to the endpoint automatically; for slice 2 the endpoint is available but the table builder still uses the existing client-side pagination.', 'tc-data-tables'); ?>"></span>
                     <?php
@@ -2385,6 +2511,34 @@ if ($table_id) {
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
+                </div>
+
+                <div class="gt-feature-group" id="gt-cell-merges-section">
+                    <h4><?php _e('Cell Merges (#2323)', 'tc-data-tables'); ?></h4>
+                    <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Arbitrary rowspan/colspan cell merges for static (non-sorted) tables. Merges are applied in the server-side preview render. When DataTables sorting or filtering is active the row order changes and merge positions no longer match — disable sorting (uncheck "Show search" and remove sortable columns, or use a static data source) before relying on merges.', 'tc-data-tables'); ?>"></span>
+                    <?php
+                    $gt_cell_merges_raw = isset($table_settings['cell_merges']) && is_array($table_settings['cell_merges'])
+                        ? $table_settings['cell_merges']
+                        : [];
+                    $gt_cell_merges_json = wp_json_encode($gt_cell_merges_raw, JSON_PRETTY_PRINT);
+                    ?>
+                    <p class="description">
+                        <?php _e('Enter merge definitions as a JSON array. Each object must have <code>row</code>, <code>col</code>, <code>rowspan</code>, and <code>colspan</code> (all 0-based). Example:', 'tc-data-tables'); ?>
+                        <code>[{"row":0,"col":0,"rowspan":1,"colspan":2},{"row":1,"col":1,"rowspan":2,"colspan":1}]</code>
+                    </p>
+                    <p class="description" style="color:#996600; background:#fffbcc; padding:6px 8px; border-left:3px solid #e0c000; margin:8px 0;">
+                        <?php _e('<strong>Sorting note:</strong> Merges are applied to the static server-side preview only. If sorting or live filtering is enabled the JS-rendered rows may reorder, breaking merge positions. Disable sorting on this table when using cell merges.', 'tc-data-tables'); ?>
+                    </p>
+                    <div class="gt-form-row">
+                        <label for="gt-cell-merges"><?php _e('Merge definitions (JSON)', 'tc-data-tables'); ?></label>
+                        <textarea
+                            id="gt-cell-merges"
+                            name="cell_merges"
+                            rows="6"
+                            style="width:100%;max-width:700px;font-family:Menlo,Consolas,monospace;font-size:12px;"
+                            placeholder='<?php esc_attr_e('[{"row":0,"col":0,"rowspan":1,"colspan":2}]', 'tc-data-tables'); ?>'
+                        ><?php echo esc_textarea($gt_cell_merges_json); ?></textarea>
+                    </div>
                 </div>
             </div>
             </div>
