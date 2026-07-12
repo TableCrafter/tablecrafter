@@ -7,7 +7,7 @@
     // .parseCurrency / .currencySort / .checkVersionMismatch / .VERSION.
     // TC_JS_VERSION kept here as a local alias for the few existing call
     // sites in this file (init() still references it via the namespace).
-    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.42';
+    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.43';
 
     // Initialize all tables on the page
     $(document).ready(function () {

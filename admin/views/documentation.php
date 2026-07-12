@@ -681,6 +681,11 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.43 -- PHP 8.1 activation fix', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><?php _e('Fixed a fatal error that prevented activation on PHP 8.1 hosts: a few methods declared a PHP 8.2-only "true" return type. Now fully compatible with the declared PHP 8.1 floor. No functional changes.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.42 -- New validation rules: oneOf, notOneOf, phone, unique', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Value-list rules', 'tc-data-tables'); ?></strong> -- <?php _e('oneOf restricts a cell to an allowed list of values; notOneOf blocks specific values.', 'tc-data-tables'); ?></li>

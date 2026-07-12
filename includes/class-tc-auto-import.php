@@ -393,7 +393,7 @@ class TC_Auto_Import {
      * @param array  $settings
      * @return true|\WP_Error
      */
-    private function do_import(int $table_id, string $body, array $settings): true|\WP_Error {
+    private function do_import(int $table_id, string $body, array $settings): bool|\WP_Error {
         if (class_exists('TC_Import')) {
             $importer = TC_Import::get_instance();
             if (method_exists($importer, 'import_from_string')) {

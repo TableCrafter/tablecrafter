@@ -1,0 +1,643 @@
+# Review package: d6c0f382..6ea89a58
+
+## Commits
+6ea89a58 feat(builder): PHP visibility filter helpers and render exclusion for manual tables (#2370)
+a16f8ead test(builder): fix T2 in visibility shim tests — pin _tc_hidden whitelist in save_manual_rows (#2370)
+50761038 test(builder): failing PHPUnit shim tests for visibility flag round-trip and render exclusion (#2370)
+
+## Files changed
+ includes/class-tc-ajax.php                         |  46 ++-
+ includes/class-tc-shortcode.php                    |   9 +-
+ includes/services/class-tc-manual-rows-service.php |  32 ++
+ tests/test-issue-2370-visibility.php               | 387 +++++++++++++++++++++
+ 4 files changed, 459 insertions(+), 15 deletions(-)
+
+## Diff
+diff --git a/includes/class-tc-ajax.php b/includes/class-tc-ajax.php
+index f166c2e4..739b616f 100644
+--- a/includes/class-tc-ajax.php
++++ b/includes/class-tc-ajax.php
+@@ -1694,38 +1694,39 @@ class TC_Ajax
+             // External sources don't have a Gravity Forms form_id — route them
+             // before the GF-specific validation and entry-fetch path.
+ 
+             // #2366 — Manual source preview: show a placeholder (the grid editor
+             // that lets you add real data ships in #2367; for now the builder
+             // preview mirrors the frontend empty-state).
+             if ($data_source_type === 'manual') {
+                 $table_id_preview = isset($_POST['table_id']) ? intval($_POST['table_id']) : 0;
+                 if ($table_id_preview > 0 && class_exists('TC_Manual_Rows_Service')) {
+                     $r    = TC_Manual_Rows_Service::get_rows($table_id_preview, array());
+-                    $rows = $r['rows'];
++                    // #2370 — exclude hidden rows from builder preview.
++                    $rows = TC_Manual_Rows_Service::filter_visible_rows( $r['rows'] );
++                    // #2370 — exclude hidden columns from builder preview.
++                    $visible_cols = TC_Manual_Rows_Service::filter_visible_columns(
++                        is_array($settings_post['manual_columns']) ? $settings_post['manual_columns'] : array()
++                    );
+                     $cols = array();
+-                    if (!empty($settings_post['manual_columns']) && is_array($settings_post['manual_columns'])) {
+-                        foreach ($settings_post['manual_columns'] as $col_def) {
+-                            if (!empty($col_def['key'])) {
+-                                $cols[] = (string) $col_def['key'];
+-                            }
++                    foreach ($visible_cols as $col_def) {
++                        if (!empty($col_def['key'])) {
++                            $cols[] = (string) $col_def['key'];
+                         }
+                     }
+                     if (!empty($rows) && !empty($cols)) {
+                         $header_html = '<tr>';
+                         foreach ($cols as $col_key) {
+                             $label = $col_key;
+-                            if (!empty($settings_post['manual_columns']) && is_array($settings_post['manual_columns'])) {
+-                                foreach ($settings_post['manual_columns'] as $cd) {
+-                                    if (isset($cd['key']) && $cd['key'] === $col_key && !empty($cd['label'])) {
+-                                        $label = $cd['label'];
+-                                    }
++                            foreach ($visible_cols as $cd) {
++                                if (isset($cd['key']) && $cd['key'] === $col_key && !empty($cd['label'])) {
++                                    $label = $cd['label'];
+                                 }
+                             }
+                             $header_html .= '<th>' . esc_html($label) . '</th>';
+                         }
+                         $header_html .= '</tr>';
+                         $body_html = '';
+                         foreach (array_slice($rows, 0, 5) as $row) {
+                             $body_html .= '<tr>';
+                             foreach ($cols as $col_key) {
+                                 $body_html .= '<td>' . esc_html((string) ($row[$col_key] ?? '')) . '</td>';
+@@ -9411,64 +9412,81 @@ class TC_Ajax
+ 
+         // Sanitize each row: keys and values must be strings; strip HTML.
+         $known_keys = array();
+         if ( ! empty( $settings['manual_columns'] ) && is_array( $settings['manual_columns'] ) ) {
+             foreach ( $settings['manual_columns'] as $col_def ) {
+                 if ( isset( $col_def['key'] ) ) {
+                     $known_keys[] = sanitize_key( (string) $col_def['key'] );
+                 }
+             }
+         }
++        // #2370 — allow the row-visibility metadata key.
++        $known_keys[] = '_tc_hidden';
+ 
+         $sanitized_rows = array();
+         foreach ( $rows as $row_data ) {
+             if ( ! is_array( $row_data ) ) {
+                 continue;
+             }
+             $clean = array();
+             foreach ( $row_data as $k => $v ) {
+                 $key = sanitize_key( (string) $k );
+                 // Only accept known column keys (prevents arbitrary key injection).
+                 if ( ! empty( $known_keys ) && ! in_array( $key, $known_keys, true ) ) {
+                     continue;
+                 }
++                if ( $key === '_tc_hidden' ) {
++                    // Boolean metadata — store as-is.
++                    $clean[ $key ] = (bool) $v;
++                    continue;
++                }
+                 // #2369 — capability-gated sanitization (TablePress model):
+                 // unfiltered_html users store raw HTML; everyone else gets kses.
+                 $clean[ $key ] = self::sanitize_manual_cell_value(
+                     (string) $v,
+                     current_user_can( 'unfiltered_html' )
+                 );
+             }
+             $sanitized_rows[] = $clean;
+         }
+ 
+         // Write rows via the service (full replace).
+         TC_Manual_Rows_Service::replace_rows( $table_id, $sanitized_rows );
+ 
+         // Update manual_columns labels if provided.
+         $cols_raw = isset( $_POST['manual_columns'] ) ? wp_unslash( (string) $_POST['manual_columns'] ) : '';
+         if ( $cols_raw !== '' ) {
+             $incoming_cols = json_decode( $cols_raw, true );
+             if ( is_array( $incoming_cols ) ) {
+                 // Merge labels into existing column definitions (preserves key + type).
+                 $existing_cols = is_array( $settings['manual_columns'] ) ? $settings['manual_columns'] : array();
+-                $label_map     = array();
++                // Build label + full-column maps for the merge.
++                $label_map  = array();
++                $col_by_key = array();
+                 foreach ( $incoming_cols as $col ) {
+-                    if ( isset( $col['key'], $col['label'] ) ) {
+-                        $label_map[ sanitize_key( (string) $col['key'] ) ] = sanitize_text_field( (string) $col['label'] );
++                    if ( isset( $col['key'] ) ) {
++                        $ek = sanitize_key( (string) $col['key'] );
++                        if ( isset( $col['label'] ) ) {
++                            $label_map[ $ek ] = sanitize_text_field( (string) $col['label'] );
++                        }
++                        $col_by_key[ $ek ] = $col;
+                     }
+                 }
+                 foreach ( $existing_cols as &$ec ) {
+                     $ek = sanitize_key( (string) ( $ec['key'] ?? '' ) );
+                     if ( isset( $label_map[ $ek ] ) ) {
+                         $ec['label'] = $label_map[ $ek ];
+                     }
++                    // #2370 — preserve hidden flag from incoming columns.
++                    if ( isset( $col_by_key[ $ek ] ) && array_key_exists( 'hidden', $col_by_key[ $ek ] ) ) {
++                        $ec['hidden'] = (bool) $col_by_key[ $ek ]['hidden'];
++                    }
+                 }
+                 unset( $ec );
+                 $settings['manual_columns'] = $existing_cols;
+                 $wpdb->update(
+                     $table_name,
+                     array( 'settings' => wp_json_encode( $settings ), 'updated_at' => current_time( 'mysql' ) ),
+                     array( 'id' => $table_id ),
+                     array( '%s', '%s' ),
+                     array( '%d' )
+                 );
+diff --git a/includes/class-tc-shortcode.php b/includes/class-tc-shortcode.php
+index e152e102..9493f3e5 100644
+--- a/includes/class-tc-shortcode.php
++++ b/includes/class-tc-shortcode.php
+@@ -2051,25 +2051,32 @@ class TC_Shortcode
+     {
+         if (!class_exists('TC_Manual_Rows_Service')) {
+             return '<p class="gt-manual-source-empty">'
+                 . esc_html__('Manual rows service unavailable.', 'tc-data-tables')
+                 . '</p>';
+         }
+ 
+         $result = TC_Manual_Rows_Service::get_rows($table_id, array());
+         $rows   = $result['rows'];
+ 
++        // #2370 — filter out rows hidden from frontend display.
++        if ( class_exists( 'TC_Manual_Rows_Service' ) ) {
++            $rows = TC_Manual_Rows_Service::filter_visible_rows( $rows );
++        }
++
+         // Derive column keys from manual_columns setting (preferred) or
+         // fall back to the union of keys across all rows.
+         $column_keys = array();
+         if (!empty($settings['manual_columns']) && is_array($settings['manual_columns'])) {
+-            foreach ($settings['manual_columns'] as $col_def) {
++            // #2370 — exclude columns hidden from frontend display.
++            $visible_cols = TC_Manual_Rows_Service::filter_visible_columns( $settings['manual_columns'] );
++            foreach ($visible_cols as $col_def) {
+                 if (!empty($col_def['key'])) {
+                     $column_keys[] = (string) $col_def['key'];
+                 }
+             }
+         }
+         if (empty($column_keys) && !empty($rows)) {
+             foreach ($rows as $row) {
+                 foreach ((array) $row as $key => $_val) {
+                     $key = (string) $key;
+                     if (!in_array($key, $column_keys, true)) {
+diff --git a/includes/services/class-tc-manual-rows-service.php b/includes/services/class-tc-manual-rows-service.php
+index e60d3a58..ef701d8c 100644
+--- a/includes/services/class-tc-manual-rows-service.php
++++ b/includes/services/class-tc-manual-rows-service.php
+@@ -364,20 +364,52 @@ class TC_Manual_Rows_Service {
+         foreach ( $cols as $col ) {
+             $row_template[ $col['key'] ] = '';
+         }
+         $rows = array_fill( 0, max( 1, $num_rows ), $row_template );
+ 
+         self::replace_rows( $table_id, $rows, $db );
+ 
+         return $cols;
+     }
+ 
++    // -------------------------------------------------------------------------
++    // Visibility filter helpers (#2370)
++    // -------------------------------------------------------------------------
++
++    /**
++     * Filter a rows array to only visible rows.
++     *
++     * Rows with _tc_hidden set to true are excluded.
++     *
++     * @param array $rows  array of row associative arrays (decoded row_json)
++     * @return array  rows without _tc_hidden: true entries, re-indexed
++     */
++    public static function filter_visible_rows( array $rows ): array {
++        return array_values( array_filter( $rows, function ( $row ) {
++            return empty( $row['_tc_hidden'] );
++        } ) );
++    }
++
++    /**
++     * Filter a manual_columns array to only visible columns.
++     *
++     * Column definitions with hidden set to true are excluded.
++     *
++     * @param array $columns  array of column definitions ({key, label, type, hidden})
++     * @return array  column definitions without hidden: true entries, re-indexed
++     */
++    public static function filter_visible_columns( array $columns ): array {
++        return array_values( array_filter( $columns, function ( $col ) {
++            return empty( $col['hidden'] );
++        } ) );
++    }
++
+     // -------------------------------------------------------------------------
+     // Row count helper
+     // -------------------------------------------------------------------------
+ 
+     /**
+      * Count rows for a table (fast: COUNT(*) query, no JSON decode).
+      *
+      * @param int   $table_id
+      * @param mixed $db
+      * @return int
+diff --git a/tests/test-issue-2370-visibility.php b/tests/test-issue-2370-visibility.php
+new file mode 100644
+index 00000000..312a69f1
+--- /dev/null
++++ b/tests/test-issue-2370-visibility.php
+@@ -0,0 +1,387 @@
++<?php
++/**
++ * Tests for Issue #2370 — Row and column visibility toggles for manual tables.
++ *
++ * Red-phase (TDD): tests that must fail until Task 3 ships the implementation.
++ *
++ * Coverage:
++ *   T1  Row round-trip: replace_rows saves _tc_hidden flag; get_rows returns it intact.
++ *       PASSES today (TC_Manual_Rows_Service stores row_json as-is — regression guard).
++ *   T2  Source pin: save_manual_rows row sanitizer whitelists _tc_hidden so the flag
++ *       survives the known_keys guard in class-tc-ajax.php.
++ *       FAILS today: _tc_hidden is not in the whitelist, so it is silently dropped.
++ *   T3  TC_Manual_Rows_Service::filter_visible_rows exists and filters out _tc_hidden rows.
++ *       FAILS today: method does not exist yet.
++ *   T4  filter_visible_rows keeps visible rows intact.
++ *       FAILS today: method does not exist yet.
++ *   T5  TC_Manual_Rows_Service::filter_visible_columns exists and strips hidden column keys.
++ *       FAILS today: method does not exist yet.
++ *   T6  Rendered HTML excludes cell data for hidden column.
++ *       FAILS today: no filter is applied to column_keys before render.
++ *   T7  Source-level pin: render_manual_source_table source contains _tc_hidden filter call.
++ *       FAILS today: the filter call has not been written.
++ *   T8  Source-level pin: render_manual_source_table source skips columns with hidden true.
++ *       FAILS today: the filter call has not been written.
++ *
++ * @since 8.1.0 (#2370)
++ */
++
++require_once __DIR__ . '/helpers/runner.php';
++
++if ( ! defined( 'ABSPATH' ) )       { define( 'ABSPATH', '/tmp/wordpress/' ); }
++if ( ! defined( 'TC_PLUGIN_PATH' ) ) { define( 'TC_PLUGIN_PATH', dirname( __DIR__ ) . '/' ); }
++if ( ! defined( 'TC_VERSION' ) )    { define( 'TC_VERSION', '0.0.0-test' ); }
++if ( ! defined( 'ARRAY_A' ) )       { define( 'ARRAY_A', 'ARRAY_A' ); }
++
++// Minimal WP stubs.
++if ( ! function_exists( 'wp_json_encode' ) ) {
++    function wp_json_encode( $data, $options = 0, $depth = 512 ) {
++        return json_encode( $data, $options, $depth );
++    }
++}
++if ( ! function_exists( 'current_time' ) ) {
++    function current_time( $type ) { return gmdate( 'Y-m-d H:i:s' ); }
++}
++if ( ! function_exists( '__' ) ) {
++    function __( $text, $domain = '' ) { return $text; }
++}
++if ( ! function_exists( 'esc_html' ) ) {
++    function esc_html( $text ) {
++        return htmlspecialchars( (string) $text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' );
++    }
++}
++if ( ! function_exists( 'esc_attr' ) ) {
++    function esc_attr( $text ) {
++        return htmlspecialchars( (string) $text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' );
++    }
++}
++if ( ! function_exists( 'esc_html__' ) ) {
++    function esc_html__( $text, $domain = '' ) {
++        return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' );
++    }
++}
++if ( ! function_exists( 'esc_url' ) ) {
++    function esc_url( $url ) { return htmlspecialchars( (string) $url, ENT_QUOTES, 'UTF-8' ); }
++}
++if ( ! function_exists( 'sanitize_text_field' ) ) {
++    function sanitize_text_field( $str ) {
++        $str = (string) $str;
++        $str = preg_replace( '/<[^>]*>/', '', $str );
++        return trim( preg_replace( '/[\r\n\t ]+/', ' ', $str ) );
++    }
++}
++if ( ! function_exists( 'sanitize_key' ) ) {
++    function sanitize_key( $key ) {
++        return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $key ) );
++    }
++}
++if ( ! function_exists( 'wp_unslash' ) ) {
++    function wp_unslash( $value ) {
++        return is_array( $value )
++            ? array_map( 'wp_unslash', $value )
++            : stripslashes( (string) $value );
++    }
++}
++if ( ! function_exists( 'wp_kses_post' ) ) {
++    function wp_kses_post( $str ) {
++        $allowed = [ 'b', 'strong', 'em', 'i', 'u', 'a', 'br', 'p', 'span' ];
++        return strip_tags( (string) $str, $allowed );
++    }
++}
++if ( ! function_exists( 'absint' ) ) {
++    function absint( $maybeint ) { return abs( (int) $maybeint ); }
++}
++
++// Minimal wpdb stub for replace_rows / get_rows tests.
++class TC_Wpdb_Stub_2370 {
++    public string $prefix   = 'wp_';
++    public int    $insert_id = 0;
++
++    /** In-memory row storage: [ table_id => [ ['table_id','row_index','row_json'], ... ] ] */
++    private array $storage = [];
++
++    public function prepare( string $sql, ...$args ): string {
++        return vsprintf(
++            str_replace( [ '%d', '%s' ], [ '%d', "'%s'" ], $sql ),
++            array_map( fn( $v ) => is_int( $v ) ? $v : addslashes( (string) $v ), $args )
++        );
++    }
++
++    public function get_results( string $sql, $mode = ARRAY_A ): array {
++        if ( preg_match( '/WHERE table_id = (\d+)/i', $sql, $m ) ) {
++            $tid  = (int) $m[1];
++            $rows = $this->storage[ $tid ] ?? [];
++            usort( $rows, fn( $a, $b ) => (int) $a['row_index'] <=> (int) $b['row_index'] );
++            return $rows;
++        }
++        return [];
++    }
++
++    public function get_var( string $sql ) { return null; }
++
++    public function insert( string $table, array $data, array $fmt = [] ): int {
++        $tid = (int) ( $data['table_id'] ?? 0 );
++        $this->storage[ $tid ][] = $data;
++        return 1;
++    }
++
++    public function delete( string $table, array $where, array $fmt = [] ): int {
++        $tid = isset( $where['table_id'] ) ? (int) $where['table_id'] : null;
++        if ( $tid !== null ) { $this->storage[ $tid ] = []; }
++        return 0;
++    }
++
++    public function update( string $table, array $data, array $where, $fmt = [], $wfmt = [] ): int {
++        return 1;
++    }
++
++    public function get_charset_collate(): string { return ''; }
++}
++
++// Load the service under test.
++require_once __DIR__ . '/../includes/services/class-tc-manual-rows-service.php';
++require_once __DIR__ . '/../includes/class-tc-admin.php';
++
++// ============================================================================
++// Tests
++// ============================================================================
++
++describe( 'Issue #2370 — visibility toggle: row _tc_hidden round-trip', function () {
++
++    // -------------------------------------------------------------------------
++    // T1  Row round-trip: _tc_hidden in row_json survives replace_rows/get_rows.
++    //     PASSES today (regression guard).
++    // -------------------------------------------------------------------------
++    it( 'T1: replace_rows preserves _tc_hidden flag; get_rows returns it intact', function () {
++        $db = new TC_Wpdb_Stub_2370();
++
++        $rows = [
++            [ 'col_a' => 'Alice', 'col_b' => 'Smith', '_tc_hidden' => true ],
++            [ 'col_a' => 'Bob',   'col_b' => 'Jones' ],
++        ];
++
++        TC_Manual_Rows_Service::replace_rows( 1, $rows, $db );
++        $result = TC_Manual_Rows_Service::get_rows( 1, [], $db );
++
++        gt_assert( count( $result['rows'] ) === 2, 'T1: two rows stored and retrieved' );
++        gt_assert(
++            isset( $result['rows'][0]['_tc_hidden'] ) && $result['rows'][0]['_tc_hidden'] === true,
++            'T1: _tc_hidden true is preserved in the first row after round-trip'
++        );
++        gt_assert(
++            ! isset( $result['rows'][1]['_tc_hidden'] ),
++            'T1: second row has no _tc_hidden key'
++        );
++    } );
++
++} );
++
++describe( 'Issue #2370 — visibility toggle: _tc_hidden key whitelisted in row sanitizer', function () {
++
++    $ajax_php_src = file_get_contents( dirname( __DIR__ ) . '/includes/class-tc-ajax.php' );
++
++    // -------------------------------------------------------------------------
++    // T2  Source pin: save_manual_rows row sanitizer must whitelist _tc_hidden.
++    //     FAILS today: the known_keys list only includes column keys from settings,
++    //     so _tc_hidden is dropped when rows are cleaned before replace_rows.
++    // -------------------------------------------------------------------------
++    it( 'T2: class-tc-ajax.php save_manual_rows whitelists _tc_hidden as extra allowed key', function () use ( $ajax_php_src ) {
++        // FAILS today: the source does not contain an _tc_hidden whitelist entry.
++        gt_assert(
++            strpos( $ajax_php_src, '_tc_hidden' ) !== false,
++            'T2: class-tc-ajax.php must reference _tc_hidden in save_manual_rows whitelist'
++        );
++    } );
++
++    it( 'T2b: source pin — save_manual_rows known_keys guard has an explicit _tc_hidden exception', function () use ( $ajax_php_src ) {
++        // Extract the save_manual_rows function body and confirm _tc_hidden bypass.
++        $fn_pos = strpos( $ajax_php_src, 'function save_manual_rows()' );
++        $slice  = $fn_pos !== false ? substr( $ajax_php_src, $fn_pos, 3000 ) : '';
++
++        // FAILS today: no _tc_hidden exception exists in the guard block.
++        gt_assert(
++            strpos( $slice, '_tc_hidden' ) !== false,
++            'T2b: save_manual_rows body must contain _tc_hidden to allow the flag through the known_keys guard'
++        );
++    } );
++
++} );
++
++describe( 'Issue #2370 — visibility toggle: filter_visible_rows static helper', function () {
++
++    // -------------------------------------------------------------------------
++    // T3  TC_Manual_Rows_Service::filter_visible_rows strips rows where _tc_hidden is true.
++    //     FAILS today: method does not exist.
++    // -------------------------------------------------------------------------
++    it( 'T3: filter_visible_rows method exists on TC_Manual_Rows_Service', function () {
++        // FAILS today: method has not been added yet.
++        gt_assert(
++            method_exists( 'TC_Manual_Rows_Service', 'filter_visible_rows' ),
++            'T3: TC_Manual_Rows_Service::filter_visible_rows must exist'
++        );
++    } );
++
++    it( 'T3b: filter_visible_rows removes rows flagged as _tc_hidden', function () {
++        if ( ! method_exists( 'TC_Manual_Rows_Service', 'filter_visible_rows' ) ) {
++            // Force a failure with a descriptive message when the method is missing.
++            gt_assert( false, 'T3b: skipped — filter_visible_rows does not exist (T3 already fails)' );
++            return;
++        }
++
++        $rows = [
++            [ 'col_a' => 'Visible', '_tc_hidden' => false ],
++            [ 'col_a' => 'Hidden',  '_tc_hidden' => true ],
++            [ 'col_a' => 'Also visible' ],
++        ];
++
++        $visible = TC_Manual_Rows_Service::filter_visible_rows( $rows );
++
++        gt_assert( count( $visible ) === 2, 'T3b: two visible rows returned (hidden row excluded)' );
++        gt_assert(
++            $visible[0]['col_a'] === 'Visible',
++            'T3b: first visible row is "Visible"'
++        );
++        gt_assert(
++            $visible[1]['col_a'] === 'Also visible',
++            'T3b: second visible row is "Also visible"'
++        );
++    } );
++
++    // -------------------------------------------------------------------------
++    // T4  filter_visible_rows keeps rows without the flag (no false-positive drops).
++    //     FAILS today: method does not exist.
++    // -------------------------------------------------------------------------
++    it( 'T4: filter_visible_rows keeps rows that have no _tc_hidden key', function () {
++        if ( ! method_exists( 'TC_Manual_Rows_Service', 'filter_visible_rows' ) ) {
++            gt_assert( false, 'T4: skipped — filter_visible_rows does not exist' );
++            return;
++        }
++
++        $rows = [
++            [ 'col_a' => 'Row 1' ],
++            [ 'col_a' => 'Row 2', '_tc_hidden' => false ],
++        ];
++
++        $visible = TC_Manual_Rows_Service::filter_visible_rows( $rows );
++        gt_assert( count( $visible ) === 2, 'T4: both rows returned when none are hidden' );
++    } );
++
++} );
++
++describe( 'Issue #2370 — visibility toggle: filter_visible_columns static helper', function () {
++
++    // -------------------------------------------------------------------------
++    // T5  TC_Manual_Rows_Service::filter_visible_columns strips column defs with hidden true.
++    //     FAILS today: method does not exist.
++    // -------------------------------------------------------------------------
++    it( 'T5: filter_visible_columns method exists on TC_Manual_Rows_Service', function () {
++        // FAILS today: method has not been added yet.
++        gt_assert(
++            method_exists( 'TC_Manual_Rows_Service', 'filter_visible_columns' ),
++            'T5: TC_Manual_Rows_Service::filter_visible_columns must exist'
++        );
++    } );
++
++    it( 'T5b: filter_visible_columns removes column defs where hidden is true', function () {
++        if ( ! method_exists( 'TC_Manual_Rows_Service', 'filter_visible_columns' ) ) {
++            gt_assert( false, 'T5b: skipped — filter_visible_columns does not exist (T5 already fails)' );
++            return;
++        }
++
++        $cols = [
++            [ 'key' => 'col_a', 'label' => 'Column A', 'hidden' => false ],
++            [ 'key' => 'col_b', 'label' => 'Column B', 'hidden' => true ],
++            [ 'key' => 'col_c', 'label' => 'Column C' ],
++        ];
++
++        $visible = TC_Manual_Rows_Service::filter_visible_columns( $cols );
++
++        gt_assert( count( $visible ) === 2, 'T5b: two visible columns returned' );
++        $keys = array_column( $visible, 'key' );
++        gt_assert( in_array( 'col_a', $keys, true ), 'T5b: col_a is present' );
++        gt_assert( ! in_array( 'col_b', $keys, true ), 'T5b: col_b (hidden) is absent' );
++        gt_assert( in_array( 'col_c', $keys, true ), 'T5b: col_c (no flag) is present' );
++    } );
++
++    // -------------------------------------------------------------------------
++    // T6  Rendered HTML excludes cells for a hidden column.
++    //     We confirm the rendered column_keys used by render_manual_source_table
++    //     no longer include hidden column keys after the fix ships.
++    //     FAILS today: filter_visible_columns does not exist, so the key list is unfiltered.
++    // -------------------------------------------------------------------------
++    it( 'T6: hidden column key is excluded from rendered column key list', function () {
++        $cols = [
++            [ 'key' => 'col_a', 'label' => 'Column A', 'hidden' => false ],
++            [ 'key' => 'col_b', 'label' => 'Column B', 'hidden' => true ],
++        ];
++
++        // This is the logic render_manual_source_table CURRENTLY uses (no filter).
++        $current_column_keys = [];
++        foreach ( $cols as $col_def ) {
++            if ( ! empty( $col_def['key'] ) ) {
++                $current_column_keys[] = (string) $col_def['key'];
++            }
++        }
++
++        // After Task 3 ships filter_visible_columns, the code will use:
++        //   $visible_cols   = TC_Manual_Rows_Service::filter_visible_columns( $cols );
++        //   $column_keys    = array_column( $visible_cols, 'key' );
++        // For now, simulate what SHOULD happen and assert it is NOT what currently happens.
++        if ( method_exists( 'TC_Manual_Rows_Service', 'filter_visible_columns' ) ) {
++            $visible_cols    = TC_Manual_Rows_Service::filter_visible_columns( $cols );
++            $expected_keys   = array_column( $visible_cols, 'key' );
++            gt_assert(
++                ! in_array( 'col_b', $expected_keys, true ),
++                'T6: col_b (hidden) absent from post-filter column_keys'
++            );
++            gt_assert(
++                in_array( 'col_a', $expected_keys, true ),
++                'T6: col_a (visible) present in post-filter column_keys'
++            );
++        } else {
++            // filter_visible_columns not yet available.
++            // Current column_keys includes the hidden column — confirm the bug exists.
++            gt_assert(
++                in_array( 'col_b', $current_column_keys, true ),
++                'T6: CONFIRM BUG — hidden col_b is currently included in column_keys (proves filter is absent)'
++            );
++            // This assertion FAILS to demonstrate that T6 is not yet satisfied.
++            gt_assert(
++                ! in_array( 'col_b', $current_column_keys, true ),
++                'T6: FAIL MARKER — col_b must be excluded from column_keys (not yet implemented)'
++            );
++        }
++    } );
++
++} );
++
++describe( 'Issue #2370 — visibility toggle: source-level pins', function () {
++
++    $shortcode_php_path = dirname( __DIR__ ) . '/includes/class-tc-shortcode.php';
++    $shortcode_src      = file_get_contents( $shortcode_php_path );
++
++    // -------------------------------------------------------------------------
++    // T7  render_manual_source_table source must filter hidden rows before render.
++    //     FAILS today: filter call has not been written.
++    // -------------------------------------------------------------------------
++    it( 'T7: render_manual_source_table calls filter_visible_rows before building HTML', function () use ( $shortcode_src ) {
++        // FAILS today: the filtering code is not yet in the source.
++        gt_assert(
++            strpos( $shortcode_src, 'filter_visible_rows' ) !== false,
++            'T7: class-tc-shortcode.php must reference filter_visible_rows for row exclusion'
++        );
++    } );
++
++    // -------------------------------------------------------------------------
++    // T8  render_manual_source_table source must filter hidden columns.
++    //     FAILS today: filter call has not been written.
++    // -------------------------------------------------------------------------
++    it( 'T8: render_manual_source_table calls filter_visible_columns before building HTML', function () use ( $shortcode_src ) {
++        // FAILS today: the filtering code is not yet in the source.
++        gt_assert(
++            strpos( $shortcode_src, 'filter_visible_columns' ) !== false,
++            'T8: class-tc-shortcode.php must reference filter_visible_columns for column exclusion'
++        );
++    } );
++
++} );

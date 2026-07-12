@@ -3,7 +3,7 @@
         'name' => 'gravity-tables/gravity-tables',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'c825bd7dc5598789efd6f86f6e08a7a55e535d76',
+        'reference' => '9277215836df5edf55961c2737712a2b9eda33ad',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -31,7 +31,7 @@
         'gravity-tables/gravity-tables' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'c825bd7dc5598789efd6f86f6e08a7a55e535d76',
+            'reference' => '9277215836df5edf55961c2737712a2b9eda33ad',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

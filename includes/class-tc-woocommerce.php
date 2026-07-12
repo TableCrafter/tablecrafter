@@ -477,7 +477,7 @@ JS;
      * @param string $note       Optional order note added alongside the status change.
      * @return true|\WP_Error    true on success, WP_Error on failure.
      */
-    public static function update_order_status(int $order_id, string $new_status, string $note = ''): true|\WP_Error
+    public static function update_order_status(int $order_id, string $new_status, string $note = ''): bool|\WP_Error
     {
         if (!self::is_woocommerce_active()) {
             return new \WP_Error(

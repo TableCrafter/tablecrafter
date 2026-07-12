@@ -348,7 +348,7 @@ class TC_Validation_Service {
         int $entry_id,
         int $form_id = 0,
         int $table_id = 0
-    ): true|\WP_Error {
+    ): bool|\WP_Error {
 
         // ── oneOf ──────────────────────────────────────────────────────────
         if ( isset( $rules['oneOf'] ) && is_array( $rules['oneOf'] ) && ! empty( $rules['oneOf'] ) ) {

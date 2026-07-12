@@ -54,6 +54,10 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
 // (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
+        'version' => '8.0.43',
+        'summary' => __( 'Fixed an activation fatal on PHP 8.1 hosts: several methods used a PHP 8.2-only "true" return type, which stopped the plugin from activating on the supported PHP 8.1 floor. No functional changes.', 'tc-data-tables' ),
+    ),
+    array(
         'version' => '8.0.42',
         'summary' => __( 'Inline editing gains oneOf, notOneOf, phone, and unique validation rules (unique pairs an instant in-browser check with an authoritative server check that ignores the row being edited); new tablecrafter_validate_cell filter for custom developer validation rules.', 'tc-data-tables' ),
     ),

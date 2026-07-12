@@ -1,0 +1,149 @@
+# Review package: 6ea89a58..160234ff
+
+## Commits
+160234ff feat(builder): JS model visibility toggle methods and save-table hidden flag posting (#2370)
+
+## Files changed
+ assets/js/admin/manual-grid-editor.js | 59 ++++++++++++++++++++++++++++++++++-
+ assets/js/admin/save-table.js         |  2 +-
+ 2 files changed, 59 insertions(+), 2 deletions(-)
+
+## Diff
+diff --git a/assets/js/admin/manual-grid-editor.js b/assets/js/admin/manual-grid-editor.js
+index f0b82702..a97f1543 100644
+--- a/assets/js/admin/manual-grid-editor.js
++++ b/assets/js/admin/manual-grid-editor.js
+@@ -34,27 +34,32 @@
+     /**
+      * Grid data model.
+      *
+      * @param {object} options
+      * @param {Array<{key:string, label:string}>} options.columns  column definitions
+      * @param {Array<object>}                     options.rows     data rows (key→value maps)
+      */
+     function TCManualGridModel(options) {
+         // Deep-clone so we never mutate the caller's arrays.
+         var cols = (options.columns || []).map(function (c) {
+-            return { key: c.key, label: c.label || c.key };
++            var col = { key: c.key, label: c.label || c.key };
++            // #2370 — preserve column visibility flag from server data.
++            if (c.hidden === true) { col.hidden = true; }
++            return col;
+         });
+         var rows = (options.rows || []).map(function (r) {
+             var copy = {};
+             cols.forEach(function (c) {
+                 copy[c.key] = Object.prototype.hasOwnProperty.call(r, c.key) ? String(r[c.key]) : '';
+             });
++            // #2370 — preserve row visibility flag from server data.
++            if (r._tc_hidden === true) { copy._tc_hidden = true; }
+             return copy;
+         });
+ 
+         this._columns = cols;
+         this._rows    = rows;
+         this._dirty   = false;
+     }
+ 
+     TCManualGridModel.prototype.getRowCount = function () {
+         return this._rows.length;
+@@ -116,20 +121,72 @@
+     };
+ 
+     TCManualGridModel.prototype.isDirty = function () {
+         return this._dirty;
+     };
+ 
+     TCManualGridModel.prototype.resetDirty = function () {
+         this._dirty = false;
+     };
+ 
++    // ── Visibility toggles (#2370) ─────────────────────────────────────────
++
++    /** Toggle the hidden state of a row. Marks dirty. */
++    TCManualGridModel.prototype.toggleRowHidden = function (rowIdx) {
++        if (rowIdx < 0 || rowIdx >= this._rows.length) { return; }
++        this._rows[rowIdx]._tc_hidden = !this._rows[rowIdx]._tc_hidden;
++        if (!this._rows[rowIdx]._tc_hidden) {
++            delete this._rows[rowIdx]._tc_hidden;
++        }
++        this._dirty = true;
++    };
++
++    /** Returns true if the row at rowIdx is hidden. */
++    TCManualGridModel.prototype.isRowHidden = function (rowIdx) {
++        if (rowIdx < 0 || rowIdx >= this._rows.length) { return false; }
++        return this._rows[rowIdx]._tc_hidden === true;
++    };
++
++    /** Count of rows not hidden. */
++    TCManualGridModel.prototype.visibleRowCount = function () {
++        var count = 0;
++        this._rows.forEach(function (r) {
++            if (r._tc_hidden !== true) { count++; }
++        });
++        return count;
++    };
++
++    /** Toggle the hidden state of a column. Marks dirty. */
++    TCManualGridModel.prototype.toggleColumnHidden = function (colIdx) {
++        if (colIdx < 0 || colIdx >= this._columns.length) { return; }
++        this._columns[colIdx].hidden = !this._columns[colIdx].hidden;
++        if (!this._columns[colIdx].hidden) {
++            delete this._columns[colIdx].hidden;
++        }
++        this._dirty = true;
++    };
++
++    /** Returns true if the column at colIdx is hidden. */
++    TCManualGridModel.prototype.isColumnHidden = function (colIdx) {
++        if (colIdx < 0 || colIdx >= this._columns.length) { return false; }
++        return this._columns[colIdx].hidden === true;
++    };
++
++    /** Count of columns not hidden. */
++    TCManualGridModel.prototype.visibleColCount = function () {
++        var count = 0;
++        this._columns.forEach(function (c) {
++            if (c.hidden !== true) { count++; }
++        });
++        return count;
++    };
++
+     // ── Row operations (#2368) ─────────────────────────────────────────────
+ 
+     /**
+      * Insert a blank row above rowIdx.
+      *
+      * @param {int} rowIdx
+      * @returns {{before:{rowCount:int}, after:{rowCount:int}}}
+      */
+     TCManualGridModel.prototype.insertRowAbove = function (rowIdx) {
+         var before = { rowCount: this._rows.length };
+diff --git a/assets/js/admin/save-table.js b/assets/js/admin/save-table.js
+index eca6833b..f0a54609 100644
+--- a/assets/js/admin/save-table.js
++++ b/assets/js/admin/save-table.js
+@@ -605,21 +605,21 @@
+                                 $.ajax({
+                                     url: gtAdmin.ajax_url,
+                                     method: 'POST',
+                                     data: {
+                                         action: 'gt_save_manual_rows',
+                                         nonce:  gtAdmin.nonce,
+                                         table_id: resolvedTableId,
+                                         rows:   JSON.stringify(gridEditor.model.getRows()),
+                                         manual_columns: JSON.stringify(
+                                             gridEditor.model.getColumns().map(function (c) {
+-                                                return { key: c.key, label: c.label };
++                                                return { key: c.key, label: c.label, hidden: c.hidden || false };
+                                             })
+                                         )
+                                     },
+                                     success: function (rowsResp) {
+                                         if (rowsResp.success) {
+                                             gridEditor.model.resetDirty();
+                                             $editor.attr('data-dirty', '0');
+                                             $editor.data('gtGridEditor', gridEditor);
+                                         } else {
+                                             console.warn('[TC] gt_save_manual_rows failed:', rowsResp);

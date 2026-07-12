@@ -44,7 +44,7 @@ class TC_Writeback_Service {
      * @param array $settings Table settings array.
      * @return true|\WP_Error  true on success, WP_Error when the check fails.
      */
-    public static function can_writeback( array $settings ): true|\WP_Error {
+    public static function can_writeback( array $settings ): bool|\WP_Error {
         if ( ! self::is_enabled( $settings ) ) {
             return new \WP_Error(
                 'writeback_disabled',
@@ -90,7 +90,7 @@ class TC_Writeback_Service {
         $primary_key_value,
         string $field_col,
         $new_value
-    ): true|\WP_Error {
+    ): bool|\WP_Error {
         $context = compact( 'table_name', 'primary_key_col', 'primary_key_value', 'field_col', 'new_value' );
 
         // Allow third-party code to audit or reject the write.

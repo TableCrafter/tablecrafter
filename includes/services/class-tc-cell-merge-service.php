@@ -27,7 +27,7 @@ class TC_Cell_Merge_Service {
      * @param array $merges        Existing merge definitions [{row, col, rowspan, colspan}, ...].
      * @return true|\WP_Error      Returns true on success, WP_Error describing the problem on failure.
      */
-    public static function validate_merge( int $start_row, int $start_col, int $rowspan, int $colspan, array $merges ): true|\WP_Error {
+    public static function validate_merge( int $start_row, int $start_col, int $rowspan, int $colspan, array $merges ): bool|\WP_Error {
         if ( $rowspan < 1 || $colspan < 1 ) {
             return new \WP_Error( 'invalid_range', __( 'Merge must cover at least one cell.', 'tc-data-tables' ) );
         }
