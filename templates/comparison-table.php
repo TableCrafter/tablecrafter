@@ -4,16 +4,16 @@
  *
  * Variables available (set by TC_Shortcode::render_comparison_table or
  * directly when called from the shortcode handler):
- *   $atts            array  — merged shortcode/table attributes
- *   $table_settings  array  — saved builder settings
- *   $table_id        int    — database table ID
+ *   $atts            array - merged shortcode/table attributes
+ *   $table_settings  array - saved builder settings
+ *   $table_id        int - database table ID
  *
  * Expected settings keys (all optional with sensible defaults):
- *   columns[]        array  — per-column: label, recommended (bool), price,
+ *   columns[]        array - per-column: label, recommended (bool), price,
  *                             billing_period ('monthly'|'yearly'), cta_label, cta_url
- *   feature_rows[]   array  — per-row: label, values[] (true|false|string per column)
- *   currency_symbol  string — defaults to '$'
- *   show_billing_toggle bool — show monthly/yearly switch (default true)
+ *   feature_rows[]   array - per-row: label, values[] (true|false|string per column)
+ *   currency_symbol  string - defaults to '$'
+ *   show_billing_toggle bool - show monthly/yearly switch (default true)
  */
 
 if (!defined('ABSPATH')) {

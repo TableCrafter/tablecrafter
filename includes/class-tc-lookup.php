@@ -222,7 +222,7 @@ class TC_Lookup
         $field = isset($lookup_config['user_field']) ? $lookup_config['user_field'] : 'display_name';
         $users = get_users(array('include' => $user_ids));
 
-        // #1667 — prime the user meta cache once so the per-user
+        // #1667 - prime the user meta cache once so the per-user
         // get_user_meta() calls below (first/last name) are cache hits, not
         // N DB queries. get_users() does not prime usermeta.
         if (in_array($field, array('first_name', 'last_name'), true) && function_exists('update_meta_cache')) {
@@ -354,7 +354,7 @@ class TC_Lookup
             return array();
         }
 
-        // #1660 — cache the resolved option list. Building it runs a
+        // #1660 - cache the resolved option list. Building it runs a
         // gf_entry_meta JOIN + REGEXP plus a users/posts/custom query; without
         // caching it ran on every render and every AJAX open (per visitor x
         // lookup column). A short TTL bounds staleness (a new option appears
@@ -448,7 +448,7 @@ class TC_Lookup
             $users = get_users($args);
         }
 
-        // #1667 — prime the user meta cache once for first/last name fields so
+        // #1667 - prime the user meta cache once for first/last name fields so
         // the per-user get_user_meta() calls below are cache hits, not N DB
         // queries (get_users() does not prime usermeta).
         if (in_array($field, array('first_name', 'last_name'), true) && function_exists('update_meta_cache')) {

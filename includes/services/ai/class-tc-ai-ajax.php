@@ -20,19 +20,19 @@ class TC_AI_Ajax
     {
         if (function_exists('add_action')) {
             add_action('wp_ajax_gt_ai_detect_column_types', [__CLASS__, 'handle_detect_column_types']);
-            // #1601 slice A — frontend summary line. nopriv too: public
+            // #1601 slice A - frontend summary line. nopriv too: public
             // tables may render the digest for logged-out visitors; the
             // handler enforces the per-table opt-in + role gate itself.
             add_action('wp_ajax_gt_ai_table_summary', [__CLASS__, 'handle_table_summary']);
             add_action('wp_ajax_nopriv_gt_ai_table_summary', [__CLASS__, 'handle_table_summary']);
-            // #1601 slice B — builder Data Quality scan. Admin tool:
+            // #1601 slice B - builder Data Quality scan. Admin tool:
             // no nopriv variant, manage_options gated.
             add_action('wp_ajax_gt_ai_cleanup_suggest', [__CLASS__, 'handle_cleanup_suggest']);
         }
     }
 
     /**
-     * #1601 — run TC_AI_Cleanup_Suggester over one column of a form's
+     * #1601 - run TC_AI_Cleanup_Suggester over one column of a form's
      * active entries and map each suggestion's value_index back to the
      * source entry_id so the builder panel can write accepted values
      * through the normal gt_update_entry path.
@@ -86,7 +86,7 @@ class TC_AI_Ajax
         }
         $rows = is_array($rows) ? $rows : [];
 
-        // Column values aligned with their source entry ids — the
+        // Column values aligned with their source entry ids - the
         // suggester reports value_index positions into this array.
         $values    = [];
         $entry_ids = [];
@@ -120,7 +120,7 @@ class TC_AI_Ajax
     }
 
     /**
-     * #1601 — feed TC_AI_Table_Summarizer (rule-based, key-free) with
+     * #1601 - feed TC_AI_Table_Summarizer (rule-based, key-free) with
      * the table's active entries and return its bullets envelope.
      * Server-side gates: table nonce, per-table `show_table_summary`
      * opt-in, and the table's role allowlist when one is configured.

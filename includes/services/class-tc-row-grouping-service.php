@@ -125,7 +125,7 @@ class TC_Row_Grouping_Service {
         }
 
         if ( empty( $column_ids ) ) {
-            // Leaf level — return the flat bucket map.
+            // Leaf level - return the flat bucket map.
             return $buckets;
         }
 

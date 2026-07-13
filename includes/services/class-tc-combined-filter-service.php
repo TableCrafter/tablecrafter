@@ -7,7 +7,7 @@
  * .search() with column().search() natively; this class is the source of truth for the
  * same behaviour on the server, and exists so the contract is testable in isolation.
  *
- * Issue: #506 — Global search and per-column filter inputs become desynchronized.
+ * Issue: #506 - Global search and per-column filter inputs become desynchronized.
  */
 
 // @codeCoverageIgnoreStart

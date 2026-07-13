@@ -1,12 +1,12 @@
 <?php
 /**
  * Shows a one-time, dismissible "leave a review" admin notice AFTER a genuine
- * success moment — a table went live, an inline edit saved, or data was
+ * success moment - a table went live, an inline edit saved, or data was
  * exported (read from {@see TC_Activation_Funnel}). Never on a timer.
  *
  * WordPress.org ranking is heavily review-weighted, so asking at the moment a
  * user just got value is the highest-yield, least-annoying ask. The user can
- * leave a review, snooze ("maybe later"), or dismiss forever — and we never
+ * leave a review, snooze ("maybe later"), or dismiss forever - and we never
  * nag again after dismiss/review.
  *
  * State: a single local gt_review_prompt option:
@@ -100,7 +100,7 @@ class TC_Review_Prompt {
         ?>
         <div class="notice notice-info is-dismissible tc-review-prompt">
             <p style="font-size:13px;">
-                <?php esc_html_e('Nice — TableCrafter just did its job. If it helped, a quick review really helps other WordPress users find it.', 'tc-data-tables'); ?>
+                <?php esc_html_e('Nice - TableCrafter just did its job. If it helped, a quick review really helps other WordPress users find it.', 'tc-data-tables'); ?>
             </p>
             <p>
                 <a href="<?php echo esc_url(self::REVIEW_URL); ?>"

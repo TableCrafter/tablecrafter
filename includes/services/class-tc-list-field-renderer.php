@@ -39,11 +39,11 @@ class TC_List_Field_Renderer {
         if (!is_string($raw) || $raw === '') {
             return [];
         }
-        // Safe-mode unserialise — block all class instantiation.
+        // Safe-mode unserialise - block all class instantiation.
         $value = @unserialize($raw, ['allowed_classes' => false]);
         if ($value === false && $raw !== 'b:0;') {
             // Either an actual `false` payload (rare) or a malformed
-            // value. Treat both as empty — don't pass garbage forward.
+            // value. Treat both as empty - don't pass garbage forward.
             return [];
         }
         if (!is_array($value)) {
@@ -61,7 +61,7 @@ class TC_List_Field_Renderer {
         $out = [];
         foreach ($rows as $row) {
             if (is_array($row)) {
-                // Already a row map — copy as-is.
+                // Already a row map - copy as-is.
                 $out[] = $row;
             } elseif (is_scalar($row)) {
                 $out[] = ['value' => (string) $row];

@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/bulk-column-fill.js
+ * TableCrafter - frontend/bulk-column-fill.js
  *
  * Pro-gated bulk column fill for selected rows.
  * Opens a modal with a field selector + value input;
@@ -8,8 +8,8 @@
  * Closes #1745.
  *
  * Surface (GravityTable.prototype):
- *   - openBulkFillModal(entryIds)   — builds and shows the fill modal.
- *   - executeBulkFill({entryIds, fieldId, value}) — fires AJAX.
+ *   - openBulkFillModal(entryIds) - builds and shows the fill modal.
+ *   - executeBulkFill({entryIds, fieldId, value}) - fires AJAX.
  */
 (function (window) {
     'use strict';
@@ -68,7 +68,7 @@
 
         document.body.appendChild(modal);
 
-        // #1749 — live diff preview on the Apply button (Pro).
+        // #1749 - live diff preview on the Apply button (Pro).
         var $applyBtn = modal.querySelector('.gt-bulk-fill-confirm');
         var $valInput = modal.querySelector('input[name="gt_fill_value"]');
         var $fieldSel = modal.querySelector('select[name="gt_fill_field"]');
@@ -127,7 +127,7 @@
             }
         })
         .fail(function () {
-            /* silently ignore network failures — table state unchanged */
+            /* silently ignore network failures - table state unchanged */
         });
     };
 

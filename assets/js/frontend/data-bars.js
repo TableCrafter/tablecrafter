@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/data-bars.js
+ * TableCrafter - frontend/data-bars.js
  *
  * Data Bars (#1731): Pro-gated, per-column, CSS-only in-cell horizontal
  * value bars for numeric columns.
@@ -57,7 +57,7 @@
             // response (#1733). In that case, render-entries.js will merge
             // bar_column_maxes into _barMax after computeBarMaxes returns, so
             // we still need to populate the map for any bars the server
-            // didn't cover — but only when server_bar_max_available is set.
+            // didn't cover - but only when server_bar_max_available is set.
             if (!bars || !entries || !entries.length) {
                 return out;
             }
@@ -65,7 +65,7 @@
                 return out;
             }
             var columnConfig = config.column_config || {};
-            // #1738 — sparkline series collector.
+            // #1738 - sparkline series collector.
             var seriesMap = {};
             for (var fieldId in bars) {
                 if (!Object.prototype.hasOwnProperty.call(bars, fieldId)) continue;
@@ -87,7 +87,7 @@
                 if (max !== null && max > 0) {
                     out[fieldId] = max;
                 }
-                // #1738 — persist sparkline series on the instance.
+                // #1738 - persist sparkline series on the instance.
                 if (sparkline && series && series.length) {
                     seriesMap[fieldId] = series;
                 }
@@ -99,7 +99,7 @@
         },
 
         /**
-         * #1734 — Data Bars: pivot view support.
+         * #1734 - Data Bars: pivot view support.
          *
          * Computes a page-scoped max for each aggregate pivot column so
          * renderPivotRowsHtml can scale in-cell bars against it.
@@ -125,7 +125,7 @@
             for (var c = 0; c < cols.length; c++) {
                 var col = cols[c];
                 var pivotKey = col.key;
-                // Skip the group-by column — it is a label, not a numeric aggregate.
+                // Skip the group-by column - it is a label, not a numeric aggregate.
                 if (pivotKey === groupByKey) { continue; }
 
                 // Derive the originating field ID from the pivot key format `<col>_<op>`.
@@ -164,7 +164,7 @@
             if (!bars || !bars.enabled) return null;
             // Structural suppressions (see #1731 out-of-scope list).
             // SSP mode is allowed when the caller supplies a server-scoped barMax
-            // via ctx.barMax (set by renderSSPEntries from _sspBarMaxes — #1735).
+            // via ctx.barMax (set by renderSSPEntries from _sspBarMaxes - #1735).
             if (config.processing_mode === 'server' && !(ctx.barMax && ctx.barMax > 0)) return null;
             if (config.column_auto_merge && config.column_auto_merge[fieldId]) return null;
             if (!isNumericType(colCfg)) return null;
@@ -181,7 +181,7 @@
             if (pct > 100) pct = 100;
             var color = (bars.color && String(bars.color)) || DEFAULT_COLOR;
 
-            // #1738 — visual sub-options.
+            // #1738 - visual sub-options.
             var gradient  = !!bars.gradient;
             var bipolar   = !!bars.bipolar;
             var result    = { pct: pct, color: color, gradient: gradient, bipolar: bipolar };

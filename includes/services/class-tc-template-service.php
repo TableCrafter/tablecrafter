@@ -3,7 +3,7 @@
  * Pre-built table templates library.
  *
  * Ships 8 starter templates covering common use-cases. Templates are stored
- * locally — no external HTTP request is ever made. Users can also save any
+ * locally - no external HTTP request is ever made. Users can also save any
  * existing table as a personal template via save_as_template().
  */
 

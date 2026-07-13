@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/bind-entry-events.js
+ * TableCrafter - frontend/bind-entry-events.js
  *
  * Per-row event wiring. Eleventh slice under #833. One method,
  * ~186 lines.
@@ -32,7 +32,7 @@
         // #556 slice 3: chevron click toggles the sibling gt-detail-row.
         // Delegated so it stays bound across re-renders. Bound once via
         // $wrapper.data('gt-detail-bound') because bindEntryEvents fires on
-        // every renderEntries — without the guard we'd stack N handlers.
+        // every renderEntries - without the guard we'd stack N handlers.
         if (!$wrapper.data('gt-detail-bound')) {
             $wrapper.on('click', '.gt-detail-toggle', function (e) {
                 e.preventDefault();
@@ -50,7 +50,7 @@
                     $btn.attr('aria-expanded', 'true').attr('aria-label', 'Hide row details');
                 }
             });
-            // Keyboard activation (Enter / Space) — buttons already do this
+            // Keyboard activation (Enter / Space) - buttons already do this
             // natively, but stopPropagation above means we also want to keep
             // it from bubbling into the row-click handler.
             $wrapper.on('keydown', '.gt-detail-toggle', function (e) {
@@ -151,7 +151,7 @@
             self.editField($(this));
         });
 
-        // #1921 — Mobile touch-tap: fast-edit on tap without the 300ms synthetic-click
+        // #1921 - Mobile touch-tap: fast-edit on tap without the 300ms synthetic-click
         // delay on older iOS. A movement guard (>10px) prevents scroll from opening an
         // editor. preventDefault on the touchend cancels the subsequent synthetic click
         // so editField is not called twice when touch + click both fire.
@@ -169,7 +169,7 @@
             if (!t) { return; }
             var dx = Math.abs(t.clientX - start.x);
             var dy = Math.abs(t.clientY - start.y);
-            if (dx > 10 || dy > 10) { return; } // scroll gesture — do not edit
+            if (dx > 10 || dy > 10) { return; } // scroll gesture - do not edit
             if ($(e.target).is('input, select, option')) { return; }
             if ($cell.find('.gt-edit-input').length > 0) {
                 $cell.find('.gt-edit-input').focus();
@@ -195,7 +195,7 @@
         // View-detail click handlers moved to assets/js/frontend/detail-popup.js (#837).
         self.bindDetailViewEvents($wrapper);
 
-        // #1747 — duplicate entry (Pro).
+        // #1747 - duplicate entry (Pro).
         $wrapper.on('click', '.gt-duplicate-action', function (e) {
             e.preventDefault();
             e.stopPropagation();

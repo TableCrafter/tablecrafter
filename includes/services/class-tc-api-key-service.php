@@ -2,12 +2,12 @@
 /**
  * TC_API_Key_Service
  *
- * Issue #505 — slice 1 of 3. Foundational API-key auth layer for the
+ * Issue #505 - slice 1 of 3. Foundational API-key auth layer for the
  * Zapier / n8n / Make integration. Generate, persist, verify, revoke.
  *
  * Storage model:
  *   - WordPress option `gt_api_keys`, keyed by SHA-256 hash of the
- *     plaintext key. Plaintext is shown ONCE on `generate()` —
+ *     plaintext key. Plaintext is shown ONCE on `generate()` - 
  *     subsequent reads only see the hash. Mirrors the GitHub PAT /
  *     Stripe API-key UX.
  *   - Each entry: { label, user_id, created_at, last_used_at }.
@@ -38,7 +38,7 @@ class TC_API_Key_Service {
 
     /**
      * Generate a new API key. Returns the metadata struct INCLUDING
-     * the plaintext key — this is the only time the plaintext is
+     * the plaintext key - this is the only time the plaintext is
      * exposed. The caller (admin UI) should display it once with
      * a "save this now, you won't see it again" notice.
      *
@@ -126,7 +126,7 @@ class TC_API_Key_Service {
     }
 
     /**
-     * Return all stored entries (metadata only — never the plaintext).
+     * Return all stored entries (metadata only - never the plaintext).
      * Used by the admin UI to render a table with a "last used"
      * column.
      */

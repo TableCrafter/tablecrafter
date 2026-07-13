@@ -54,6 +54,10 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
 // (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
+        'version' => '8.0.45',
+        'summary' => __( 'Typography consistency: replaced em-dashes and en-dashes with standard hyphens across plugin code, admin UI text, tooling, and documentation. No functional changes.', 'tc-data-tables' ),
+    ),
+    array(
         'version' => '8.0.44',
         'summary' => __( 'TablePress-parity wave 1: block editor sidebar controls that work on every table type, cell merging with overlap validation, row grouping with collapsible sub-headings, and a pagination-aware index counter column excluded from exports.', 'tc-data-tables' ),
     ),

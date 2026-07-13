@@ -46,7 +46,7 @@ class TC_Consent_Field_Renderer {
     /**
      * Compose a readable summary. Filter `gt_consent_field_format`
      * lets themes pick alternates (e.g. terser "✓ Privacy policy"
-     * for compact tables). Output is plain text — caller esc_htmls.
+     * for compact tables). Output is plain text - caller esc_htmls.
      */
     public static function render_text(array $entry, string $field_id): string {
         $v = self::sub_input_values($entry, $field_id);
@@ -61,7 +61,7 @@ class TC_Consent_Field_Renderer {
             return 'Not accepted';
         }
 
-        // Accepted (or unknown-accepted with a label) — compose.
+        // Accepted (or unknown-accepted with a label) - compose.
         $parts = ['Accepted'];
         if ($v['label'] !== null) {
             $parts[0] = 'Accepted: "' . $v['label'] . '"';

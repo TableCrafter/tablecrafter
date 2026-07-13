@@ -1,16 +1,16 @@
 /**
- * TableCrafter — frontend/table-summary.js
+ * TableCrafter - frontend/table-summary.js
  *
- * #1601 slice A — table summary line. When the per-table
+ * #1601 slice A - table summary line. When the per-table
  * `show_table_summary` setting is on, fetch gt_ai_table_summary
- * (TC_AI_Table_Summarizer — rule-based slice-1 engine, no API key
+ * (TC_AI_Table_Summarizer - rule-based slice-1 engine, no API key
  * required) once on init and render a one-line digest above the
  * table content: row count, date span, numeric min/max/avg, dominant
  * text values.
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
- *   - initTableSummary()        — gate on config, fetch, render
- *   - renderTableSummary(data)  — escaped digest line (idempotent)
+ *   - initTableSummary() - gate on config, fetch, render
+ *   - renderTableSummary(data) - escaped digest line (idempotent)
  */
 (function (window) {
     'use strict';

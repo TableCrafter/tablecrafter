@@ -133,7 +133,7 @@ class TC_Error_Handler {
     /**
      * Handle an exception by logging it (no return value, no exit).
      *
-     * Alias for logError() — added in slice 68 to close #1193. TC_Entry_Service
+     * Alias for logError() - added in slice 68 to close #1193. TC_Entry_Service
      * (and any future consumer) catches a Throwable and routes it through this
      * shorter name without needing to pass a context string. Use logError()
      * directly when you have a meaningful context label to attach.

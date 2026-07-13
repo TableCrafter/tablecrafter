@@ -2,7 +2,7 @@
 /**
  * TC_Airtable_Credential_Service
  *
- * Issue #517 — slice 3a of N. Encrypts the Airtable API token at rest
+ * Issue #517 - slice 3a of N. Encrypts the Airtable API token at rest
  * and persists base id + table id + encrypted token in a single
  * non-autoloaded option (`gt_airtable_credentials`).
  *
@@ -33,7 +33,7 @@ class TC_Airtable_Credential_Service {
     const OPTION_KEY = 'gt_airtable_credentials';
     const CIPHER = 'AES-256-CBC';
     const KEY_SALT = 'gt_airtable_creds';
-    // #1645 — envelope version sentinels. v2 = raw 256-bit key; v1 = legacy
+    // #1645 - envelope version sentinels. v2 = raw 256-bit key; v1 = legacy
     // hex key. Pre-#1645 envelopes from this service carry NO sentinel and
     // are treated as v1 (see decrypt()).
     const ENVELOPE_V2 = 'gt_enc_v2:';
@@ -54,18 +54,18 @@ class TC_Airtable_Credential_Service {
         }
         // @codeCoverageIgnoreStart
         if (!function_exists('openssl_encrypt')) {
-            // Fallback for environments without openssl. Not safe for prod —
+            // Fallback for environments without openssl. Not safe for prod - 
             // but it keeps unit tests deterministic and avoids a hard fail.
             return self::ENVELOPE_V2 . base64_encode($plaintext);
         }
         // @codeCoverageIgnoreEnd
-        // #1645 — emit v2 envelopes keyed by the RAW 256-bit sha256 digest.
+        // #1645 - emit v2 envelopes keyed by the RAW 256-bit sha256 digest.
         // The v1 key was substr(sha256_hex, 0, 32) = 128 bits of effective
         // entropy; v2 uses the raw 32-byte digest. decrypt() still reads v1
         // (legacy unprefixed) envelopes so stored credentials keep working.
         $key = self::derive_key_v2();
         if ($key === '') {
-            return ''; // #1637 — no secure key; refuse to encrypt.
+            return ''; // #1637 - no secure key; refuse to encrypt.
         }
         $iv = openssl_random_pseudo_bytes(16);
         $cipher = openssl_encrypt($plaintext, self::CIPHER, $key, 0, $iv);
@@ -85,9 +85,9 @@ class TC_Airtable_Credential_Service {
         if ($envelope === '') {
             return '';
         }
-        // #1645 — pick the key by envelope version. v2 = raw 256-bit key;
+        // #1645 - pick the key by envelope version. v2 = raw 256-bit key;
         // v1 = legacy hex key. Pre-#1645 envelopes from this service have NO
-        // sentinel — treat them as v1 so stored credentials keep decrypting
+        // sentinel - treat them as v1 so stored credentials keep decrypting
         // and migrate to v2 on the next store().
         if (strpos($envelope, self::ENVELOPE_V2) === 0) {
             $b64 = substr($envelope, strlen(self::ENVELOPE_V2));
@@ -111,7 +111,7 @@ class TC_Airtable_Credential_Service {
         $iv = substr($raw, 0, 16);
         $cipher = substr($raw, 16);
         if ($key === '') {
-            return ''; // #1637 — no secure key; fail closed.
+            return ''; // #1637 - no secure key; fail closed.
         }
         $plain = openssl_decrypt($cipher, self::CIPHER, $key, 0, $iv);
         return $plain !== false ? $plain : '';
@@ -119,7 +119,7 @@ class TC_Airtable_Credential_Service {
 
     /**
      * Persist the credential triple. Token is encrypted before write.
-     * Refuses any empty field — no point persisting half-config.
+     * Refuses any empty field - no point persisting half-config.
      *
      * @param string        $base_id   Airtable base id (e.g. "appAbc123")
      * @param string        $table_id  table name or id
@@ -185,19 +185,19 @@ class TC_Airtable_Credential_Service {
     // ---- internals ----
 
     private static function derive_key(): string {
-        // #1637 — fail closed when AUTH_KEY is unavailable. The previous
+        // #1637 - fail closed when AUTH_KEY is unavailable. The previous
         // fallback to a hardcoded literal made the key derivable from public
         // plugin source on installs missing WordPress salts.
         if (!defined('AUTH_KEY') || AUTH_KEY === '') {
             return '';
         }
-        // #1645 — LEGACY v1 key (32 hex chars = 128 bits effective). Retained
+        // #1645 - LEGACY v1 key (32 hex chars = 128 bits effective). Retained
         // only to decrypt envelopes stored before the v2 upgrade.
         return substr(hash('sha256', AUTH_KEY . self::KEY_SALT), 0, 32);
     }
 
     /**
-     * #1645 — full 256-bit AES key: the RAW 32-byte sha256 digest. Mirrors
+     * #1645 - full 256-bit AES key: the RAW 32-byte sha256 digest. Mirrors
      * _gt_derive_secret_key_v2('gt_airtable_creds') in helpers-secrets.php so
      * v2 envelopes are interoperable between the two paths.
      */

@@ -1,6 +1,6 @@
 <?php
 /**
- * #972 v4.161.0 — Trash admin tab (phase 1c of #593).
+ * #972 v4.161.0 - Trash admin tab (phase 1c of #593).
  *
  * Lists trashed tables with Restore + Delete Permanently action buttons.
  * Expects $trashed to be set by the controller (TC_Admin::admin_page_trash).
@@ -12,10 +12,10 @@ if (!defined('ABSPATH')) { exit; }
 $ajax_url = admin_url('admin-ajax.php');
 $nonce    = wp_create_nonce('gt_admin_nonce');
 
-// #976 v4.163.0 — Retention window in days for the auto-purge countdown.
+// #976 v4.163.0 - Retention window in days for the auto-purge countdown.
 $retention_days = (int) apply_filters('gravity_tables_trash_retention_days', TC_TRASH_RETENTION_DAYS);
 if ($retention_days < 1) {
-    $retention_days = 1; // Sanity floor — a zero retention would mark everything as past-due immediately.
+    $retention_days = 1; // Sanity floor - a zero retention would mark everything as past-due immediately.
 }
 ?>
 <div class="wrap gt-trash-page">
@@ -68,7 +68,7 @@ if ($retention_days < 1) {
                         </td>
                         <td>
                             <?php
-                            // #976 v4.163.0 — Retention countdown. Compute purge_at = deleted_at + retention_days.
+                            // #976 v4.163.0 - Retention countdown. Compute purge_at = deleted_at + retention_days.
                             // current_time('timestamp') honours the site timezone the same way deleted_at was set.
                             if ($ts) {
                                 $purge_ts = $ts + ($retention_days * DAY_IN_SECONDS);
@@ -76,7 +76,7 @@ if ($retention_days < 1) {
                                 $days_remaining = (int) ceil(($purge_ts - $now) / DAY_IN_SECONDS);
                                 if ($days_remaining <= 0) {
                                     echo '<span class="gt-trash-past-due" style="color:#d63638;font-weight:600;">'
-                                        . esc_html__('Past retention — purges on next run', 'tc-data-tables')
+                                        . esc_html__('Past retention - purges on next run', 'tc-data-tables')
                                         . '</span>';
                                 } else {
                                     echo esc_html(sprintf(

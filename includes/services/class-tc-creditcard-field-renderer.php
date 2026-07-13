@@ -2,7 +2,7 @@
 /**
  * TC_Creditcard_Field_Renderer
  *
- * Issue #806 (child of #793). HIGH PRIORITY — PCI concerns.
+ * Issue #806 (child of #793). HIGH PRIORITY - PCI concerns.
  *
  * Gravity Forms `creditcard` fields store a partially-redacted card
  * in sub-inputs:
@@ -14,7 +14,7 @@
  *
  * This renderer is DEFENSIVE: it ONLY emits the card type + masked
  * tail (last 4 digits derived from N.1) and the holder name when
- * requested. It NEVER emits N.2 or N.3 — even if a misconfigured /
+ * requested. It NEVER emits N.2 or N.3 - even if a misconfigured /
  * compromised GF install accidentally persisted them, this layer
  * stops them at the render boundary.
  *
@@ -24,7 +24,7 @@
  *   - Hyphens / spaces / X's in the masked PAN are dropped during
  *     tail extraction so the format is uniform.
  *   - Holder name (N.5) is included in the eye popup ONLY, not in
- *     the cell render — minimises leakage surface.
+ *     the cell render - minimises leakage surface.
  *
  * The companion redactor `redact_for_payload(array $entry, string
  * $field_id): array` returns the entry with creditcard sub-inputs
@@ -62,7 +62,7 @@ class TC_Creditcard_Field_Renderer {
     /**
      * Eye-popup output: render_safe() plus the holder name on a
      * second line when present. Holder name is never emitted in
-     * the cell render — only here. Returns '' when nothing present.
+     * the cell render - only here. Returns '' when nothing present.
      */
     public static function render_safe_full(array $entry, string $field_id): string {
         $base = self::render_safe($entry, $field_id);
@@ -120,7 +120,7 @@ class TC_Creditcard_Field_Renderer {
     }
 
     /**
-     * Card type from N.4. Sanitised — only word chars and spaces
+     * Card type from N.4. Sanitised - only word chars and spaces
      * allowed (defensive in case of crafted entry data).
      */
     private static function card_type(array $entry, string $field_id): string {

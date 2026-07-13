@@ -2,7 +2,7 @@
 /**
  * TC_Cascading_Filter_Service
  *
- * Issue #599 — slice 1 of 3. Pure service for cascading filter
+ * Issue #599 - slice 1 of 3. Pure service for cascading filter
  * dropdowns (Country → State → City pattern).
  *
  * Slice 1 (this release): registry + valid-options compute + data-*

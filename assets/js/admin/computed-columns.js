@@ -1,7 +1,7 @@
 /**
- * TableCrafter — admin/computed-columns.js
+ * TableCrafter - admin/computed-columns.js
  *
- * #1598 — builder "Computed columns" repeater. Admin defines named
+ * #1598 - builder "Computed columns" repeater. Admin defines named
  * read-only columns from {field:N} expressions (TC_Formula_Service
  * evaluates per row server-side). save-table.js posts the collected
  * rows as JSON; TC_Admin sanitizes via
@@ -9,7 +9,7 @@
  *
  * Surface (window.TC_TableBuilder.*):
  *   - ccAddRow(label?, formula?)
- *   - collectComputedColumns()  — [{label, formula}] from the DOM
+ *   - collectComputedColumns() - [{label, formula}] from the DOM
  */
 (function (window, $) {
     'use strict';
@@ -24,7 +24,7 @@
             '<div class="gt-cc-row" style="margin-bottom:6px;">'
             + '<input type="text" class="gt-cc-label" placeholder="Column label">'
             + '<input type="text" class="gt-cc-formula code" style="width:260px;" placeholder="{field:3} * {field:5}">'
-            // #1621 — optional number format applied server-side.
+            // #1621 - optional number format applied server-side.
             + '<select class="gt-cc-format">'
             + '<option value="">Raw</option>'
             + '<option value="int">1,234</option>'
@@ -41,7 +41,7 @@
     };
 
     /**
-     * #1621 — inline validation. Posts the row's formula to the
+     * #1621 - inline validation. Posts the row's formula to the
      * gt_cc_validate_formula endpoint (thin wrapper over
      * TC_Formula_Service::validate_formula) and toggles an error
      * note under the row.
@@ -85,7 +85,7 @@
         $panel.on('click', '.gt-cc-remove', function () {
             $(this).closest('.gt-cc-row').remove();
         });
-        // #1621 — validate on blur so admins see parse errors before save.
+        // #1621 - validate on blur so admins see parse errors before save.
         $panel.on('blur', '.gt-cc-formula', function () {
             GT.ccValidateRow($(this).closest('.gt-cc-row'));
         });

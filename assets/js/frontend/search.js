@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/search.js
+ * TableCrafter - frontend/search.js
  *
  * Search controls (search button + Enter keypress on search input).
  * First slice of #834 (the larger filter-sort surface).
@@ -16,7 +16,7 @@
  *
  * Scope-honest note (#834): the umbrella estimated ~700 lines for
  * filter-sort, but the filter, sort, and search handlers are tightly
- * intertwined in bindEvents — splitting them all in one PR would be
+ * intertwined in bindEvents - splitting them all in one PR would be
  * high-risk. This module ships ONLY the search controls (smallest
  * cohesive sub-piece). Sort handlers, per-column filter inputs,
  * applyFilters / clearFilters, and initTextFilterTypeaheads remain in

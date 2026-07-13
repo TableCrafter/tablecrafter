@@ -1,6 +1,6 @@
 <?php
 /**
- * Wizard Step 2 — Table name + connect to source (#1980)
+ * Wizard Step 2 - Table name + connect to source (#1980)
  *
  * @package GravityTables
  */
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         <input type="text" id="gt-wizard-table-title" name="table_title"
                placeholder="<?php esc_attr_e( 'e.g. Load Submissions, Product Catalog…', 'tc-data-tables' ); ?>"
                autocomplete="off" maxlength="120">
-        <p class="description"><?php esc_html_e( 'Internal label for your reference — not shown to visitors.', 'tc-data-tables' ); ?></p>
+        <p class="description"><?php esc_html_e( 'Internal label for your reference - not shown to visitors.', 'tc-data-tables' ); ?></p>
     </div>
 
     <!-- === Gravity Forms branch === -->
@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
                 <span class="gt-wizard-required">*</span>
             </label>
             <select id="gt-wizard-form-id" name="form_id">
-                <option value=""><?php esc_html_e( '— choose a form —', 'tc-data-tables' ); ?></option>
+                <option value=""><?php esc_html_e( ' - choose a form - ', 'tc-data-tables' ); ?></option>
                 <!-- populated by admin-wizard.js from gtWizardData.forms -->
             </select>
             <p class="description"><?php esc_html_e( 'We\'ll pull entries from this form.', 'tc-data-tables' ); ?></p>

@@ -45,7 +45,7 @@ class TC_Debug {
     /**
      * Get singleton instance
      *
-     * #667 slice 28 — PHPUnit-shim test seam (issue #1087).
+     * #667 slice 28 - PHPUnit-shim test seam (issue #1087).
      *
      * Production safety: the override branch is gated on the
      * TC_PHPUNIT_SHIM constant which is ONLY defined by

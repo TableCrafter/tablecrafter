@@ -1,4 +1,4 @@
-/* TableCrafter — Table Creation Wizard JS (#1977) */
+/* TableCrafter - Table Creation Wizard JS (#1977) */
 (function () {
     var state = {
         step:       1,
@@ -8,7 +8,7 @@
         formTitle:  '',
         jsonUrl:    '',
         jsonTested: false,
-        remoteUrl:    '',     // #2039 — csv / google_sheets URL
+        remoteUrl:    '',     // #2039 - csv / google_sheets URL
         remoteTested: false,
         columns:    [],       // [{key, label, type}]
         perPage:    25,
@@ -51,7 +51,7 @@
         });
     }
 
-    /* ── Step 1 — Source cards ───────────────────────────────────────────── */
+    /* ── Step 1 - Source cards ───────────────────────────────────────────── */
     function bindSourceCards() {
         document.querySelectorAll('.gt-wizard-source-card:not(.gt-wizard-source-card--advanced)').forEach(function (card) {
             card.addEventListener('click', function () {
@@ -67,7 +67,7 @@
         });
     }
 
-    /* ── Step 2 — Fields ─────────────────────────────────────────────────── */
+    /* ── Step 2 - Fields ─────────────────────────────────────────────────── */
     function bindStep2Fields() {
         var titleInput = document.getElementById('gt-wizard-table-title');
         if (titleInput) {
@@ -103,7 +103,7 @@
         var testBtn = document.querySelector('.gt-wizard-test-json');
         if (testBtn) { testBtn.addEventListener('click', testJsonConnection); }
 
-        // #2039 — CSV / Google Sheets URL inputs + generic remote Test Connection.
+        // #2039 - CSV / Google Sheets URL inputs + generic remote Test Connection.
         ['gt-wizard-csv-url', 'gt-wizard-sheets-url'].forEach(function (id) {
             var input = document.getElementById(id);
             if (input) {
@@ -221,7 +221,7 @@
         el.style.display = 'block';
     }
 
-    /* ── Step 3 — Column picker ──────────────────────────────────────────── */
+    /* ── Step 3 - Column picker ──────────────────────────────────────────── */
     function resetStep3UI() {
         var list    = document.querySelector('.gt-wizard-cols-list');
         var loading = document.querySelector('.gt-wizard-cols-loading');
@@ -276,7 +276,7 @@
             .then(function (r) { return r.json(); })
             .then(function (resp) {
                 if (loading) { loading.style.display = 'none'; }
-                /* get_form_fields returns wp_send_json_success($fields_array) —
+                /* get_form_fields returns wp_send_json_success($fields_array) - 
                    resp.data is the array directly, not resp.data.fields */
                 if (resp.success && Array.isArray(resp.data) && resp.data.length) {
                     var cols = resp.data.map(function (f) {
@@ -373,7 +373,7 @@
         }
     }
 
-    /* ── Step 4 — Display options ────────────────────────────────────────── */
+    /* ── Step 4 - Display options ────────────────────────────────────────── */
     function syncStep4() {
         var perPage = document.getElementById('gt-wizard-per-page');
         var search  = document.getElementById('gt-wizard-search');
@@ -383,7 +383,7 @@
         if (mobile)  { state.mobile  = mobile.checked; }
     }
 
-    /* ── Step 5 — Review summary ─────────────────────────────────────────── */
+    /* ── Step 5 - Review summary ─────────────────────────────────────────── */
     function populateSummary() {
         syncStep4();
         setValue('source',     SOURCE_LABELS[state.source] || state.source);
@@ -391,9 +391,9 @@
         setValue('connection', state.source === 'gravity_forms'
             ? (state.formTitle || 'Form #' + state.formId)
             : state.source === 'json'
-            ? (state.jsonUrl || '—')
+            ? (state.jsonUrl || ' - ')
             : (state.source === 'csv' || state.source === 'google_sheets')
-            ? (state.remoteUrl || '—')
+            ? (state.remoteUrl || ' - ')
             : 'Product catalog');
         setValue('columns',    state.columns.length
             ? state.columns.length + ' selected: ' +

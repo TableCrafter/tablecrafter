@@ -1,21 +1,21 @@
 /**
- * TableCrafter — admin/revisions-modal.js
+ * TableCrafter - admin/revisions-modal.js
  *
- * #1615 — Table history modal v2. Replaces the #536 slice-2b
+ * #1615 - Table history modal v2. Replaces the #536 slice-2b
  * index-prompt restore UX: the Revisions row action opens a modal
  * listing snapshots (date, user, diff summary from the new
  * gt_list_revisions endpoint) with two actions per row:
  *
- *   - "Load into builder" — review-before-commit: navigates to the
+ *   - "Load into builder" - review-before-commit: navigates to the
  *     builder with &gt_revision=N; the snapshot populates the form
  *     but NOTHING is saved until the admin clicks Save there.
- *   - "Restore now" — the existing #536 admin-post direct write,
+ *   - "Restore now" - the existing #536 admin-post direct write,
  *     kept for one-click recovery.
  *
  * Surface (window.TC_Revisions.*):
- *   - open(ctx)     — ctx: {tableId, nonce, restoreNonce, adminPost, builderUrl}
+ *   - open(ctx) - ctx: {tableId, nonce, restoreNonce, adminPost, builderUrl}
  *   - render(list)
- *   - navigate(url) — seam; window.location.href in production
+ *   - navigate(url) - seam; window.location.href in production
  */
 (function (window, $) {
     'use strict';
@@ -38,7 +38,7 @@
     var RV = {
 
         navigate: function (url) {
-            /* c8 ignore next 2 — seam; stubbed in tests. */
+            /* c8 ignore next 2 - seam; stubbed in tests. */
             window.location.href = url;
         },
 
@@ -68,7 +68,7 @@
         render: function (list) {
             var $list = $('#gt-rev-modal .gt-rev-list');
             if (!list.length) {
-                $list.html('<p>No saved revisions yet — a snapshot is captured on every save.</p>');
+                $list.html('<p>No saved revisions yet - a snapshot is captured on every save.</p>');
                 return;
             }
             var parts = ['<table class="widefat striped"><thead><tr>'
@@ -96,7 +96,7 @@
 
     window.TC_Revisions = RV;
 
-    // Document-level delegation binds immediately — no ready-wait
+    // Document-level delegation binds immediately - no ready-wait
     // needed, and the handlers survive list re-renders.
     (function bindDelegation() {
         $(document).on('click', '.gt-revisions', function (e) {

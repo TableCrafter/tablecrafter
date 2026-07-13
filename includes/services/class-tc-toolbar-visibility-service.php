@@ -2,25 +2,25 @@
 /**
  * TC_Toolbar_Visibility_Service
  *
- * Issue #521 — slice 1 of 3. Pure helper for granular per-component
+ * Issue #521 - slice 1 of 3. Pure helper for granular per-component
  * toolbar visibility. Today the toolbar is largely all-or-nothing;
  * this service defines the canonical six-component list and a
  * normalization predicate so the future admin UI and template
  * render path can bind to a single contract.
  *
  * Components:
- *   global_search    — global filter input
- *   pagination       — page number controls + prev/next
- *   length_selector  — "Show N entries" dropdown
- *   info_label       — "Showing X to Y of Z entries" text
- *   column_filters   — per-column filter row
- *   export_buttons   — toolbar export-button block
+ *   global_search - global filter input
+ *   pagination - page number controls + prev/next
+ *   length_selector - "Show N entries" dropdown
+ *   info_label - "Showing X to Y of Z entries" text
+ *   column_filters - per-column filter row
+ *   export_buttons - toolbar export-button block
  *
- * Defaults: every component visible (backward-compat — existing
+ * Defaults: every component visible (backward-compat - existing
  * installs that don't have these settings yet keep their pre-#521
  * appearance).
  *
- * `is_visible()` returns true for unknown components — defensive
+ * `is_visible()` returns true for unknown components - defensive
  * default. Better to over-show than silently hide.
  *
  * Slice 2 ships the admin settings UI; slice 3 wires the template
@@ -56,7 +56,7 @@ class TC_Toolbar_Visibility_Service {
     }
 
     /**
-     * Default visibility map. Every component visible — backward-compat
+     * Default visibility map. Every component visible - backward-compat
      * with installs that didn't have these settings before #521.
      */
     public static function defaults(): array {
@@ -88,7 +88,7 @@ class TC_Toolbar_Visibility_Service {
 
     /**
      * True iff the given component should render. Unknown components
-     * default to true (defensive — prevents typos from silently
+     * default to true (defensive - prevents typos from silently
      * hiding parts of the UI).
      */
     public static function is_visible(string $component, array $settings): bool {

@@ -1,7 +1,7 @@
 <?php
 // @codeCoverageIgnoreStart
 /**
- * Request-superglobal sanitisation helpers — issue #1073.
+ * Request-superglobal sanitisation helpers - issue #1073.
  *
  * Boundary-level helper for the four AJAX handlers flagged by the
  * #1073 input-sanitization audit. The audit found that
@@ -25,7 +25,7 @@
  *     The same primitive every WP plugin uses for arbitrary text
  *     input read from a superglobal.
  *
- * Return shape: string. Always a string — never null, never the
+ * Return shape: string. Always a string - never null, never the
  * unsanitised value. Callers can blindly assign the result to an
  * entry field without an additional cast.
  *
@@ -44,7 +44,7 @@ if (!function_exists('gt_request_server_text')) {
      * @param string $key     The $_SERVER key to read (e.g. 'REMOTE_ADDR').
      * @param string $default Value to return when $_SERVER[$key] is missing
      *                       or non-scalar. Defaults to ''.
-     * @return string Sanitised text — slashes stripped, tags stripped,
+     * @return string Sanitised text - slashes stripped, tags stripped,
      *                whitespace collapsed. Returns $default verbatim when
      *                the key is missing, without running it through
      *                sanitize_text_field().

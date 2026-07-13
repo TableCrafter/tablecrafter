@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Push_Audit_Log_Service — phase 2 slice 10 of #613 (two-way sync).
+ * TC_Push_Audit_Log_Service - phase 2 slice 10 of #613 (two-way sync).
  *
  * Generic audit log for outgoing push events across all 3 data source
  * engines (JSON / Airtable / Notion). Modeled on

@@ -1,44 +1,44 @@
 /**
- * TableCrafter — frontend/edit-history.js
+ * TableCrafter - frontend/edit-history.js
  *
  * Undo / Redo history for inline cell edits. First slice under #833
  * (which itself is a child of the #830 split of frontend.js).
  *
  * Nine helpers attached directly to GravityTable.prototype:
  *
- *   - initUndoRedo()              — wire toolbar buttons, keyboard
+ *   - initUndoRedo() - wire toolbar buttons, keyboard
  *                                   shortcuts, initial state. Called
  *                                   from init() in frontend.js.
- *   - pushHistoryEntry(entry)     — push to undo stack, evict oldest
+ *   - pushHistoryEntry(entry) - push to undo stack, evict oldest
  *                                   past _undoLimit, clear redo stack.
  *                                   Called by saveField after each
  *                                   successful edit (unless
  *                                   _suppressHistory is true).
- *   - updateUndoRedoButtons()     — sync disabled state of both buttons
+ *   - updateUndoRedoButtons() - sync disabled state of both buttons
  *                                   to current stack contents.
- *   - undoLastEdit()              — pop undo, push to redo, replay with
+ *   - undoLastEdit() - pop undo, push to redo, replay with
  *                                   oldValue, show toast.
- *   - redoLastEdit()              — pop redo, push to undo, replay with
+ *   - redoLastEdit() - pop redo, push to undo, replay with
  *                                   newValue, show toast.
  *   - replayHistoryEntry(entry, useNew)
- *                                 — re-issue saveField for the entry's
+ * - re-issue saveField for the entry's
  *                                   cell with _suppressHistory set, so
  *                                   the replay doesn't re-enter the
  *                                   stack. Skips silently if row is no
  *                                   longer in the DOM (#535).
- *   - getFieldLabel(fieldId)      — resolve a human-readable label for
+ *   - getFieldLabel(fieldId) - resolve a human-readable label for
  *                                   the field used in toast messages.
  *                                   Reads config.column_config, falls
  *                                   back to the <th> text, then to
  *                                   "Field N".
- *   - shortValue(v)               — truncate a value for toast display
+ *   - shortValue(v) - truncate a value for toast display
  *                                   (40 chars, ellipsis, "(empty)" for
  *                                   empty string / null).
- *   - showUndoToast(msg)          — render a transient aria-live toast.
+ *   - showUndoToast(msg) - render a transient aria-live toast.
  *
  * Listed as separate prototype assignments (not Object.assign) so the
- * pre-#831 file-grep contracts in our PHP test suite — which look for
- * `GravityTable.prototype.X = function` literals — keep working as the
+ * pre-#831 file-grep contracts in our PHP test suite - which look for
+ * `GravityTable.prototype.X = function` literals - keep working as the
  * #833 split progresses.
  */
 (function (window) {
@@ -89,13 +89,13 @@
             if (!inWrapper) return;
             if ($(active).is('input, textarea, select')) return;
             // #535: also skip elements the page has marked as editable. The
-            // browser's own undo already operates on those — capturing here
+            // browser's own undo already operates on those - capturing here
             // would double-fire (our stack pop + the browser's own undo) and
             // the cell value drifts out of sync with what the user sees.
             // Using the browser-native HTMLElement.isContentEditable property
             // is more correct than a selector check: it returns true when the
             // element OR any ancestor has contenteditable="true", and false
-            // when contenteditable="false" explicitly opts out — exactly the
+            // when contenteditable="false" explicitly opts out - exactly the
             // semantics we want. (gravity-tables itself never turns this on;
             // the inline editor uses real <input> elements, see #433.)
             if (active.isContentEditable) return;
@@ -152,7 +152,7 @@
         var $cell = $wrapper.find('td.gt-editable-cell[data-entry-id="' + entry.entryId + '"][data-field-id="' + entry.fieldId + '"]').first();
         if ( ! $cell.length ) {
             // Stale reference (#535): the row this entry pointed at is no longer
-            // in the DOM — deleted, paginated away, or filtered out. Earlier
+            // in the DOM - deleted, paginated away, or filtered out. Earlier
             // versions fell back to a detached placeholder and called saveField()
             // anyway, which could resurrect a deleted entry server-side or
             // surface as an "Undefined index" / 500 in the user's face. Skip

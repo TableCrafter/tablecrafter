@@ -31,7 +31,7 @@ class TC_Import
      * Import modes (#2322).
      *
      * - MODE_ADD_NEW: each imported row creates a new GF entry (default; prior behaviour).
-     * - MODE_APPEND:  synonym for ADD_NEW at the entry level — all rows are appended as
+     * - MODE_APPEND:  synonym for ADD_NEW at the entry level - all rows are appended as
      *                 new entries. Semantically clearer name for UI purposes.
      * - MODE_REPLACE: trash all existing active entries for the form, then import rows
      *                 as new entries. Preserves hidden/trashed entries (existing #157 logic).
@@ -132,7 +132,7 @@ class TC_Import
                             <ul>
                                 <?php foreach ($result['formula_warnings'] as $w): ?>
                                     <li><?php echo esc_html(sprintf(
-                                        __('Row %1$d, field %2$s: %3$s — unsupported: %4$s', 'tc-data-tables'),
+                                        __('Row %1$d, field %2$s: %3$s - unsupported: %4$s', 'tc-data-tables'),
                                         (int) $w['row'],
                                         (string) ($w['field_id'] ?? ''),
                                         (string) ($w['formula'] ?? ''),
@@ -185,15 +185,15 @@ class TC_Import
                                     <fieldset>
                                         <label>
                                             <input type="radio" name="import_mode" value="<?php echo esc_attr(self::MODE_ADD_NEW); ?>" checked>
-                                            <?php esc_html_e('Add new entries — append imported rows as new entries (does not affect existing entries).', 'tc-data-tables'); ?>
+                                            <?php esc_html_e('Add new entries - append imported rows as new entries (does not affect existing entries).', 'tc-data-tables'); ?>
                                         </label><br>
                                         <label>
                                             <input type="radio" name="import_mode" value="<?php echo esc_attr(self::MODE_APPEND); ?>">
-                                            <?php esc_html_e('Append rows — same as "Add new entries" (explicit name for clarity).', 'tc-data-tables'); ?>
+                                            <?php esc_html_e('Append rows - same as "Add new entries" (explicit name for clarity).', 'tc-data-tables'); ?>
                                         </label><br>
                                         <label>
                                             <input type="radio" name="import_mode" value="<?php echo esc_attr(self::MODE_REPLACE); ?>">
-                                            <strong><?php esc_html_e('Replace all entries — trash all existing active entries, then import the file. Hidden/trashed entries are preserved.', 'tc-data-tables'); ?></strong>
+                                            <strong><?php esc_html_e('Replace all entries - trash all existing active entries, then import the file. Hidden/trashed entries are preserved.', 'tc-data-tables'); ?></strong>
                                         </label>
                                     </fieldset>
                                 </td>
@@ -241,7 +241,7 @@ class TC_Import
 
         if (class_exists('TC_Import_Format_Detector') && !empty($mime_type)) {
             if (!TC_Import_Format_Detector::is_allowed_mime($mime_type)) {
-                // MIME not in allow-list — still allow it if extension is known (browser inconsistencies)
+                // MIME not in allow-list - still allow it if extension is known (browser inconsistencies)
                 if (!in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
                     $this->redirect_with_error(
                         sprintf(
@@ -421,7 +421,7 @@ class TC_Import
                 $this->redirect_with_error(__('Could not open uploaded file.', 'tc-data-tables'));
             }
 
-            // #1253 — explicit $escape '\\' to silence PHP 8.4 deprecation.
+            // #1253 - explicit $escape '\\' to silence PHP 8.4 deprecation.
             $headers = fgetcsv($handle, 0, ',', '"', '\\');
             if ($headers !== false && isset($headers[0]) && str_starts_with($headers[0], "\xef\xbb\xbf")) {
                 $headers[0] = substr($headers[0], 3);
@@ -511,13 +511,13 @@ class TC_Import
     /**
      * Canonical CSV cell transform pipeline. Pure / static / unit-testable.
      *
-     * Slice 1b of #525 — extracted from `handle_post()` so the same logic
+     * Slice 1b of #525 - extracted from `handle_post()` so the same logic
      * (XSS guard from #241, toggle normalization from #325, formula
      * detection + wrap from #539 / TC_CSV_Formula_Detector) can be
      * exercised in unit tests with synthetic fixtures.
      *
      * Pipeline:
-     *   1. sanitize_text_field — strips HTML, normalizes whitespace.
+     *   1. sanitize_text_field - strips HTML, normalizes whitespace.
      *   2. Toggle precedence (when $is_toggle): 1/true/yes → '1', else '0'.
      *      Toggle wins over formula detection so a `=TRUE()` cell in a
      *      toggle column never becomes a stored formula.

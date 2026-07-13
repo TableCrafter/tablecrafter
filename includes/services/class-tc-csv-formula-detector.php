@@ -2,7 +2,7 @@
 /**
  * TC_CSV_Formula_Detector
  *
- * Slice 1 of #525 — CSV formula detection & persistence (no evaluation
+ * Slice 1 of #525 - CSV formula detection & persistence (no evaluation
  * yet). Pure, dependency-free helper. Detects spreadsheet-style formula
  * cells in CSV input (`=SUM(A1:A2)`, `=B2*0.07`, `=TODAY()`) and
  * provides a canonical in-band storage marker so a later slice can
@@ -46,7 +46,7 @@ class TC_CSV_Formula_Detector {
      *   - Must be a string of length >= 2
      *   - Must start with `=`
      *   - Must NOT start with `'=` (Excel CSV-injection guard pattern
-     *     — escapes a formula as literal text)
+     * - escapes a formula as literal text)
      *
      * Whitespace-prefixed values are treated as plain text on the
      * assumption the CSV import path has already trimmed cells; this
@@ -63,14 +63,14 @@ class TC_CSV_Formula_Detector {
     }
 
     /**
-     * #1636 — neutralize a cell for EXPORT so spreadsheet apps
+     * #1636 - neutralize a cell for EXPORT so spreadsheet apps
      * (Excel/LibreOffice/Sheets) cannot interpret it as a formula or DDE
      * payload. Per OWASP, a value whose first non-space character is one
      * of `= + - @`, or which begins with a TAB/CR, is prefixed with a
      * single quote so the app treats it as literal text.
      *
      * Purely numeric values (including negatives like "-5" / "+5") are
-     * returned unchanged — they cannot be a formula and prefixing them
+     * returned unchanged - they cannot be a formula and prefixing them
      * would corrupt numeric exports. Non-scalars become an empty string.
      *
      * This is the OUTBOUND mirror of is_formula_cell()/wrap_for_storage(),
@@ -97,7 +97,7 @@ class TC_CSV_Formula_Detector {
     }
 
     /**
-     * #1636 — convenience: neutralize every cell of a CSV/export row.
+     * #1636 - convenience: neutralize every cell of a CSV/export row.
      */
     public static function neutralize_row(array $row): array {
         return array_map([self::class, 'neutralize_for_export'], $row);
@@ -106,7 +106,7 @@ class TC_CSV_Formula_Detector {
     /**
      * Wrap a formula string with the canonical storage marker so the
      * persisted entry value can be unambiguously identified as a
-     * formula on read. Idempotent — wrapping an already-wrapped value
+     * formula on read. Idempotent - wrapping an already-wrapped value
      * returns the input unchanged.
      */
     public static function wrap_for_storage(string $formula): string {
@@ -118,7 +118,7 @@ class TC_CSV_Formula_Detector {
 
     /**
      * Inverse of wrap_for_storage(). Returns the raw formula
-     * (without marker) iff $stored carries the marker, else null —
+     * (without marker) iff $stored carries the marker, else null - 
      * lets callers branch cleanly:
      *
      *   $raw = TC_CSV_Formula_Detector::unwrap_from_storage($cell);
@@ -135,7 +135,7 @@ class TC_CSV_Formula_Detector {
     /**
      * Slice 3 of #525. Return the de-duped, upper-cased list of function
      * names referenced by the formula that the GT formula engine does
-     * NOT support — so the import admin UI can warn users that an
+     * NOT support - so the import admin UI can warn users that an
      * imported `=SUMIFS(...)` cell will store but won't evaluate.
      *
      * Default whitelist is the union of TC_Formula_Service::SUPPORTED_FUNCTIONS
@@ -169,7 +169,7 @@ class TC_CSV_Formula_Detector {
                     $default = array_merge($default, TC_Formula_Service::SUPPORTED_AGGREGATIONS);
                 }
             }
-            // Filter receives the default union — sites with a custom formula
+            // Filter receives the default union - sites with a custom formula
             // plugin can extend it (e.g. to allow VLOOKUP / SUMIFS / etc.).
             $supported = (array) apply_filters('gt_csv_formula_supported_functions', $default);
         }
@@ -209,7 +209,7 @@ class TC_CSV_Formula_Detector {
 
         // A spreadsheet function call looks like `NAME(` where NAME is one or
         // more letters, optionally followed by digits/underscores/dots (Excel
-        // allows `_xlfn.SUMIFS` and similar — we keep the leading letter
+        // allows `_xlfn.SUMIFS` and similar - we keep the leading letter
         // requirement so cell refs like `A1(` aren't matched). Normalize to
         // uppercase so the unsupported-function lookup that the future
         // warning slice does is case-insensitive.

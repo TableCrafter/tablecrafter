@@ -681,6 +681,11 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.45 -- Typography consistency', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('Style sweep (#2386)', 'tc-data-tables'); ?></strong> -- <?php _e('Replaced em-dashes and en-dashes with standard hyphens across all plugin code, admin text, tooling, and documentation. Cosmetic only; no functional changes.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.44 -- Index column: automatic 1..n row counter', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Index column (#2340)', 'tc-data-tables'); ?></strong> -- <?php _e('Tables can now display an optional numbered counter column ("#", "No.", or custom label) that renumbers automatically on sort, filter, search, and pagination. Enable it in the builder Table Features panel. Pagination-aware: page 2 with 25 rows per page starts at 26. The index column is excluded from CSV/copy/Excel/PDF exports.', 'tc-data-tables'); ?></li>

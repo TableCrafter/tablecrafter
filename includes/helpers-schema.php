@@ -1,7 +1,7 @@
 <?php
 // @codeCoverageIgnoreStart
 /**
- * Schema.org JSON-LD render helper — slice 2 of issue #547.
+ * Schema.org JSON-LD render helper - slice 2 of issue #547.
  *
  * The TC_Schema_Service builder lives in services/. This wrapper turns its
  * payload into the actual `<script type="application/ld+json">` tag that

@@ -1,6 +1,6 @@
 <?php
 /**
- * Table Creation Wizard — main layout (#1978)
+ * Table Creation Wizard - main layout (#1978)
  *
  * @package GravityTables
  */
@@ -20,7 +20,7 @@ if ( class_exists( 'GFAPI' ) ) {
 ?>
 <div class="wrap gt-wizard-wrap">
     <!-- Hidden h1 satisfies WP admin-notices injection requirement -->
-    <h1 class="gt-wizard-page-h1"><?php esc_html_e( 'Create Table — Wizard', 'tc-data-tables' ); ?></h1>
+    <h1 class="gt-wizard-page-h1"><?php esc_html_e( 'Create Table - Wizard', 'tc-data-tables' ); ?></h1>
 
     <!-- Hero -->
     <div class="gt-wizard-hero">
@@ -57,27 +57,27 @@ if ( class_exists( 'GFAPI' ) ) {
     <!-- Panels -->
     <div class="gt-wizard-panels">
 
-        <!-- Step 1 — Data Source -->
+        <!-- Step 1 - Data Source -->
         <div class="gt-wizard-panel gt-wizard-panel--active" data-panel="1">
             <?php include __DIR__ . '/step-1.php'; ?>
         </div>
 
-        <!-- Step 2 — Connect -->
+        <!-- Step 2 - Connect -->
         <div class="gt-wizard-panel" data-panel="2">
             <?php include __DIR__ . '/step-2.php'; ?>
         </div>
 
-        <!-- Step 3 — Columns -->
+        <!-- Step 3 - Columns -->
         <div class="gt-wizard-panel" data-panel="3">
             <?php include __DIR__ . '/step-3.php'; ?>
         </div>
 
-        <!-- Step 4 — Display Options -->
+        <!-- Step 4 - Display Options -->
         <div class="gt-wizard-panel" data-panel="4">
             <?php include __DIR__ . '/step-4.php'; ?>
         </div>
 
-        <!-- Step 5 — Review & Create -->
+        <!-- Step 5 - Review & Create -->
         <div class="gt-wizard-panel" data-panel="5">
             <?php include __DIR__ . '/step-5.php'; ?>
         </div>

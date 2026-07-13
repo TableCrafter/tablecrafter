@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/text-cell.js
+ * TableCrafter - frontend/text-cell.js
  *
  * Default (non-toggle) text-cell renderer. #832 slice 8 of N.
  *
@@ -50,8 +50,8 @@
             // Data Bars (#1731). When the caller passes a clamped barPct,
             // MERGE the bar CSS custom properties into the cell's style
             // attribute (never a second style="...") and add the
-            // data-gt-bar-pct hook. Bars are attribute-only — never inner
-            // markup — so totals / export / conditional-format /
+            // data-gt-bar-pct hook. Bars are attribute-only - never inner
+            // markup - so totals / export / conditional-format /
             // inline-edit all keep reading the unchanged cell text.
             var barAttr = '';
             var barLabelHtml = '';
@@ -65,14 +65,14 @@
                     colAlignStyle = colAlignStyle + ' style="' + barVars + '"';
                 }
                 barAttr = ' data-gt-bar-pct="' + barPct + '"';
-                // #1738 — show_label: render the cell value as a visible
+                // #1738 - show_label: render the cell value as a visible
                 // <span class="gt-bar-label"> alongside the ::after underlay.
                 if (opts.showBarLabel) {
                     barLabelHtml = '<span class="gt-bar-label">' + (displayValue ? self.escapeHtml(String(displayValue)) : '') + '</span>';
                 }
             }
 
-            // #1606 — active global search term highlights matched
+            // #1606 - active global search term highlights matched
             // substrings (escape-then-highlight; plain text only).
             var searchTerm = (typeof self.searchTerm === 'string' && typeof self.highlightInEscapedHtml === 'function')
                 ? self.searchTerm.trim()
@@ -94,7 +94,7 @@
                 return '<td class="gt-editable-cell gt-empty-field' + valignClass + '" data-field-id="' + fieldId + '" data-entry-id="' + entryId + '"' + barAttr + colAlignStyle + '>' + barLabelHtml + '</td>';
             }
 
-            // Readonly branch. Highlight only plain-text cell content —
+            // Readonly branch. Highlight only plain-text cell content - 
             // server-rendered markup (links, images) is left untouched
             // so the wrapper can't land inside an attribute. (#1606)
             var isEntryId = fieldId === 'entry_id';

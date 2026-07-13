@@ -1,6 +1,6 @@
 <?php
 /**
- * Wizard Step 5 — Review & Create (#1983)
+ * Wizard Step 5 - Review & Create (#1983)
  *
  * @package GravityTables
  */

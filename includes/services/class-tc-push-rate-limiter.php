@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Push_Rate_Limiter — phase 2 slice 11 of #613 (two-way sync).
+ * TC_Push_Rate_Limiter - phase 2 slice 11 of #613 (two-way sync).
  *
  * Per-source rate limiter for outgoing push requests. Generic across
  * all 3 engines (JSON / Airtable / Notion). Modeled on the existing

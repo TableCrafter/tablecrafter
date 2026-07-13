@@ -44,7 +44,7 @@ class TC_Popup
             // @codeCoverageIgnoreEnd
         }
 
-        // #546 — frontend gate: don't ship the popup bundle on shortcode-less
+        // #546 - frontend gate: don't ship the popup bundle on shortcode-less
         // pages. Admin path is unchanged (the gravity-tables admin pages always
         // need the popup). The `gt_always_enqueue_assets` filter inside the gate
         // bypasses this for cache-plugin scenarios.

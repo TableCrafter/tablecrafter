@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/post-render-gates.js
+ * TableCrafter - frontend/post-render-gates.js
  *
  * Post-render DOM gates triggered at the tail of renderEntries.
  * #832 slice 18 of N.
@@ -21,7 +21,7 @@
  *       consecutive cells with identical text content into a single
  *       `rowspan=N` cell. Empty cells terminate runs and don't start
  *       new ones (#518 slice 2). Skips `.gt-totals-row` (#518 slice
- *       2.1) — merging totals would visually misrepresent them.
+ *       2.1) - merging totals would visually misrepresent them.
  *       Re-runs from sort/filter/search are automatic because this
  *       method is invoked at the tail of renderEntries.
  */
@@ -69,7 +69,7 @@
                 var raw = ($cell.text() || '').trim();
                 if (!raw) { return; }
                 // #501 slice 2.1: ISO date-only strings parse as UTC midnight
-                // by default — but we compare against local Date.now(), so
+                // by default - but we compare against local Date.now(), so
                 // construct the Date with local-midnight semantics instead.
                 var t;
                 var isoOnly = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);

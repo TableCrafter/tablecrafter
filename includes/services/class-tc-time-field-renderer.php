@@ -5,7 +5,7 @@
  * Issue #818 (child of #793). GF `time` fields store sub-inputs:
  *   N.1 = hour   (1..12 in 12h forms, 0..23 in 24h forms)
  *   N.2 = minute (0..59)
- *   N.3 = am/pm  ("am" / "pm" — present only when the form is 12h)
+ *   N.3 = am/pm  ("am" / "pm" - present only when the form is 12h)
  *
  * Without this renderer, the cell shows the empty bare slot.
  *

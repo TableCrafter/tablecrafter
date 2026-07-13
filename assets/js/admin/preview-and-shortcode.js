@@ -141,16 +141,16 @@
                     xml_url:             $('input[name="xml_url"]').val() || '',
                     xml_row_path:        $('input[name="xml_row_path"]').val() || '',
                     google_sheets_url:   $('input[name="google_sheets_url"]').val() || '',
-                    // #2240 — Airtable live preview config. A blank PAT means "use
-                    // the saved token" — the server falls back via table_id.
+                    // #2240 - Airtable live preview config. A blank PAT means "use
+                    // the saved token" - the server falls back via table_id.
                     airtable_pat:        $('input[name="airtable_pat"]').val() || '',
                     airtable_base_id:    $('input[name="airtable_base_id"]').val() || '',
                     airtable_table_id:   $('input[name="airtable_table_id"]').val() || '',
-                    // #2241 — Notion live preview config (same blank-token → saved-
+                    // #2241 - Notion live preview config (same blank-token → saved-
                     // token fallback via table_id).
                     notion_token:        $('input[name="notion_token"]').val() || '',
                     notion_database_id:  $('input[name="notion_database_id"]').val() || '',
-                    // #2242 — External DB live preview config (saved connection
+                    // #2242 - External DB live preview config (saved connection
                     // index + read-only query).
                     external_db_connection: $('select[name="external_db_connection"]').val() || '',
                     external_db_query:      $('textarea[name="external_db_query"]').val() || '',
@@ -176,7 +176,7 @@
                     show_deleted_entries: $('input[name="show_deleted_entries"]').is(':checked') ? true : false,
                     filter_user_entries: $('input[name="filter_user_entries"]').is(':checked') ? true : false,
                     show_column_totals: $('input[name="show_column_totals"]').is(':checked') ? true : false,
-                    // #521 slice 2 — toolbar visibility map (6 components).
+                    // #521 slice 2 - toolbar visibility map (6 components).
                     toolbar_visibility: (function () {
                         var components = ['global_search', 'pagination', 'length_selector', 'info_label', 'column_filters', 'export_buttons'];
                         var out = {};
@@ -188,7 +188,7 @@
                     // Export toolbar buttons + processing/template/data-source
                     // (#654). These named UI controls existed in
                     // admin/views/table-builder.php but were never in this
-                    // save payload — admins toggled them and the value
+                    // save payload - admins toggled them and the value
                     // silently reverted on save. The runtime layer
                     // (templates/table.php:456-459, server_side_entries
                     // AJAX handler, comparison-table renderer) is fully
@@ -213,7 +213,7 @@
                         sku: $('select[name="wc_mapping[sku]"]').val() || '',
                         description: $('select[name="wc_mapping[description]"]').val() || ''
                     },
-                    // #2323 — arbitrary cell merges. Parse the JSON textarea so
+                    // #2323 - arbitrary cell merges. Parse the JSON textarea so
                     // the server receives an array (not a JSON string); jQuery
                     // $.post serialises it into the PHP-array form automatically.
                     cell_merges: (function () {
@@ -238,7 +238,7 @@
             //});
 
             // Abort any previous in-flight preview request before starting a new
-            // one — prevents stacked responses arriving out of order and avoids
+            // one - prevents stacked responses arriving out of order and avoids
             // the browser queuing many simultaneous XHRs (issue #187).
             if (this._previewXHR && this._previewXHR.readyState !== 4) {
                 this._previewXHR.abort();

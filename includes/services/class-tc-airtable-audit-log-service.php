@@ -2,7 +2,7 @@
 /**
  * TC_Airtable_Audit_Log_Service
  *
- * Issue #517 — slice 4d of N. Structured audit log for Airtable
+ * Issue #517 - slice 4d of N. Structured audit log for Airtable
  * sync events (push success / failure). Slice 4c shipped the
  * fire-and-log push-back; slice 4d adds a queryable surface so the
  * admin can inspect what's been pushed (and what failed) instead
@@ -41,7 +41,7 @@ class TC_Airtable_Audit_Log_Service {
     /**
      * Append an event. Adds a `timestamp` field if not present.
      * Caps the log at MAX_ENTRIES (drops oldest when full).
-     * Refuses empty events (defensive — the load shape would be
+     * Refuses empty events (defensive - the load shape would be
      * ambiguous otherwise).
      *
      * @param array         $event  e.g. ['entry_id' => 42, 'record_id' => 'recXyZ', 'http_code' => 200, 'error' => null, 'direction' => 'push']

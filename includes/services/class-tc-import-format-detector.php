@@ -1,10 +1,10 @@
 <?php
 /**
- * TC_Import_Format_Detector — format detection and share-URL fixups (#2322).
+ * TC_Import_Format_Detector - format detection and share-URL fixups (#2322).
  *
  * Pure static utility class. No WordPress dependencies except the
  * translation function. (Wording note: test-issue-133 scans this file with
- * an i18n-call regex — writing the double-underscore function name with
+ * an i18n-call regex - writing the double-underscore function name with
  * parens in a comment makes that scan misfire across lines.)
  *
  * Detects file format from:
@@ -75,7 +75,7 @@ class TC_Import_Format_Detector {
      * @return string|null  Canonical format key or null if unrecognised.
      */
     public static function from_filename_and_mime(string $filename, ?string $mime_type = null): ?string {
-        // 1. MIME check (unless it's octet-stream or text/plain — too ambiguous).
+        // 1. MIME check (unless it's octet-stream or text/plain - too ambiguous).
         if ($mime_type !== null) {
             $mime_lower = strtolower(trim($mime_type));
             if (isset(self::MIME_MAP[$mime_lower]) && self::MIME_MAP[$mime_lower] !== null) {
@@ -134,7 +134,7 @@ class TC_Import_Format_Detector {
             return 'html';
         }
 
-        // ODS: also ZIP-based — caught by PK magic above; IOFactory identifies it.
+        // ODS: also ZIP-based - caught by PK magic above; IOFactory identifies it.
         // CSV: fallback.
         return 'csv';
     }
@@ -221,7 +221,7 @@ class TC_Import_Format_Detector {
             if (strpos($url, 'dl=0') !== false) {
                 return str_replace('dl=0', 'dl=1', $url);
             }
-            // No dl param — add it
+            // No dl param - add it
             if (strpos($url, 'dl=') === false) {
                 $separator = strpos($url, '?') !== false ? '&' : '?';
                 return $url . $separator . 'dl=1';

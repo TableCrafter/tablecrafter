@@ -78,7 +78,7 @@ class TC_Name_Field_Renderer {
         // Prepend prefix / append suffix when the format didn't
         // already include them and they're non-empty. This matches
         // the typical "Mr. John Smith Jr." rendering people expect.
-        // isset (not !empty) — sub_input_values() already strips blank
+        // isset (not !empty) - sub_input_values() already strips blank
         // values, and !empty would drop a literal '0'. (#1603)
         if (stripos($format, '{prefix}') === false && isset($v['prefix'])) {
             $out = $v['prefix'] . ' ' . $out;

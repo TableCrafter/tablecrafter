@@ -1,7 +1,7 @@
 /**
- * TableCrafter — admin/load-table-data.js
+ * TableCrafter - admin/load-table-data.js
  *
- * Sixth slice of #842 (filed as #955). The load-side AJAX flow —
+ * Sixth slice of #842 (filed as #955). The load-side AJAX flow - 
  * loadTableData receives a saved table_config JSON from the server and
  * hydrates the builder UI; applySavedSettings restores per-field config
  * + per-column alignments + conditional formatting + responsive settings.
@@ -105,19 +105,19 @@
                     $('select[name="top_n_direction"]').val(tableData.settings.top_n_direction);
                 }
 
-                // #634 — load saved export filename pattern. Empty string
+                // #634 - load saved export filename pattern. Empty string
                 // means "use legacy default" at runtime.
                 if (typeof tableData.settings.export_filename_pattern !== 'undefined') {
                     $('input[name="export_filename_pattern"]').val(tableData.settings.export_filename_pattern || '');
                 }
 
-                // #547 — load schema.org JSON-LD type. settings.schema is
+                // #547 - load schema.org JSON-LD type. settings.schema is
                 // the normalized map produced by TC_Schema_Service::normalize.
                 if (tableData.settings.schema && tableData.settings.schema.schema_type) {
                     $('select[name="schema[schema_type]"]').val(tableData.settings.schema.schema_type);
                 }
 
-                // TC_Pagination_Label_Service — load the five pagination
+                // TC_Pagination_Label_Service - load the five pagination
                 // labels. Each is an independent text input; empty value
                 // is preserved as "use plugin default at runtime".
                 ['info_text', 'previous_label', 'next_label', 'no_results', 'loading'].forEach(function (key) {
@@ -126,13 +126,13 @@
                     }
                 });
 
-                // #565 — load enable_multi_sort. Service default is ON; only
+                // #565 - load enable_multi_sort. Service default is ON; only
                 // explicitly-saved false flips the checkbox off.
                 if (typeof tableData.settings.enable_multi_sort !== 'undefined') {
                     $('input[name="enable_multi_sort"]').prop('checked', !!tableData.settings.enable_multi_sort);
                 }
 
-                // #531 — load per-table print settings. Service defaults
+                // #531 - load per-table print settings. Service defaults
                 // (enabled=false, paper=letter, repeat=true, striping=true,
                 // excluded=[]) drive the form's initial state when the
                 // table has no print_settings saved yet.
@@ -163,17 +163,17 @@
                     $('input[name="allow_url_filters"]').prop('checked', !!tableData.settings.allow_url_filters);
                 }
 
-                // #2254 — per-table external DB public render opt-in. Off by default.
+                // #2254 - per-table external DB public render opt-in. Off by default.
                 if (typeof tableData.settings.external_db_public_render !== 'undefined') {
                     $('input[name="external_db_public_render"]').prop('checked', !!tableData.settings.external_db_public_render);
                 }
 
-                // #2369 — shortcode expansion opt-in for manual-table cells. Off by default.
+                // #2369 - shortcode expansion opt-in for manual-table cells. Off by default.
                 if (typeof tableData.settings.manual_render_shortcodes !== 'undefined') {
                     $('input[name="manual_render_shortcodes"]').prop('checked', !!tableData.settings.manual_render_shortcodes);
                 }
 
-                // TC_Row_Height_Service — three flat string settings.
+                // TC_Row_Height_Service - three flat string settings.
                 ['row_height', 'header_height'].forEach(function (key) {
                     if (typeof tableData.settings[key] !== 'undefined') {
                         $('input[name="' + key + '"]').val(tableData.settings[key] || '');
@@ -183,7 +183,7 @@
                     $('select[name="row_overflow_mode"]').val(tableData.settings.row_overflow_mode || 'ellipsis');
                 }
 
-                // TC_Default_Sort_Service — column + direction.
+                // TC_Default_Sort_Service - column + direction.
                 if (typeof tableData.settings.default_sort_column !== 'undefined') {
                     $('select[name="default_sort_column"]').val(tableData.settings.default_sort_column || '');
                 }
@@ -196,7 +196,7 @@
                     $('input[name="persist_filters_localstorage"]').prop('checked', !!tableData.settings.persist_filters_localstorage);
                 }
 
-                // TC_Collapsible_Service — both flags off by default.
+                // TC_Collapsible_Service - both flags off by default.
                 if (typeof tableData.settings.collapsible_enabled !== 'undefined') {
                     $('input[name="collapsible_enabled"]').prop('checked', !!tableData.settings.collapsible_enabled);
                 }
@@ -212,7 +212,7 @@
                     $('input[name="length_selector_options"]').val(tableData.settings.length_selector_options || '');
                 }
 
-                // Load responsive mode — valid values: 'disabled','basic','enhanced','flip' (#348)
+                // Load responsive mode - valid values: 'disabled','basic','enhanced','flip' (#348)
                 if (tableData.settings.responsive_mode) {
                     var validModes = ['disabled', 'basic', 'enhanced', 'flip'];
                     var mode = validModes.includes(tableData.settings.responsive_mode)
@@ -277,7 +277,7 @@
             }
 
             // Load per-column wrap mode from settings.column_wrap_modes (#662).
-            // Same shape as column_alignments — flat field_id => mode map.
+            // Same shape as column_alignments - flat field_id => mode map.
             // TC_Wrap_Mode_Service::sanitize_map omits 'default' values, so
             // any field id not in this map should fall back to 'default' in
             // the modal load above.
@@ -290,7 +290,7 @@
             }
 
             // Load per-column vertical alignment from
-            // settings.column_vertical_alignments (#663). Same flat shape —
+            // settings.column_vertical_alignments (#663). Same flat shape - 
             // sanitizer at class-tc-admin.php:735 whitelists top/middle/bottom
             // and coerces anything else to ''. Empty values fall back to the
             // browser default in the modal load above.
@@ -358,7 +358,7 @@
                 }.bind(this));
             }
 
-            // #1731 — Data Bars (Pro). field_id => { enabled, color }.
+            // #1731 - Data Bars (Pro). field_id => { enabled, color }.
             if (settings.column_data_bars) {
                 $.each(settings.column_data_bars, function (fieldId, cfg) {
                     if (this.formFields[fieldId] && cfg) {

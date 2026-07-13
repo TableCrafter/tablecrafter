@@ -16,11 +16,11 @@ if (!defined('ABSPATH')) {
         <span class="gt-welcome-logo">TC</span>
         <div>
             <h2 class="gt-welcome-hero-title"><?php esc_html_e('Welcome to TableCrafter', 'tc-data-tables'); ?></h2>
-            <p><?php esc_html_e('Turn any data source into a beautiful, responsive WordPress table — JSON / REST APIs, CSV, Google Sheets and Excel for free, plus Gravity Forms, WooCommerce, Airtable, Notion and external databases on Pro. Add a shortcode (or the TableCrafter block / Elementor widget) and you are done.', 'tc-data-tables'); ?></p>
+            <p><?php esc_html_e('Turn any data source into a beautiful, responsive WordPress table - JSON / REST APIs, CSV, Google Sheets and Excel for free, plus Gravity Forms, WooCommerce, Airtable, Notion and external databases on Pro. Add a shortcode (or the TableCrafter block / Elementor widget) and you are done.', 'tc-data-tables'); ?></p>
         </div>
     </div>
 
-    <h2><?php esc_html_e('See it in action — load a demo in one click', 'tc-data-tables'); ?></h2>
+    <h2><?php esc_html_e('See it in action - load a demo in one click', 'tc-data-tables'); ?></h2>
     <p class="gt-welcome-demos">
         <?php
         if (class_exists('TC_Demo_Data')) {
@@ -38,7 +38,7 @@ if (!defined('ABSPATH')) {
 
     <?php if (class_exists('TC_Templates')) : ?>
         <h2><?php esc_html_e('Start from a template', 'tc-data-tables'); ?></h2>
-        <p class="gt-welcome-lead"><?php esc_html_e('Prebuilt starting points — one click creates a ready-to-edit table with sample data and columns set up.', 'tc-data-tables'); ?></p>
+        <p class="gt-welcome-lead"><?php esc_html_e('Prebuilt starting points - one click creates a ready-to-edit table with sample data and columns set up.', 'tc-data-tables'); ?></p>
         <div class="gt-templates-gallery">
             <?php foreach (TC_Templates::all() as $gt_tpl_key => $gt_tpl) : ?>
                 <div class="gt-template-card">

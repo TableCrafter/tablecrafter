@@ -1,6 +1,6 @@
 <?php
 /**
- * Slice 2 of #500 — UI / AJAX / URL integration layer for the relative-date filter.
+ * Slice 2 of #500 - UI / AJAX / URL integration layer for the relative-date filter.
  *
  * The deterministic date-math service TC_Relative_Date_Filter (slice 1, v4.7.2)
  * resolves preset keys to wall-clock [start, end] DateTimeImmutable windows.
@@ -8,13 +8,13 @@
  *
  *   - the column header dropdown UI (label source via presets()),
  *   - the AJAX query pipeline (preset key -> calendar-day Y-m-d bounds,
- *     applied via the existing TC_Date_Filter_Service — no parallel SQL),
+ *     applied via the existing TC_Date_Filter_Service - no parallel SQL),
  *   - URL persistence as `gt_filter_<col>=<preset>`. The `gt_filter_` prefix
  *     is intentionally distinct from the `gt_col_` prefix used by
  *     TC_URL_Filter_Service (#395) so column pre-filters and relative-date
  *     filters can coexist without collision.
  *
- * The `custom` preset is a UI-only signal — to_date_range() returns null for
+ * The `custom` preset is a UI-only signal - to_date_range() returns null for
  * it so the column header can fall back to the existing absolute-date-range
  * picker without re-mounting.
  *
@@ -95,7 +95,7 @@ class TC_Relative_Date_Filter_Integration {
     /**
      * Parse a $_GET-shaped array into a [col_id => preset_key] map for every
      * `gt_filter_<col>=<preset>` whose value is an exact, known, non-custom
-     * preset key. Unknown / empty / mangled values are silently dropped —
+     * preset key. Unknown / empty / mangled values are silently dropped - 
      * defence in depth against arbitrary query-string input.
      *
      * @param array $get
@@ -128,7 +128,7 @@ class TC_Relative_Date_Filter_Integration {
             if ( ! is_scalar( $raw ) ) {
                 continue;
             }
-            // Compare against the raw scalar (cast to string) — sanitize_text_field
+            // Compare against the raw scalar (cast to string) - sanitize_text_field
             // would silently strip whitespace/control chars and let a junk value
             // collide with a real preset key. We want exact-match validation.
             $value = (string) $raw;
@@ -146,7 +146,7 @@ class TC_Relative_Date_Filter_Integration {
      * existing TC_Date_Filter_Service (the same code path the absolute-date-
      * range filter uses).
      *
-     * `custom` and unknown presets are no-ops — rows are returned unchanged
+     * `custom` and unknown presets are no-ops - rows are returned unchanged
      * so a misconfigured column never silently empties the table.
      *
      * @param array       $rows

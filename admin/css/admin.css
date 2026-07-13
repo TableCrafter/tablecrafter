@@ -1790,14 +1790,14 @@
     }
 }
 /* ============================================================
- * Issue #528 — Admin "All Tables" list responsive on mobile/tablet.
+ * Issue #528 - Admin "All Tables" list responsive on mobile/tablet.
  * Mirrors WordPress core's wp-list-table responsive pattern: at the
  * <=782px breakpoint, non-primary columns collapse and a toggle-row
  * button reveals them. Scoped to #gt-tables-list so styles don't
  * leak into other admin screens.
  * ============================================================ */
 @media screen and (max-width: 782px) {
-    /* The outer overflow-x:auto wrap fights the stacked-card pattern —
+    /* The outer overflow-x:auto wrap fights the stacked-card pattern - 
      * disable horizontal scroll on the list view at narrow widths so
      * WP core's responsive collapse can take over. */
     #gt-tables-list .gt-responsive-table-wrap {
@@ -1817,7 +1817,7 @@
         padding-top: 4px;
     }
 
-    /* Action button column on the far right — let it wrap under the
+    /* Action button column on the far right - let it wrap under the
      * shortcode/date columns rather than push the row wider than
      * the viewport. */
     #gt-tables-list .wp-list-table td.column-actions {
@@ -1870,7 +1870,7 @@
     height: 16px;
 }
 
-/* #1968 — Brand-color override for the TableCrafter admin menu item.
+/* #1968 - Brand-color override for the TableCrafter admin menu item.
    WordPress applies the admin color scheme's blue to the active state;
    we replace it with the plugin's teal so the sidebar matches the dashboard. */
 #adminmenu #toplevel_page_gravity-tables.wp-has-current-submenu > a.menu-top,
@@ -1887,7 +1887,7 @@
     background: #0f766e !important;
 }
 
-/* #1974 — Account page brand header + Freemius element overrides */
+/* #1974 - Account page brand header + Freemius element overrides */
 .gt-acct-header {
     background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
     border-radius: 8px;
@@ -2034,7 +2034,7 @@
 }
 .gt-wizard-promo-close:hover { color: #134e4a; }
 
-/* #1984 — Wizard entry button on tables list */
+/* #1984 - Wizard entry button on tables list */
 .gt-wizard-entry-btn { position: relative; }
 .gt-wizard-entry-beta {
     font-size: 9px;

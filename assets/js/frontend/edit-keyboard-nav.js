@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/edit-keyboard-nav.js
+ * TableCrafter - frontend/edit-keyboard-nav.js
  *
  * Keyboard navigation between inline-editable cells. Third slice
  * under #833. Two helpers, ~80 lines.

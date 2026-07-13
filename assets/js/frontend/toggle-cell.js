@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/toggle-cell.js
+ * TableCrafter - frontend/toggle-cell.js
  *
  * Toggle / boolean column cell renderer (#325). #832 slice 6 of N.
  *

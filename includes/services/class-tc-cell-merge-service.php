@@ -82,7 +82,7 @@ class TC_Cell_Merge_Service {
      *
      * Cells that were covered by the merge become independent again; their
      * content is expected to be managed by the caller (content is preserved
-     * in the data layer — the UI restores empty cells on split).
+     * in the data layer - the UI restores empty cells on split).
      *
      * @param array $merges  Current merges array.
      * @param int   $row     0-based anchor row.
@@ -119,7 +119,7 @@ class TC_Cell_Merge_Service {
     /**
      * Determine whether a cell is covered by another cell's merge span.
      *
-     * A covered cell must be omitted from the rendered HTML — its space is
+     * A covered cell must be omitted from the rendered HTML - its space is
      * already occupied by the anchor cell's rowspan/colspan.
      *
      * @param int   $row

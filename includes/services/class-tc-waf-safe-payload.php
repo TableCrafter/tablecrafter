@@ -2,7 +2,7 @@
 /**
  * TC_WAF_Safe_Payload
  *
- * Issue #553 — opaque envelope for inline-edit AJAX payloads so
+ * Issue #553 - opaque envelope for inline-edit AJAX payloads so
  * generic WAF rules (Cloudflare, mod_security, Wordfence, Sucuri)
  * cannot pattern-match SQLi / XSS tokens against legitimate user
  * cell content like `UNION SELECT * FROM users` or
@@ -82,7 +82,7 @@ class TC_WAF_Safe_Payload {
      * - Must contain only base64-alphabet characters.
      * - Must round-trip through `decode()` to a non-null array.
      *
-     * The roundtrip check is what actually validates — the regex is a
+     * The roundtrip check is what actually validates - the regex is a
      * fast-fail to avoid running base64_decode + json_decode on every
      * incoming form value.
      */

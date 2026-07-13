@@ -133,11 +133,11 @@ class TC_Typography_Service {
         // Disable Google Fonts outright:
         //   add_filter('gt_disable_third_party_cdn',              '__return_true'); // global kill-switch
         //   add_filter('gt_disable_third_party_cdn_google_fonts', '__return_true'); // google_fonts only
-        // When disabled, the configured font name still applies — browsers
+        // When disabled, the configured font name still applies - browsers
         // fall back to the closest local typeface match.
         //
         // Self-host or use a privacy-respecting mirror by replacing the
-        // base URL — e.g. point at the Bunny.net Google Fonts mirror:
+        // base URL - e.g. point at the Bunny.net Google Fonts mirror:
         //   add_filter('gt_google_fonts_url_base', fn() => 'https://fonts.bunny.net/css2');
         if (!function_exists('gt_third_party_cdn_source_disabled')) {
             // @codeCoverageIgnoreStart

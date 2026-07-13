@@ -2,7 +2,7 @@
 /**
  * TC_Row_Link_Service
  *
- * Issue #567 — slice 1 of 3. Pure URL-builder helper for the future
+ * Issue #567 - slice 1 of 3. Pure URL-builder helper for the future
  * clickable-row feature. Defines the per-table row-link config
  * schema, expands `{column_name}` placeholders against a row, and
  * validates the result against a scheme whitelist (XSS hardening).
@@ -13,7 +13,7 @@
  * keyboard handling), changes the cursor on hover, makes the row
  * focusable, and delegates clicks correctly so inline interactive
  * elements (buttons / links / inline edit / action buttons) keep
- * working — only blank cell areas trigger row navigation. Cell-level
+ * working - only blank cell areas trigger row navigation. Cell-level
  * hyperlinks (#532, #362) win when both exist.
  *
  * @since 4.7.52
@@ -70,7 +70,7 @@ class TC_Row_Link_Service {
     /**
      * Expand `{column_name}` placeholders against $row. Whole-cell
      * shortcut (template === `{col}`) returns the cell's value
-     * verbatim if it passes `is_safe_url()` — preserves existing
+     * verbatim if it passes `is_safe_url()` - preserves existing
      * fully-formed URLs without double-encoding. Other templates
      * URL-encode placeholder values before splicing.
      *
@@ -138,8 +138,8 @@ class TC_Row_Link_Service {
     /**
      * Whitelist-based URL safety check. Allows http / https / mailto
      * / tel and site-relative URLs (starting with `/`). Everything
-     * else — including dangerous schemes (javascript, data, vbscript,
-     * file), unknown schemes, and bare relative strings — is
+     * else - including dangerous schemes (javascript, data, vbscript,
+     * file), unknown schemes, and bare relative strings - is
      * rejected.
      */
     public static function is_safe_url($url): bool {
@@ -153,7 +153,7 @@ class TC_Row_Link_Service {
 
         // Site-relative paths. A second leading slash would make the
         // URL protocol-relative (`//host/...`), which browsers resolve
-        // to an external origin — reject that shape. (#1604)
+        // to an external origin - reject that shape. (#1604)
         if ($trimmed[0] === '/') {
             return !isset($trimmed[1]) || $trimmed[1] !== '/';
         }

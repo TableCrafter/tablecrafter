@@ -2,7 +2,7 @@
 /**
  * TC_Bulk_Migration_Bundle_Service
  *
- * Issue #522 — slice 1 of 3. Foundational pure helper for bulk
+ * Issue #522 - slice 1 of 3. Foundational pure helper for bulk
  * site-to-site migration of all tables. Defines the bundle envelope
  * schema, version field, builder, validator, and conflict-resolution
  * policy logic.

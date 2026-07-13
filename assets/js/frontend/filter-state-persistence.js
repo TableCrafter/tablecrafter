@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/filter-state-persistence.js
+ * TableCrafter - frontend/filter-state-persistence.js
  *
  * localStorage persistence of search term + per-column filter state.
  * #832 slice 14 of N.
@@ -18,7 +18,7 @@
  *
  *   - restoreFilterStateLocal()
  *       No-ops the same way. Otherwise reads + merges into
- *       `this.searchTerm` and `this.filters` — URL takes precedence
+ *       `this.searchTerm` and `this.filters` - URL takes precedence
  *       (only fills slots that applyUrlFilters left empty). Returns
  *       true on a successful restore.
  *
@@ -71,7 +71,7 @@
                     $('#' + this.wrapperId).find('.gt-search-input').val(state.searchTerm);
                 }
                 if (state.filters && typeof state.filters === 'object') {
-                    // Merge rather than replace — applyUrlFilters may have already
+                    // Merge rather than replace - applyUrlFilters may have already
                     // seeded entries from the URL, and URL takes precedence.
                     for (var k in state.filters) {
                         if (Object.prototype.hasOwnProperty.call(state.filters, k) && !this.filters[k]) {

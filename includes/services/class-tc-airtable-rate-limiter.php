@@ -2,7 +2,7 @@
 /**
  * TC_Airtable_Rate_Limiter
  *
- * Issue #517 — slice 4h of N. Per-base sliding-window rate limiter
+ * Issue #517 - slice 4h of N. Per-base sliding-window rate limiter
  * for Airtable REST API calls. Airtable caps each base at ~5 req/s;
  * exceeding that returns 429 Too Many Requests. Without client-side
  * rate limiting, a busy admin (or a programmatic batch via the

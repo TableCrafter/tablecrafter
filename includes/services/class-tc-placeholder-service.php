@@ -6,18 +6,18 @@
  * current date/time/user rather than a stored snapshot.
  *
  * Single-brace tokens (legacy):
- *   {current_date}     – site date (WP date_format option, WP timezone)
- *   {current_time}     – site time (WP time_format option, WP timezone)
- *   {current_datetime} – date + time combined
- *   {current_user}     – display name of the logged-in user (empty for guests)
- *   {site_name}        – WordPress blogname option
- *   {site_url}         – WordPress home URL
+ *   {current_date} - site date (WP date_format option, WP timezone)
+ *   {current_time} - site time (WP time_format option, WP timezone)
+ *   {current_datetime} - date + time combined
+ *   {current_user} - display name of the logged-in user (empty for guests)
+ *   {site_name} - WordPress blogname option
+ *   {site_url} - WordPress home URL
  *
  * Double-brace formula tokens (issue #316):
- *   {{TODAY}}          – current date in site's date_format
- *   {{NOW}}            – current date+time in site's date_format + time_format
- *   {{TODAY|d/m/Y}}    – current date in a custom PHP date() format string
- *   {{NOW|H:i}}        – current time in a custom PHP date() format string
+ *   {{TODAY}} - current date in site's date_format
+ *   {{NOW}} - current date+time in site's date_format + time_format
+ *   {{TODAY|d/m/Y}} - current date in a custom PHP date() format string
+ *   {{NOW|H:i}} - current time in a custom PHP date() format string
  */
 
 // @codeCoverageIgnoreStart

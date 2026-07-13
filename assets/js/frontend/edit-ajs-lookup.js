@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/edit-ajs-lookup.js
+ * TableCrafter - frontend/edit-ajs-lookup.js
  *
  * Search-as-you-type inline editor for AJS Toolkit client / pit /
  * destination / material lookups. Fourth slice under #833.
@@ -21,7 +21,7 @@
  *   8. Focus + select-all on entry (50ms setTimeout to ensure the DOM
  *      has settled before setSelectionRange).
  *
- * Pairs with edit-save.js (slice 2) — every save path routes through
+ * Pairs with edit-save.js (slice 2) - every save path routes through
  * this.saveField on the prototype.
  */
 (function (window) {

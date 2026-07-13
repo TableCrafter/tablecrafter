@@ -1,12 +1,12 @@
 /**
- * TableCrafter — frontend/date-inputs.js
+ * TableCrafter - frontend/date-inputs.js
  *
  * Date picker input wiring. Thirteenth slice under #833. One
  * method, ~158 lines.
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - setupDateInputs() — wires the html5 <input type="date"> +
+ *   - setupDateInputs() - wires the html5 <input type="date"> +
  *     display-format mirror inputs, preset chip clicks ("today",
  *     "yesterday", "last 7", etc.), range from/to validation,
  *     and the format-conversion helpers (parseDateInput / formatDate).
@@ -95,7 +95,7 @@
     };
 
     // convertHtml5DateToFormat / parseInputDate / formatDateToTarget moved to
-    // assets/js/frontend/util.js as part of #841 (split frontend.js — module 1).
+    // assets/js/frontend/util.js as part of #841 (split frontend.js - module 1).
     // The util module attaches them to GravityTable.prototype via Object.assign
     // so callsites here continue to use this.convertHtml5DateToFormat etc.
     // unchanged.

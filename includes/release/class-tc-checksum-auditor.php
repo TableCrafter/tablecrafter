@@ -10,7 +10,7 @@
  * install as tampered. This class provides the diff + parity logic
  * the release pipeline calls before pushing to WordPress.org.
  *
- * Pure functions — every entry point takes data, returns data. The
+ * Pure functions - every entry point takes data, returns data. The
  * git / HTTP wrapping lives in bin/release-checksum-audit.php so
  * the audit logic stays unit-testable.
  */

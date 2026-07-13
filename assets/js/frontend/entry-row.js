@@ -1,12 +1,12 @@
 /**
- * TableCrafter — frontend/entry-row.js
+ * TableCrafter - frontend/entry-row.js
  *
  * Per-row HTML builder + no-entries fallback. #832 slice 11 of N.
  *
  * Two helpers attached to GravityTable.prototype via Object.assign:
  *
  *   - renderEntryRowHtml(entry, ctx)
- *       Pure-ish helper (no jQuery, no DOM access — all DOM probes
+ *       Pure-ish helper (no jQuery, no DOM access - all DOM probes
  *       are pre-resolved by the caller into the `ctx` flags object).
  *       Returns the `<tr>…</tr>` markup for one entry plus the
  *       optional hidden detail-row sibling.
@@ -55,7 +55,7 @@
                 html += self.renderDetailToggleCellHtml(entry.entry_id, detailRowId);
             }
 
-            // #2340 — index cell: 1-based counter, renumbers on sort/filter/page.
+            // #2340 - index cell: 1-based counter, renumbers on sort/filter/page.
             if (ctx.hasIndexHeader) {
                 html += '<td class="gt-index-cell">' + (ctx.rowIndex || 0) + '</td>';
             }

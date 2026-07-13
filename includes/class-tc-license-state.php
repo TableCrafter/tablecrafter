@@ -3,7 +3,7 @@
  * Read-only view over the Freemius license state.
  *
  * Centralises status classification so the rest of the plugin can ask one
- * deterministic question — "what state is the license in?" — instead of
+ * deterministic question - "what state is the license in?" - instead of
  * combining `is_premium()`, `is_paying()`, `is_trial()` and expiration
  * checks ad hoc at every call site. Required for #481 (graceful
  * degradation on downgrade / expiry).
@@ -49,7 +49,7 @@ class TC_License_State
             return self::ACTIVE;
         }
 
-        // No active premium — distinguish "expired" (we knew about a paid
+        // No active premium - distinguish "expired" (we knew about a paid
         // license, the date is in the past) from a plain free user.
         if (method_exists($fs, 'get_license')) {
             $license = $fs->get_license();
@@ -77,7 +77,7 @@ class TC_License_State
      * Render the standard "this control requires <plan>" admin notice.
      *
      * Used wherever a previously-enabled premium control becomes gated
-     * after expiry or downgrade — the customer's saved configuration is
+     * after expiry or downgrade - the customer's saved configuration is
      * left intact, but the control is shown read-only with this notice
      * so they always know which plan unlocks it.
      */
@@ -101,7 +101,7 @@ class TC_License_State
 
         return '<div class="notice notice-warning inline gt-feature-gated">'
              . '<p><strong>' . $feature_safe . '</strong> requires the <em>' . $plan_safe . '</em> plan.</p>'
-             . '<p>Your saved configuration for this feature is preserved — re-activate a ' . $plan_safe . ' license to use it again.</p>'
+             . '<p>Your saved configuration for this feature is preserved - re-activate a ' . $plan_safe . ' license to use it again.</p>'
              . '</div>';
     }
 }

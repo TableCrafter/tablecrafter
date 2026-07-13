@@ -240,13 +240,13 @@ class TC_Validation_Service {
      * Validate a single cell value against a per-column rule set.
      *
      * Supported keys in $rules:
-     *   required      (bool)   — must not be empty/whitespace
-     *   min_length    (int)    — minimum character count; 0 = skip
-     *   max_length    (int)    — maximum character count; 0 = skip
-     *   regex         (string) — PCRE pattern without delimiters; invalid patterns silently skipped
-     *   regex_message (string) — user-facing message on regex failure
-     *   min_value     (float)  — minimum numeric value; skipped for non-numeric strings
-     *   max_value     (float)  — maximum numeric value; skipped for non-numeric strings
+     *   required      (bool) - must not be empty/whitespace
+     *   min_length    (int) - minimum character count; 0 = skip
+     *   max_length    (int) - maximum character count; 0 = skip
+     *   regex         (string) - PCRE pattern without delimiters; invalid patterns silently skipped
+     *   regex_message (string) - user-facing message on regex failure
+     *   min_value     (float) - minimum numeric value; skipped for non-numeric strings
+     *   max_value     (float) - maximum numeric value; skipped for non-numeric strings
      *
      * @param string $value Raw cell value.
      * @param array  $rules Sanitized rule set for this column.
@@ -312,10 +312,10 @@ class TC_Validation_Service {
      * Validate a single cell value against a per-column rule set.
      *
      * Supported rules (in addition to the existing rules handled by validate()):
-     *   oneOf       (string[]) — value must be in this list (strict comparison)
-     *   notOneOf    (string[]) — value must NOT be in this list (strict comparison)
-     *   phone       (bool|'permissive') — E.164 when true; permissive digit-strip when 'permissive'
-     *   unique      (bool) — value must not appear in any other entry for this field/form
+     *   oneOf       (string[]) - value must be in this list (strict comparison)
+     *   notOneOf    (string[]) - value must NOT be in this list (strict comparison)
+     *   phone       (bool|'permissive') - E.164 when true; permissive digit-strip when 'permissive'
+     *   unique      (bool) - value must not appear in any other entry for this field/form
      *
      * After all built-in rules pass, the filter hook fires:
      *
@@ -373,7 +373,7 @@ class TC_Validation_Service {
         // ── phone ──────────────────────────────────────────────────────────
         if ( ! empty( $rules['phone'] ) ) {
             if ( $rules['phone'] === 'permissive' ) {
-                // Permissive mode: strip formatting chars then require 7–15 digits.
+                // Permissive mode: strip formatting chars then require 7 - 15 digits.
                 $stripped = preg_replace( '/[\s().+\-]/', '', $value );
                 if ( ! preg_match( '/^\d{7,15}$/', $stripped ) ) {
                     return new \WP_Error(
@@ -382,7 +382,7 @@ class TC_Validation_Service {
                     );
                 }
             } else {
-                // E.164 mode: optional + then [1-9] followed by 1–14 more digits.
+                // E.164 mode: optional + then [1-9] followed by 1 - 14 more digits.
                 if ( ! preg_match( '/^\+?[1-9]\d{1,14}$/', $value ) ) {
                     return new \WP_Error(
                         'invalid_phone',
@@ -466,11 +466,11 @@ class TC_Validation_Service {
             if ( isset( $rules['max_value'] ) && is_numeric( $rules['max_value'] ) ) {
                 $r['max_value'] = (float) $rules['max_value'];
             }
-            // #2282 — unique (bool)
+            // #2282 - unique (bool)
             if ( isset( $rules['unique'] ) ) {
                 $r['unique'] = (bool) $rules['unique'];
             }
-            // #2282 — oneOf (string[])
+            // #2282 - oneOf (string[])
             if ( isset( $rules['oneOf'] ) && is_array( $rules['oneOf'] ) && ! empty( $rules['oneOf'] ) ) {
                 $clean = [];
                 foreach ( $rules['oneOf'] as $v ) {
@@ -480,7 +480,7 @@ class TC_Validation_Service {
                     $r['oneOf'] = $clean;
                 }
             }
-            // #2282 — notOneOf (string[])
+            // #2282 - notOneOf (string[])
             if ( isset( $rules['notOneOf'] ) && is_array( $rules['notOneOf'] ) && ! empty( $rules['notOneOf'] ) ) {
                 $clean = [];
                 foreach ( $rules['notOneOf'] as $v ) {
@@ -490,7 +490,7 @@ class TC_Validation_Service {
                     $r['notOneOf'] = $clean;
                 }
             }
-            // #2282 — phone (bool|'permissive')
+            // #2282 - phone (bool|'permissive')
             if ( isset( $rules['phone'] ) ) {
                 $r['phone'] = ( $rules['phone'] === 'permissive' ) ? 'permissive' : (bool) $rules['phone'];
             }

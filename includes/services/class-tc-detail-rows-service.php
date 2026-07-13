@@ -2,11 +2,11 @@
 /**
  * TC_Detail_Rows_Service
  *
- * Issue #556 — slice 1 of 3. Pure column-partition helper for the
+ * Issue #556 - slice 1 of 3. Pure column-partition helper for the
  * future expandable / collapsible detail-row feature. Classifies
  * columns as "main" vs "detail" via the `detail_only` boolean flag
  * and partitions them, preserving original order in each bucket.
- * No render hook, no admin UI yet — substrate slices 2 + 3 bind to.
+ * No render hook, no admin UI yet - substrate slices 2 + 3 bind to.
  *
  * Slice 2 wires the per-column "Show in detail row only" toggle in
  * the column-config tab plus AJAX save sanitization (uses

@@ -1,10 +1,10 @@
 /**
- * TableCrafter — frontend/load-entries.js
+ * TableCrafter - frontend/load-entries.js
  *
  * AJAX entry-fetch path. Twenty-first slice under #833. One method,
  * ~72 lines.
  *
- *   - loadEntries(onComplete) — dispatch to loadEntriesServerSide
+ *   - loadEntries(onComplete) - dispatch to loadEntriesServerSide
  *     when server-side processing is on, otherwise POST gt_get_entries
  *     with current filters/sort/page state and fan out into
  *     renderEntries on success.
@@ -30,15 +30,15 @@
         var $wrapper = $('#' + this.wrapperId);
         var $tbody = $wrapper.find('tbody');
 
-        // Show loading — add wrapper class so CSS can block premature pagination clicks
+        // Show loading - add wrapper class so CSS can block premature pagination clicks
         $wrapper.addClass('gt-table-loading');
-        // #1713 — render a layout-stable shimmer skeleton instead of a single
+        // #1713 - render a layout-stable shimmer skeleton instead of a single
         // full-width "Loading…" colspan row (which collapsed the columns on
         // sort and read as a flash). Pins the header widths, paints multi-row
         // skeleton rows mirroring the real column/row count.
         self.showLoadingSkeleton($wrapper);
 
-        // #2278 Phase 1 — grammar query detection.
+        // #2278 Phase 1 - grammar query detection.
         // When the search term contains grammar operators (field:, -, OR, ""),
         // suppress the server-side LIKE filter (which would match the raw
         // operator string literally) and apply grammar evaluation client-side
@@ -64,11 +64,11 @@
             search: serverSearch,
             sort_field: this.sortField,
             sort_order: this.sortOrder,
-            // #565 — pass the full multi-sort stack as JSON. Server validates
+            // #565 - pass the full multi-sort stack as JSON. Server validates
             // via TC_Multi_Sort_Service::validate_sort_stack and wires it
             // into the SQL ORDER BY clause when length > 1.
             sort_stack: JSON.stringify(this.sortStack || []),
-            // #568 slice 4 — pass drilldown filters (chips) for server-side filtering.
+            // #568 slice 4 - pass drilldown filters (chips) for server-side filtering.
             drilldown_filters: JSON.stringify(this.drilldownFilters || []),
             columns: this.config.columns,
             lookup_fields: this.config.lookup_fields || {}
@@ -80,7 +80,7 @@
             data.preview_settings = this.config.preview_settings;
         }
 
-        // #1596 — visitor flipped the pivot toggle to raw: ask the
+        // #1596 - visitor flipped the pivot toggle to raw: ask the
         // server to skip aggregation for this request.
         if (this.pivotViewRaw) {
             data.pivot_view = 'raw';
@@ -94,7 +94,7 @@
             data.debug = 'true';
         }
 
-        // #916 — debug logging removed. Re-enable behind a debug flag if needed:
+        // #916 - debug logging removed. Re-enable behind a debug flag if needed:
         // console.log('GT Frontend: Loading entries with filters:', this.filters);
         // console.log('GT Frontend: Full AJAX data:', data);
 
@@ -104,7 +104,7 @@
             $wrapper.removeClass('gt-table-loading');
             self.releaseColumnWidths($wrapper);
             if (response.success) {
-                // #2278 Phase 1 — apply grammar filter client-side when active.
+                // #2278 Phase 1 - apply grammar filter client-side when active.
                 var renderData = response.data;
                 if (grammarQuery && typeof self.grammarFilterEntries === 'function'
                         && renderData && Array.isArray(renderData.entries)) {
@@ -125,11 +125,11 @@
         });
     };
 
-    // #1713 — layout-stable loading skeleton.
+    // #1713 - layout-stable loading skeleton.
     //
     // Replaces the old single full-width "Loading…" colspan row (which let
-    // the columns collapse to min-content on every sort/filter/paginate —
-    // the "squish" — then snap back when data arrived). Instead we:
+    // the columns collapse to min-content on every sort/filter/paginate - 
+    // the "squish" - then snap back when data arrived). Instead we:
     //   1. Pin the current header column widths inline so swapping the
     //      <tbody> can't reflow the header geometry.
     //   2. Paint multi-row shimmer rows that mirror the real column count
@@ -181,7 +181,7 @@
         }
     };
 
-    // #1713 — release the header widths pinned by showLoadingSkeleton so the
+    // #1713 - release the header widths pinned by showLoadingSkeleton so the
     // freshly rendered rows can settle to their natural column widths.
     GravityTable.prototype.releaseColumnWidths = function ($wrapper) {
         if (!this._gtPinnedThWidths) { return; }

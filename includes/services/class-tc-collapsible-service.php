@@ -43,7 +43,7 @@ class TC_Collapsible_Service {
      * @return bool
      */
     public static function is_default_collapsed( array $settings ): bool {
-        // Same coercion guard as is_enabled() — string "false" must be false.
+        // Same coercion guard as is_enabled() - string "false" must be false.
         return TC_Bool::cast( $settings['collapsible_default_collapsed'] ?? false );
     }
 
@@ -133,7 +133,7 @@ class TC_Collapsible_Service {
             body.setAttribute('hidden', '');
         } else {
             body.removeAttribute('hidden');
-            // DataTables miscomputes column widths when hidden on init — adjust on reveal.
+            // DataTables miscomputes column widths when hidden on init - adjust on reveal.
             if (window.jQuery && typeof window.jQuery.fn.DataTable === 'function') {
                 window.jQuery('#gt-table-' + tableId).DataTable().columns.adjust();
             }

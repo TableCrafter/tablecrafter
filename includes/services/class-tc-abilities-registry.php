@@ -2,7 +2,7 @@
 /**
  * TC_Abilities_Registry
  *
- * Issue #503 — slice 1 of 3. Foundational ability schema + registry
+ * Issue #503 - slice 1 of 3. Foundational ability schema + registry
  * for the WordPress 7.0 Abilities API. Exposes Gravity Tables
  * capabilities (list / read / query / write) so external AI tooling
  * and other plugins can discover and invoke our table operations
@@ -172,11 +172,11 @@ class TC_Abilities_Registry {
     /**
      * Dispatch an ability invocation. Returns real data on success
      * or a WP_Error variant on failure:
-     *   - gt_ability_unknown          (status 404) — unrecognized id
-     *   - gt_ability_invalid_args     (status 400) — required arg missing
-     *   - gt_ability_not_found        (status 404) — referenced row missing
-     *   - gt_ability_unavailable      (status 503) — TC_Admin / GFAPI not loaded
-     *   - gt_ability_premium_required (status 402) — free tier hit a write
+     *   - gt_ability_unknown          (status 404) - unrecognized id
+     *   - gt_ability_invalid_args     (status 400) - required arg missing
+     *   - gt_ability_not_found        (status 404) - referenced row missing
+     *   - gt_ability_unavailable      (status 503) - TC_Admin / GFAPI not loaded
+     *   - gt_ability_premium_required (status 402) - free tier hit a write
      *
      * Slice 2 wired read abilities; slice 3 wires write abilities and
      * adds the premium gate that fires BEFORE the handler runs.
@@ -270,7 +270,7 @@ class TC_Abilities_Registry {
      * know the Abilities API integration is dormant. One-shot via
      * the `gt_abilities_legacy_notice_dismissed` option (the JS in
      * `is-dismissible` flips it client-side; on a true REST-aware
-     * dismissal you would POST a dedicated handler — out of scope
+     * dismissal you would POST a dedicated handler - out of scope
      * for this slice).
      */
     public static function maybe_arm_legacy_wp_notice(): void {
@@ -294,7 +294,7 @@ class TC_Abilities_Registry {
      */
     public static function render_legacy_wp_notice(): void {
         $msg = __(
-            'Gravity Tables Abilities API integration is inactive — your site is running WordPress &lt; 7.0. The plugin works exactly as before; AI tooling discovery via the platform layer activates automatically once WP 7.0 is installed.',
+            'Gravity Tables Abilities API integration is inactive - your site is running WordPress &lt; 7.0. The plugin works exactly as before; AI tooling discovery via the platform layer activates automatically once WP 7.0 is installed.',
             'tc-data-tables'
         );
         echo '<div class="notice notice-info is-dismissible" data-gt-abilities-notice="1"><p>'
@@ -528,12 +528,12 @@ class TC_Abilities_Registry {
 
         $rows = is_array($entries) ? array_values($entries) : [];
 
-        // #795 / #806 — post-process rows for MCP / abilities consumers:
+        // #795 / #806 - post-process rows for MCP / abilities consumers:
         //   - list fields: deserialise the serialised PHP blob into JSON
         //     so external clients see a real array.
         //   - creditcard fields: redact via TC_Creditcard_Field_Renderer
         //     so PAN sub-inputs N.1..N.5 NEVER ship over the wire.
-        //     Defence in depth — even though get_entries already scrubs,
+        //     Defence in depth - even though get_entries already scrubs,
         //     the abilities path can be invoked independently.
         $needs_list = class_exists('TC_List_Field_Renderer') && !empty($rows);
         $needs_cc   = class_exists('TC_Creditcard_Field_Renderer') && !empty($rows);

@@ -2,7 +2,7 @@
 /**
  * TC_AI_Table_Summarizer
  *
- * Issue #498 (sub of #490) — slice 1 of 3. Pure rule-based table
+ * Issue #498 (sub of #490) - slice 1 of 3. Pure rule-based table
  * summarizer. Generates deterministic factual bullets from a row +
  * column dataset. Future slices add:
  *
@@ -33,7 +33,7 @@ class TC_AI_Table_Summarizer {
     /** Cap on rows processed per call. Configurable in slice 3. */
     private const ROW_CAP = 5000;
 
-    /** Threshold for "dominant value" bullet — fraction of column. */
+    /** Threshold for "dominant value" bullet - fraction of column. */
     private const DOMINANT_THRESHOLD = 0.40;
 
     /**

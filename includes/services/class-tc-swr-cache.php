@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_SWR_Cache — stale-while-revalidate cache for external data sources.
+ * TC_SWR_Cache - stale-while-revalidate cache for external data sources.
  *
  * Issue #2012 (convergence epic #2006, Phase 3). Ported from the free plugin's
  * TC_Cache SWR pattern. When a cache entry is fresh it is returned directly;
@@ -9,7 +9,7 @@
  * upstream never blocks the page); when it is missing or fully expired the
  * fetcher runs synchronously.
  *
- * WP_Error results are never cached — they are returned through so the caller's
+ * WP_Error results are never cached - they are returned through so the caller's
  * error short-circuit can handle them, and the next request retries.
  */
 
@@ -39,13 +39,13 @@ class TC_SWR_Cache
                 return $env['data']; // fresh
             }
             if ($stale_grace > 0 && $now < (int) $env['exp'] + $stale_grace) {
-                // Stale but serviceable — return stale now, refresh after response.
+                // Stale but serviceable - return stale now, refresh after response.
                 self::schedule_refresh($key, $fresh_ttl, $stale_grace, $fetcher);
                 return $env['data'];
             }
         }
 
-        // Miss or fully expired — fetch synchronously.
+        // Miss or fully expired - fetch synchronously.
         $fresh = call_user_func($fetcher);
         self::store($key, $fresh, $fresh_ttl, $stale_grace, $now);
         return $fresh;
@@ -90,7 +90,7 @@ class TC_SWR_Cache
         if (function_exists('add_action')) {
             add_action('shutdown', $cb, 5);
         } else {
-            // No WP runtime (CLI/tests without the hook) — refresh inline.
+            // No WP runtime (CLI/tests without the hook) - refresh inline.
             // @codeCoverageIgnoreStart -- add_action is always defined under the test shim, so this no-WP fallback is unreachable here.
             $cb();
             // @codeCoverageIgnoreEnd
@@ -113,7 +113,7 @@ class TC_SWR_Cache
         }
     }
 
-    /** Warm cron callback — extensible seam for source integrations. */
+    /** Warm cron callback - extensible seam for source integrations. */
     public static function warm(): void
     {
         if (function_exists('do_action')) {

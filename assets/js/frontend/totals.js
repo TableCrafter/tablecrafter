@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/totals.js
+ * TableCrafter - frontend/totals.js
  *
  * Column-totals row renderer. #832 slice 1 of N.
  *
@@ -46,7 +46,7 @@
             // Shared numeric coercion (#1731): use the canonical
             // gtParseNumeric (util.js) so the column-totals row and the
             // Data Bars fill can never disagree. Falls back to the inline
-            // form only if util.js isn't on the prototype (defensive —
+            // form only if util.js isn't on the prototype (defensive - 
             // never happens in production where util enqueues first).
             var coerce = (typeof self.gtParseNumeric === 'function')
                 ? function (s) { return self.gtParseNumeric(s); }

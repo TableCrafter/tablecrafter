@@ -2,28 +2,28 @@
 /**
  * TC_Pagination_REST
  *
- * Issue #560 — slice 2 of 3. Registers the REST endpoint that the
+ * Issue #560 - slice 2 of 3. Registers the REST endpoint that the
  * future DataTables `serverSide: true` binding (slice 3) consumes.
  *
  *   GET /wp-json/gt/v1/tables/(?P<id>\d+)/rows
  *     query params (parsed via TC_Pagination_Service::parse_request):
- *       page       — 1-indexed, default 1
- *       page_size  — clamped 1..500, default 50
- *       sort_col   — string (validated against the table's saved columns)
- *       sort_dir   — asc | desc, default asc
- *       search     — trimmed string for substring match
+ *       page - 1-indexed, default 1
+ *       page_size - clamped 1..500, default 50
+ *       sort_col - string (validated against the table's saved columns)
+ *       sort_dir - asc | desc, default asc
+ *       search - trimmed string for substring match
  *     response (built via TC_Pagination_Service::build_response):
  *       { rows, total, page, page_size, total_pages }
  *
  * Permission: the same per-table check used by `gt_get_entries`
  * AJAX (`TC_Ajax::checkTableAccessPermission`). Mirrors the #545
- * audit pattern — the REST endpoint must not be more permissive
+ * audit pattern - the REST endpoint must not be more permissive
  * than the AJAX equivalent.
  *
  * Opt-in: the per-table `server_side_pagination` setting (slice 2
  * also ships in the table builder UI). When off, this endpoint
  * still works (handy for external integrations) but the table
- * builder won't bind DataTables to it — that's slice 3.
+ * builder won't bind DataTables to it - that's slice 3.
  *
  * @since 4.87.0
  */
@@ -32,7 +32,7 @@
 if (!defined('ABSPATH')) { exit; }
 // @codeCoverageIgnoreEnd
 
-// #1636 — the CSV export handler neutralizes formula injection via
+// #1636 - the CSV export handler neutralizes formula injection via
 // TC_CSV_Formula_Detector, which is loaded on-demand (not in the main
 // bootstrap list), so guarantee it is available here.
 // @codeCoverageIgnoreStart -- load-time guard; runs at file include before coverage instrumentation starts, and the detector is already loaded under the harness.
@@ -48,7 +48,7 @@ class TC_Pagination_REST {
     const ROUTE_EXPORT = '/tables/(?P<id>\d+)/rows.csv';
 
     /**
-     * Bootstrap. Idempotent — safe to call from tablecrafter.php
+     * Bootstrap. Idempotent - safe to call from tablecrafter.php
      * `init` path. Hooks `rest_api_init` → register_routes.
      */
     public static function boot(): void {
@@ -72,7 +72,7 @@ class TC_Pagination_REST {
                 'search'    => ['type' => 'string',  'required' => false],
             ],
         ]);
-        // #560 slice 3 — streaming CSV companion endpoint.
+        // #560 slice 3 - streaming CSV companion endpoint.
         register_rest_route(self::NAMESPACE_V1, self::ROUTE_EXPORT, [
             'methods'             => 'GET',
             'callback'            => [self::class, 'handle_export_csv'],
@@ -102,7 +102,7 @@ class TC_Pagination_REST {
         if ($table_id <= 0) {
             return new \WP_Error('gt_invalid_args', 'Invalid table id', ['status' => 400]);
         }
-        // #1631 — require an authenticated user before any data access.
+        // #1631 - require an authenticated user before any data access.
         // Without this floor these endpoints (JSON rows + CSV export)
         // were readable by unauthenticated callers whenever a table had
         // no explicit allowed_user_roles, which is the default.
@@ -115,7 +115,7 @@ class TC_Pagination_REST {
             return new \WP_Error('gt_not_found', sprintf('Table %d not found', $table_id), ['status' => 404]);
         }
         $config = $admin->get_table_config($table_id);
-        // #1632 — enforce the per-table password gate (parity with the
+        // #1632 - enforce the per-table password gate (parity with the
         // shortcode + the main REST endpoints).
         $pw_hash = (is_array($config) && !empty($config['table_password_hash']))
             ? (string) $config['table_password_hash']
@@ -132,7 +132,7 @@ class TC_Pagination_REST {
         }
         // @codeCoverageIgnoreStart
         if (!function_exists('wp_get_current_user')) {
-            return true; // defensive — bail out of permission gate in test env
+            return true; // defensive - bail out of permission gate in test env
         }
         // @codeCoverageIgnoreEnd
         $user = wp_get_current_user();
@@ -237,7 +237,7 @@ class TC_Pagination_REST {
      * external integrations that need to pull a full table without
      * the typical "load everything then download" pattern.
      *
-     * Note: this endpoint terminates with `exit` after streaming —
+     * Note: this endpoint terminates with `exit` after streaming - 
      * WP's REST response machinery is bypassed because chunked
      * `text/csv` is fundamentally not a JSON envelope.
      *
@@ -294,7 +294,7 @@ class TC_Pagination_REST {
         }
         fputcsv($fp, TC_CSV_Formula_Detector::neutralize_row($header), ',', '"', ''); // #1636
 
-        // Chunked fetch — 500 entries per page.
+        // Chunked fetch - 500 entries per page.
         $chunk = 500;
         $page  = 0;
         do {
@@ -315,7 +315,7 @@ class TC_Pagination_REST {
                 fputcsv($fp, TC_CSV_Formula_Detector::neutralize_row($row_out), ',', '"', ''); // #1636
             }
             $page++;
-            // Defensive cap — refuse to spin past 200 pages (100k
+            // Defensive cap - refuse to spin past 200 pages (100k
             // rows). Customers needing bigger exports should use
             // the scheduled-export pipeline (#519).
             if ($page >= 200) { break; }

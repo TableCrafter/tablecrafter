@@ -2,7 +2,7 @@
 /**
  * TC_Vertical_Align_Service
  *
- * Issue #549 — slice 1 of 3. Pure resolver helper for the per-cell
+ * Issue #549 - slice 1 of 3. Pure resolver helper for the per-cell
  * vertical alignment feature. Whitelists alignment values, resolves
  * cell-override > column > default precedence, and produces the CSS
  * class / inline style. Slice 2 wires the admin UI (column dropdown
@@ -10,7 +10,7 @@
  * the #365 round-trip fix). Slice 3 emits the resolved class on each
  * `<td>` from `templates/table.php` plus matching CSS rules.
  *
- * Default `middle` deliberately emits no class / no style — the browser
+ * Default `middle` deliberately emits no class / no style - the browser
  * default for `<td>` is already `middle`, so we only render overrides.
  *
  * @since 4.7.48

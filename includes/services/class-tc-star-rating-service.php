@@ -2,7 +2,7 @@
 /**
  * Star Rating column-type renderer for Gravity Tables.
  *
- * Renders a numeric value (0–max) as filled/half/empty SVG stars with full
+ * Renders a numeric value (0 - max) as filled/half/empty SVG stars with full
  * accessibility support and DataTables-compatible numeric sort value.
  */
 

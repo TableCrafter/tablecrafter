@@ -2,7 +2,7 @@
 /**
  * TC_TSV_Parser_Service
  *
- * Issue #516 — slice 1 of 3. Pure tab-separated-values parser for the
+ * Issue #516 - slice 1 of 3. Pure tab-separated-values parser for the
  * future "paste from Excel / Google Sheets / Numbers" admin
  * affordance. Excel-flavoured TSV: tab-delimited rows + a CSV-shaped
  * quoting convention where a cell wrapped in `"` preserves embedded
@@ -10,7 +10,7 @@
  * single `"`.
  *
  * No clipboard JS, no admin UI, no column-type detection in this
- * slice — those land in slices 2 and 3.
+ * slice - those land in slices 2 and 3.
  *
  * Three primitives:
  *   parse($tsv)               → array<int,array<int,string>> rows × cells
@@ -37,7 +37,7 @@ class TC_TSV_Parser_Service {
         if ($tsv === '') {
             return [];
         }
-        // Walk the input character by character — the embedded-newline
+        // Walk the input character by character - the embedded-newline
         // case in quoted cells means we can't do a simple `explode("\n")`
         // followed by a per-line `explode("\t")`.
         $rows = [];
@@ -144,7 +144,7 @@ class TC_TSV_Parser_Service {
             return $out;
         }
         if (!$first_row_is_headers) {
-            // No headers, no column_ids — emit rows keyed by integer.
+            // No headers, no column_ids - emit rows keyed by integer.
             return $rows;
         }
         $headers = $rows[0];

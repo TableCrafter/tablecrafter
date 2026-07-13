@@ -43,7 +43,7 @@ class TC_Shortcode
      * form-entry APIs loaded. Called from render_table() in the DB-backed
      * path. (Wording note: test-issue-342 asserts the unknown-type guard
      * precedes the first entry-API reference in this FILE by string
-     * position — don't name those APIs in comments above the guard.)
+     * position - don't name those APIs in comments above the guard.)
      *
      * Contract:
      *   - Non-empty shortcode attr → override value applied over DB setting.
@@ -59,7 +59,7 @@ class TC_Shortcode
     {
         $overrides = [];
 
-        // #658/#659 — unlock keys: shortcode_atts() defaults these to '' so
+        // #658/#659 - unlock keys: shortcode_atts() defaults these to '' so
         // non-empty means the customer explicitly set the attr.
         // #2357: show_search, show_per_column_filters, per_page added.
         $unlock_keys = array(
@@ -80,7 +80,7 @@ class TC_Shortcode
             'show_print',
             'show_pagination_info',
             'table_style',
-            // #2357 — direct DB-settings key overrides (power-user shortcode path):
+            // #2357 - direct DB-settings key overrides (power-user shortcode path):
             'show_search',
             'show_per_column_filters',
             'per_page',
@@ -91,7 +91,7 @@ class TC_Shortcode
             }
         }
 
-        // #2357 — Translate block-emitted legacy shortcode attrs to DB settings keys.
+        // #2357 - Translate block-emitted legacy shortcode attrs to DB settings keys.
         // TC_Block::build_block_shortcode() emits 'search' and 'filters' using the
         // #2142 inline-source attr names. For DB-backed tables those legacy names are
         // unknown to the DB settings layer; translate them to the real DB-side toggle
@@ -162,7 +162,7 @@ class TC_Shortcode
         // Enqueue Thickbox for frontend popup
         add_thickbox();
 
-        // #831 — frontend.js module 8: pure helpers (naturalSort, parseCurrency,
+        // #831 - frontend.js module 8: pure helpers (naturalSort, parseCurrency,
         // currencySort, checkVersionMismatch) extracted into a window.GTCore
         // namespace. Module is jQuery-independent so it can load very early.
         wp_register_script(
@@ -173,7 +173,7 @@ class TC_Shortcode
             true
         );
 
-        // #841 — frontend.js module 1: pure helpers (escapeHtml, formatDate,
+        // #841 - frontend.js module 1: pure helpers (escapeHtml, formatDate,
         // normalizeToggleValue, etc.) extracted into assets/js/frontend/util.js.
         // Must register BEFORE 'gravity-tables-frontend' so the prototype
         // methods exist by the time the constructor/init runs.
@@ -185,7 +185,7 @@ class TC_Shortcode
             true
         );
 
-        // #840 — frontend.js module 2: tabs / accordion visibility observer
+        // #840 - frontend.js module 2: tabs / accordion visibility observer
         // (initVisibilityObserver) extracted into assets/js/frontend/observers.js.
         wp_register_script(
             'gravity-tables-frontend-observers',
@@ -195,7 +195,7 @@ class TC_Shortcode
             true
         );
 
-        // #838 — frontend.js module 3: conditional formatting rule engine
+        // #838 - frontend.js module 3: conditional formatting rule engine
         // (applyConditionalFormatting + getColumnIndex + getCellValue +
         // evaluateCondition + applyFormattingAction) extracted into
         // assets/js/frontend/conditional-format.js.
@@ -207,7 +207,7 @@ class TC_Shortcode
             true
         );
 
-        // #836 — frontend.js module 4: row selection + bulk-action toolbar
+        // #836 - frontend.js module 4: row selection + bulk-action toolbar
         // (bindSelectionEvents + getSelectedEntryIds + performBulkAction)
         // extracted into assets/js/frontend/selection.js.
         wp_register_script(
@@ -218,7 +218,7 @@ class TC_Shortcode
             true
         );
 
-        // #835 — frontend.js module 5: pagination controls + length selector.
+        // #835 - frontend.js module 5: pagination controls + length selector.
         wp_register_script(
             'gravity-tables-frontend-pagination',
             TC_PLUGIN_URL . 'assets/js/frontend/pagination.js',
@@ -227,7 +227,7 @@ class TC_Shortcode
             true
         );
 
-        // #839 — frontend.js module 6: row-link a11y/keyboard nav.
+        // #839 - frontend.js module 6: row-link a11y/keyboard nav.
         wp_register_script(
             'gravity-tables-frontend-a11y-keyboard',
             TC_PLUGIN_URL . 'assets/js/frontend/a11y-keyboard.js',
@@ -236,10 +236,10 @@ class TC_Shortcode
             true
         );
 
-        // #837 — frontend.js module 7: entry-details popup overlay +
+        // #837 - frontend.js module 7: entry-details popup overlay +
         // renderFileUploadCell. viewEntryDetails / showDetailsPopup /
         // closeDetailsPopup / bindDetailViewEvents / renderFileUploadCell.
-        // Depends on the util module (escapeHtml) — listed in its deps.
+        // Depends on the util module (escapeHtml) - listed in its deps.
         wp_register_script(
             'gravity-tables-frontend-detail-popup',
             TC_PLUGIN_URL . 'assets/js/frontend/detail-popup.js',
@@ -248,7 +248,7 @@ class TC_Shortcode
             true
         );
 
-        // #834 slice 1 — search controls. bindSearchEvents wires the
+        // #834 slice 1 - search controls. bindSearchEvents wires the
         // .gt-search-btn click + .gt-search-input keypress(Enter).
         wp_register_script(
             'gravity-tables-frontend-search',
@@ -258,7 +258,7 @@ class TC_Shortcode
             true
         );
 
-        // #2278 Phase 1 — advanced client-side search grammar.
+        // #2278 Phase 1 - advanced client-side search grammar.
         // Tokenizer + AST evaluator for non-SSP tables: field:value,
         // -negation, "quoted phrase", OR, comparison operators, wildcards.
         wp_register_script(
@@ -269,7 +269,7 @@ class TC_Shortcode
             true
         );
 
-        // #834 slice 2 — advanced filter panel controls.
+        // #834 slice 2 - advanced filter panel controls.
         wp_register_script(
             'gravity-tables-frontend-filter-panel',
             TC_PLUGIN_URL . 'assets/js/frontend/filter-panel.js',
@@ -278,7 +278,7 @@ class TC_Shortcode
             true
         );
 
-        // #834 slice 3 — sort handler + multi-column shift-click state machine.
+        // #834 slice 3 - sort handler + multi-column shift-click state machine.
         wp_register_script(
             'gravity-tables-frontend-sort',
             TC_PLUGIN_URL . 'assets/js/frontend/sort.js',
@@ -287,7 +287,7 @@ class TC_Shortcode
             true
         );
 
-        // #834 slice 4 — applyFilters + clearFilters bodies.
+        // #834 slice 4 - applyFilters + clearFilters bodies.
         wp_register_script(
             'gravity-tables-frontend-filter-apply',
             TC_PLUGIN_URL . 'assets/js/frontend/filter-apply.js',
@@ -296,7 +296,7 @@ class TC_Shortcode
             true
         );
 
-        // #834 slice 5 (FINAL) — text-filter typeahead (initTextFilterTypeaheads).
+        // #834 slice 5 (FINAL) - text-filter typeahead (initTextFilterTypeaheads).
         // Closes #834.
         wp_register_script(
             'gravity-tables-frontend-typeahead',
@@ -306,7 +306,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 1 — column totals renderer (updateColumnTotals + computeColumnTotal).
+        // #832 slice 1 - column totals renderer (updateColumnTotals + computeColumnTotal).
         wp_register_script(
             'gravity-tables-frontend-totals',
             TC_PLUGIN_URL . 'assets/js/frontend/totals.js',
@@ -315,7 +315,7 @@ class TC_Shortcode
             true
         );
 
-        // #1731 — Data Bars (Pro): computeBarMaxes + computeDataBarParams.
+        // #1731 - Data Bars (Pro): computeBarMaxes + computeDataBarParams.
         // Depends on -util for the shared gtParseNumeric coercion.
         wp_register_script(
             'gravity-tables-frontend-data-bars',
@@ -325,7 +325,7 @@ class TC_Shortcode
             true
         );
 
-        // #1741 — Badge Cell (Free): applyBadges post-render pass.
+        // #1741 - Badge Cell (Free): applyBadges post-render pass.
         wp_register_script(
             'gravity-tables-frontend-badge-cell',
             TC_PLUGIN_URL . 'assets/js/frontend/badge-cell.js',
@@ -334,9 +334,9 @@ class TC_Shortcode
             true
         );
 
-        // #1743 — configurable table auto-refresh on interval (Free).
+        // #1743 - configurable table auto-refresh on interval (Free).
         // startAutoRefresh() + stopAutoRefresh() on GravityTable.prototype.
-        // No AJAX of its own — calls loadEntries() which is already registered
+        // No AJAX of its own - calls loadEntries() which is already registered
         // as a dep of the main bundle. Minimum 5s enforced client-side.
         wp_register_script(
             'gravity-tables-frontend-auto-refresh',
@@ -346,7 +346,7 @@ class TC_Shortcode
             true
         );
 
-        // #1744 — column visibility picker (Free).
+        // #1744 - column visibility picker (Free).
         // initColumnPicker() + toggleColumnVisibility() + restoreColumnVisibility().
         wp_register_script(
             'gravity-tables-frontend-column-visibility-picker',
@@ -356,7 +356,7 @@ class TC_Shortcode
             true
         );
 
-        // #1745 — bulk column fill (Pro).
+        // #1745 - bulk column fill (Pro).
         // openBulkFillModal() + executeBulkFill().
         wp_register_script(
             'gravity-tables-frontend-bulk-column-fill',
@@ -366,7 +366,7 @@ class TC_Shortcode
             true
         );
 
-        // #1746 — per-column role visibility (Pro).
+        // #1746 - per-column role visibility (Pro).
         // applyColumnRoleVisibility().
         wp_register_script(
             'gravity-tables-frontend-column-role-visibility',
@@ -376,7 +376,7 @@ class TC_Shortcode
             true
         );
 
-        // #1747 — one-click entry duplicate (Pro).
+        // #1747 - one-click entry duplicate (Pro).
         // duplicateEntry().
         wp_register_script(
             'gravity-tables-frontend-entry-duplicate',
@@ -386,7 +386,7 @@ class TC_Shortcode
             true
         );
 
-        // #1749 — inline cell diff badge + bulk fill diff preview.
+        // #1749 - inline cell diff badge + bulk fill diff preview.
         wp_register_script(
             'gravity-tables-frontend-row-diff',
             TC_PLUGIN_URL . 'assets/js/frontend/row-diff.js',
@@ -395,7 +395,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 2 — server-side-processing renderer
+        // #832 slice 2 - server-side-processing renderer
         // (loadEntriesServerSide + renderSSPEntries).
         wp_register_script(
             'gravity-tables-frontend-ssp',
@@ -405,7 +405,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 3 — row-link template resolver (resolveRowLinkAttrs).
+        // #832 slice 3 - row-link template resolver (resolveRowLinkAttrs).
         // Depends on the util module (escapeHtml).
         wp_register_script(
             'gravity-tables-frontend-row-link-resolver',
@@ -415,7 +415,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 4 — cell alignment style + class builder (resolveCellAlignment).
+        // #832 slice 4 - cell alignment style + class builder (resolveCellAlignment).
         // Pure module; jQuery-independent.
         wp_register_script(
             'gravity-tables-frontend-alignment-resolver',
@@ -425,7 +425,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 5 — column link-settings anchor builder (buildLinkAnchorHtml).
+        // #832 slice 5 - column link-settings anchor builder (buildLinkAnchorHtml).
         // Depends on util (escapeHtml).
         wp_register_script(
             'gravity-tables-frontend-link-anchor',
@@ -435,7 +435,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 6 — toggle / boolean column cell renderer (renderToggleCellHtml, #325).
+        // #832 slice 6 - toggle / boolean column cell renderer (renderToggleCellHtml, #325).
         // Depends on util (normalizeToggleValue + escapeHtml).
         wp_register_script(
             'gravity-tables-frontend-toggle-cell',
@@ -445,7 +445,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 7 — per-row actions-cell renderer (renderActionsCellHtml).
+        // #832 slice 7 - per-row actions-cell renderer (renderActionsCellHtml).
         // Pure module; jQuery-independent.
         wp_register_script(
             'gravity-tables-frontend-actions-cell',
@@ -455,7 +455,7 @@ class TC_Shortcode
             true
         );
 
-        // #1606 — search-term highlighting (highlightInEscapedHtml +
+        // #1606 - search-term highlighting (highlightInEscapedHtml +
         // renderHighlightedText). Depends on util (escapeHtml).
         wp_register_script(
             'gravity-tables-frontend-search-highlight',
@@ -465,7 +465,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 8 — default text-cell renderer (renderTextCellHtml).
+        // #832 slice 8 - default text-cell renderer (renderTextCellHtml).
         // Depends on util (escapeHtml) + detail-popup (renderFileUploadCell)
         // + search-highlight (#1606 matched-substring wrapping).
         wp_register_script(
@@ -476,7 +476,7 @@ class TC_Shortcode
             true
         );
 
-        // #1596 — frontend pivot view + visitor raw/pivot toggle.
+        // #1596 - frontend pivot view + visitor raw/pivot toggle.
         // Depends on jQuery + util (escapeHtml); consumed by
         // render-entries when the response carries is_pivot=true.
         wp_register_script(
@@ -487,7 +487,7 @@ class TC_Shortcode
             true
         );
 
-        // #1612 — DOM text-node search-highlight pass (HTML cells,
+        // #1612 - DOM text-node search-highlight pass (HTML cells,
         // card view, per-column text filters).
         wp_register_script(
             'gravity-tables-frontend-search-highlight-dom',
@@ -497,7 +497,7 @@ class TC_Shortcode
             true
         );
 
-        // #1621 — client-side sort for computed columns.
+        // #1621 - client-side sort for computed columns.
         wp_register_script(
             'gravity-tables-frontend-computed-sort',
             TC_PLUGIN_URL . 'assets/js/frontend/computed-sort.js',
@@ -506,7 +506,7 @@ class TC_Shortcode
             true
         );
 
-        // #1601 — table summary line (rule-based summarizer digest).
+        // #1601 - table summary line (rule-based summarizer digest).
         // Depends on jQuery + util (escapeHtml).
         wp_register_script(
             'gravity-tables-frontend-table-summary',
@@ -516,7 +516,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 9 — #556 detail-row chevron + hidden detail row sibling
+        // #832 slice 9 - #556 detail-row chevron + hidden detail row sibling
         // renderers (renderDetailToggleCellHtml + renderDetailRowHtml).
         // Depends on util (escapeHtml).
         wp_register_script(
@@ -527,7 +527,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 10 — per-column cell dispatcher.
+        // #832 slice 10 - per-column cell dispatcher.
         // resolveCellEditability + renderEntryCellHtml. Composes every
         // other cell renderer (toggle-cell, text-cell, link-anchor,
         // alignment-resolver) plus util's formatDate + escapeHtml.
@@ -545,7 +545,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 19 — column reorder DnD UI. 8 helpers paired with
+        // #832 slice 19 - column reorder DnD UI. 8 helpers paired with
         // the column-order-persistence module from slice 15. Depends on
         // jQuery for the DnD wiring + DOM manipulation.
         wp_register_script(
@@ -556,7 +556,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 20 — responsive view + card-view rendering. 13 helpers
+        // #832 slice 20 - responsive view + card-view rendering. 13 helpers
         // for the desktop-table vs mobile/tablet-card layout switching plus
         // the card view itself. Depends on jQuery.
         wp_register_script(
@@ -567,7 +567,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 1 — undo/redo history for inline cell edits. 9 helpers
+        // #833 slice 1 - undo/redo history for inline cell edits. 9 helpers
         // (initUndoRedo, pushHistoryEntry, updateUndoRedoButtons,
         // undoLastEdit, redoLastEdit, replayHistoryEntry, getFieldLabel,
         // shortValue, showUndoToast). Depends on jQuery for the toolbar
@@ -580,7 +580,7 @@ class TC_Shortcode
             true
         );
 
-        // #1742 — per-column inline-edit validation rules (Pro). Depends on
+        // #1742 - per-column inline-edit validation rules (Pro). Depends on
         // edit-history.js being loaded first so the GravityTable constructor
         // exists when the prototype methods are attached. The validate path
         // is entirely client-side; no AJAX needed.
@@ -592,7 +592,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 2 / #889 — inline-edit AJAX save. Single method
+        // #833 slice 2 / #889 - inline-edit AJAX save. Single method
         // (saveField) with history interop, optimistic UI, #553 WAF-safe
         // envelope, recalc fan-out, error rollback. Depends on jQuery for
         // $.post and DOM manipulation, and on edit-history.js for the
@@ -607,7 +607,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 3 — keyboard navigation between inline-editable cells.
+        // #833 slice 3 - keyboard navigation between inline-editable cells.
         // Two helpers: findNextEditCell (next/prev/down descriptor lookup)
         // and scheduleEditOnTarget (250ms save-settle delay then editField).
         wp_register_script(
@@ -618,7 +618,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 4 — search-as-you-type AJS-Toolkit lookup editor.
+        // #833 slice 4 - search-as-you-type AJS-Toolkit lookup editor.
         // Single method (editAjsToolkitLookupField) that calls
         // `ajs_toolkit_search` AJAX for clients/pits/destinations/materials
         // with 200ms debounce, then routes saves through this.saveField.
@@ -630,7 +630,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 5 / #900 — saved-filter preset subsystem. 8 helpers
+        // #833 slice 5 / #900 - saved-filter preset subsystem. 8 helpers
         // (initPresets, findPresetById, renderPresetOptions, loadPresets,
         // savePresetPrompt, deletePreset, applyPresetById, applyPresetFilters).
         // Reads/writes filter state via gt_get_filter_presets / gt_save_filter_preset
@@ -643,7 +643,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 6 / #902 — print preparation. 3 helpers (initPrint
+        // #833 slice 6 / #902 - print preparation. 3 helpers (initPrint
         // with #531 print-all-rows + afterprint restore + 5000-row cap;
         // preparePrintHeader; summarizeActiveFilters).
         wp_register_script(
@@ -654,7 +654,7 @@ class TC_Shortcode
             true
         );
 
-        // #613 phase 2 slice 3 (v4.198.0) — pushRowToSource prototype method.
+        // #613 phase 2 slice 3 (v4.198.0) - pushRowToSource prototype method.
         // Posts the row update to the gt_push_row AJAX endpoint shipped in
         // v4.197.0 (which delegates to TC_JSON_Push_Engine).
         wp_register_script(
@@ -665,7 +665,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 7 / #904 — row-action button handlers. 4 helpers:
+        // #833 slice 7 / #904 - row-action button handlers. 4 helpers:
         // loadWooCommerceProducts, createWooCommerceProduct, viewEntryHistory,
         // triggerInlineEditForEntry. Pairs with actions-cell.js (#832 slice 7)
         // which renders the buttons themselves.
@@ -677,8 +677,8 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 8 / #906 — generic lookup-field dropdown populator.
-        // Single 275-line method (populateLookupDropdown) — the largest
+        // #833 slice 8 / #906 - generic lookup-field dropdown populator.
+        // Single 275-line method (populateLookupDropdown) - the largest
         // single-method extraction yet. Three-tier fallback (cached config
         // → AJAX gt_get_lookup_options → plain text editor) with a 10s
         // timeout safety net. Saves through this.saveField.
@@ -690,7 +690,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 9 / #908 — editField dispatcher (~280 lines). Decides
+        // #833 slice 9 / #908 - editField dispatcher (~280 lines). Decides
         // which inline editor to render based on the cell's field-type, then
         // delegates to editAjsToolkitLookupField (slice 4),
         // populateLookupDropdown (slice 8), or renders inline with saveField
@@ -703,7 +703,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 10 / #910 — global event wiring (~220 lines, bindEvents).
+        // #833 slice 10 / #910 - global event wiring (~220 lines, bindEvents).
         // All top-level event listeners: toolbar buttons, filter inputs,
         // search, sort, pagination, delegated edit/detail-popup handlers.
         wp_register_script(
@@ -714,7 +714,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 11 / #912 — per-row event wiring (~186 lines,
+        // #833 slice 11 / #912 - per-row event wiring (~186 lines,
         // bindEntryEvents). Action button clicks, row-link clicks (#567),
         // inline-edit cell clicks, file-upload triggers.
         wp_register_script(
@@ -725,7 +725,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 12 / #925 — horizontal scroll-indicator overlay
+        // #833 slice 12 / #925 - horizontal scroll-indicator overlay
         // (~370 lines, setupScrollIndicators).
         wp_register_script(
             'gravity-tables-frontend-scroll-indicators',
@@ -735,7 +735,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 13 / #927 — date input wiring (~158 lines,
+        // #833 slice 13 / #927 - date input wiring (~158 lines,
         // setupDateInputs). HTML5 date + display mirror + preset
         // chips + range validation.
         wp_register_script(
@@ -746,7 +746,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 14 / #929 — toolbar export pipeline (~150 lines,
+        // #833 slice 14 / #929 - toolbar export pipeline (~150 lines,
         // initToolbarExport + exportTable). Pairs with toolbar-export.js
         // (#832 slice 13) which holds the pure formatters.
         wp_register_script(
@@ -757,7 +757,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 15 / #931 — full-row edit (~126 lines, editEntireRow +
+        // #833 slice 15 / #931 - full-row edit (~126 lines, editEntireRow +
         // saveAllFields).
         wp_register_script(
             'gravity-tables-frontend-row-edit',
@@ -767,7 +767,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 16 / #933 — edit-mode UX overlays (~94 lines,
+        // #833 slice 16 / #933 - edit-mode UX overlays (~94 lines,
         // showEditIndicator + showReadonlyIndicator).
         wp_register_script(
             'gravity-tables-frontend-edit-indicators',
@@ -777,7 +777,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 17 / #935 — column drag-to-resize (~77 lines,
+        // #833 slice 17 / #935 - column drag-to-resize (~77 lines,
         // initializeColumnResizing).
         wp_register_script(
             'gravity-tables-frontend-column-resizing',
@@ -787,7 +787,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 18 / #937 — single-entry delete flow (~53 lines, deleteEntry).
+        // #833 slice 18 / #937 - single-entry delete flow (~53 lines, deleteEntry).
         wp_register_script(
             'gravity-tables-frontend-delete-entry',
             TC_PLUGIN_URL . 'assets/js/frontend/delete-entry.js',
@@ -796,7 +796,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 19 / #939 — table utilities (~50 lines, 4 methods:
+        // #833 slice 19 / #939 - table utilities (~50 lines, 4 methods:
         // destroy, adjustColumns, showMessage, updateEntryCount).
         wp_register_script(
             'gravity-tables-frontend-table-utils',
@@ -806,7 +806,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 20 / #941 — URL drilldown state (~46 lines, 2 methods:
+        // #833 slice 20 / #941 - URL drilldown state (~46 lines, 2 methods:
         // updateDrilldownUrlState + applyUrlFilters).
         wp_register_script(
             'gravity-tables-frontend-url-state',
@@ -816,7 +816,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 21 / #943 — AJAX entry-fetch helper (~72 lines, loadEntries).
+        // #833 slice 21 / #943 - AJAX entry-fetch helper (~72 lines, loadEntries).
         // Dispatches to SSP or sends the entry-fetch AJAX call.
         wp_register_script(
             'gravity-tables-frontend-load-entries',
@@ -826,7 +826,7 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 22 / #945 — central DOM render (~81 lines, renderEntries).
+        // #833 slice 22 / #945 - central DOM render (~81 lines, renderEntries).
         wp_register_script(
             'gravity-tables-frontend-render-entries',
             TC_PLUGIN_URL . 'assets/js/frontend/render-entries.js',
@@ -835,8 +835,8 @@ class TC_Shortcode
             true
         );
 
-        // #833 slice 23 / #947 — instance lifecycle bootstrap (~125 lines,
-        // init). FINAL slice — after this frontend.js holds only the
+        // #833 slice 23 / #947 - instance lifecycle bootstrap (~125 lines,
+        // init). FINAL slice - after this frontend.js holds only the
         // DOM-ready IIFE + GravityTable constructor.
         wp_register_script(
             'gravity-tables-frontend-init',
@@ -846,7 +846,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 18 — post-render DOM gates: applyRowExpiry (#501) and
+        // #832 slice 18 - post-render DOM gates: applyRowExpiry (#501) and
         // applyAutoMerge (#518). Triggered at the tail of renderEntries.
         // Depends on jQuery for the DOM manipulation.
         wp_register_script(
@@ -857,9 +857,9 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 15 — column order localStorage persistence (4 helpers:
+        // #832 slice 15 - column order localStorage persistence (4 helpers:
         // _columnOrderKey, readStoredColumnOrder, saveStoredColumnOrder,
-        // clearStoredColumnOrder). No external deps — pure localStorage I/O.
+        // clearStoredColumnOrder). No external deps - pure localStorage I/O.
         wp_register_script(
             'gravity-tables-frontend-column-order-persistence',
             TC_PLUGIN_URL . 'assets/js/frontend/column-order-persistence.js',
@@ -868,7 +868,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 14 — filter state localStorage persistence (4 helpers:
+        // #832 slice 14 - filter state localStorage persistence (4 helpers:
         // _filterStateStorageKey, persistFilterStateLocal,
         // restoreFilterStateLocal, clearFilterStateLocal). Depends on jQuery
         // for the DOM sync after restore.
@@ -880,7 +880,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 13 — toolbar export helpers (6 helpers:
+        // #832 slice 13 - toolbar export helpers (6 helpers:
         // toolbarBuildCSV, toolbarTriggerDownload, toolbarCopyToClipboard,
         // toolbarDownloadCSV, toolbarDownloadExcel, toolbarDownloadPDF).
         // Depends on jQuery for the PDF print-button probe.
@@ -892,7 +892,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 12 — responsive-visibility helpers (5 pure helpers:
+        // #832 slice 12 - responsive-visibility helpers (5 pure helpers:
         // isFieldVisibleInCards, isFieldVisibleOnMobile, isFieldVisibleOnTablet,
         // getMobileLabel, isFieldVisibleOnCurrentDevice). Read this.config.
         wp_register_script(
@@ -903,7 +903,7 @@ class TC_Shortcode
             true
         );
 
-        // #832 slice 11 — per-row HTML builder + no-entries fallback.
+        // #832 slice 11 - per-row HTML builder + no-entries fallback.
         // renderEntryRowHtml + renderNoEntriesRowHtml. Depends on every
         // per-cell renderer through the orchestrator's helpers, plus the
         // row-link-resolver, detail-row, and actions-cell renderers
@@ -1001,11 +1001,11 @@ class TC_Shortcode
             true
         );
 
-        // #1049 Option 1B v4.218.0 — single-handle alternative to the 55-handle
+        // #1049 Option 1B v4.218.0 - single-handle alternative to the 55-handle
         // chain above. Built by tools/build-frontend-bundle.sh as part of
         // tools/build-release.sh. Enqueued instead of 'gravity-tables-frontend'
         // when gt_settings.use_frontend_bundle is truthy (default: opt-in OFF).
-        // #1661 — prefer the minified bundle when present (and SCRIPT_DEBUG off).
+        // #1661 - prefer the minified bundle when present (and SCRIPT_DEBUG off).
         $gt_bundle_rel = (!(defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
             && file_exists(TC_PLUGIN_PATH . 'assets/js/frontend-bundle.min.js'))
             ? 'assets/js/frontend-bundle.min.js'
@@ -1018,10 +1018,10 @@ class TC_Shortcode
             true
         );
 
-        // CSS Framework setting (#633 wire-up — was inert until v4.8.14).
+        // CSS Framework setting (#633 wire-up - was inert until v4.8.14).
         // The Settings page dropdown picks 'default', 'minimal', or 'none'.
         // Default = full frontend.css (current behavior).
-        // Minimal = frontend-minimal.css (3.4 KB vs 125 KB — basic table
+        // Minimal = frontend-minimal.css (3.4 KB vs 125 KB - basic table
         //           styles only, intended for theme-styled sites).
         // None    = register the handle with `false` so subsequent
         //           wp_enqueue_style calls are no-ops; only the theme's
@@ -1040,7 +1040,7 @@ class TC_Shortcode
                 TC_VERSION
             );
         } else {
-            // #1661 — prefer the minified CSS when present (and SCRIPT_DEBUG off).
+            // #1661 - prefer the minified CSS when present (and SCRIPT_DEBUG off).
             $gt_css_base = ($gt_css_framework === 'minimal') ? 'frontend-minimal' : 'frontend';
             $gt_css_rel  = (!(defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
                 && file_exists(TC_PLUGIN_PATH . 'assets/css/' . $gt_css_base . '.min.css'))
@@ -1064,7 +1064,7 @@ class TC_Shortcode
             'print'
         );
 
-        // #1006 v4.179.0 — Data-source render styles (extracted from inline
+        // #1006 v4.179.0 - Data-source render styles (extracted from inline
         // styles that shipped in v4.170.0 / v4.174.0 / v4.178.0).
         wp_register_style(
             'gravity-tables-data-source-render',
@@ -1072,7 +1072,7 @@ class TC_Shortcode
             array(),
             TC_VERSION
         );
-        // #1673 — only enqueue on pages that actually render a table (was
+        // #1673 - only enqueue on pages that actually render a table (was
         // loaded sitewide on every front-end page).
         if (!class_exists('TC_Asset_Enqueue_Gate') || TC_Asset_Enqueue_Gate::page_has_table()) {
             wp_enqueue_style('gravity-tables-data-source-render');
@@ -1147,25 +1147,25 @@ class TC_Shortcode
                 'show_print'           => '', // print toolbar button toggle (default true)
                 'show_pagination_info' => '', // "Showing X of Y" text toggle (default true)
                 'table_style'          => '', // style slug appended to gt_table_classes (default 'default')
-                // #2357 — DB-settings key overrides for direct shortcode use.
+                // #2357 - DB-settings key overrides for direct shortcode use.
                 // Also the translation target for the block's legacy 'search' /
                 // 'filters' attrs (see build_db_table_overrides()). Registered
                 // here so shortcode_atts() keeps them instead of stripping.
                 'show_search'              => '', // search bar visibility (default true)
                 'show_per_column_filters'  => '', // per-column filter inputs (default false)
-                // #2139 — legacy 3.5.x inline-source params. When `source` is set
+                // #2139 - legacy 3.5.x inline-source params. When `source` is set
                 // and `id` is not, the shortcode renders the URL live (JSON / CSV
                 // / public Google Sheet) so pre-v8 shortcodes keep working.
                 'source'               => '', // legacy: JSON / CSV / Google Sheet URL
                 'root'                 => '', // legacy: JSON dot-path to the data array
                 'include'              => '', // legacy: comma-separated allow-list of columns
                 'exclude'              => '', // legacy: comma-separated columns to hide
-                // #2142 — legacy inline view toggles (client-side enhancement).
+                // #2142 - legacy inline view toggles (client-side enhancement).
                 'per_page'             => '', // rows per page (default 25)
                 'search'               => '', // "false" to hide the search box (default shown)
                 'export'               => '', // "true" to show a CSV export button
                 'filters'              => '', // "true" to show per-column filter inputs
-                // #2143 — legacy inline auto-refresh params. Must be registered
+                // #2143 - legacy inline auto-refresh params. Must be registered
                 // here or shortcode_atts() strips them before build_refresh_opts()
                 // ever sees them (the bug a browser smoke caught: auto_refresh was
                 // dropped end-to-end despite the unit test passing).
@@ -1184,7 +1184,7 @@ class TC_Shortcode
                 $atts['allowed_user_roles'] = array(trim($atts['user_role_filter']));
             }
 
-            // #2139 — legacy inline source (3.5.x): no id but a source URL.
+            // #2139 - legacy inline source (3.5.x): no id but a source URL.
             // Render it live so pre-v8 shortcodes don't break after upgrade.
             if (class_exists('TC_Inline_Shortcode_Compat')
                 && TC_Inline_Shortcode_Compat::has_inline_source($atts)) {
@@ -1205,7 +1205,7 @@ class TC_Shortcode
                 return '<p>' . __('Error: Table not found with ID: ' . intval($atts['id']), 'tc-data-tables') . '</p>';
             }
 
-            // #2116 — funnel: a real table is rendering on the public frontend,
+            // #2116 - funnel: a real table is rendering on the public frontend,
             // i.e. it is published and live. Guarded + front-end-only so the
             // option is written once and never on admin/preview renders.
             if (!is_admin()
@@ -1214,7 +1214,7 @@ class TC_Shortcode
                 TC_Activation_Funnel::record('table_published');
             }
 
-            // Known/registered table types — guards against unknown source types (#342).
+            // Known/registered table types - guards against unknown source types (#342).
             $registered_table_types = apply_filters('gt_registered_table_types', array('gravity', 'merged'));
 
             // Guard: unknown source type → graceful fallback, no fatal error (#342).
@@ -1225,7 +1225,7 @@ class TC_Shortcode
                     $admin_notice = '<p class="gt-unknown-type-admin-notice" style="color:#b00;">'
                         . sprintf(
                             /* translators: %s = the unrecognised data source type string */
-                            __('TableCrafter: The data source type "%s" for this table is unavailable — please check that the required add-on or module is active.', 'tc-data-tables'),
+                            __('TableCrafter: The data source type "%s" for this table is unavailable - please check that the required add-on or module is active.', 'tc-data-tables'),
                             $unknown_type
                         )
                         . '</p>';
@@ -1263,21 +1263,21 @@ class TC_Shortcode
                 return '<p>' . __('Error: Invalid table configuration.', 'tc-data-tables') . '</p>';
             }
 
-            // #988 v4.170.0 — JSON data source render path (slice 3b-3b of #512).
+            // #988 v4.170.0 - JSON data source render path (slice 3b-3b of #512).
             // CLOSES the JSON-as-data-source feature. Minimum-viable v1 render
             // separate from the GFAPI path: fetches via cached helper, renders a
             // basic styled <table> with inferred columns. Advanced features
             // (filters, sorting, exports, frontend editing) are GF-specific and
             // remain for the GF render path until a future polish slice adds
             // them to the JSON render.
-            // #2026 (D1) — gate PRO data sources behind the premium plan. The
+            // #2026 (D1) - gate PRO data sources behind the premium plan. The
             // registry's 'pro' flag is the single source of truth (Notion /
             // External DB / XML are Pro; Gravity Forms / JSON / CSV / public
             // Google Sheets / Airtable-read are free).
             $gt_src_type = isset($settings['data_source_type']) ? (string) $settings['data_source_type'] : '';
             if ($gt_src_type !== '' && class_exists('TC_Source_Registry')) {
                 $gt_src_def = TC_Source_Registry::get($gt_src_type);
-                // #2030 — grandfathered (ever-premium) sites keep read-only
+                // #2030 - grandfathered (ever-premium) sites keep read-only
                 // access to pro-source tables on a lapse; writes stay premium-only.
                 if ($gt_src_def && !empty($gt_src_def['pro']) && !gt_is_premium() && !gt_is_grandfathered()) {
                     if (current_user_can('manage_options')) {
@@ -1291,7 +1291,7 @@ class TC_Shortcode
                 }
             }
 
-            // #2366 — Manual / static data source.
+            // #2366 - Manual / static data source.
             if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'manual') {
                 return $this->render_manual_source_table((int) $atts['id'], $settings);
             }
@@ -1300,35 +1300,35 @@ class TC_Shortcode
                 return $this->render_json_source_table((int) $atts['id'], $settings);
             }
 
-            // #996 v4.174.0 — Airtable data source render path (phase D of #517).
+            // #996 v4.174.0 - Airtable data source render path (phase D of #517).
             // CLOSES the Airtable-as-data-source feature. Same architectural pattern
-            // as the JSON render — separate path that uses the Airtable cached
+            // as the JSON render - separate path that uses the Airtable cached
             // helper (#994) instead of going through GFAPI.
             if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'airtable') {
                 return $this->render_airtable_source_table((int) $atts['id'], $settings);
             }
 
-            // #1004 v4.178.0 — Notion data source render path (phase 4 of #592).
+            // #1004 v4.178.0 - Notion data source render path (phase 4 of #592).
             // CLOSES the Notion-as-data-source feature. Third repetition of the
             // data-source pattern from #512 (JSON) and #517 (Airtable).
             if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'notion') {
                 return $this->render_notion_source_table((int) $atts['id'], $settings);
             }
 
-            // #2002 — Google Sheets data source (convergence epic #2006). The
+            // #2002 - Google Sheets data source (convergence epic #2006). The
             // TC_Google_Sheets engine already fetched/parsed public sheets; this
             // wires it into the render path like the JSON/Airtable/Notion sources.
             if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'google_sheets') {
                 return $this->render_google_sheets_source_table((int) $atts['id'], $settings);
             }
 
-            // #2004 — XML data source (convergence epic #2006). TC_XML_Source
+            // #2004 - XML data source (convergence epic #2006). TC_XML_Source
             // already fetched/parsed XML; this wires it into the render path.
             if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'xml') {
                 return $this->render_xml_source_table((int) $atts['id'], $settings);
             }
 
-            // #2010 — live CSV URL data source (convergence epic #2006).
+            // #2010 - live CSV URL data source (convergence epic #2006).
             if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'xlsx') {
                 return $this->render_xlsx_source_table((int) $atts['id'], $settings);
             }
@@ -1337,19 +1337,19 @@ class TC_Shortcode
                 return $this->render_csv_source_table((int) $atts['id'], $settings);
             }
 
-            // #2003 — External database (MySQL / SQL Server) data source.
+            // #2003 - External database (MySQL / SQL Server) data source.
             if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'external_db') {
                 return $this->render_external_db_source_table((int) $atts['id'], $settings);
             }
 
-            // #2196 — WooCommerce products data source. The id-based render path
+            // #2196 - WooCommerce products data source. The id-based render path
             // had no case for it, so a woo table fell through to the
             // "Gravity Forms is required" check below and never rendered.
             if (isset($settings['data_source_type']) && $settings['data_source_type'] === 'woocommerce_products') {
                 return $this->render_woocommerce_source_table((int) $atts['id'], $settings);
             }
 
-            // #607 slice 3 — frontend password gate. Defense in depth:
+            // #607 slice 3 - frontend password gate. Defense in depth:
             // when the table has a password hash and the visitor's cookie
             // doesn't verify (or no correct POST), short-circuit BEFORE
             // any data fetch, before the template include. The table data
@@ -1422,7 +1422,7 @@ class TC_Shortcode
         // toolbar silently disappeared on every new table. Treat empty as
         // "use the documented default".
         //
-        // #1684: 'export' dropped from the default — exporting is consolidated
+        // #1684: 'export' dropped from the default - exporting is consolidated
         // into the Export menu (#1680). A shortcode can still opt back in via
         // an explicit bulk_actions including 'export'.
         if (!isset($atts['bulk_actions']) || !is_array($atts['bulk_actions']) || empty($atts['bulk_actions'])) {
@@ -1467,7 +1467,7 @@ class TC_Shortcode
 
         // Resolve table_width setting for the wrapper element (#85)
         // Allowed values: 'auto', '100%', or a CSS dimension (e.g. '800px', '60rem')
-        // When absent/empty the wrapper carries no explicit width — inherits theme layout.
+        // When absent/empty the wrapper carries no explicit width - inherits theme layout.
         // @codeCoverageIgnoreStart
         $gt_table_width = '';
         if (!empty($atts['table_width'])) {
@@ -1533,7 +1533,7 @@ class TC_Shortcode
     }
 
     /**
-     * #988 v4.170.0 — Render a JSON-source table on the frontend.
+     * #988 v4.170.0 - Render a JSON-source table on the frontend.
      *
      * Slice 3b-3b of #512. Minimum-viable v1: fetch rows via the cached
      * helper (slice 3b-3a), infer columns, render a basic styled <table>.
@@ -1554,7 +1554,7 @@ class TC_Shortcode
      * @return string Rendered HTML.
      */
     /**
-     * #2139 — Render a legacy inline-source shortcode live.
+     * #2139 - Render a legacy inline-source shortcode live.
      *
      * Reproduces the 3.5.x `[tablecrafter source="…" root="…" include="…"]`
      * behaviour on v8 by fetching the URL through the existing source services
@@ -1572,7 +1572,7 @@ class TC_Shortcode
         $rows        = array();
         $column_keys = array();
 
-        // SSRF guard — reuse the JSON service's allow-list (blocks loopback /
+        // SSRF guard - reuse the JSON service's allow-list (blocks loopback /
         // private networks) for http(s) sources. Airtable (#2148) uses an
         // airtable:// pseudo-URL whose real request always targets the fixed
         // api.airtable.com host, so the http allow-list doesn't apply to it.
@@ -1662,7 +1662,7 @@ class TC_Shortcode
     }
 
     /**
-     * #2143 — Build the render opts for an inline source: the view toggles
+     * #2143 - Build the render opts for an inline source: the view toggles
      * (#2142) plus the auto-refresh suite and the sanitized source atts the
      * auto-refresh poller re-renders from.
      */
@@ -1673,7 +1673,7 @@ class TC_Shortcode
 
         // Whitelist the keys needed to reconstruct the inline shortcode on
         // refresh. Secrets (e.g. an airtable:// token) ride inside `source`
-        // exactly as the page author wrote it — no extra exposure.
+        // exactly as the page author wrote it - no extra exposure.
         $keep = array('source', 'root', 'include', 'exclude', 'per_page', 'search', 'export', 'filters');
         $payload = array();
         foreach ($keep as $k) {
@@ -1687,7 +1687,7 @@ class TC_Shortcode
     }
 
     /**
-     * #2148 — Render a legacy 3.5.x inline Airtable source
+     * #2148 - Render a legacy 3.5.x inline Airtable source
      * ([tablecrafter source="airtable://base/table?token=..."]). Airtable read
      * is a free source in v8 (registry pro => false), so this restores the
      * upgrade path rather than gating it. Token precedence: URL query token,
@@ -1814,7 +1814,7 @@ class TC_Shortcode
         }
 
         // JSON path uses flatten_row + infer_columns so nested objects become
-        // "user.email" dot-key columns. Airtable + Notion don't need this —
+        // "user.email" dot-key columns. Airtable + Notion don't need this - 
         // their cached helpers already pre-flatten.
         $flat = array();
         foreach ($rows as $row) {
@@ -1857,7 +1857,7 @@ class TC_Shortcode
     }
 
     /**
-     * #2002 — Render a Google Sheets-source table on the frontend.
+     * #2002 - Render a Google Sheets-source table on the frontend.
      *
      * Convergence epic #2006, Phase 2. Mirrors render_json_source_table():
      * TC_Google_Sheets::get_cached() returns the published-CSV body (or a
@@ -1935,7 +1935,7 @@ class TC_Shortcode
     }
 
     /**
-     * #2003 — Render an external-database (MySQL / SQL Server) source table.
+     * #2003 - Render an external-database (MySQL / SQL Server) source table.
      *
      * Convergence epic #2006, Phase 2. Runs the table's stored read-only SELECT
      * against the selected connection via TC_External_DB::execute_query(), which
@@ -1944,13 +1944,13 @@ class TC_Shortcode
      */
     private function render_external_db_source_table(int $table_id, array $settings): string
     {
-        // #2083 — engine ships only in premium (@fs_premium_only). Guard so a
+        // #2083 - engine ships only in premium (@fs_premium_only). Guard so a
         // grandfathered site on the stripped free build degrades gracefully.
         if (!class_exists('TC_External_DB')) {
             return '<p>' . esc_html__('This data source is available in the Pro version.', 'tc-data-tables') . '</p>'; // @codeCoverageIgnore
         }
 
-        // #2254 — per-table public-render opt-in. When false (default), viewers
+        // #2254 - per-table public-render opt-in. When false (default), viewers
         // without the gravity_tables_view_external cap see a neutral unavailable
         // message. When true, the cap check in execute_query is bypassed for the
         // frontend render path only; builder/query-edit/write paths remain gated.
@@ -1971,7 +1971,7 @@ class TC_Shortcode
                 . '</p>';
         }
 
-        // #2012 — External DB has no caching of its own; wrap the live query in
+        // #2012 - External DB has no caching of its own; wrap the live query in
         // stale-while-revalidate so repeat views don't re-hit the remote DB and
         // a slow DB never blocks the page (stale served, refresh after response).
         $fresh_ttl = isset($settings['external_db_refresh_minutes'])
@@ -2028,20 +2028,20 @@ class TC_Shortcode
     }
 
     /**
-     * #2010 — Render a live CSV-URL-source table on the frontend.
+     * #2010 - Render a live CSV-URL-source table on the frontend.
      *
      * Convergence epic #2006, Phase 2. TC_CSV_Source::get_cached() returns
      * header-keyed associative rows (or a WP_Error), so column keys are the
-     * union of row keys — same shape as the XML source.
+     * union of row keys - same shape as the XML source.
      */
 
     /**
-     * #2366 — Render a manual / static data source table.
+     * #2366 - Render a manual / static data source table.
      *
      * Rows are stored in {prefix}tablecrafter_manual_rows via
      * TC_Manual_Rows_Service. Column definitions come from settings JSON
      * (manual_columns: [{key, label, type}]). The data flows through
-     * render_external_source_table_html() — same pipeline as CSV/JSON —
+     * render_external_source_table_html() - same pipeline as CSV/JSON - 
      * so sort/search/pagination all work without any new frontend module.
      *
      * When no rows exist yet (brand-new table), we render an empty-state
@@ -2058,14 +2058,14 @@ class TC_Shortcode
         $result = TC_Manual_Rows_Service::get_rows($table_id, array());
         $rows   = $result['rows'];
 
-        // #2370 — filter out rows hidden from frontend display.
+        // #2370 - filter out rows hidden from frontend display.
         $rows = TC_Manual_Rows_Service::filter_visible_rows( $rows );
 
         // Derive column keys from manual_columns setting (preferred) or
         // fall back to the union of keys across all rows.
         $column_keys = array();
         if (!empty($settings['manual_columns']) && is_array($settings['manual_columns'])) {
-            // #2370 — exclude columns hidden from frontend display.
+            // #2370 - exclude columns hidden from frontend display.
             $visible_cols = TC_Manual_Rows_Service::filter_visible_columns( $settings['manual_columns'] );
             foreach ($visible_cols as $col_def) {
                 if (!empty($col_def['key'])) {
@@ -2088,12 +2088,12 @@ class TC_Shortcode
         // was just created). Show a friendly placeholder until #2367 ships.
         if (empty($rows) || empty($column_keys)) {
             return '<div class="gt-manual-source-empty" style="padding:16px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;">'
-                . '<p><strong>' . esc_html__('Manual table — no data yet.', 'tc-data-tables') . '</strong></p>'
-                . '<p>' . esc_html__('Use the grid editor to add rows and columns (coming soon — issue #2367).', 'tc-data-tables') . '</p>'
+                . '<p><strong>' . esc_html__('Manual table - no data yet.', 'tc-data-tables') . '</strong></p>'
+                . '<p>' . esc_html__('Use the grid editor to add rows and columns (coming soon - issue #2367).', 'tc-data-tables') . '</p>'
                 . '</div>';
         }
 
-        // #2369 — route every cell through TC_Cell_Content_Service::render_cell_value
+        // #2369 - route every cell through TC_Cell_Content_Service::render_cell_value
         // so the save path and render path share a single implementation. The service
         // applies do_shortcode (when the opt-in is enabled) and wp_kses_post in the
         // correct order. A second wp_kses_post from the allow_html branch below is
@@ -2114,7 +2114,7 @@ class TC_Shortcode
             );
         }
 
-        // #2369 — pass allow_html so stored HTML is output via wp_kses_post
+        // #2369 - pass allow_html so stored HTML is output via wp_kses_post
         // rather than being double-escaped by TC_Auto_Format::format_cell.
         return $this->render_external_source_table_html(
             $rows,
@@ -2184,7 +2184,7 @@ class TC_Shortcode
     }
 
     /**
-     * #1998 — Render an Excel (.xlsx) source table on the frontend.
+     * #1998 - Render an Excel (.xlsx) source table on the frontend.
      */
     private function render_xlsx_source_table(int $table_id, array $settings): string
     {
@@ -2243,15 +2243,15 @@ class TC_Shortcode
     }
 
     /**
-     * #2004 — Render an XML-source table on the frontend.
+     * #2004 - Render an XML-source table on the frontend.
      *
      * Convergence epic #2006, Phase 2. TC_XML_Source::get_cached() returns
      * header-keyed associative rows (or a WP_Error) directly, so no CSV-style
-     * remap is needed — column keys are the union of row keys.
+     * remap is needed - column keys are the union of row keys.
      */
     private function render_xml_source_table(int $table_id, array $settings): string
     {
-        // #2083 — engine ships only in premium (@fs_premium_only). Guard so a
+        // #2083 - engine ships only in premium (@fs_premium_only). Guard so a
         // grandfathered site on the stripped free build degrades gracefully.
         if (!class_exists('TC_XML_Source')) {
             return '<p>' . esc_html__('This data source is available in the Pro version.', 'tc-data-tables') . '</p>'; // @codeCoverageIgnore
@@ -2314,7 +2314,7 @@ class TC_Shortcode
     }
 
     /**
-     * #1008 v4.180.0 — Shared short-circuit for the three external data-source
+     * #1008 v4.180.0 - Shared short-circuit for the three external data-source
      * render methods. Returns the WP_Error or empty-state HTML when the cached
      * rows aren't usable; null when the caller should proceed with rendering.
      */
@@ -2336,7 +2336,7 @@ class TC_Shortcode
     }
 
     /**
-     * #2196 — Render a WooCommerce products table (id-based source). Cells are
+     * #2196 - Render a WooCommerce products table (id-based source). Cells are
      * trusted WooCommerce-generated HTML (product links, formatted prices,
      * add-to-cart), so they pass through the shared renderer with allow_html.
      */
@@ -2385,7 +2385,7 @@ class TC_Shortcode
     }
 
     /**
-     * #2205 — Resolve a display header label for an external-source column.
+     * #2205 - Resolve a display header label for an external-source column.
      * Saved column_labels / field_labels always win; when none is set (or it
      * is blank) the raw data key is humanized so headers read "Product Name"
      * instead of "product_name". WooCommerce / Gravity Forms already provide
@@ -2403,7 +2403,7 @@ class TC_Shortcode
     }
 
     /**
-     * #2205 — Convert a raw data key into a human-readable Title Case label.
+     * #2205 - Convert a raw data key into a human-readable Title Case label.
      * Handles snake_case, kebab-case, dotted json-flatten keys, and
      * camelCase/PascalCase; preserves ALL-CAPS acronyms (SKU, ID) and is
      * idempotent on already-humanized input ("Product Name").
@@ -2443,7 +2443,7 @@ class TC_Shortcode
     }
 
     /**
-     * #2205 — Lowercase-keyed set of known acronyms that should render
+     * #2205 - Lowercase-keyed set of known acronyms that should render
      * UPPER-CASE in a humanized header (so `order_id` -> "Order ID", not
      * "Order Id"). Extend or trim for site-specific acronyms via the
      * `tablecrafter_header_acronyms` filter (pass a flat array of tokens).
@@ -2472,7 +2472,7 @@ class TC_Shortcode
     }
 
     /**
-     * #1008 v4.180.0 — Shared HTML generation for the external data-source
+     * #1008 v4.180.0 - Shared HTML generation for the external data-source
      * render methods. Takes pre-flattened rows + column keys + a source-kind
      * slug ('json' / 'airtable' / 'notion') and emits the standard wrapper /
      * table / meta footer markup.
@@ -2492,7 +2492,7 @@ class TC_Shortcode
         $kind = esc_attr($source_kind);
         $wrapper_id = 'gt-' . $kind . '-table-' . $table_id;
 
-        // #1960 — map column keys to the builder-configured labels so headers
+        // #1960 - map column keys to the builder-configured labels so headers
         // read e.g. "First Name" instead of the raw "first_name" data key, and
         // read per_page for client-side pagination.
         $labels   = array();
@@ -2512,7 +2512,7 @@ class TC_Shortcode
             }
         }
 
-        // #2142 — shortcode-level overrides (inline sources): per_page + the
+        // #2142 - shortcode-level overrides (inline sources): per_page + the
         // search/export/filters toggles, restoring 3.5.x inline behavior.
         if (!empty($opts['per_page'])) {
             $per_page = (int) $opts['per_page'];
@@ -2521,11 +2521,11 @@ class TC_Shortcode
         $show_export  = !empty($opts['export']);
         $show_filters = !empty($opts['filters']);
 
-        // #2143 — legacy inline auto-refresh opts (empty for id-based sources).
+        // #2143 - legacy inline auto-refresh opts (empty for id-based sources).
         $refresh      = isset($opts['refresh']) && is_array($opts['refresh']) ? $opts['refresh'] : array();
         $auto_refresh = !empty($refresh['auto']);
 
-        // #1960 — progressive enhancement: click-to-sort, pagination, search.
+        // #1960 - progressive enhancement: click-to-sort, pagination, search.
         if (function_exists('wp_enqueue_script')) {
             wp_enqueue_script(
                 'gt-external-interactive',
@@ -2534,7 +2534,7 @@ class TC_Shortcode
                 TC_VERSION,
                 true
             );
-            // #2143 — the auto-refresh poller re-renders via admin-ajax; hand the
+            // #2143 - the auto-refresh poller re-renders via admin-ajax; hand the
             // script the endpoint + a nonce. Localized only when needed.
             if ($auto_refresh && function_exists('wp_localize_script')) {
                 wp_localize_script('gt-external-interactive', 'gtExtRefresh', array(
@@ -2544,7 +2544,7 @@ class TC_Shortcode
             }
         }
 
-        // #2381 — external/data-source tables (CSV/JSON/Sheets/Excel/XML/inline)
+        // #2381 - external/data-source tables (CSV/JSON/Sheets/Excel/XML/inline)
         // all flow through this shared renderer but historically never enqueued
         // the plugin stylesheet, so they rendered completely unstyled on the
         // front end (unlike GF/manual tables, which enqueue it in
@@ -2558,7 +2558,7 @@ class TC_Shortcode
             wp_enqueue_style('gravity-tables-data-source-render');
         }
 
-        // #2143 — emit refresh data-attributes + the source atts needed to
+        // #2143 - emit refresh data-attributes + the source atts needed to
         // re-render. Only present when auto-refresh is enabled.
         $refresh_attr = '';
         if ($auto_refresh) {
@@ -2572,7 +2572,7 @@ class TC_Shortcode
                 . " data-refresh-atts='" . esc_attr((string) $refresh_atts_json) . "'";
         }
 
-        // #2147 — keep the 3.5.x wrapper class (`.tablecrafter-container`) so
+        // #2147 - keep the 3.5.x wrapper class (`.tablecrafter-container`) so
         // existing theme CSS that targets inline tables still applies.
         $html  = '<div class="gt-' . $kind . '-source-wrapper tablecrafter-container" id="' . esc_attr($wrapper_id) . '"' . $refresh_attr . '>';
         if ($title !== '') {
@@ -2599,12 +2599,12 @@ class TC_Shortcode
                 if (is_array($val) || is_object($val)) {
                     $val = wp_json_encode($val);
                 }
-                // #2196 — allow_html: trusted source-generated HTML cells
+                // #2196 - allow_html: trusted source-generated HTML cells
                 // (e.g. WooCommerce product links / prices / add-to-cart) pass
                 // through wp_kses_post instead of being auto-formatted/escaped.
                 if (!empty($opts['allow_html'])) {
                     $html .= '<td>' . wp_kses_post((string) $val) . '</td>';
-                // #2132 — auto-format dates / numbers / URLs into beautiful cells
+                // #2132 - auto-format dates / numbers / URLs into beautiful cells
                 // by default (the engine escapes text internally). Falls back to
                 // plain esc_html if the engine isn't loaded.
                 } elseif (class_exists('TC_Auto_Format')) {
@@ -2626,10 +2626,10 @@ class TC_Shortcode
     }
 
     /**
-     * #996 v4.174.0 — Render an Airtable-source table on the frontend.
+     * #996 v4.174.0 - Render an Airtable-source table on the frontend.
      *
      * Phase D of #517. Closes the Airtable-as-data-source feature. Mirrors
-     * render_json_source_table() architecturally — different cached-helper
+     * render_json_source_table() architecturally - different cached-helper
      * call, same render shape so customer-visible output is consistent
      * across the two data sources.
      *
@@ -2670,7 +2670,7 @@ class TC_Shortcode
     }
 
     /**
-     * #1008 v4.180.0 — Compute the union of column keys across a row array.
+     * #1008 v4.180.0 - Compute the union of column keys across a row array.
      * Used by the Airtable + Notion renders so a sparse record doesn't drop
      * columns that exist in others.
      */
@@ -2687,10 +2687,10 @@ class TC_Shortcode
     }
 
     /**
-     * #1004 v4.178.0 — Render a Notion-source table on the frontend.
+     * #1004 v4.178.0 - Render a Notion-source table on the frontend.
      *
      * Phase 4 of #592. CLOSES the Notion-as-data-source feature. Mirrors
-     * render_airtable_source_table() architecturally — different cached
+     * render_airtable_source_table() architecturally - different cached
      * helper call, identical render shape so output is consistent across
      * all three external data sources (JSON, Airtable, Notion).
      *
@@ -2703,7 +2703,7 @@ class TC_Shortcode
      */
     private function render_notion_source_table(int $table_id, array $settings): string
     {
-        // #2083 — engine ships only in premium (@fs_premium_only). Guard so a
+        // #2083 - engine ships only in premium (@fs_premium_only). Guard so a
         // grandfathered site on the stripped free build degrades gracefully.
         if (!class_exists('TC_Notion_Sync_Engine')) {
             return '<p>' . esc_html__('This data source is available in the Pro version.', 'tc-data-tables') . '</p>'; // @codeCoverageIgnore
@@ -2731,7 +2731,7 @@ class TC_Shortcode
     }
 
     /**
-     * #607 slice 3 — Frontend password gate.
+     * #607 slice 3 - Frontend password gate.
      *
      * Returns null when the visitor is allowed through (no password set
      * OR cookie verifies OR correct POST just succeeded). Returns the
@@ -2758,7 +2758,7 @@ class TC_Shortcode
         }
         if (!class_exists('TC_Table_Password_Service')) {
             // @codeCoverageIgnoreStart
-            return null; // Service missing — fail-open rather than break the page.
+            return null; // Service missing - fail-open rather than break the page.
             // @codeCoverageIgnoreEnd
         }
 
@@ -2799,7 +2799,7 @@ class TC_Shortcode
                     // Echo into $_COOKIE so this same request renders unlocked.
                     $_COOKIE[$cookie_name] = $token;
                 }
-                // Fall through to the cookie check below — should pass now.
+                // Fall through to the cookie check below - should pass now.
             } else {
                 return $this->render_password_form($table_id, __('Incorrect password. Please try again.', 'tc-data-tables'));
             }
@@ -2811,7 +2811,7 @@ class TC_Shortcode
             $cookie_value = (string) $_COOKIE[$cookie_name];
         }
         if (TC_Table_Password_Service::is_unlocked($cookie_value, $table_id, $stored_hash, $now, $ttl, $secret)) {
-            return null; // Unlocked — continue normal render.
+            return null; // Unlocked - continue normal render.
         }
 
         // No valid cookie + no successful POST → render the password form.
@@ -3020,8 +3020,8 @@ class TC_Shortcode
         $lookup_configurations = isset($atts['lookup_fields']) ? $atts['lookup_fields'] : array();
         $field_configurations = isset($atts['field_configurations']) ? $atts['field_configurations'] : array();
         // #2281: per-column type overrides. Two storage paths:
-        // (a) settings.column_config[field_id]['type'] — programmatic / future admin UI.
-        // (b) settings.field_configurations[field_id]['column_type'] — admin builder path
+        // (a) settings.column_config[field_id]['type'] - programmatic / future admin UI.
+        // (b) settings.field_configurations[field_id]['column_type'] - admin builder path
         //     (field_configurations is already persisted; 'column_type' is a new sub-key).
         $saved_column_types = array();
         if (isset($atts['column_config']) && is_array($atts['column_config'])) {
@@ -3235,7 +3235,7 @@ class TC_Shortcode
             }
         }
 
-        // #1598 — computed columns ride the same polymorphic config as
+        // #1598 - computed columns ride the same polymorphic config as
         // system columns. Read-only: no DB column exists to sort or
         // filter server-side; values are injected per row by
         // TC_Formula_Service::augment_rows() in the entries pipeline.
@@ -3267,7 +3267,7 @@ class TC_Shortcode
     private function checkTableAccessPermission(int $form_id, array $atts): bool
     {
         // By the time this is called, $atts already has all DB settings merged via
-        // render_table()'s get_table() call — build TC_Table_Configuration directly
+        // render_table()'s get_table() call - build TC_Table_Configuration directly
         // from $atts to avoid a redundant second DB query (#131)
         $table_config = new TC_Table_Configuration($atts);
         return $table_config->canCurrentUserViewTable();
@@ -3326,7 +3326,7 @@ class TC_Shortcode
                     // Check stored column count
                     $columns = isset($stored_settings['columns']) ? $stored_settings['columns'] : array();
                     if (count($columns) > TC_FREE_MAX_COLUMNS) {
-                        // @codeCoverageIgnoreStart — TC_FREE_MAX_COLUMNS = PHP_INT_MAX in the premium build used for tests; this block is structurally unreachable under PHPUnit
+                        // @codeCoverageIgnoreStart - TC_FREE_MAX_COLUMNS = PHP_INT_MAX in the premium build used for tests; this block is structurally unreachable under PHPUnit
                         error_log("GT Security: Free user attempted to render table with " . count($columns) . " columns (limit: " . TC_FREE_MAX_COLUMNS . ")");
 
                         return '<div class="gt-upgrade-notice" style="background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 15px; border-radius: 5px; margin: 20px 0;">' .

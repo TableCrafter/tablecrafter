@@ -1,5 +1,5 @@
 /**
- * #1741 — Status Badge Cell Type (Free).
+ * #1741 - Status Badge Cell Type (Free).
  *
  * Post-render pass: walks td[data-field-id] cells for columns that have a
  * badge map configured, wraps matching values in a colored pill badge span.
@@ -15,7 +15,7 @@
 
         /**
          * Apply badge spans to all rendered cells that match a badge map entry.
-         * Safe to call multiple times — skips cells that already have a .gt-badge.
+         * Safe to call multiple times - skips cells that already have a .gt-badge.
          */
         applyBadges: function () {
             var config = this.config || {};

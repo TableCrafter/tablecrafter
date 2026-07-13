@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/detail-popup.js
+ * TableCrafter - frontend/detail-popup.js
  *
  * Entry-details popup overlay + file-upload cell renderer. Seventh
  * module under #830.

@@ -5,7 +5,7 @@
  * Convergence epic #2006, Phase 4. The classes were renamed from the legacy
  * GT_* (gravity-tables) brand to the TC_* (TableCrafter) brand. This registers a
  * lazy autoloader so any lingering reference to the OLD GT_Foo name resolves to
- * the new TC_Foo class via class_alias — protecting external integrations and
+ * the new TC_Foo class via class_alias - protecting external integrations and
  * any stored references during the transition. TC_* is canonical going forward.
  *
  * @package TableCrafter

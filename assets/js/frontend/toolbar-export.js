@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/toolbar-export.js
+ * TableCrafter - frontend/toolbar-export.js
  *
  * Toolbar export helpers: copy-to-clipboard + CSV/Excel/PDF download.
  * #832 slice 13 of N (with getVisibleTableData added in slice 17).
@@ -60,7 +60,7 @@
             var $wrapper = $('#' + this.wrapperId);
             var rows = [];
             var headers = [];
-            // #2340 — track which column indices are excluded from export so
+            // #2340 - track which column indices are excluded from export so
             // the corresponding td cells are skipped in the data rows.
             // Columns marked data-export-exclude="true" (e.g. the index column)
             // must not appear in CSV/copy/Excel exports.
@@ -150,7 +150,7 @@
         toolbarDownloadPDF: function () {
             // Route through the existing #531 Print button when present.
             // Fall back to window.print() when the Print button is suppressed
-            // via #521 show_print=false. See v4.8.15 — #636 closed honestly.
+            // via #521 show_print=false. See v4.8.15 - #636 closed honestly.
             var $wrapper = $('#' + this.wrapperId);
             var $printBtn = $wrapper.find('.gt-print-btn').first();
             if ($printBtn.length) {
@@ -160,13 +160,13 @@
             window.print();
         },
 
-        // #2285 — JSON visible-rows export helpers.
+        // #2285 - JSON visible-rows export helpers.
 
         /**
          * toolbarBuildJSON(rows)
          *
          * Takes a 2D array of cell values (same shape as getVisibleTableData)
-         * and returns a pretty-printed JSON string — an array of objects keyed
+         * and returns a pretty-printed JSON string - an array of objects keyed
          * by the column headers from the first row.
          *
          * @param  {string[][]} rows  2D array; rows[0] is the header row.

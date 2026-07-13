@@ -1,10 +1,10 @@
-/* #1749 — Inline cell diff badge + bulk fill diff preview. */
+/* #1749 - Inline cell diff badge + bulk fill diff preview. */
 
 /**
  * Show a brief "was: {oldValue}" badge on a cell after an inline edit
  * changes its value. Badge auto-removes after 3 seconds.
  *
- * Free feature — no Pro gate needed (purely cosmetic feedback).
+ * Free feature - no Pro gate needed (purely cosmetic feedback).
  *
  * @param {Element} cell       The td/th element that was just saved.
  * @param {string}  oldValue   The value before the edit.

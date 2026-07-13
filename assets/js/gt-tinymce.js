@@ -1,4 +1,4 @@
-/* TinyMCE plugin for Advanced Data Tables — Classic (TinyMCE) editor integration (#129) */
+/* TinyMCE plugin for Advanced Data Tables - Classic (TinyMCE) editor integration (#129) */
 (function () {
     tinymce.PluginManager.add('gravity_tables', function (editor) {
         editor.addButton('gravity_tables', {

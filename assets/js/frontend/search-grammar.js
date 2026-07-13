@@ -1,7 +1,7 @@
 /**
- * TableCrafter — frontend/search-grammar.js
+ * TableCrafter - frontend/search-grammar.js
  *
- * #2278 Phase 1 — advanced global search grammar (client-side only).
+ * #2278 Phase 1 - advanced global search grammar (client-side only).
  *
  * Ports the query tokenizer and AST evaluator from tablecrafter.js
  * (_tokenizeQuery / _evalQueryAst) into a frontend module attached to
@@ -18,7 +18,7 @@
  *
  * Fuzzy mode: when enable_fuzzy_search is set and the AST contains any
  * `field`, `not`, or `or` node, grammar evaluation wins over fuzzy.
- * Collect highlight terms via _getGrammarHighlightTerms() — returns []
+ * Collect highlight terms via _getGrammarHighlightTerms() - returns []
  * when fuzzy-disable nodes are present (per spec, suppress highlighting
  * for not/comparison/or nodes).
  *
@@ -28,7 +28,7 @@
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
  *   _hasGrammarOperators(query)
- *   parseSearchGrammarQuery(input)         — returns AST root
+ *   parseSearchGrammarQuery(input) - returns AST root
  *   _evalGrammarAst(node, row)
  *   _resolveColumnValue(row, fieldName)
  *   _grammarAstHasFuzzyDisableNode(ast)

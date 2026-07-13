@@ -2,8 +2,8 @@
 /**
  * Plugin Name: TableCrafter
  * Plugin URI: https://github.com/TableCrafter/tablecrafter-pro
- * Description: TableCrafter — beautiful, responsive data tables for WordPress. Free: 3 tables, 8 columns, 500 entries. Pro: unlimited everything + frontend editing, bulk operations, advanced filters.
- * Version: 8.0.44
+ * Description: TableCrafter - beautiful, responsive data tables for WordPress. Free: 3 tables, 8 columns, 500 entries. Pro: unlimited everything + frontend editing, bulk operations, advanced filters.
+ * Version: 8.0.45
  * Author: Fahad Murtaza @ iSuperCoder.com
  * Author URI: https://isupercoder.com/contact
  * License: GPL-2.0-or-later
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('TC_VERSION', '8.0.44');
+define('TC_VERSION', '8.0.45');
 define('TC_PHP_COMPAT_VERSION', '8.1');
 define('TC_ELEMENTOR_MIN_VERSION', '3.5.0');
 define('TC_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -32,7 +32,7 @@ define('TC_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('TC_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
 // Free plan limitations
-// #2025 (convergence epic #2006, D1) — size caps removed. The product gates by
+// #2025 (convergence epic #2006, D1) - size caps removed. The product gates by
 // FEATURE (editing, sync, pro sources, advanced filters), not by size. These
 // constants are kept for back-compat but set to an effectively-unlimited
 // sentinel so every existing "$count >= TC_FREE_MAX_*" comparison no-ops and the
@@ -42,11 +42,11 @@ define('TC_FREE_MAX_TABLES', PHP_INT_MAX);
 define('TC_FREE_MAX_COLUMNS', PHP_INT_MAX);
 define('TC_FREE_MAX_ENTRIES', PHP_INT_MAX);
 
-// #976 v4.163.0 — Trash retention window (phase 1c-3 of #593).
+// #976 v4.163.0 - Trash retention window (phase 1c-3 of #593).
 // Items in Trash older than this are visually flagged as "purges on next
 // run" in the admin UI, and (once phase 1d ships) will be removed by the
 // WP-cron auto-purge job. Override via the `gravity_tables_trash_retention_days`
-// filter — e.g. `add_filter('gravity_tables_trash_retention_days', fn() => 14);`
+// filter - e.g. `add_filter('gravity_tables_trash_retention_days', fn() => 14);`
 if (!defined('TC_TRASH_RETENTION_DAYS')) {
     define('TC_TRASH_RETENTION_DAYS', 30);
 }
@@ -55,11 +55,11 @@ if (!function_exists('wgt_fs')) {
     // Create a helper function for easy SDK access.
     function wgt_fs()
     {
-        // #667 slice 15 — PHPUnit-shim test seam. Tests cannot stub wgt_fs()
+        // #667 slice 15 - PHPUnit-shim test seam. Tests cannot stub wgt_fs()
         // via function_exists-guarded redeclaration because bootstrap.php
         // loads this file BEFORE any test-issue file gets a chance to install
         // a stub. The seam consults $GLOBALS['gt_test_fs_override'] only when
-        // TC_PHPUNIT_SHIM is defined — production callers (where the shim
+        // TC_PHPUNIT_SHIM is defined - production callers (where the shim
         // constant is never defined) follow the byte-identical pre-slice
         // code path and never read the override.
         if (defined('TC_PHPUNIT_SHIM') && isset($GLOBALS['gt_test_fs_override'])) {
@@ -69,7 +69,7 @@ if (!function_exists('wgt_fs')) {
         global $wgt_fs;
 
         if (!isset($wgt_fs)) {
-            // Load Freemius SDK. #2151 — guard the require so a build that is
+            // Load Freemius SDK. #2151 - guard the require so a build that is
             // somehow missing vendor/ degrades gracefully (free tier keeps
             // working) instead of fataling on every request.
             $fs_sdk = TC_PLUGIN_PATH . 'vendor/freemius/wordpress-sdk/start.php';
@@ -116,7 +116,7 @@ if (!function_exists('wgt_fs')) {
             ));
 
             // Add a "where do I find my license key?" helper to the Freemius
-            // license-activation screen — the SDK's default message only says
+            // license-activation screen - the SDK's default message only says
             // "enter your license key" with no pointer to where to get it.
             $wgt_fs->add_filter('connect-message_on-premium', 'tc_fs_license_help_message', 10, 1);
         }
@@ -149,7 +149,7 @@ if (!function_exists('wgt_fs')) {
     // Signal that SDK was initiated.
     do_action('wgt_fs_loaded');
 
-    // #2146 — clean up plugin data on uninstall via Freemius's after_uninstall
+    // #2146 - clean up plugin data on uninstall via Freemius's after_uninstall
     // hook. Freemius forbids a raw uninstall.php (it tracks the uninstall event
     // itself), so the cleanup is registered here for both free and premium.
     $wgt_fs_instance = wgt_fs();
@@ -165,27 +165,27 @@ require_once __DIR__ . '/includes/helpers-license.php';
 require_once __DIR__ . '/includes/helpers-db.php';
 require_once __DIR__ . '/includes/class-aliases.php';
 
-// #2017 — conflict guard. The legacy standalone free plugin (wp-data-tables,
-// "TableCrafter – Data to Beautiful Tables") also uses the TC_* class namespace
+// #2017 - conflict guard. The legacy standalone free plugin (wp-data-tables,
+// "TableCrafter - Data to Beautiful Tables") also uses the TC_* class namespace
 // and a tablecrafter.php main file. If it is active, bail BEFORE our class
 // requires to avoid a fatal "Cannot redeclare class TC_*", and tell the admin to
-// deactivate it — this converged plugin supersedes it. (TC_HTTP_Request is
+// deactivate it - this converged plugin supersedes it. (TC_HTTP_Request is
 // defined only by the old free plugin, never here, so it is a safe detector.)
 if (class_exists('TC_HTTP_Request')) {
     add_action('admin_notices', function () {
         echo '<div class="notice notice-error"><p><strong>TableCrafter:</strong> '
-            . esc_html__('Please deactivate the older "TableCrafter – Data to Beautiful Tables" plugin. This version supersedes it; running both at once causes a class conflict.', 'tc-data-tables')
+            . esc_html__('Please deactivate the older "TableCrafter - Data to Beautiful Tables" plugin. This version supersedes it; running both at once causes a class conflict.', 'tc-data-tables')
             . '</p></div>';
     });
     return;
 }
 
-// #1075 — gt_validate_outbound_url() is the shared SSRF gate for every
+// #1075 - gt_validate_outbound_url() is the shared SSRF gate for every
 // wp_remote_*() call site (auto-import, xml-source, webhook, json-source).
 // Required early so the gate is in scope before any service class loads.
 require_once __DIR__ . '/includes/helpers-url.php';
 
-// #1076 — gt_encrypt_secret() / gt_decrypt_secret() are the shared AES-256-CBC
+// #1076 - gt_encrypt_secret() / gt_decrypt_secret() are the shared AES-256-CBC
 // helpers for at-rest secret encryption (cloud-storage OAuth tokens, AI
 // provider api_keys). gt_rest_filter_safe_settings() is the REST get_table
 // allowlist. gt_bundle_strip_secrets() strips credentials from the bulk-
@@ -193,7 +193,7 @@ require_once __DIR__ . '/includes/helpers-url.php';
 // can call into the helpers.
 require_once __DIR__ . '/includes/helpers-secrets.php';
 
-// #1073 — gt_request_server_text() is the shared $_SERVER read helper
+// #1073 - gt_request_server_text() is the shared $_SERVER read helper
 // (sanitize_text_field + wp_unslash + missing-key default) used by
 // submit_new_entry() to populate the GF entry's ip / source_url /
 // user_agent fields without leaking raw superglobals into storage.
@@ -250,7 +250,7 @@ require_once TC_PLUGIN_PATH . 'includes/services/class-tc-row-expiry-service.php
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-data-bars-service.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-table-duplicate-service.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-badge-service.php';
-// TC_Abilities_Registry — slice 3 (v4.63.0) wires the registry so the
+// TC_Abilities_Registry - slice 3 (v4.63.0) wires the registry so the
 // require is back in. boot() arms `init` (register the six abilities
 // when wp_register_ability is available) and `admin_init` (WP <7.0
 // dismissible notice when the API is absent).
@@ -276,7 +276,7 @@ require_once TC_PLUGIN_PATH . 'includes/services/class-tc-airtable-field-mapper.
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-airtable-request-builder.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-airtable-sync-engine.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-table-password-service.php'; // #2352
-// #2027 — strip-safe require: load a premium-only file only if it's present, so
+// #2027 - strip-safe require: load a premium-only file only if it's present, so
 // the Freemius free build (which strips @fs_premium_only files at build time)
 // boots without a missing-file fatal. The premium build ships the files.
 if (!function_exists('gt_require_premium_file')) {
@@ -288,7 +288,7 @@ if (!function_exists('gt_require_premium_file')) {
     }
 }
 gt_require_premium_file('includes/services/class-tc-notion-sync-engine.php');
-// #1595 — the push engines + Notion normalizer were never loaded in
+// #1595 - the push engines + Notion normalizer were never loaded in
 // production, so the AJAX push path's class_exists guards always failed
 // ("push engine not available") despite the feature shipping since 4.209.0.
 gt_require_premium_file('includes/services/class-tc-notion-payload-normalizer.php');
@@ -317,7 +317,7 @@ require_once TC_PLUGIN_PATH . 'includes/services/class-tc-time-field-renderer.ph
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-consent-field-renderer.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-fileupload-edit-guard.php';
 require_once TC_PLUGIN_PATH . 'includes/class-tc-pagination-rest.php';
-// #2307/#2308 — shared boolean coercion helper; must load before any
+// #2307/#2308 - shared boolean coercion helper; must load before any
 // service that calls TC_Bool::cast() (collapsible, toolbar-visibility,
 // print-settings).
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-bool.php';
@@ -343,10 +343,10 @@ require_once TC_PLUGIN_PATH . 'includes/services/class-tc-error-handler.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-configuration-service.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-date-service.php';
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-date-format-service.php';
-// TC_Entry_Service — 780-line aborted-refactor service from the v2.0.0 era.
+// TC_Entry_Service - 780-line aborted-refactor service from the v2.0.0 era.
 // `grep -rn 'TC_Entry_Service|new TC_Entry_Service|TC_Entry_Service::'` across
 // includes/, admin/, templates/, tablecrafter.php, tests/ returns only the
-// class definition itself — no live caller, no test contract. Entry CRUD lives
+// class definition itself - no live caller, no test contract. Entry CRUD lives
 // inline in includes/class-tc-ajax.php instead. The file stays in the repo as
 // an archaeology breadcrumb in case someone resumes the extraction; the
 // require is dropped to skip an 18-method / 780-line parse on every request.
@@ -365,7 +365,7 @@ require_once TC_PLUGIN_PATH . 'includes/services/class-tc-default-sort-service.p
 // include must be present (the #148 contract), and the service ships full
 // build_order_by() / get_datatables_order() implementations. The shift-click
 // hookup in assets/js/frontend.js + the AJAX/template wiring on the PHP side
-// hasn't landed yet — see v4.7.155 changelog for the docs correction. When
+// hasn't landed yet - see v4.7.155 changelog for the docs correction. When
 // multi-sort is enabled in the table builder UI, replace this comment with
 // the actual instantiation callers.
 require_once TC_PLUGIN_PATH . 'includes/services/class-tc-multi-sort-service.php';
@@ -407,7 +407,7 @@ require_once TC_PLUGIN_PATH . 'includes/repositories/class-tc-entry-repository.p
 require_once TC_PLUGIN_PATH . 'includes/renderers/class-tc-form-renderer.php';
 require_once TC_PLUGIN_PATH . 'includes/renderers/class-tc-cell-renderer.php';
 
-// Include AI provider stack (#495 — foundation only; feature code lands later)
+// Include AI provider stack (#495 - foundation only; feature code lands later)
 require_once TC_PLUGIN_PATH . 'includes/services/ai/interface-gt-ai-provider.php';
 require_once TC_PLUGIN_PATH . 'includes/services/ai/class-tc-ai-provider-openai.php';
 require_once TC_PLUGIN_PATH . 'includes/services/ai/class-tc-ai-provider-anthropic.php';
@@ -485,12 +485,12 @@ class Gravity_Tables_Plugin
 
     public function init()
     {
-        // #554 — capability migration on upgrade. The activation hook does
+        // #554 - capability migration on upgrade. The activation hook does
         // NOT fire on plugin updates, so users upgrading from a version that
         // pre-dates the capability registration would be stuck without caps.
         // ensure_capabilities_for_version() compares the stored gt_version
         // option against TC_VERSION and self-heals when the stored version
-        // is empty or older. Idempotent — no-op once the stored option
+        // is empty or older. Idempotent - no-op once the stored option
         // matches TC_VERSION.
         $stored_version = (string) get_option('gt_version', '');
         $needs_version_bump = false;
@@ -498,17 +498,17 @@ class Gravity_Tables_Plugin
             $needs_version_bump = true;
         }
 
-        // #968 v4.159.0 — soft-delete schema migration (phase 1a of #593).
+        // #968 v4.159.0 - soft-delete schema migration (phase 1a of #593).
         // Activation hook does NOT fire on plugin updates, so customers upgrading
         // from a pre-4.159.0 version need their wp_gravity_tables table altered
-        // to add the new `deleted_at` column. dbDelta is idempotent — safe to
+        // to add the new `deleted_at` column. dbDelta is idempotent - safe to
         // run on every gated upgrade path. Gate on stored version < 4.159.0.
         if ($stored_version === '' || version_compare($stored_version, '4.159.0', '<')) {
             $this->create_tables();
             $needs_version_bump = true;
         }
 
-        // #978 v4.164.0 — Schedule the trash auto-purge cron on upgrade from
+        // #978 v4.164.0 - Schedule the trash auto-purge cron on upgrade from
         // a pre-4.164.0 version (activation hook does not fire on update).
         // Idempotent: wp_next_scheduled gate avoids double-scheduling.
         if ($stored_version === '' || version_compare($stored_version, '4.164.0', '<')) {
@@ -518,7 +518,7 @@ class Gravity_Tables_Plugin
             $needs_version_bump = true;
         }
 
-        // #1728 v6.3.4 — restore show_advanced_filters for tables corrupted by
+        // #1728 v6.3.4 - restore show_advanced_filters for tables corrupted by
         // the May-9 v4.60.0 refactor. The refactor removed the builder checkbox
         // while save-table.js still read it, so every subsequent table save wrote
         // show_advanced_filters: false. Any stored version between 4.60.0 and
@@ -528,7 +528,7 @@ class Gravity_Tables_Plugin
             $needs_version_bump = true;
         }
 
-        // v7.6.3 — migrate stored shortcodes from deprecated [gravity_table] /
+        // v7.6.3 - migrate stored shortcodes from deprecated [gravity_table] /
         // [gravity_tables] to the canonical [tablecrafter] name. Re-runs the
         // existing maybe_update_shortcodes() mechanism by clearing the old flag
         // so the migration executes once on upgrade from any pre-7.6.3 version.
@@ -537,11 +537,11 @@ class Gravity_Tables_Plugin
             $needs_version_bump = true;
         }
 
-        // #2257 v8.0.38 — fold legacy "ghost" soft-deletes into the Trash tab.
+        // #2257 v8.0.38 - fold legacy "ghost" soft-deletes into the Trash tab.
         // Rows deleted before the #593 deleted_at trash system carry
         // status='deleted' with deleted_at NULL, matching neither the tables
         // list nor the Trash tab. Backfill deleted_at so they surface as
-        // restorable Trash and the dashboard counts reconcile. Idempotent —
+        // restorable Trash and the dashboard counts reconcile. Idempotent - 
         // the UPDATE matches zero rows once every deleted row is timestamped.
         if ($stored_version === '' || version_compare($stored_version, '8.0.38', '<')) {
             if (class_exists('TC_Data_Integrity_Guard')) {
@@ -550,9 +550,9 @@ class Gravity_Tables_Plugin
             $needs_version_bump = true;
         }
 
-        // #2366 v8.1.0 — create the manual rows table for sites upgrading
+        // #2366 v8.1.0 - create the manual rows table for sites upgrading
         // from pre-8.1.0 (activation hook does not fire on plugin updates).
-        // dbDelta is idempotent — no-op if the table already exists.
+        // dbDelta is idempotent - no-op if the table already exists.
         if ($stored_version === '' || version_compare($stored_version, '8.1.0', '<')) {
             $this->create_tables();
             $needs_version_bump = true;
@@ -562,13 +562,13 @@ class Gravity_Tables_Plugin
             update_option('gt_version', TC_VERSION);
         }
 
-        // #2030 — record that this site has been premium so a later lapse
+        // #2030 - record that this site has been premium so a later lapse
         // degrades pro-source tables to read-only instead of blanking them.
         if (function_exists('gt_mark_premium_seen')) {
             gt_mark_premium_seen();
         }
 
-        // #2007 — boot the GF-independent core first so external data-source
+        // #2007 - boot the GF-independent core first so external data-source
         // tables (JSON/CSV/Airtable/etc.) render even when Gravity Forms is
         // inactive. GF-coupled wiring is deferred to init_gravity_forms().
         $this->init_core();
@@ -576,13 +576,13 @@ class Gravity_Tables_Plugin
         if (class_exists('GFForms')) {
             $this->init_gravity_forms();
         } else {
-            // Informational only — external data sources keep working.
+            // Informational only - external data sources keep working.
             add_action('admin_notices', array($this, 'gravity_forms_notice'));
         }
     }
 
     /**
-     * #2007 — Boot all Gravity-Forms-independent components and hooks.
+     * #2007 - Boot all Gravity-Forms-independent components and hooks.
      * Always runs (even when Gravity Forms is inactive) so external
      * data-source tables render without GF.
      */
@@ -598,7 +598,7 @@ class Gravity_Tables_Plugin
         TC_REST_API::get_instance();
         TC_Chart::get_instance();
         TC_Map::get_instance();
-        // #2027 — External DB is a premium-only source; its file is stripped from
+        // #2027 - External DB is a premium-only source; its file is stripped from
         // the free build, so guard the boot instantiation against a missing class.
         if (class_exists('TC_External_DB')) {
             TC_External_DB::get_instance();
@@ -609,27 +609,27 @@ class Gravity_Tables_Plugin
         TC_Google_Sheets::get_instance();
         TC_Global_Search_Service::get_instance();
 
-        // #2012 — stale-while-revalidate cache for external data sources.
+        // #2012 - stale-while-revalidate cache for external data sources.
         if (class_exists('TC_SWR_Cache')) {
             TC_SWR_Cache::register_cron();
         }
 
-        // #2013 — Gutenberg block (server-rendered, delegates to the shortcode).
+        // #2013 - Gutenberg block (server-rendered, delegates to the shortcode).
         if (class_exists('TC_Block')) {
             TC_Block::boot();
         }
 
-        // #2064 — first-activation welcome / onboarding screen.
+        // #2064 - first-activation welcome / onboarding screen.
         if (class_exists('TC_Welcome')) {
             TC_Welcome::boot();
         }
 
-        // #2117 — ask for a WordPress.org review after a success moment.
+        // #2117 - ask for a WordPress.org review after a success moment.
         if (class_exists('TC_Review_Prompt')) {
             (new TC_Review_Prompt())->register();
         }
 
-        // #2028 — one-time v3.5.6 takeover parity reassurance. When the converged
+        // #2028 - one-time v3.5.6 takeover parity reassurance. When the converged
         // build first runs over an existing install, confirm that existing tables
         // and their data sources keep working (free tier is a superset of v3.5.6).
         add_action('admin_notices', function () {
@@ -650,19 +650,19 @@ class Gravity_Tables_Plugin
             TC_Parity_Detector::mark_checked();
             $report = TC_Parity_Detector::analyze($tables);
             if ($report['total'] === 0) {
-                return; // fresh install — nothing to reassure about
+                return; // fresh install - nothing to reassure about
             }
             echo '<div class="notice notice-success is-dismissible"><p>'
                 . esc_html(sprintf(
                     /* translators: 1: total tables, 2: free-tier tables */
-                    __('Welcome to TableCrafter. All %1$d of your existing tables continue to work — %2$d use free-tier data sources and keep rendering exactly as before.', 'tc-data-tables'),
+                    __('Welcome to TableCrafter. All %1$d of your existing tables continue to work - %2$d use free-tier data sources and keep rendering exactly as before.', 'tc-data-tables'),
                     $report['total'],
                     $report['free']
                 ))
                 . '</p></div>';
         });
 
-        // #2021 — post-upgrade migration prompt. Dismissible; NEVER auto-runs the
+        // #2021 - post-upgrade migration prompt. Dismissible; NEVER auto-runs the
         // rebrand migration (the admin must click Run). Shown only when the DB
         // table or options migration is still pending and the notice isn't
         // dismissed for the current admin.
@@ -685,7 +685,7 @@ class Gravity_Tables_Plugin
                 . ' <span class="gt-run-migration-result" style="margin-left:8px;"></span></p></div>';
         });
 
-        // #503 slice 3 — WP 7.0 Abilities API integration.
+        // #503 slice 3 - WP 7.0 Abilities API integration.
         // boot() hooks register() on `init` (so wp_register_ability is
         // already loaded when we call it) and arms the WP <7.0
         // dismissible admin notice on admin_init.
@@ -693,7 +693,7 @@ class Gravity_Tables_Plugin
             TC_Abilities_Registry::boot();
         }
 
-        // #519 slice 2 — Scheduled outbound export runner.
+        // #519 slice 2 - Scheduled outbound export runner.
         // boot() registers the cron callback against the
         // `gt_run_scheduled_export` hook and adds the gt_every_6h
         // cron interval (idempotent with TC_Auto_Import which also
@@ -704,18 +704,18 @@ class Gravity_Tables_Plugin
             TC_Scheduled_Export_Service::boot();
         }
 
-        // #516 slice 2 — clipboard-paste admin handler.
+        // #516 slice 2 - clipboard-paste admin handler.
         if (class_exists('TC_Clipboard_Paste_Handler')) {
             TC_Clipboard_Paste_Handler::boot();
         }
 
-        // #560 slice 2 — server-side pagination REST endpoint.
+        // #560 slice 2 - server-side pagination REST endpoint.
         // Hooks rest_api_init to register /gt/v1/tables/{id}/rows.
         if (class_exists('TC_Pagination_REST')) {
             TC_Pagination_REST::boot();
         }
 
-        // #526 slice 2 — media-folder JS adapter enqueue + localize.
+        // #526 slice 2 - media-folder JS adapter enqueue + localize.
         if (class_exists('TC_Media_Folder_Adapter')) {
             TC_Media_Folder_Adapter::boot();
         }
@@ -729,14 +729,14 @@ class Gravity_Tables_Plugin
         // Enqueue scroll-buttons JS (rendered per-table when show_scroll_buttons is enabled)
         add_action('wp_enqueue_scripts', array('TC_Scroll_Buttons_Service', 'enqueue_assets'));
 
-        // #550 — Page-cache invalidation. When table data changes, purge any
+        // #550 - Page-cache invalidation. When table data changes, purge any
         // cached page-HTML embedding the affected table from WP Rocket /
         // W3TC / LiteSpeed Cache / WordPress core object cache.
         add_action('gravity_tables_after_save_table', function ($table_id) {
             TC_Cache_Invalidator::invalidate_for_table((int) $table_id);
         });
 
-        // #978 v4.164.0 — WP-cron callback for the daily trash auto-purge
+        // #978 v4.164.0 - WP-cron callback for the daily trash auto-purge
         // (phase 1d of #593). Registered on every WP load (not just admin)
         // so wp-cron.php / DOING_CRON requests can fire it. The scheduling
         // happens in activate() + the version-gated upgrade migration.
@@ -750,7 +750,7 @@ class Gravity_Tables_Plugin
             TC_Cache_Invalidator::invalidate_for_table((int) $table_id);
         });
 
-        // TC_Bulk_Migration_Bundle_Service slice 2b (v4.9.17) — Import-bundle
+        // TC_Bulk_Migration_Bundle_Service slice 2b (v4.9.17) - Import-bundle
         // admin-post handler. Validates schema + version compatibility via
         // the service, loops the tables[] array, applies the customer-chosen
         // conflict-resolution policy via service::resolve_conflict, routes
@@ -850,7 +850,7 @@ class Gravity_Tables_Plugin
             ));
         });
 
-        // TC_Bulk_Migration_Bundle_Service slice 2a — Export-all admin-post
+        // TC_Bulk_Migration_Bundle_Service slice 2a - Export-all admin-post
         // handler. The "Export all to JSON" button on the tables-list page
         // POSTs here. Builds the bundle envelope via the service and streams
         // it as a JSON download.
@@ -873,7 +873,7 @@ class Gravity_Tables_Plugin
                     $decoded = json_decode($row['settings'], true);
                     $row['settings_decoded'] = is_array($decoded) ? $decoded : array();
                 }
-                // #1076 finding #4 — strip credentials from the bundle row
+                // #1076 finding #4 - strip credentials from the bundle row
                 // before it enters the export. Importing on a fresh site is
                 // expected to re-enter credentials (the audit calls this out
                 // explicitly; the helper adds a _stripped_secret_keys sentinel
@@ -905,7 +905,7 @@ class Gravity_Tables_Plugin
             wp_send_json_success();
         });
 
-        // #1621 — inline formula validation for the computed-columns
+        // #1621 - inline formula validation for the computed-columns
         // builder repeater. Thin wrapper over the unit-tested
         // TC_Formula_Service::validate_formula(); admin-only.
         add_action('wp_ajax_gt_cc_validate_formula', function () {
@@ -920,7 +920,7 @@ class Gravity_Tables_Plugin
             wp_send_json_success(TC_Formula_Service::validate_formula($formula));
         });
 
-        // #1615 — list a table's revision snapshots for the History
+        // #1615 - list a table's revision snapshots for the History
         // modal. Thin wrapper over the unit-tested
         // TC_Revision_Snapshot_Service::summaries_for_admin().
         add_action('wp_ajax_gt_list_revisions', function () {
@@ -943,7 +943,7 @@ class Gravity_Tables_Plugin
     }
 
     /**
-     * #2007 — Boot Gravity-Forms-coupled components. Called only when the
+     * #2007 - Boot Gravity-Forms-coupled components. Called only when the
      * GFForms class is loaded. Constructors are GF-safe; this method exists
      * to keep GF-only wiring (entry-event cache invalidation, GF imports,
      * WooCommerce-from-entries) out of the GF-free boot path.
@@ -954,7 +954,7 @@ class Gravity_Tables_Plugin
         TC_WooCommerce::get_instance();
         TC_Auto_Import::get_instance();
 
-        // Entry-level events fire with form_id but not table_id — we resolve
+        // Entry-level events fire with form_id but not table_id - we resolve
         // every table whose form_id matches and invalidate each in turn.
         // Only Gravity Forms fires these actions.
         $entry_event_listener = function ($entry_id, $form_id) {
@@ -978,7 +978,7 @@ class Gravity_Tables_Plugin
         // Create database tables if needed
         $this->create_tables();
 
-        // #2116 — first funnel milestone: the plugin is active.
+        // #2116 - first funnel milestone: the plugin is active.
         if (class_exists('TC_Activation_Funnel')) {
             TC_Activation_Funnel::record('plugin_activated');
         }
@@ -1005,7 +1005,7 @@ class Gravity_Tables_Plugin
             ));
         }
 
-        // #978 v4.164.0 — Schedule the daily trash auto-purge cron (phase 1d of #593).
+        // #978 v4.164.0 - Schedule the daily trash auto-purge cron (phase 1d of #593).
         // Idempotent: wp_next_scheduled gate avoids double-scheduling on re-activation.
         if (!wp_next_scheduled('gravity_tables_purge_expired_trash')) {
             wp_schedule_event(time() + DAY_IN_SECONDS, 'daily', 'gravity_tables_purge_expired_trash');
@@ -1022,7 +1022,7 @@ class Gravity_Tables_Plugin
         if (class_exists('TC_License_Cleanup')) {
             TC_License_Cleanup::on_deactivate();
         }
-        // #978 v4.164.0 — Clear the trash auto-purge cron on deactivation.
+        // #978 v4.164.0 - Clear the trash auto-purge cron on deactivation.
         wp_clear_scheduled_hook('gravity_tables_purge_expired_trash');
         flush_rewrite_rules();
     }
@@ -1047,7 +1047,7 @@ class Gravity_Tables_Plugin
     }
 
     /**
-     * #1728 — set show_advanced_filters back to true for every table where
+     * #1728 - set show_advanced_filters back to true for every table where
      * it was written as false by the broken May-9 v4.60.0 save path.
      */
     private function migrate_restore_show_advanced_filters()
@@ -1095,7 +1095,7 @@ class Gravity_Tables_Plugin
         // Table for storing custom table configurations
         $table_name = $wpdb->prefix . 'gravity_tables';
 
-        // #968 v4.159.0 — `deleted_at` for soft-delete trash bin (phase 1a of #593).
+        // #968 v4.159.0 - `deleted_at` for soft-delete trash bin (phase 1a of #593).
         // NULL = live record. NON-NULL = soft-deleted; row is filtered out of
         // listing queries and is visible only in the Trash admin tab (phase 1c,
         // not yet shipped).
@@ -1136,7 +1136,7 @@ class Gravity_Tables_Plugin
         dbDelta($sql);
         dbDelta($audit_sql);
 
-        // #2366 — manual rows table. dbDelta is idempotent; safe to run on
+        // #2366 - manual rows table. dbDelta is idempotent; safe to run on
         // every upgrade path so new installs AND upgrades from pre-8.1.0
         // both get the table.
         if (class_exists('TC_Manual_Rows_Service')) {
@@ -1168,7 +1168,7 @@ if (!defined('WP_INT_TEST')) {
 }
 
 /**
- * #618 slice 3 — Built-in send_email per-row action.
+ * #618 slice 3 - Built-in send_email per-row action.
  *
  * Opt-in via the gt_send_email_enabled filter (default off). When
  * opted-in, TC_Per_Row_Action_Service::register_builtin_send_email
@@ -1192,7 +1192,7 @@ add_filter('gt_per_row_actions', function ($actions) {
 });
 
 /**
- * #618 slice 5 — bridge per-table admin settings to the slice-3 / slice-4
+ * #618 slice 5 - bridge per-table admin settings to the slice-3 / slice-4
  * filter callbacks. When a customer configures send_email_recipient_field
  * or per_row_webhook_url in the table builder, the relevant filters
  * default to those values so the customer doesn't need to write filter
@@ -1293,7 +1293,7 @@ function gt_handle_send_email_action()
 }
 
 /**
- * #618 slice 4 — admin-post handler for the built-in post_webhook
+ * #618 slice 4 - admin-post handler for the built-in post_webhook
  * action. Verifies nonce + capability, loads the entry, POSTs it as
  * JSON to the URL configured by the gt_post_webhook_url filter.
  *
@@ -1362,7 +1362,7 @@ function gt_handle_post_webhook_action()
 }
 
 /**
- * #536 slice 2a — Capture a revision snapshot on every save_table.
+ * #536 slice 2a - Capture a revision snapshot on every save_table.
  *
  * Hooks `gravity_tables_after_save_table` and persists the post-save
  * table state into the per-table option `gt_revisions_table_<id>` via
@@ -1407,7 +1407,7 @@ function gt_capture_revision_snapshot($table_id)
 }
 
 /**
- * #536 slice 2b — Admin-post handler that restores a chosen
+ * #536 slice 2b - Admin-post handler that restores a chosen
  * revision snapshot back as the current table state.
  *
  * Verifies nonce + manage_options. Loads the per-table revisions
@@ -1480,7 +1480,7 @@ function gt_handle_restore_revision_action()
 }
 
 /**
- * #517 slice 3b — Airtable settings page (admin UI for credential storage).
+ * #517 slice 3b - Airtable settings page (admin UI for credential storage).
  *
  * Adds a "Airtable" submenu under the GT plugin menu. Three admin-post
  * handlers wire it to the slice-3a credential service and the slice-2
@@ -1490,7 +1490,7 @@ function gt_handle_restore_revision_action()
  *   - clear: wipes the credential option.
  *
  * This slice retires the orphan-with-test-contract invariants from
- * slices 1, 2, and 3a — admin now references all three Airtable
+ * slices 1, 2, and 3a - admin now references all three Airtable
  * services. Slice 4+ tackles two-way sync (#613).
  */
 
@@ -1498,7 +1498,7 @@ function gt_handle_restore_revision_action()
 // TC_Admin::add_admin_menu at default priority 10) exists before the
 // submenu attaches. Without this, WP treats the orphan submenu slug
 // as a relative wp-admin/ path and the link renders as
-// /wp-admin/gravity-tables-airtable — a 404.
+// /wp-admin/gravity-tables-airtable - a 404.
 // tag: 4.59.0
 add_action('admin_menu', 'gt_register_airtable_settings_page', 20);
 
@@ -1564,7 +1564,7 @@ function gt_handle_airtable_test_connection()
         exit;
     }
 
-    // Cheap probe: page_size=1 — minimum traffic to confirm auth + base/table existence.
+    // Cheap probe: page_size=1 - minimum traffic to confirm auth + base/table existence.
     $result = TC_Airtable_Sync_Engine::fetch_records(
         $creds['base_id'],
         $creds['table_id'],

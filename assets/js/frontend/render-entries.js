@@ -1,10 +1,10 @@
 /**
- * TableCrafter — frontend/render-entries.js
+ * TableCrafter - frontend/render-entries.js
  *
  * Central DOM render for entries. Twenty-second slice under #833.
  * One method, ~81 lines.
  *
- *   - renderEntries(data) — wipe tbody, render row HTML via
+ *   - renderEntries(data) - wipe tbody, render row HTML via
  *     renderEntryRowHtml (entry-row.js, slice 11), bindEntryEvents
  *     (bind-entry-events.js, slice 11), trigger gt-entries-loaded
  *     custom event for scroll indicators.
@@ -24,7 +24,7 @@
         var $tbody = $wrapper.find('tbody');
         var html = '';
 
-        // #613 phase 2 slice 18 (v4.213.0) — initial baseline population.
+        // #613 phase 2 slice 18 (v4.213.0) - initial baseline population.
         // If the server provides per-entry baselines (data.push_baselines),
         // copy them into self._pushBaselines so subsequent pushes carry
         // the right optimistic-concurrency token. Backward compat: when
@@ -39,7 +39,7 @@
             }
         }
 
-        // #1596 — pivot responses render through the pivot layout
+        // #1596 - pivot responses render through the pivot layout
         // (group-by + aggregate columns) instead of the raw column
         // set. typeof guards keep harnesses without the pivot module
         // on the old path.
@@ -66,7 +66,7 @@
             ? self.computeBarMaxes(data.entries, self.config)
             : {};
 
-        // #1733 — server-supplied full-filtered-set maxes override the
+        // #1733 - server-supplied full-filtered-set maxes override the
         // page-local max so bars scale against ALL matching rows, not
         // just the current page. bar_column_maxes is only present when
         // the Pro gate and column_data_bars are both active.
@@ -81,7 +81,7 @@
         if (data.entries && data.entries.length > 0) {
             // Per-row HTML builder moved to assets/js/frontend/entry-row.js (#832 slice 11).
             // DOM probes resolved once here so the helper stays jQuery-free.
-            // #2340 — rowOffset: (page-1)*perPage so index cells show 1-based
+            // #2340 - rowOffset: (page-1)*perPage so index cells show 1-based
             // global counter that renumbers on every sort/filter/page change.
             var rowOffset = (self.currentPage - 1) * (self.config.per_page || 25);
             var ctx = {
@@ -92,7 +92,7 @@
                 hasIndexHeader: $wrapper.find('.gt-index-header').length > 0,
                 detailColCount: $wrapper.find('thead tr').first().find('th').length || $wrapper.find('thead th').length,
             };
-            // #1049 Option 2 v4.222.0 — hot-loop perf refactor. Behavior
+            // #1049 Option 2 v4.222.0 - hot-loop perf refactor. Behavior
             // pinned by 4 e2e vitest tests; equivalence verified pre/post.
             // 1. $.each -> native for-loop (saves callback indirection per
             //    entry; on a 1000-row table that's 1000 fewer Function
@@ -112,10 +112,10 @@
             html += self.renderNoEntriesRowHtml(colCount, noResultsLabel);
         }
 
-        // #1049 Option 2 v4.222.0 — $tbody.html(html) -> direct
+        // #1049 Option 2 v4.222.0 - $tbody.html(html) -> direct
         // .innerHTML assignment. jQuery's .html() does extra
         // bookkeeping (script execution, event cleanup) that we
-        // don't need here — innerHTML is a single DOM-parse pass.
+        // don't need here - innerHTML is a single DOM-parse pass.
         if ($tbody[0]) {
             $tbody[0].innerHTML = html;
         } else {
@@ -144,7 +144,7 @@
         // expiry-filtered DOM.
         self.applyRowExpiry();
 
-        // #2338 — row grouping: inject group-header <tr> rows before the
+        // #2338 - row grouping: inject group-header <tr> rows before the
         // first data row of each group. Runs BEFORE auto-merge so that
         // the merge pass sees the correct row positions after headers are
         // inserted. typeof guard keeps harnesses without the module on the
@@ -171,7 +171,7 @@
             this.updateColumnTotals();
         }
 
-        // #1612 — DOM text-node highlight pass: HTML cells, card view,
+        // #1612 - DOM text-node highlight pass: HTML cells, card view,
         // and per-column text-filter terms. Runs LAST so it sees the
         // final DOM (post-merge, post-card-update). typeof guard keeps
         // harnesses without the module on the old path.

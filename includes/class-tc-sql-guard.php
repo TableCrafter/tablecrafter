@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 class TC_SQL_Guard
 {
     /**
-     * Maximum length of a MySQL identifier — see
+     * Maximum length of a MySQL identifier - see
      * https://dev.mysql.com/doc/refman/8.0/en/identifier-length.html
      */
     const MAX_IDENTIFIER_LENGTH = 64;

@@ -22,9 +22,9 @@ if (!defined('ABSPATH')) {
 }
 
 // Scripts and styles are already enqueued globally by TC_Core class, but we ensure they are enqueued here with dependencies.
-// #1049 Option 1B v4.218.0 — feature-flag swap. When gt_settings.use_frontend_bundle
+// #1049 Option 1B v4.218.0 - feature-flag swap. When gt_settings.use_frontend_bundle
 // is truthy, enqueue the single-handle bundle artifact in place of the 55-handle
-// chain. #1658: Default changed to ON (opt-out) — absent key defaults to true so
+// chain. #1658: Default changed to ON (opt-out) - absent key defaults to true so
 // new and existing installs with no explicit setting get the bundle (~4 requests
 // instead of ~55). Set use_frontend_bundle = false in gt_settings to opt out.
 $gt_settings_for_bundle = get_option('gt_settings', array());
@@ -99,7 +99,7 @@ if (!function_exists('convert_php_to_js_date_format')) {
     }
 }
 
-// #1763 — per-column role visibility, ENFORCED SERVER-SIDE. Compute the
+// #1763 - per-column role visibility, ENFORCED SERVER-SIDE. Compute the
 // columns this user may not see and remove them from $column_config BEFORE it
 // drives both the localized JS config (below) and the server-rendered
 // <th>/<td> loops further down. The client-side hide
@@ -173,13 +173,13 @@ $table_config = array(
     'column_auto_merge' => isset($atts['column_auto_merge']) && is_array($atts['column_auto_merge'])
         ? $atts['column_auto_merge']
         : (isset($table_settings['column_auto_merge']) && is_array($table_settings['column_auto_merge']) ? $table_settings['column_auto_merge'] : array()),
-    // #2323: arbitrary cell merges — per-anchor rowspan/colspan definitions stored as
+    // #2323: arbitrary cell merges - per-anchor rowspan/colspan definitions stored as
     // [{row, col, rowspan, colspan}, ...] with 0-based indices. Precomputed into a
     // skip-set + attrs-map in the preview render loop (see ~line 1775 below).
     'cell_merges' => isset($atts['cell_merges']) && is_array($atts['cell_merges'])
         ? $atts['cell_merges']
         : (isset($table_settings['cell_merges']) && is_array($table_settings['cell_merges']) ? $table_settings['cell_merges'] : array()),
-    // #568 slice 3: click-to-filter cell drill-down — flat list of field_id strings
+    // #568 slice 3: click-to-filter cell drill-down - flat list of field_id strings
     // for which clicking a cell value adds a "filter by example" chip above the
     // table (slice-2 ships the admin opt-in). frontend.js reads this from
     // gtTableData[tableId].drilldown_columns and binds the cell-click delegate.
@@ -190,7 +190,7 @@ $table_config = array(
     // gt_waf_safe_payload_enabled filter returns true, frontend.js JSON.stringify +
     // btoa-encodes the inline-edit + bulk-edit payloads and posts them under
     // `payload` instead of separate fields. Server (slice 2 v4.41.0) already
-    // accepts the envelope. Default false — opt-in for sites behind aggressive
+    // accepts the envelope. Default false - opt-in for sites behind aggressive
     // WAFs (Cloudflare, Sucuri, mod_security, Wordfence) where generic SQLi/XSS
     // rules false-positive on legitimate cell content like "UNION SELECT" or
     // "<script>".
@@ -209,7 +209,7 @@ $table_config = array(
     'is_preview' => $is_preview,
     'preview_settings' => $is_preview ? $atts : null,
     'show_column_totals' => isset($atts['show_column_totals']) ? filter_var($atts['show_column_totals'], FILTER_VALIDATE_BOOLEAN) : (isset($table_settings['show_column_totals']) ? $table_settings['show_column_totals'] : false),
-    // #2340 — index column: 1..n display-order counter, renumbers on sort/filter/page.
+    // #2340 - index column: 1..n display-order counter, renumbers on sort/filter/page.
     'show_index_column' => isset($atts['show_index_column']) ? filter_var($atts['show_index_column'], FILTER_VALIDATE_BOOLEAN) : (isset($table_settings['show_index_column']) ? filter_var($table_settings['show_index_column'], FILTER_VALIDATE_BOOLEAN) : false),
     'index_column_label' => isset($atts['index_column_label']) ? sanitize_text_field($atts['index_column_label']) : (isset($table_settings['index_column_label']) ? sanitize_text_field($table_settings['index_column_label']) : '#'),
     'ajs_toolkit' => array(
@@ -222,7 +222,7 @@ $table_config = array(
     'top_n_column'    => isset($table_settings['top_n_column']) ? sanitize_key($table_settings['top_n_column']) : '',
     'top_n_direction' => (isset($table_settings['top_n_direction']) && in_array($table_settings['top_n_direction'], array('asc', 'desc'), true)) ? $table_settings['top_n_direction'] : 'desc',
     'plugin_version'  => TC_VERSION,
-    // TC_Pagination_Label_Service — resolved label map for the JS
+    // TC_Pagination_Label_Service - resolved label map for the JS
     // pagination renderer. Empty per-table values fall back to plugin
     // defaults inside the service. Frontend.js reads
     // this.config.pagination_labels.* and uses {start}/{end}/{total}
@@ -236,13 +236,13 @@ $table_config = array(
             'no_results'     => 'No matching entries found.',
             'loading'        => 'Loading…',
         ),
-    // #565 slice 1 — multi-column sort toggle. Drives the shift-click
+    // #565 slice 1 - multi-column sort toggle. Drives the shift-click
     // UX in frontend.js. TC_Multi_Sort_Service::is_enabled() defaults
     // to true so existing tables get the feature automatically.
     'enable_multi_sort' => class_exists('TC_Multi_Sort_Service')
         ? TC_Multi_Sort_Service::is_enabled(is_array($table_settings) ? $table_settings : array())
         : true,
-    // TC_URL_Filter_Service — parsed URL filters from $_GET when the
+    // TC_URL_Filter_Service - parsed URL filters from $_GET when the
     // per-table toggle is on. Frontend.js reads this on init, populates
     // the per-column filter inputs, and seeds this.filters before the
     // first loadEntries() so the table arrives pre-filtered.
@@ -255,48 +255,48 @@ $table_config = array(
     'column_aggregations' => (is_array($table_settings) && isset($table_settings['column_aggregations']) && is_array($table_settings['column_aggregations']))
         ? $table_settings['column_aggregations']
         : array(),
-    // Data Bars (#1731) — Pro-gated per-column value bars. RENDER-STRIP on
+    // Data Bars (#1731) - Pro-gated per-column value bars. RENDER-STRIP on
     // the free tier (second layer of defense after the save-time
     // persist-strip): a stale Pro-era config on a downgraded site can
     // never reach the JS config and so can never render a bar.
     'column_data_bars' => (gt_is_premium() && is_array($table_settings) && isset($table_settings['column_data_bars']) && is_array($table_settings['column_data_bars']))
         ? $table_settings['column_data_bars']
         : array(),
-    // #1741 — TC_Badge_Service per-column badge maps. Free tier — no Pro gate.
+    // #1741 - TC_Badge_Service per-column badge maps. Free tier - no Pro gate.
     'column_badge_map' => (is_array($table_settings) && isset($table_settings['column_badge_maps']) && is_array($table_settings['column_badge_maps']))
         ? $table_settings['column_badge_maps']
         : array(),
-    // #1743 — auto-refresh interval in seconds (Free). 0 = disabled.
+    // #1743 - auto-refresh interval in seconds (Free). 0 = disabled.
     'auto_refresh_interval' => (is_array($table_settings) && isset($table_settings['auto_refresh_interval']))
         ? max(0, (int) $table_settings['auto_refresh_interval'])
         : 0,
-    // #1744 — column visibility picker (Free).
+    // #1744 - column visibility picker (Free).
     'show_column_picker' => ! empty( $table_settings['show_column_picker'] ),
-    // #1745 — bulk column fill Pro gate. JS uses this to guard openBulkFillModal.
+    // #1745 - bulk column fill Pro gate. JS uses this to guard openBulkFillModal.
     'is_pro' => gt_is_premium(),
-    // #1747 — one-click entry duplicate (Pro). Admin-enabled per table.
+    // #1747 - one-click entry duplicate (Pro). Admin-enabled per table.
     'enable_duplicate' => ( gt_is_premium() && is_array( $table_settings ) && ! empty( $table_settings['enable_duplicate'] ) ),
-    // #1746/#1763 — per-column role visibility is now enforced SERVER-SIDE:
+    // #1746/#1763 - per-column role visibility is now enforced SERVER-SIDE:
     // restricted columns are already stripped from $column_config (above) and
     // from the gt_get_entries payload. We deliberately no longer leak the
     // visibility map or the viewer's role list to the client. Emitted empty so
     // the client-side hide (column-role-visibility.js) is a harmless no-op.
     'column_role_visibility' => [],
     'user_roles' => [],
-    // #1742 — TC_Validation_Service per-column inline-edit validation rules (Pro).
+    // #1742 - TC_Validation_Service per-column inline-edit validation rules (Pro).
     // RENDER-STRIP: second layer of defense. Free-tier JS config never receives
     // column_validations even if stale Pro-era data exists in the DB.
     'column_validations' => (gt_is_premium() && is_array($table_settings) && isset($table_settings['column_validations']) && is_array($table_settings['column_validations']))
         ? $table_settings['column_validations']
         : array(),
-    // TC_Detail_Rows_Service slice 2 — flat field_id => true map of columns
+    // TC_Detail_Rows_Service slice 2 - flat field_id => true map of columns
     // marked as detail-only candidates. Slice 3 (this slice) reads this in
     // renderEntries to render a chevron toggle TD on each parent row plus a
     // hidden gt-detail-row TR sibling holding the detail-flagged values.
     'column_detail_only' => (is_array($table_settings) && isset($table_settings['column_detail_only']) && is_array($table_settings['column_detail_only']))
         ? $table_settings['column_detail_only']
         : array(),
-    // TC_Default_Sort_Service — per-table initial sort. Frontend.js reads
+    // TC_Default_Sort_Service - per-table initial sort. Frontend.js reads
     // these on init() before the first loadEntries() and overrides the
     // hardcoded date_created/desc default. Empty default_sort_column =
     // legacy behavior (no override).
@@ -308,7 +308,7 @@ $table_config = array(
         : 'asc',
     // Persistent filters via browser localStorage. Off by default.
     'persist_filters_localstorage' => (is_array($table_settings) && !empty($table_settings['persist_filters_localstorage'])),
-    // Visitor-side length selector toggle + options. OFF by default — this is
+    // Visitor-side length selector toggle + options. OFF by default - this is
     // a feature-enable gate (builder checkbox), distinct from the
     // toolbar_visibility override which only hides enabled components.
     // Defaulting it on would surprise legacy tables with a new UI control.
@@ -332,7 +332,7 @@ $table_config = array(
     'length_selector_options' => (is_array($table_settings) && isset($table_settings['length_selector_options']) && $table_settings['length_selector_options'] !== '')
         ? (string) $table_settings['length_selector_options']
         : '10,25,50,100,-1',
-    // #2338 — TC_Row_Grouping_Service. The JS module reads these three keys
+    // #2338 - TC_Row_Grouping_Service. The JS module reads these three keys
     // to determine whether grouping is active and which column(s) to group by.
     // group_by_column  : single column field_id (legacy / simple path).
     // group_by_columns : ordered array of field_ids for hierarchical grouping.
@@ -341,7 +341,7 @@ $table_config = array(
     // Sort policy: the AJAX handler forces the group column(s) as primary sort
     //   when grouping is enabled; visitor sorts become secondary within groups.
     // Pagination policy: groups spanning a page boundary show the header on
-    //   each page (simplest correct behavior — no cross-page group awareness).
+    //   each page (simplest correct behavior - no cross-page group awareness).
     'group_by_column' => class_exists('TC_Row_Grouping_Service')
         ? TC_Row_Grouping_Service::get_group_column(is_array($table_settings) ? $table_settings : array())
         : (is_array($table_settings) && isset($table_settings['group_by_column']) ? sanitize_key((string) $table_settings['group_by_column']) : ''),
@@ -391,7 +391,7 @@ $is_preview = defined('DOING_AJAX') && DOING_AJAX && isset($_POST['action']) && 
 
 if ($is_preview) {
     // For preview mode, include the JavaScript and CSS directly in the response.
-    // #1720 — inline the FULL frontend implementation, not just frontend.js.
+    // #1720 - inline the FULL frontend implementation, not just frontend.js.
     // After the #832/#833 modularization, assets/js/frontend.js is only the
     // GravityTable stub; prototype.init / loadEntries / renderEntries live in
     // assets/js/frontend/*.js, concatenated into frontend-bundle.js by the
@@ -434,7 +434,7 @@ jQuery(document).ready(function($) {
     ' . ($has_preview_data ? '
     // Server-side preview data is available - initialize JavaScript for interactive features
     ' . $debug_js . '("Preview mode: Using server-side preview data, initializing JavaScript for interactive features");
-    // #1027 — guard against the STUB case. Extension modules create a stub
+    // #1027 - guard against the STUB case. Extension modules create a stub
     // `window.GravityTable = function () {}` on script load (see frontend.js
     // line 73). If only the stub is present (prototype.init not yet attached
     // by selection.js / pagination.js / init.js / etc.), the old
@@ -444,7 +444,7 @@ jQuery(document).ready(function($) {
         ' . $debug_js . '("Preview mode: Initializing GravityTable for sticky headers and interactions");
         new GravityTable("' . esc_js($table_instance_id) . '", ' . wp_json_encode($table_config) . ').init();
     } else {
-        ' . $debug_js . '("Preview mode: GravityTable class not available or prototype.init missing — preview stays static.");
+        ' . $debug_js . '("Preview mode: GravityTable class not available or prototype.init missing - preview stays static.");
     }
     ' : '
     // No server-side preview data - use JavaScript fallback with full functionality
@@ -459,8 +459,8 @@ jQuery(document).ready(function($) {
 });';
 } else {
     // For regular shortcode, ensure scripts are loaded and add inline config.
-    // #1049 Option 1B v4.218.0 — honor the same feature flag here too.
-    // #1658: Default changed to ON — absent key defaults to true.
+    // #1049 Option 1B v4.218.0 - honor the same feature flag here too.
+    // #1658: Default changed to ON - absent key defaults to true.
     $gt_settings_for_bundle_2 = get_option('gt_settings', array());
     $gt_use_frontend_bundle_2 = ($gt_settings_for_bundle_2['use_frontend_bundle'] ?? true);
     if ($gt_use_frontend_bundle_2) {
@@ -514,9 +514,9 @@ jQuery(document).ready(function($) {
         
         ' . $debug_js . '("GT Fallback: Attempt", attempts, "- Table found:", $table.length, "GravityTable available:", typeof GravityTable !== "undefined");
         
-        // #1027 — also verify prototype.init is present. Otherwise we may be
+        // #1027 - also verify prototype.init is present. Otherwise we may be
         // looking at the stub constructor (assigned by extension modules on
-        // script-load) without the full prototype yet wired up — which
+        // script-load) without the full prototype yet wired up - which
         // throws (intermediate value).init is not a function.
         if ($table.length && typeof GravityTable === "function" && typeof GravityTable.prototype.init === "function") {
             ' . $debug_js . '("GT Fallback: Initializing table:", tableId);
@@ -592,14 +592,14 @@ if ($responsive_mode_val === 'flip') {
 }
 ?>
 <?php
-// Collect custom CSS for output AFTER the table wrapper (see #127 — late placement wins in cascade).
+// Collect custom CSS for output AFTER the table wrapper (see #127 - late placement wins in cascade).
 $gt_custom_css_raw = isset($table_settings['custom_css']) ? trim((string) $table_settings['custom_css']) : '';
 $gt_scoped_css     = '';
 if ($gt_custom_css_raw !== '' && class_exists('TC_Admin')) {
     $gt_scoped_css = TC_Admin::scope_custom_css($gt_custom_css_raw, '#' . $table_instance_id);
 }
 
-// #544 slice 3 — multi-row sticky header CSS. Slice-1 service returns 0
+// #544 slice 3 - multi-row sticky header CSS. Slice-1 service returns 0
 // when sticky_header is off, otherwise the clamped 1..10 count. We only
 // emit per-N rules when the count is > 1 so the single-row path keeps
 // using the existing `.sticky-header thead th` rule from v4.7.46 CSS.
@@ -611,7 +611,7 @@ if (class_exists('TC_Sticky_Rows_Service')) {
     $gt_frozen_n = TC_Sticky_Rows_Service::frozen_count($table_settings);
     if ($gt_frozen_n > 1) {
         // Each row's z-index decrements so row 1 layers above row 2, row 2
-        // above row 3, etc. — matches the natural visual stack when
+        // above row 3, etc. - matches the natural visual stack when
         // scrolling so the topmost frozen row is always paintable on top.
         $gt_z_top = 7;
         $gt_sticky_css = '';
@@ -640,7 +640,7 @@ if (class_exists('TC_Sticky_Rows_Service')) {
 <?php
 // Issue #547 slice 2: emit schema.org JSON-LD alongside the table when configured.
 // Disabled by default (schema_type='Table' is the default once normalized, but only when
-// the per-table settings explicitly include schema_type — otherwise we don't emit anything
+// the per-table settings explicitly include schema_type - otherwise we don't emit anything
 // to keep the surface a strict opt-in for v4.7.66).
 $schema_settings = isset($table_settings['schema']) && is_array($table_settings['schema']) ? $table_settings['schema'] : [];
 if (!empty($schema_settings) && class_exists('TC_Schema_Service') && TC_Schema_Service::is_enabled($schema_settings)) {
@@ -653,7 +653,7 @@ if (!empty($schema_settings) && class_exists('TC_Schema_Service') && TC_Schema_S
     );
 }
 
-// #531 slice 2 — per-table print overrides. Emit an inline
+// #531 slice 2 - per-table print overrides. Emit an inline
 // <style media="print"> block when the master toggle is on, scoped
 // to this table's wrapper id. The base print stylesheet
 // (assets/css/frontend-print.css) ships defaults; this block
@@ -663,22 +663,22 @@ $gt_print_raw = isset($table_settings['print_settings']) && is_array($table_sett
 if (class_exists('TC_Print_Settings_Service') && TC_Print_Settings_Service::is_enabled($gt_print_raw)) {
     $gt_print_normalized = TC_Print_Settings_Service::normalize($gt_print_raw);
     $gt_print_css = '';
-    // Paper size — emit @page { size: ... }. CSS @page accepts a
+    // Paper size - emit @page { size: ... }. CSS @page accepts a
     // bare keyword for the standard sizes (A4, letter, etc.).
     $gt_paper = strtolower((string) $gt_print_normalized['paper_size']);
     if ($gt_paper !== '' && in_array($gt_paper, array('letter', 'a4', 'legal', 'a3', 'tabloid'), true)) {
         $gt_print_css .= '@page { size: ' . $gt_paper . '; }';
     }
     $gt_wrapper_sel = '#' . $table_instance_id;
-    // Repeat header opt-out — base stylesheet sets table-header-group; revert to default.
+    // Repeat header opt-out - base stylesheet sets table-header-group; revert to default.
     if (empty($gt_print_normalized['repeat_header'])) {
         $gt_print_css .= $gt_wrapper_sel . ' .gt-table thead { display: table-row-group !important; }';
     }
-    // Row striping opt-out — neutralize the nth-child(even) rule from base.
+    // Row striping opt-out - neutralize the nth-child(even) rule from base.
     if (empty($gt_print_normalized['row_striping'])) {
         $gt_print_css .= $gt_wrapper_sel . ' .gt-table tbody tr:nth-child(even) td { background: transparent !important; }';
     }
-    // Excluded columns — hide both header + body cells. Field IDs are
+    // Excluded columns - hide both header + body cells. Field IDs are
     // sanitized by the service; further guarded with sanitize_html_class
     // so the selector can't carry CSS injection.
     foreach ((array) $gt_print_normalized['excluded_columns'] as $gt_excluded_col) {
@@ -695,7 +695,7 @@ if (class_exists('TC_Print_Settings_Service') && TC_Print_Settings_Service::is_e
 // hardcodes a `#gt-table-{$table_id}` scope; the actual DOM wrapper id is
 // `gt-table-{uniqid}` (set in class-tc-shortcode.php). String-replace to
 // re-target the real wrapper. Default 'classic' preset is the legacy look,
-// so when no preset is saved we emit nothing — existing tables unchanged.
+// so when no preset is saved we emit nothing - existing tables unchanged.
 $gt_border_preset = isset($table_settings['border_preset']) ? (string) $table_settings['border_preset'] : '';
 if ($gt_border_preset !== '' && class_exists('TC_Border_Service')) {
     $gt_border_table_id = isset($atts['table_id']) ? (int) $atts['table_id'] : 0;
@@ -737,7 +737,7 @@ if (class_exists('TC_Row_Height_Service') && is_array($table_settings)) {
 $gt_rtl_dir_attr = class_exists('TC_RTL_Service') ? TC_RTL_Service::get_dir_attr() : '';
 $gt_rtl_classes  = class_exists('TC_RTL_Service') ? TC_RTL_Service::get_wrapper_classes() : '';
 
-// TC_Collapsible_Service — whole-table collapse toggle. Emits the toggle
+// TC_Collapsible_Service - whole-table collapse toggle. Emits the toggle
 // button and wraps the table_wrapper div in a body wrapper with `hidden`
 // attribute when default-collapsed. Click handler is a self-contained
 // IIFE that toggles aria-expanded + hidden + persists to localStorage
@@ -797,12 +797,12 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
         if ($sticky_header) {
             $css_class .= ' sticky-header';
         }
-        // #521 slice 3 — toolbar visibility map. Per-component override on top
+        // #521 slice 3 - toolbar visibility map. Per-component override on top
         // of the legacy show_search / show_pagination / show_*_buttons gates.
         // ANDed with the legacy gates: both must be true for the component to
         // render. Default for unset tables: every component visible (per
         // slice-1 service contract), so legacy installs see no change.
-        // #2307 — toolbar_visibility lives in the DB settings row ($table_settings /
+        // #2307 - toolbar_visibility lives in the DB settings row ($table_settings /
         // $atts), NOT in the explicit $table_config JS-config array built above.
         // Reading from $table_config['toolbar_visibility'] always returned null
         // (key not present in that array), so $gt_tv_settings was always empty and
@@ -819,7 +819,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
         ?>
         <?php
         $show_export = isset($atts['show_export']) ? filter_var($atts['show_export'], FILTER_VALIDATE_BOOLEAN) : true;
-        // #1080 — Add New Entry hoisted into the toolbar row. Computed
+        // #1080 - Add New Entry hoisted into the toolbar row. Computed
         // here (not at the original render site below) so the wrapper's
         // OR-gate can reference it and the wrapper still renders when
         // only Add New Entry is enabled.
@@ -837,7 +837,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                 <?php endif; ?>
 
                 <?php
-                // #1680 — single consolidated Export menu. The visitor-facing
+                // #1680 - single consolidated Export menu. The visitor-facing
                 // (visible-rows) Copy / CSV / Excel / PDF actions now live INSIDE
                 // the Export dropdown alongside the server-side (all-data) CSV /
                 // Excel options, instead of a separate row of unstyled buttons.
@@ -848,11 +848,11 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                 $show_toolbar_csv   = isset($atts['show_toolbar_csv'])   ? filter_var($atts['show_toolbar_csv'],   FILTER_VALIDATE_BOOLEAN) : false;
                 $show_toolbar_excel = isset($atts['show_toolbar_excel']) ? filter_var($atts['show_toolbar_excel'], FILTER_VALIDATE_BOOLEAN) : false;
                 $show_pdf_export    = isset($atts['show_pdf_export'])    ? filter_var($atts['show_pdf_export'],    FILTER_VALIDATE_BOOLEAN) : false;
-                // #2285 — visible-rows JSON export (opt-in, mirrors other toolbar exports).
+                // #2285 - visible-rows JSON export (opt-in, mirrors other toolbar exports).
                 $show_toolbar_json  = isset($atts['show_toolbar_json'])  ? filter_var($atts['show_toolbar_json'],  FILTER_VALIDATE_BOOLEAN) : false;
                 $gt_show_visible_exports = ($show_toolbar_copy || $show_toolbar_csv || $show_toolbar_excel || $show_pdf_export || $show_toolbar_json) && $gt_tv_visible('export_buttons');
 
-                // #1680 — crisp inline SVG icons for the export menu (replaces
+                // #1680 - crisp inline SVG icons for the export menu (replaces
                 // the inconsistent emoji glyphs). Feather-style, 16px,
                 // currentColor so they inherit the row color on hover. Static
                 // markup, no user data. function_exists guard keeps it safe when
@@ -874,7 +874,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                 ?>
                 <!-- Export Controls (#1680: one consolidated menu) -->
                 <?php
-                // #2307 — the whole consolidated Export menu (including the
+                // #2307 - the whole consolidated Export menu (including the
                 // all-data CSV/Excel/JSON options driven by show_export) is the
                 // "export_buttons" toolbar component. Previously only the inner
                 // visible-rows block was gated, so toolbar_visibility.
@@ -898,7 +898,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                     <span class="gt-format-icon"><?php echo gt_export_icon('grid'); ?></span>
                                     <?php esc_html_e('Export as Excel (all data)', 'tc-data-tables'); ?>
                                 </a>
-                                <?php /* #2285 — JSON all-data export, alongside CSV and Excel. */ ?>
+                                <?php /* #2285 - JSON all-data export, alongside CSV and Excel. */ ?>
                                 <a href="#" class="gt-export-option" data-format="json">
                                     <span class="gt-format-icon"><?php echo gt_export_icon('file'); ?></span>
                                     <?php esc_html_e('Export as JSON (all data)', 'tc-data-tables'); ?>
@@ -988,7 +988,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                 <option value="delete"><?php esc_html_e('Delete', 'tc-data-tables'); ?></option>
                             <?php endif; ?>
                             <?php
-                            // #1684 — bulk "Export" removed from the UI. Exporting is
+                            // #1684 - bulk "Export" removed from the UI. Exporting is
                             // consolidated into the Export menu (#1680: all data /
                             // visible rows). The bulk_export_entries() handler stays
                             // for back-compat/programmatic callers, but the redundant
@@ -998,7 +998,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                 <option value="edit"><?php esc_html_e('Edit', 'tc-data-tables'); ?></option>
                             <?php endif; ?>
                             <?php
-                            // #613 phase 2 slice 4 (v4.199.0) — push-to-source bulk option.
+                            // #613 phase 2 slice 4 (v4.199.0) - push-to-source bulk option.
                             // Conditionally rendered when the table is wired to an external
                             // data source AND sync_direction allows pushing. The client-side
                             // intercept (loop pushRowToSource per selected entry) ships in
@@ -1030,7 +1030,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                 <?php endif; ?>
 
                 <?php
-                // #1080 — Add New Entry hoisted into the toolbar flex row.
+                // #1080 - Add New Entry hoisted into the toolbar flex row.
                 // Lives INSIDE `.gt-table-controls` so its CSS rule
                 // `margin-left: auto` pushes it to the right of the row,
                 // joining Export / Print visually instead of dropping
@@ -1295,7 +1295,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                                     if ($is_lookup_field && !empty($unique_values)) {
                                                         $lookup_config = $lookup_fields[$field_id];
 
-                                                        // #1665 — batch-resolve the display labels ONCE before the
+                                                        // #1665 - batch-resolve the display labels ONCE before the
                                                         // loop instead of one get_user_by / GFAPI::get_entry per
                                                         // unique value.
                                                         $gt_filter_user_labels  = array();
@@ -1630,7 +1630,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
         }
         ?>
         <?php
-        // #556 slice 3 — emit a chevron toggle column when at least one
+        // #556 slice 3 - emit a chevron toggle column when at least one
         // column on this table is flagged detail-only. Drives the
         // expand/collapse UX rendered by frontend.js renderEntries.
         $gt_has_detail_cols = false;
@@ -1639,7 +1639,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                 if ($gt_dval) { $gt_has_detail_cols = true; break; }
             }
         }
-        // #2340 — index column: 1..n display-order counter.
+        // #2340 - index column: 1..n display-order counter.
         $show_index_column = !empty($table_config['show_index_column']);
         $index_column_label = isset($table_config['index_column_label']) && $table_config['index_column_label'] !== ''
             ? $table_config['index_column_label']
@@ -1681,7 +1681,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                         if ($config['sortable']) {
                             $column_classes[] = 'gt-sortable';
                         }
-                        // #1621 — computed columns sort client-side over the
+                        // #1621 - computed columns sort client-side over the
                         // loaded page (no DB column for SQL ORDER BY).
                         $is_client_sortable = (($config['type'] ?? '') === 'computed');
                         if ($is_client_sortable) {
@@ -1712,7 +1712,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                         }
                         // #549 slice 1: per-column vertical alignment. Empty value
                         // means "no inline style" so the browser default (middle)
-                        // applies — preserves prior behavior for every existing table.
+                        // applies - preserves prior behavior for every existing table.
                         if (!empty($col_v_align)) {
                             $th_style_parts[] = 'vertical-align:' . esc_attr($col_v_align);
                         }
@@ -1751,7 +1751,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                     <?php if ($gt_has_detail_cols): ?><th class="gt-filter-cell gt-detail-toggle-header" aria-hidden="true"></th><?php endif; ?>
                     <?php if ($show_index_column): ?><th class="gt-filter-cell gt-index-header" aria-hidden="true"></th><?php endif; ?>
                     <?php
-                    // #599 slice 3 — read the configured cascading-filter chain
+                    // #599 slice 3 - read the configured cascading-filter chain
                     // from $atts (which the shortcode handler populates from
                     // table_settings). Empty values = no chain configured.
                     $gt_cascade_parent = isset($atts['cascading_filter_parent_field']) ? (string) $atts['cascading_filter_parent_field'] : '';
@@ -1759,7 +1759,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                     ?>
                     <?php foreach ($column_config as $pcf_id => $pcf_cfg): ?>
                         <?php
-                        // #599 slice 3 — emit the cascade data-* attrs on the
+                        // #599 slice 3 - emit the cascade data-* attrs on the
                         // matching parent + child filter cells when a chain is
                         // configured. Service::render_dependency_attributes
                         // returns empty string for invalid chains (self-ref or
@@ -1813,7 +1813,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                             $gt_auto_merge_directives[$field_id] = TC_Rowspan_Merge_Service::directives($col_values);
                         }
                     }
-                    // #2323 — arbitrary cell merges. Build skip-set and anchor-attr map
+                    // #2323 - arbitrary cell merges. Build skip-set and anchor-attr map
                     // from the cell_merges setting (array of {row,col,rowspan,colspan}).
                     // These are 0-based row × column-index positions (column-index =
                     // position in $column_config, NOT field_id). We pre-compute two
@@ -1841,7 +1841,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                             for ($gt_cr = $gt_cm_row; $gt_cr < $gt_cm_row + $gt_cm_rs; $gt_cr++) {
                                 for ($gt_cc = $gt_cm_col; $gt_cc < $gt_cm_col + $gt_cm_cs; $gt_cc++) {
                                     if ($gt_cr === $gt_cm_row && $gt_cc === $gt_cm_col) {
-                                        continue; // anchor cell — not in skip set
+                                        continue; // anchor cell - not in skip set
                                     }
                                     $gt_cell_merges_skip["{$gt_cr}:{$gt_cc}"] = true;
                                 }
@@ -1849,7 +1849,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                         }
                     }
 
-                    // #2338 — pre-compute row-grouping state for the preview path.
+                    // #2338 - pre-compute row-grouping state for the preview path.
                     // The JS module handles the live AJAX path; here we produce
                     // the same group-header <tr> rows for the builder preview.
                     $gt_rg_enabled  = class_exists('TC_Row_Grouping_Service')
@@ -1865,7 +1865,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
 
                     $gt_auto_merge_row_idx = 0;
                     foreach ($preview_entries as $entry):
-                        // #2338 — emit group-header rows when the group key changes.
+                        // #2338 - emit group-header rows when the group key changes.
                         if ($gt_rg_enabled && !empty($gt_rg_columns)) {
                             $gt_rg_keys = array_map(function ($col) use ($entry) {
                                 return (string) ($entry[$col] ?? '');
@@ -1905,10 +1905,10 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                             <?php endif; ?>
 
                             <?php
-                            // #2323 — track physical column index for arbitrary merge lookup.
+                            // #2323 - track physical column index for arbitrary merge lookup.
                             $gt_col_idx = 0;
                             foreach ($column_config as $field_id => $config):
-                                // #2323 — skip cells covered by an arbitrary merge. Covered cells
+                                // #2323 - skip cells covered by an arbitrary merge. Covered cells
                                 // are omitted entirely; the anchor cell's rowspan/colspan takes up
                                 // their space. Check BEFORE auto-rowspan so both features coexist
                                 // (arbitrary merges are column-position-based; auto-rowspan is
@@ -1956,7 +1956,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                 $cell_v_align_override = isset($table_config['cell_vertical_alignments'][$entry['entry_id']][$field_id]) ? $table_config['cell_vertical_alignments'][$entry['entry_id']][$field_id] : null;
                                 $cell_v_align = class_exists('TC_Vertical_Align_Service') ? TC_Vertical_Align_Service::resolve($cell_v_align_col, $cell_v_align_override) : $cell_v_align_col;
                                 $cell_wrap_mode = isset($table_config['column_wrap_modes'][$field_id]) ? $table_config['column_wrap_modes'][$field_id] : 'default';
-                                // Per-column background color (supports merged rowspan/colspan cells — #110)
+                                // Per-column background color (supports merged rowspan/colspan cells - #110)
                                 $cell_bg_color = isset($config['cell_background']) ? sanitize_hex_color($config['cell_background']) : '';
                                 if (empty($cell_bg_color) && isset($config['cell_bg_color'])) {
                                     $cell_bg_color = sanitize_hex_color($config['cell_bg_color']);
@@ -2099,7 +2099,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                     // download anchors, and gt-file-link gt-file-image-link
                                     // when an image is rendered as a clickable thumbnail link.
                                     // (The static scanner in tests/test-issue-98-image-fields.php
-                                    // looks for gt-file-image as a substring — it is matched
+                                    // looks for gt-file-image as a substring - it is matched
                                     // by gt-file-image-link.) The img tag also carries
                                     // alt=esc_attr($name) so screen readers fall back to the
                                     // filename when no caption is provided. Literals kept in
@@ -2114,7 +2114,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                     ?>
                                 </td>
                             <?php
-                            // #2323 — advance physical column index after each column is emitted.
+                            // #2323 - advance physical column index after each column is emitted.
                             $gt_col_idx++;
                             endforeach; ?>
 
@@ -2132,7 +2132,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                                                 data-entry-id="<?php echo esc_attr($entry['entry_id']); ?>">🗑</span>
                                         <?php endif; ?>
                                         <?php
-                                        // #618 slice 2 — render developer-registered per-row actions
+                                        // #618 slice 2 - render developer-registered per-row actions
                                         // alongside the built-in view/edit/delete affordances.
                                         // TC_Per_Row_Action_Service returns '' when no actions are
                                         // registered or none are visible to the current user, so this
@@ -2166,7 +2166,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
                         </tr>
                     <?php endif; ?>
                 <?php else:
-                    // #1713 — first paint renders a layout-stable shimmer
+                    // #1713 - first paint renders a layout-stable shimmer
                     // skeleton (mirroring the real column count) instead of a
                     // single full-width "Loading…" colspan row that collapsed
                     // the columns. The JS (showLoadingSkeleton) re-paints the
@@ -2207,7 +2207,7 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
     ?>
     <?php if ($show_pagination && $gt_tv_visible('pagination')): ?>
         <?php
-        // TC_Pagination_Label_Service — resolve labels for the PHP-rendered
+        // TC_Pagination_Label_Service - resolve labels for the PHP-rendered
         // initial state. JS overrides gt-entry-count on first data load.
         $gt_paginate_labels = $table_config['pagination_labels'];
         $gt_initial_info_text = str_replace(
@@ -2256,11 +2256,11 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
 </div>
 </div>
 <?php
-// TC_Collapsible_Service — close the body wrapper opened above the
+// TC_Collapsible_Service - close the body wrapper opened above the
 // gt-table-wrapper div, and emit the click-handler IIFE. Storage key
 // matches the service's get_inline_script docblock (gt_collapse_{table_id}).
 // Does NOT call DataTable.columns.adjust on expand because the plugin
-// doesn't use DataTables for its own tables — that part of the service's
+// doesn't use DataTables for its own tables - that part of the service's
 // get_inline_script would error against an uninitialized $.fn.DataTable.
 if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
     echo '</div>'; // close gt-collapsible-body
@@ -2305,11 +2305,11 @@ if ($gt_collapsible_on && $gt_collapsible_table_id > 0) {
     <?php
 }
 
-// #551 — opt-in SEO row dump for paginated tables.
+// #551 - opt-in SEO row dump for paginated tables.
 // Emits a <noscript> block AFTER the table wrapper containing all rows so
 // search-engine crawlers (and JS-disabled / reading-mode users) see every
 // row even when JS pagination would normally hide them. JS-enabled users
-// never see the noscript content. Off by default — enable per-table via
+// never see the noscript content. Off by default - enable per-table via
 // the gt_seo_emit_all_rows filter (see class-tc-seo-rows-renderer.php).
 if (
     !$is_preview
@@ -2397,7 +2397,7 @@ FALLBACKJS;
                 return;
             }
             debugLog("Direct fallback: Table element found:", \$table.length);
-            // #1027 — also fall through when GravityTable is a stub (defined as
+            // #1027 - also fall through when GravityTable is a stub (defined as
             // a constructor but missing the prototype methods because the extension
             // modules didn't load). Otherwise the "initializing normally" branch
             // throws (intermediate value).init is not a function.
@@ -2422,7 +2422,7 @@ FALLBACKJS;
                             // ships a map of [field_id => [row_idx => { render, rowspan }]].
                             // Skip <td> emission when render=false; emit rowspan attribute when > 1.
                             var directives = (response.data && response.data.directives) || {};
-                            // #1732 — one-pass page-scoped per-column max for data bars.
+                            // #1732 - one-pass page-scoped per-column max for data bars.
                             // Mirrors computeBarMaxes on the normal GravityTable path.
                             var barMaxes = {};
                             if (config.column_data_bars) {
@@ -2448,10 +2448,10 @@ FALLBACKJS;
                                 \$.each(config.columns, function (i, column) {
                                     var dir = directives[column] && directives[column][index];
                                     if (dir && dir.render === false) {
-                                        return true; // skip — prior row's rowspan covers this cell
+                                        return true; // skip - prior row's rowspan covers this cell
                                     }
                                     var rowspanAttr = (dir && dir.rowspan > 1) ? ' rowspan="' + parseInt(dir.rowspan, 10) + '"' : '';
-                                    // #1732 — emit bar attributes on bar-enabled numeric columns.
+                                    // #1732 - emit bar attributes on bar-enabled numeric columns.
                                     var barAttr = '';
                                     var barCfg = config.column_data_bars && config.column_data_bars[column];
                                     if (barCfg && barCfg.enabled && barMaxes[column]) {

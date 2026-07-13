@@ -33,7 +33,7 @@ class TC_Cell_Content_Service {
      */
     public static function sanitize_cell_value( string $value, bool $can_unfiltered ): string {
         if ( $can_unfiltered ) {
-            // Trusted user — store exactly as-is; render-time wp_kses_post
+            // Trusted user - store exactly as-is; render-time wp_kses_post
             // provides defense-in-depth.
             return $value;
         }
@@ -49,7 +49,7 @@ class TC_Cell_Content_Service {
      * the stored value BEFORE wp_kses_post is applied to the expanded output.
      * This ordering is intentional: shortcode output goes through kses just
      * like hand-authored HTML does. Shortcodes that emit iframes or scripts
-     * will therefore be stripped — this is the safe default and is a known
+     * will therefore be stripped - this is the safe default and is a known
      * accepted trade-off (follow-up issue for opt-out if needed).
      *
      * @param string $value             Stored cell value (already sanitized at save).

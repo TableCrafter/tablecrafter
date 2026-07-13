@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Block — Gutenberg block for TableCrafter tables.
+ * TC_Block - Gutenberg block for TableCrafter tables.
  *
  * Issue #2013 (convergence epic #2006, Phase 3). Premium shipped no Gutenberg
  * block; this ports the free plugin's block as a server-rendered block that
@@ -39,7 +39,7 @@ class TC_Block
     {
         if (!function_exists('register_block_type')) {
             // @codeCoverageIgnoreStart -- free-build-only fallback; register_block_type is always defined under the test shim.
-            return; // Block editor unavailable (very old WP) — shortcode still works.
+            return; // Block editor unavailable (very old WP) - shortcode still works.
             // @codeCoverageIgnoreEnd
         }
 
@@ -68,7 +68,7 @@ class TC_Block
             'editor_script'   => self::SCRIPT_HANDLE,
         ));
 
-        // #2144 — back-compat for the 3.5.x `tablecrafter/data-table` block.
+        // #2144 - back-compat for the 3.5.x `tablecrafter/data-table` block.
         // Registered server-side so existing posts render again on the front
         // end (and the editor recognises it via the same editor script).
         register_block_type(self::LEGACY_BLOCK_NAME, array(
@@ -97,7 +97,7 @@ class TC_Block
     }
 
     /**
-     * #2144 — Render a legacy `tablecrafter/data-table` block by mapping its
+     * #2144 - Render a legacy `tablecrafter/data-table` block by mapping its
      * attributes onto the inline `[tablecrafter source=...]` shortcode.
      *
      * @param array $attributes Legacy block attributes.
@@ -167,31 +167,31 @@ class TC_Block
         $parts    = array('id="' . $table_id . '"');
         $defaults = self::PARAM_DEFAULTS;
 
-        // per_page — emit when it differs from the default (25).
+        // per_page - emit when it differs from the default (25).
         $per_page = isset($attributes['perPage']) ? (int) $attributes['perPage'] : $defaults['perPage'];
         if ($per_page !== $defaults['perPage']) {
             $parts[] = 'per_page="' . $per_page . '"';
         }
 
-        // search — emit "false" only when explicitly disabled; default is shown.
+        // search - emit "false" only when explicitly disabled; default is shown.
         $search = isset($attributes['search']) ? (bool) $attributes['search'] : $defaults['search'];
         if ($search !== $defaults['search']) {
             $parts[] = 'search="' . ($search ? 'true' : 'false') . '"';
         }
 
-        // show_export — emit "false" only when explicitly disabled.
+        // show_export - emit "false" only when explicitly disabled.
         $show_export = isset($attributes['showExport']) ? (bool) $attributes['showExport'] : $defaults['showExport'];
         if ($show_export !== $defaults['showExport']) {
             $parts[] = 'show_export="' . ($show_export ? 'true' : 'false') . '"';
         }
 
-        // filters — emit "true" only when explicitly enabled; default is hidden.
+        // filters - emit "true" only when explicitly enabled; default is hidden.
         $filters = isset($attributes['filters']) ? (bool) $attributes['filters'] : $defaults['filters'];
         if ($filters !== $defaults['filters']) {
             $parts[] = 'filters="' . ($filters ? 'true' : 'false') . '"';
         }
 
-        // show_pagination_info — emit "false" only when explicitly disabled.
+        // show_pagination_info - emit "false" only when explicitly disabled.
         $show_pagination_info = isset($attributes['showPaginationInfo']) ? (bool) $attributes['showPaginationInfo'] : $defaults['showPaginationInfo'];
         if ($show_pagination_info !== $defaults['showPaginationInfo']) {
             $parts[] = 'show_pagination_info="' . ($show_pagination_info ? 'true' : 'false') . '"';

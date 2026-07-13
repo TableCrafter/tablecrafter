@@ -22,18 +22,18 @@ class TC_Capabilities_Service {
         'edit_gravity_tables',
         'create_gravity_tables',
         'delete_gravity_tables',
-        // #613 phase 2 slice 12 (v4.207.0) — gate for the bulk "Push to
+        // #613 phase 2 slice 12 (v4.207.0) - gate for the bulk "Push to
         // source" flow. Auto-granted to administrators on activation; admins
         // can grant to other roles via the existing capability admin UI.
         'push_rows_to_source',
-        // #1069 slice 32 (v5.2.4) — gate for the CSV/Excel/JSON export
+        // #1069 slice 32 (v5.2.4) - gate for the CSV/Excel/JSON export
         // pipeline. The pre-fix gate was current_user_can('read'), which
-        // is granted to subscribers by default — every logged-in user
+        // is granted to subscribers by default - every logged-in user
         // could export any form's entries. Dedicated capability,
         // auto-granted to administrators on activation, manageable
         // through the same role-grant UI as the rest of the GT caps.
         'export_gravity_tables',
-        // #2242 — TC_External_DB::execute_query() has gated on this cap
+        // #2242 - TC_External_DB::execute_query() has gated on this cap
         // since #2003, but it was never in this list, so NOTHING granted
         // it: every external-DB query (frontend render included) came back
         // permission_denied for every user, admins included. Registering
@@ -50,10 +50,10 @@ class TC_Capabilities_Service {
      * Add all custom capabilities to the administrator role.
      *
      * Called on plugin activation and as a one-time setup. Safe to call
-     * multiple times — add_cap() is a no-op when the cap already exists.
+     * multiple times - add_cap() is a no-op when the cap already exists.
      */
     public static function register_capabilities(): void {
-        // Always grant to administrator first — this is the canary role
+        // Always grant to administrator first - this is the canary role
         // is_repair_needed() checks. (#554)
         $admin_role = get_role('administrator');
         if ($admin_role) {
@@ -105,7 +105,7 @@ class TC_Capabilities_Service {
 
     /**
      * Canary check: returns true when the administrator role lacks
-     * the `view_gravity_tables` capability — a strong indicator that
+     * the `view_gravity_tables` capability - a strong indicator that
      * registration was skipped or got deregistered.
      *
      * Surface this in an admin notice and offer a one-click "Repair
@@ -249,7 +249,7 @@ class TC_Capabilities_Service {
             'edit_gravity_tables'   => __('Edit Tables', 'tc-data-tables'),
             'create_gravity_tables' => __('Create Tables', 'tc-data-tables'),
             'delete_gravity_tables' => __('Delete Tables', 'tc-data-tables'),
-            // #1069 slice 32 — surfaced in the role-grant UI so admins can
+            // #1069 slice 32 - surfaced in the role-grant UI so admins can
             // explicitly grant export rights to editor / shop-manager / etc.
             'export_gravity_tables' => __('Export Tables', 'tc-data-tables'),
         ];

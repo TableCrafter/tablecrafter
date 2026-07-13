@@ -18,12 +18,12 @@ if (!function_exists('gt_is_premium')) {
 // @codeCoverageIgnoreEnd
     /**
      * True when the site has any premium / paying / trial Freemius state.
-     * Null-safe — returns false (never warns or fatals) when wgt_fs() is
+     * Null-safe - returns false (never warns or fatals) when wgt_fs() is
      * not loaded yet (e.g. during a plugin-deactivation cron sweep).
      */
     function gt_is_premium(): bool
     {
-        // #667 slice 19 — PHPUnit-shim test seam.
+        // #667 slice 19 - PHPUnit-shim test seam.
         //
         // Production safety: this branch is gated on the TC_PHPUNIT_SHIM
         // constant which is ONLY defined by tests/PHPUnitShimTest.php.
@@ -75,7 +75,7 @@ if (!function_exists('gt_is_free_plan')) {
 if (!function_exists('gt_is_grandfathered')) {
 // @codeCoverageIgnoreEnd
     /**
-     * #2030 — True when this site has ever been premium (gt_ever_premium flag).
+     * #2030 - True when this site has ever been premium (gt_ever_premium flag).
      *
      * On a subscription lapse gt_is_premium() flips false, but a grandfathered
      * site keeps READ access to its pro-source tables (they render read-only
@@ -100,7 +100,7 @@ if (!function_exists('gt_is_grandfathered')) {
 if (!function_exists('gt_mark_premium_seen')) {
 // @codeCoverageIgnoreEnd
     /**
-     * #2030 — Persist the gt_ever_premium flag the first time a site is premium.
+     * #2030 - Persist the gt_ever_premium flag the first time a site is premium.
      * Idempotent and cheap (only writes the option once).
      */
     function gt_mark_premium_seen(): void
@@ -116,7 +116,7 @@ if (!function_exists('gt_mark_premium_seen')) {
 
 if (!function_exists('tc_tier_badge')) {
     /**
-     * #2162 — Render a small Free / Pro tier badge for docs and admin UI.
+     * #2162 - Render a small Free / Pro tier badge for docs and admin UI.
      *
      * Pressure-free upsell: a Pro badge optionally links to the upgrade URL so
      * the reader sees exactly what upgrading unlocks, inline with the content.

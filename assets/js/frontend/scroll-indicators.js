@@ -1,13 +1,13 @@
 /**
- * TableCrafter — frontend/scroll-indicators.js
+ * TableCrafter - frontend/scroll-indicators.js
  *
  * Horizontal scroll affordance overlay. Twelfth slice under #833.
- * One method, ~370 lines — second-largest single-method extraction
+ * One method, ~370 lines - second-largest single-method extraction
  * after #832 slice 20's responsive block.
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - setupScrollIndicators() — install scroll-shadow gradients on
+ *   - setupScrollIndicators() - install scroll-shadow gradients on
  *     the .gt-table-content wrapper, wire scroll listeners to
  *     toggle the .gt-scrollable-left / .gt-scrollable-right classes,
  *     re-evaluate after entries load via the gt-entries-loaded
@@ -100,7 +100,7 @@
      * @param  {string} url  File URL or filename.
      * @return {string}      Lowercase extension (e.g. 'pdf', 'jpg') or ''.
      */
-    // getFileExtension removed (#832 slice 16) — dead code; the only
+    // getFileExtension removed (#832 slice 16) - dead code; the only
     // caller (renderFileUploadCell) moved to detail-popup.js in #837 with
     // its own inline extension parsing, leaving this method orphaned.
 
@@ -123,14 +123,14 @@
 
     // Date formatting utilities
     // applyConditionalFormatting / getColumnIndex / getCellValue / evaluateCondition /
-    // applyFormattingAction moved to assets/js/frontend/conditional-format.js (#838 —
+    // applyFormattingAction moved to assets/js/frontend/conditional-format.js (#838 - 
     // third child of #830). Object.assign attachment keeps the public surface
     // unchanged so existing call sites (self.applyConditionalFormatting(),
     // self.evaluateCondition(...), etc.) work as before.
 
     // formatDate moved to assets/js/frontend/util.js (#841).
 
-    // parseDateInput moved to assets/js/frontend/util.js (#832 slice 16) —
+    // parseDateInput moved to assets/js/frontend/util.js (#832 slice 16) - 
     // joins the existing date helper family.
 
     // Initialize add new entry functionality

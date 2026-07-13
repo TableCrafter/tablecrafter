@@ -2,7 +2,7 @@
 /**
  * Server-side date-range filter contract for the advanced-filter date modal.
  *
- * Issue #508 — wpDataTables shipped a fix for advanced-filter date modal issues.
+ * Issue #508 - wpDataTables shipped a fix for advanced-filter date modal issues.
  * This service is the canonical, deterministic, format-aware row matcher that
  * backs the AJAX date-filter endpoint and the server-side fallback for
  * non-DataTables renderers. It does not render UI; the modal HTML / picker JS
@@ -58,7 +58,7 @@ class TC_Date_Filter_Service {
         $from = ( $from === '' ) ? null : $from;
         $to   = ( $to   === '' ) ? null : $to;
 
-        // No filter active — never veto.
+        // No filter active - never veto.
         if ( $from === null && $to === null ) {
             return true;
         }
@@ -139,7 +139,7 @@ class TC_Date_Filter_Service {
             }
         }
 
-        // Last resort — strtotime handles ISO 8601 with timezone offsets, RFC 2822, etc.
+        // Last resort - strtotime handles ISO 8601 with timezone offsets, RFC 2822, etc.
         $ts = strtotime( $cell_value );
         if ( $ts !== false ) {
             return ( new DateTimeImmutable( '@' . $ts ) )->setTimezone( $tz );

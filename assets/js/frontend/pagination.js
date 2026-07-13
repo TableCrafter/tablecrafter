@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/pagination.js
+ * TableCrafter - frontend/pagination.js
  *
  * Pagination controls + length selector. Fifth module under #830.
  *
@@ -22,14 +22,14 @@
  *   - bindPaginationEvents($wrapper)
  *       Wires the length-selector change handler + prev / next page
  *       click handlers (delegated, .gt-table namespace so the
- *       $wrapper.off('.gt-table') re-mount guard cleans them up — #128).
+ *       $wrapper.off('.gt-table') re-mount guard cleans them up - #128).
  *       Called once from bindEvents in frontend.js.
  *
  *   - updatePagination(data)
  *       Orchestrates the DOM update per AJAX response. Toggles the
  *       gt-pagination-single-page class on single-page responses
  *       (CSS-class hiding so the show_pagination table setting wins
- *       over the single-page check — #185). Updates entry-count text,
+ *       over the single-page check - #185). Updates entry-count text,
  *       current/total page text, prev/next disabled state.
  */
 (function (window) {
@@ -61,7 +61,7 @@
         bindPaginationEvents: function ($wrapper) {
             var self = this;
 
-            // Length selector — visitor-side per_page change. Mutates
+            // Length selector - visitor-side per_page change. Mutates
             // this.config.per_page in place so subsequent loadEntries calls
             // pick up the new size, then reloads from page 1. -1 means "All";
             // server-side enforces the max via existing per_page caps.
@@ -73,7 +73,7 @@
                 self.loadEntries();
             });
 
-            // Pagination — delegated on $wrapper with .gt-table namespace so the
+            // Pagination - delegated on $wrapper with .gt-table namespace so the
             // $wrapper.off('.gt-table') re-mount guard removes them cleanly (#128).
             $wrapper.on('click.gt-table', '.gt-prev-page', function () {
                 if (!$(this).prop('disabled') && self.currentPage > 1) {

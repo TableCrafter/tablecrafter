@@ -64,7 +64,7 @@ class TC_Border_Service {
      * All selectors are prefixed with the table wrapper ID so the rules never
      * bleed to other tables on the same page.
      *
-     * @param int   $table_id Table ID — used to build the CSS scope selector.
+     * @param int   $table_id Table ID - used to build the CSS scope selector.
      * @param array $settings Border settings. Expected keys:
      *   - row_dividers    (array): enabled, color, width
      *   - column_dividers (array): enabled, color, width

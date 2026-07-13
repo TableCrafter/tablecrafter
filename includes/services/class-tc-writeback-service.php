@@ -9,7 +9,7 @@
  * Security model:
  *  - Write-back is disabled by default (opt-in per table).
  *  - Every write is gated by current_user_can() before touching the DB.
- *  - All user-supplied values go through $wpdb->prepare() — no interpolation.
+ *  - All user-supplied values go through $wpdb->prepare() - no interpolation.
  *  - Conflict detection compares the current DB value to the value at load
  *    time, surfacing a warning before overwriting a stale row.
  *  - Action hooks let developers audit or reject writes.
@@ -107,7 +107,7 @@ class TC_Writeback_Service {
         $safe_field = '`' . str_replace( '`', '``', $field_col ) . '`';
         $safe_pk    = '`' . str_replace( '`', '``', $primary_key_col ) . '`';
 
-        // All user-supplied *values* go through prepare() — no interpolation.
+        // All user-supplied *values* go through prepare() - no interpolation.
         $sql    = $db->prepare(
             "UPDATE {$safe_table} SET {$safe_field} = %s WHERE {$safe_pk} = %s",
             $new_value,

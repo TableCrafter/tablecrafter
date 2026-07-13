@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/actions-cell.js
+ * TableCrafter - frontend/actions-cell.js
  *
  * Per-row actions-cell renderer. #832 slice 7 of N.
  *
@@ -22,7 +22,7 @@
  *
  *       Pure: no DOM, no jQuery, no `this` reads. The DOM check
  *       `$wrapper.find('.gt-actions-header').length > 0` stays in
- *       frontend.js — this helper assumes the caller already decided
+ *       frontend.js - this helper assumes the caller already decided
  *       to render an actions cell.
  */
 (function (window) {
@@ -42,7 +42,7 @@
             if (config && config.enable_delete) {
                 html += '<span class="gt-action gt-delete-action" title="Delete" data-entry-id="' + entryId + '">🗑</span>';
             }
-            // #1747 — duplicate entry (Pro).
+            // #1747 - duplicate entry (Pro).
             if (config && config.is_pro && config.enable_duplicate) {
                 html += '<span class="gt-action gt-duplicate-action" title="Duplicate row" data-entry-id="' + entryId + '">⧉</span>';
             }

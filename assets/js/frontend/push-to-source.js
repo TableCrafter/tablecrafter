@@ -1,11 +1,11 @@
 /**
- * TableCrafter — frontend/push-to-source.js
+ * TableCrafter - frontend/push-to-source.js
  *
- * #613 phase 2 slice 3 — pushRowToSource prototype method on GravityTable.
+ * #613 phase 2 slice 3 - pushRowToSource prototype method on GravityTable.
  * Calls the gt_push_row AJAX endpoint shipped in v4.197.0.
  *
  * Surface:
- *   - pushRowToSource(rowId, payload, [onResponse]) — posts the row update
+ *   - pushRowToSource(rowId, payload, [onResponse]) - posts the row update
  *     to the configured external data source (currently JSON; Airtable +
  *     Notion follow in later slices). Optional callback fires with the
  *     response object (success or error envelope).
@@ -25,7 +25,7 @@
     window.GravityTable.prototype.pushRowToSource = function (rowId, payload, onResponse, opts) {
         var self = this;
         opts = opts || {};
-        // #613 phase 2 slice 17 (v4.212.0) — auto-retry with backoff.
+        // #613 phase 2 slice 17 (v4.212.0) - auto-retry with backoff.
         // _retryAttempt is used internally to bound recursion to 1 retry.
         var retryAttempt = typeof opts._retryAttempt === 'number' ? opts._retryAttempt : 0;
         var retryDelayMs = typeof opts._retryDelay === 'number' ? opts._retryDelay : 1100;
@@ -48,7 +48,7 @@
             payload:  payload,
         };
 
-        // #613 phase 2 slice 16 (v4.211.0) — conflict-detection baseline.
+        // #613 phase 2 slice 16 (v4.211.0) - conflict-detection baseline.
         // Send the last-known baseline so the server can refuse the push
         // if the row has been modified since this client loaded it.
         // Backward compat: callers that don't maintain self._pushBaselines
@@ -58,7 +58,7 @@
         }
 
         $.post(self.config.ajax_url, data, function (response) {
-            // #613 — bump the baseline on success so subsequent pushes use
+            // #613 - bump the baseline on success so subsequent pushes use
             // a fresh token. The server returns the new baseline in
             // response.data.new_baseline (added in v4.211.0).
             if (response && response.success && self._pushBaselines
@@ -66,7 +66,7 @@
                 self._pushBaselines[rowId] = response.data.new_baseline;
             }
 
-            // #613 phase 2 slice 17 (v4.212.0) — auto-retry once on
+            // #613 phase 2 slice 17 (v4.212.0) - auto-retry once on
             // rate_limited. The server-side rate window is 1s (per
             // TC_Push_Rate_Limiter::WINDOW_SECONDS); waiting just past
             // 1s should clear it. Bound to one retry so a perpetually

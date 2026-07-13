@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 // @codeCoverageIgnoreEnd
-// #1073 — submit_new_entry() routes $_SERVER reads through
+// #1073 - submit_new_entry() routes $_SERVER reads through
 // gt_request_server_text(). tablecrafter.php loads this helper early in
 // the bootstrap, but test-issue files that load class-tc-ajax.php
 // directly (via require_once on this file) bypass the plugin bootstrap.
@@ -29,7 +29,7 @@ if (!defined('ABSPATH')) {
 // inside helpers-request.php making the second require a no-op.
 // @codeCoverageIgnoreStart
 require_once __DIR__ . '/helpers-request.php';
-// #1636 — CSV export neutralizes formula injection via
+// #1636 - CSV export neutralizes formula injection via
 // TC_CSV_Formula_Detector, loaded on-demand (not in the main bootstrap
 // list); ensure it is available wherever this handler is loaded.
 if (!class_exists('TC_CSV_Formula_Detector')) {
@@ -79,23 +79,23 @@ class TC_Ajax
         // Admin AJAX actions
         add_action('wp_ajax_gt_save_table', array($this, 'save_table'));
         add_action('wp_ajax_gt_delete_table', array($this, 'delete_table'));
-        // #1740 — One-Click Table Duplicate.
+        // #1740 - One-Click Table Duplicate.
         add_action('wp_ajax_gt_duplicate_table', array($this, 'duplicate_table'));
-        // #972 v4.161.0 — Trash tab actions (phase 1c of #593).
+        // #972 v4.161.0 - Trash tab actions (phase 1c of #593).
         add_action('wp_ajax_gt_restore_table', array($this, 'restore_table'));
         add_action('wp_ajax_gt_force_delete_table', array($this, 'force_delete_table'));
-        // #974 v4.162.0 — Empty Trash bulk (phase 1c-2 of #593).
+        // #974 v4.162.0 - Empty Trash bulk (phase 1c-2 of #593).
         add_action('wp_ajax_gt_empty_trash', array($this, 'empty_trash'));
-        // #982 v4.166.0 — JSON data source preview (slice 3a of #512).
+        // #982 v4.166.0 - JSON data source preview (slice 3a of #512).
         add_action('wp_ajax_gt_preview_json_source', array($this, 'preview_json_source'));
-        // #2015 — generic remote-source preview (CSV / XML / Google Sheets).
+        // #2015 - generic remote-source preview (CSV / XML / Google Sheets).
         add_action('wp_ajax_gt_preview_remote_source', array($this, 'preview_remote_source'));
-        // #2022 — migrate deprecated shortcodes in post content (dry-run + apply).
+        // #2022 - migrate deprecated shortcodes in post content (dry-run + apply).
         add_action('wp_ajax_gt_migrate_shortcodes', array($this, 'migrate_shortcodes'));
-        // #2021 — run the rebrand data migration (DB table + options) on demand.
+        // #2021 - run the rebrand data migration (DB table + options) on demand.
         add_action('wp_ajax_gt_run_migration', array($this, 'run_migration'));
         add_action('wp_ajax_gt_dismiss_migration_notice', array($this, 'dismiss_migration_notice'));
-        // #2063 — one-click demo table creation from a bundled dataset.
+        // #2063 - one-click demo table creation from a bundled dataset.
         add_action('wp_ajax_gt_create_demo_table', array($this, 'create_demo_table'));
         add_action('wp_ajax_gt_get_form_fields', array($this, 'get_form_fields'));
         add_action('wp_ajax_gt_preview_table', array($this, 'preview_table'));
@@ -109,13 +109,13 @@ class TC_Ajax
         add_action('wp_ajax_nopriv_gt_server_side_entries', array($this, 'server_side_entries'));
         add_action('wp_ajax_gt_get_wc_products', array($this, 'get_wc_products'));
         add_action('wp_ajax_nopriv_gt_get_wc_products', array($this, 'get_wc_products'));
-        // #2200 — builder: load WooCommerce product columns into the field picker.
+        // #2200 - builder: load WooCommerce product columns into the field picker.
         add_action('wp_ajax_gt_preview_wc_source', array($this, 'preview_wc_source'));
-        // #2240 — builder: load Airtable columns into the field picker.
+        // #2240 - builder: load Airtable columns into the field picker.
         add_action('wp_ajax_gt_preview_airtable_source', array($this, 'preview_airtable_source'));
-        // #2241 — builder: load Notion columns into the field picker.
+        // #2241 - builder: load Notion columns into the field picker.
         add_action('wp_ajax_gt_preview_notion_source', array($this, 'preview_notion_source'));
-        // #2242 — builder: load External DB columns into the field picker.
+        // #2242 - builder: load External DB columns into the field picker.
         add_action('wp_ajax_gt_preview_external_db_source', array($this, 'preview_external_db_source'));
         add_action('wp_ajax_gt_get_lookup_options', array($this, 'get_lookup_options'));
         add_action('wp_ajax_nopriv_gt_get_lookup_options', array($this, 'get_lookup_options'));
@@ -124,13 +124,13 @@ class TC_Ajax
         add_action('wp_ajax_nopriv_gt_get_filter_suggestions', array($this, 'get_filter_suggestions'));
         add_action('wp_ajax_gt_update_entry', array($this, 'update_entry'));
         add_action('wp_ajax_nopriv_gt_update_entry', array($this, 'update_entry'));
-        // #2143 — legacy inline auto-refresh: re-render an inline source on a timer.
+        // #2143 - legacy inline auto-refresh: re-render an inline source on a timer.
         add_action('wp_ajax_gt_inline_refresh', array($this, 'inline_refresh'));
         add_action('wp_ajax_nopriv_gt_inline_refresh', array($this, 'inline_refresh'));
 
         add_action('wp_ajax_gt_update_entry_fields', array($this, 'update_entry_fields'));
         add_action('wp_ajax_nopriv_gt_update_entry_fields', array($this, 'update_entry_fields'));
-        // #2282 — authoritative uniqueness check endpoint (client async + SSP fallback).
+        // #2282 - authoritative uniqueness check endpoint (client async + SSP fallback).
         add_action('wp_ajax_gt_check_unique', array($this, 'check_unique'));
         add_action('wp_ajax_nopriv_gt_check_unique', array($this, 'check_unique'));
         add_action('wp_ajax_gt_bulk_action', array($this, 'bulk_action'));
@@ -153,11 +153,11 @@ class TC_Ajax
         add_action('wp_ajax_gt_get_filter_presets', array($this, 'get_filter_presets'));
         add_action('wp_ajax_gt_delete_filter_preset', array($this, 'delete_filter_preset'));
 
-        // #538 slice 2 — Find/Replace AJAX endpoint (find only).
+        // #538 slice 2 - Find/Replace AJAX endpoint (find only).
         add_action('wp_ajax_gt_find_matches', array($this, 'find_matches'));
-        // #538 slice 3 — Apply replacements + write back to GF entries.
+        // #538 slice 3 - Apply replacements + write back to GF entries.
         add_action('wp_ajax_gt_apply_replace', array($this, 'apply_replace'));
-        // #599 slice 3 — Cascading filter: child options for a chosen parent value.
+        // #599 slice 3 - Cascading filter: child options for a chosen parent value.
         add_action('wp_ajax_gt_cascading_filter_options', array($this, 'cascading_filter_options'));
         add_action('wp_ajax_nopriv_gt_cascading_filter_options', array($this, 'cascading_filter_options'));
 
@@ -168,16 +168,16 @@ class TC_Ajax
         add_action('wp_ajax_gt_get_legacy_tables', array($this, 'get_legacy_tables'));
         add_action('wp_ajax_gt_transpose_table', array($this, 'transpose_table'));
 
-        // #613 phase 2 (v4.197.0) — push a row update back to a JSON data source.
+        // #613 phase 2 (v4.197.0) - push a row update back to a JSON data source.
         // No nopriv counterpart: writes require an authenticated user.
         add_action('wp_ajax_gt_push_row', array($this, 'push_row'));
 
-        // #1745 — bulk column fill (Pro). Authenticated only; nopriv rejected.
+        // #1745 - bulk column fill (Pro). Authenticated only; nopriv rejected.
         add_action('wp_ajax_gt_bulk_fill_column', array($this, 'bulk_fill_column'));
-        // #1747 — one-click entry duplicate (Pro). Authenticated only.
+        // #1747 - one-click entry duplicate (Pro). Authenticated only.
         add_action('wp_ajax_gt_duplicate_entry', array($this, 'duplicate_entry'));
 
-        // #2367 — manual tables grid editor: save rows + get rows for builder hydration.
+        // #2367 - manual tables grid editor: save rows + get rows for builder hydration.
         add_action('wp_ajax_gt_save_manual_rows', array($this, 'save_manual_rows'));
         add_action('wp_ajax_gt_get_manual_rows',  array($this, 'get_manual_rows'));
     }
@@ -188,7 +188,7 @@ class TC_Ajax
     }
 
     /**
-     * #1605 — sanitize the optional saved-view payload on a preset.
+     * #1605 - sanitize the optional saved-view payload on a preset.
      * Whitelist shape: column_order (<=100 sanitized strings),
      * sort_stack (<=3 {field, order asc|desc}), per_page (1..200).
      * Unknown keys are dropped; returns [] when nothing valid remains.
@@ -235,7 +235,7 @@ class TC_Ajax
         }
 
         if (isset($decoded['per_page']) && is_numeric($decoded['per_page'])) {
-            // #1691 — route through resolve_per_page so the "All" sentinel (-1)
+            // #1691 - route through resolve_per_page so the "All" sentinel (-1)
             // maps to the bounded ceiling rather than clamping to 1.
             $view['per_page'] = self::resolve_per_page($decoded['per_page']);
         }
@@ -271,7 +271,7 @@ class TC_Ajax
             $filters = array();
         }
 
-        // #1605 — optional full-view payload + default pin.
+        // #1605 - optional full-view payload + default pin.
         $view_raw = isset($_POST['view']) ? wp_unslash($_POST['view']) : '';
         $view = is_string($view_raw) && $view_raw !== '' ? $this->sanitize_preset_view($view_raw) : array();
         $is_default = !empty($_POST['is_default']) && $_POST['is_default'] !== '0';
@@ -326,7 +326,7 @@ class TC_Ajax
             $presets[] = $new_preset;
         }
 
-        // #1605 — a newly pinned default unpins every other preset.
+        // #1605 - a newly pinned default unpins every other preset.
         if ($is_default) {
             foreach ($presets as &$preset) {
                 $preset['is_default'] = (($preset['id'] ?? '') === $preset_id);
@@ -397,7 +397,7 @@ class TC_Ajax
     }
 
     /**
-     * #538 slice 2 — Find AJAX endpoint.
+     * #538 slice 2 - Find AJAX endpoint.
      *
      * Wraps TC_Find_Replace_Service::find_matches as an admin-only
      * AJAX handler. Slice 3 ships the apply path (gt_apply_replace
@@ -415,7 +415,7 @@ class TC_Ajax
      *   {
      *     count: <int total match count>,
      *     matches: [{ row_index, col_id, value, count }, ...],
-     *     truncated: <bool — true if matches list capped at 100>
+     *     truncated: <bool - true if matches list capped at 100>
      *   }
      */
     public function find_matches(): void
@@ -509,7 +509,7 @@ class TC_Ajax
     }
 
     /**
-     * #538 slice 3 — Apply Find/Replace AJAX endpoint.
+     * #538 slice 3 - Apply Find/Replace AJAX endpoint.
      *
      * Mutates GF entries via GFAPI::update_entry. POST shape mirrors
      * find_matches (table_id, needle, replacement, case_sensitive,
@@ -608,14 +608,14 @@ class TC_Ajax
     }
 
     /**
-     * #599 slice 3 — Cascading filter dropdown options.
+     * #599 slice 3 - Cascading filter dropdown options.
      *
      * Visitor-callable AJAX endpoint (registered for both priv and
      * nopriv). Given a table_id + parent_field + parent_value +
      * child_field, returns the distinct child values that appear
      * alongside that parent in the table's data.
      *
-     * No nonce check — chain values are not sensitive (they're
+     * No nonce check - chain values are not sensitive (they're
      * already in the rendered table). The response is bounded by the
      * table's row count and by the small distinct-values cardinality
      * the chain represents.
@@ -640,7 +640,7 @@ class TC_Ajax
             wp_send_json_error(__('Parent and child fields must differ.', 'tc-data-tables'));
         }
 
-        // #1634 — enforce table access before disclosing column values.
+        // #1634 - enforce table access before disclosing column values.
         // This nopriv endpoint previously returned distinct field values
         // for any table_id with no permission check, leaking data from
         // role-restricted tables. Resolve the table via the same TC_Admin
@@ -775,7 +775,7 @@ class TC_Ajax
         $events = (array) ($settings['notify_events'] ?? array('updated'));
         $should_notify = in_array($event, $events, true);
 
-        // Always fire the action hook regardless of notification settings — that's
+        // Always fire the action hook regardless of notification settings - that's
         // its contract for custom integrations.
         do_action('gravity_tables_entry_updated', $entry_id, $form_id, $event, $changes);
 
@@ -802,7 +802,7 @@ class TC_Ajax
 
         $webhook_url = (string) ($settings['webhook_url'] ?? '');
         if ($webhook_url !== '') {
-            // #1075 — SSRF gate on the per-table webhook URL. Admin-set,
+            // #1075 - SSRF gate on the per-table webhook URL. Admin-set,
             // but we don't want a misconfigured (or compromised) webhook
             // to fire requests at loopback / metadata / RFC1918 hosts.
             if (!gt_validate_outbound_url($webhook_url)) {
@@ -859,7 +859,7 @@ class TC_Ajax
      * specific entry cache for the affected entry.
      *
      * Cache backends without group support (e.g. the default in-memory
-     * cache) silently no-op for wp_cache_flush_group, which is fine —
+     * cache) silently no-op for wp_cache_flush_group, which is fine - 
      * those backends don't persist between requests anyway.
      */
     private function invalidate_table_caches(?int $entry_id = null): void
@@ -898,7 +898,7 @@ class TC_Ajax
      * (title + decoded settings.selected_fields) and runs the service's
      * assert_safe_table_save heuristic. Returns null when safe to proceed,
      * or an error envelope (code / message / details) when the payload
-     * shape suggests data loss. Only fires on UPDATE — fresh-create has
+     * shape suggests data loss. Only fires on UPDATE - fresh-create has
      * no existing snapshot. Mirrors the docblock contract at
      * includes/services/class-tc-data-integrity-guard.php (#557).
      */
@@ -1015,7 +1015,7 @@ class TC_Ajax
         $data  = $_POST;
         $admin = TC_Admin::get_instance();
 
-        // TC_Data_Integrity_Guard (#557) — runtime check against silent data
+        // TC_Data_Integrity_Guard (#557) - runtime check against silent data
         // loss. Only fires on UPDATE; aborts with HTTP 409 + envelope when
         // payload shape suggests data loss (empty title overwriting populated,
         // missing columns when existing had >0).
@@ -1060,7 +1060,7 @@ class TC_Ajax
                 // @codeCoverageIgnoreEnd
             }
 
-            // #2116 — funnel: a table config was saved (the first save is a
+            // #2116 - funnel: a table config was saved (the first save is a
             // creation). Guarded so the option is written once.
             if (class_exists('TC_Activation_Funnel') && !TC_Activation_Funnel::has('table_created')) {
                 TC_Activation_Funnel::record('table_created');
@@ -1102,7 +1102,7 @@ class TC_Ajax
     }
 
     /**
-     * #1740 — Clone an existing table configuration into a new row.
+     * #1740 - Clone an existing table configuration into a new row.
      */
     public function duplicate_table(): void
     {
@@ -1151,7 +1151,7 @@ class TC_Ajax
             ['%d']
         );
 
-        // #2366 — copy manual rows from source to the new duplicate table.
+        // #2366 - copy manual rows from source to the new duplicate table.
         if (class_exists('TC_Manual_Rows_Service')) {
             TC_Manual_Rows_Service::copy_rows($table_id, $new_id);
         }
@@ -1162,7 +1162,7 @@ class TC_Ajax
     }
 
     /**
-     * #972 v4.161.0 — Restore a soft-deleted table (Trash tab action).
+     * #972 v4.161.0 - Restore a soft-deleted table (Trash tab action).
      */
     public function restore_table(): void
     {
@@ -1186,7 +1186,7 @@ class TC_Ajax
     }
 
     /**
-     * #982 v4.166.0 — JSON data source preview endpoint (slice 3a of #512).
+     * #982 v4.166.0 - JSON data source preview endpoint (slice 3a of #512).
      *
      * Admin builder UI (slice 3b, pending) calls this to validate a URL +
      * headers + dot_path combo before committing the table config. Returns
@@ -1233,7 +1233,7 @@ class TC_Ajax
             $flat[] = TC_JSON_Source_Service::flatten_row(is_array($row) ? $row : array());
         }
         $columns = TC_JSON_Source_Service::infer_columns($flat);
-        // #2247 — expose a humanized `name` so the field-picker JS
+        // #2247 - expose a humanized `name` so the field-picker JS
         // (loadJsonColumns reads col.name) renders readable chip labels instead
         // of raw data keys. Use resolve_external_header_label (Title Case +
         // acronym support) for parity with Airtable/Notion/ExternalDB sources.
@@ -1251,7 +1251,7 @@ class TC_Ajax
     }
 
     /**
-     * #2063 — Create a ready-to-view demo table from a bundled dataset in one
+     * #2063 - Create a ready-to-view demo table from a bundled dataset in one
      * click. Builds a JSON/CSV remote source pointing at the fixture and persists
      * the table; returns its id + shortcode + builder edit URL.
      */
@@ -1264,7 +1264,7 @@ class TC_Ajax
 
         $key      = isset($_POST['demo']) ? sanitize_key(wp_unslash($_POST['demo'])) : '';
         $settings = class_exists('TC_Demo_Data') ? TC_Demo_Data::table_settings($key) : null;
-        // #2134 — templates install through the same path; fall back to the
+        // #2134 - templates install through the same path; fall back to the
         // templates registry for keys the demo registry doesn't know.
         $is_template = false;
         if ($settings === null && class_exists('TC_Templates')) {
@@ -1278,7 +1278,7 @@ class TC_Ajax
         // Pre-select all columns so the demo renders immediately (frontend table
         // + builder preview) instead of an empty table the user must configure.
         // Set BOTH keys: the builder load path prefers 'columns', the save path
-        // writes 'selected_fields' — populate both so the demo is consistent.
+        // writes 'selected_fields' - populate both so the demo is consistent.
         $columns = $is_template ? TC_Templates::columns_for($key) : TC_Demo_Data::columns_for($key);
         if (!empty($columns)) {
             $settings['selected_fields'] = $columns;
@@ -1305,7 +1305,7 @@ class TC_Ajax
         $shortcode = '[tablecrafter id="' . $id . '"]';
         $wpdb->update($table, array('shortcode' => $shortcode), array('id' => $id));
 
-        // #2116 — funnel: creating a demo table counts as table_created.
+        // #2116 - funnel: creating a demo table counts as table_created.
         if (class_exists('TC_Activation_Funnel') && !TC_Activation_Funnel::has('table_created')) {
             TC_Activation_Funnel::record('table_created');
         }
@@ -1324,7 +1324,7 @@ class TC_Ajax
     }
 
     /**
-     * #2021 — Run the rebrand data migration (DB table rename + options copy) on
+     * #2021 - Run the rebrand data migration (DB table rename + options copy) on
      * the admin's explicit request. Never called automatically.
      */
     public function run_migration(): void
@@ -1345,7 +1345,7 @@ class TC_Ajax
     }
 
     /**
-     * #2021 — Dismiss the migration prompt for the current admin user.
+     * #2021 - Dismiss the migration prompt for the current admin user.
      */
     public function dismiss_migration_notice(): void
     {
@@ -1359,7 +1359,7 @@ class TC_Ajax
     }
 
     /**
-     * #2022 — Migrate deprecated [gravity_table] / [gravity_tables] shortcodes
+     * #2022 - Migrate deprecated [gravity_table] / [gravity_tables] shortcodes
      * in post content to [tablecrafter]. Pass dry_run=1 to preview the counts
      * without writing. Admin-only.
      */
@@ -1401,7 +1401,7 @@ class TC_Ajax
     }
 
     /**
-     * #2015 — Generic remote-source preview. Fetches a pasted URL through the
+     * #2015 - Generic remote-source preview. Fetches a pasted URL through the
      * matching engine (CSV / XML / Google Sheets) and returns inferred columns +
      * a 5-row sample + the total row count, in the same shape as the JSON
      * preview so the builder JS can reuse the rendering.
@@ -1441,7 +1441,7 @@ class TC_Ajax
         }
         $columns = array();
         foreach ($column_keys as $key) {
-            // #2247 — humanize the chip label (matches Airtable/Notion/ExternalDB
+            // #2247 - humanize the chip label (matches Airtable/Notion/ExternalDB
             // which already call resolve_external_header_label). `id` stays as the
             // raw key so the builder can address columns by their data key.
             $columns[] = array(
@@ -1513,7 +1513,7 @@ class TC_Ajax
     /**
      * Parse a textarea-style header block (one 'Key: Value' per line) into the
      * associative-array shape that fetch_from_url() expects. Whitespace-only
-     * lines are skipped; malformed lines (no colon) are dropped silently —
+     * lines are skipped; malformed lines (no colon) are dropped silently - 
      * the UI is responsible for surfacing malformed input on its end.
      *
      * @param string $raw Raw textarea content.
@@ -1544,7 +1544,7 @@ class TC_Ajax
     }
 
     /**
-     * #974 v4.162.0 — Empty the trash (bulk permanent-delete all trashed rows).
+     * #974 v4.162.0 - Empty the trash (bulk permanent-delete all trashed rows).
      */
     public function empty_trash(): void
     {
@@ -1567,7 +1567,7 @@ class TC_Ajax
     }
 
     /**
-     * #972 v4.161.0 — Permanently delete a trashed table (Trash tab action).
+     * #972 v4.161.0 - Permanently delete a trashed table (Trash tab action).
      */
     public function force_delete_table(): void
     {
@@ -1691,19 +1691,19 @@ class TC_Ajax
                 ? sanitize_key((string) $settings_post['data_source_type'])
                 : 'gravity_forms';
 
-            // External sources don't have a Gravity Forms form_id — route them
+            // External sources don't have a Gravity Forms form_id - route them
             // before the GF-specific validation and entry-fetch path.
 
-            // #2366 — Manual source preview: show a placeholder (the grid editor
+            // #2366 - Manual source preview: show a placeholder (the grid editor
             // that lets you add real data ships in #2367; for now the builder
             // preview mirrors the frontend empty-state).
             if ($data_source_type === 'manual') {
                 $table_id_preview = isset($_POST['table_id']) ? intval($_POST['table_id']) : 0;
                 if ($table_id_preview > 0 && class_exists('TC_Manual_Rows_Service')) {
                     $r    = TC_Manual_Rows_Service::get_rows($table_id_preview, array());
-                    // #2370 — exclude hidden rows from builder preview.
+                    // #2370 - exclude hidden rows from builder preview.
                     $rows = TC_Manual_Rows_Service::filter_visible_rows( $r['rows'] );
-                    // #2370 — exclude hidden columns from builder preview.
+                    // #2370 - exclude hidden columns from builder preview.
                     $visible_cols = TC_Manual_Rows_Service::filter_visible_columns(
                         ( isset($settings_post['manual_columns']) && is_array($settings_post['manual_columns']) ) ? $settings_post['manual_columns'] : array()
                     );
@@ -1759,22 +1759,22 @@ class TC_Ajax
                 wp_send_json_success(['html' => $this->preview_remote_source_html($settings_post, $data_source_type)]);
                 return;
             }
-            // #2240 — Airtable previews live using the entered (or saved) credentials.
+            // #2240 - Airtable previews live using the entered (or saved) credentials.
             if ($data_source_type === 'airtable') {
                 wp_send_json_success(['html' => $this->preview_airtable_source_html($settings_post)]);
                 return;
             }
-            // #2241 — Notion previews live using the entered (or saved) token.
+            // #2241 - Notion previews live using the entered (or saved) token.
             if ($data_source_type === 'notion') {
                 wp_send_json_success(['html' => $this->preview_notion_source_html($settings_post)]);
                 return;
             }
-            // #2242 — External DB previews live via the saved connection + query.
+            // #2242 - External DB previews live via the saved connection + query.
             if ($data_source_type === 'external_db') {
                 wp_send_json_success(['html' => $this->preview_external_db_source_html($settings_post)]);
                 return;
             }
-            // #2200 — WooCommerce products preview live (no save needed).
+            // #2200 - WooCommerce products preview live (no save needed).
             if ($data_source_type === 'woocommerce_products') {
                 wp_send_json_success(['html' => $this->preview_woocommerce_source_html($settings_post)]);
                 return;
@@ -1885,7 +1885,7 @@ class TC_Ajax
             return '<p>' . esc_html__('No columns detected in JSON response.', 'tc-data-tables') . '</p>';
         }
 
-        // #2245 — humanize / apply saved column_labels so the builder preview
+        // #2245 - humanize / apply saved column_labels so the builder preview
         // headers match the frontend (#2205) instead of showing raw keys.
         $labels = (isset($settings['column_labels']) && is_array($settings['column_labels']))
             ? $settings['column_labels'] : array();
@@ -1979,7 +1979,7 @@ class TC_Ajax
             return '<p>' . esc_html__('No columns detected.', 'tc-data-tables') . '</p>';
         }
 
-        // #2245 — humanize / apply saved column_labels so the builder preview
+        // #2245 - humanize / apply saved column_labels so the builder preview
         // headers match the frontend (#2205) instead of showing raw keys.
         $labels = (isset($settings['column_labels']) && is_array($settings['column_labels']))
             ? $settings['column_labels'] : array();
@@ -2038,7 +2038,7 @@ class TC_Ajax
             return;
         }
 
-        // #1069 slice 32 — gate lookup-option enumeration on the table's
+        // #1069 slice 32 - gate lookup-option enumeration on the table's
         // role allowlist. Pre-fix this handler only checked the nonce, so
         // any public-page visitor with a valid nonce could enumerate
         // lookup options for arbitrary form_id values (info disclosure on
@@ -2058,7 +2058,7 @@ class TC_Ajax
 
     /**
      * Return distinct existing values for a (form_id, field_id) pair, optionally filtered by a
-     * search fragment. Powers the text-filter typeahead — lets admins discover the values that
+     * search fragment. Powers the text-filter typeahead - lets admins discover the values that
      * already exist in their data and pick one without typing it character-perfect, which doubles
      * as a manual cleanup workflow for messy free-text columns (find typos / variants → filter
      * → inline-edit to canonical).
@@ -2080,7 +2080,7 @@ class TC_Ajax
             return;
         }
 
-        // #1069 slice 32 — gate the typeahead on the table's role allowlist.
+        // #1069 slice 32 - gate the typeahead on the table's role allowlist.
         // Pre-fix this handler only checked the nonce, so any public-page
         // visitor with a valid nonce could enumerate distinct field values
         // for any GF form (including admin-only forms). Bails inside
@@ -2147,7 +2147,7 @@ class TC_Ajax
                 return;
             }
 
-            // #2008 — graceful degrade when Gravity Forms is inactive. This
+            // #2008 - graceful degrade when Gravity Forms is inactive. This
             // handler fetches Gravity Forms entries (direct gf_entry SQL +
             // GFAPI); without GF those would query a non-existent table. Return
             // a clean JSON error instead of fataling. External data-source
@@ -2170,7 +2170,7 @@ class TC_Ajax
                 'sort_order'  => sanitize_text_field($_POST['sort_order'] ?? 'desc'),
             ), $table_id, array());
 
-            // #565 slice 1 — multi-column sort stack from frontend shift-click.
+            // #565 slice 1 - multi-column sort stack from frontend shift-click.
             // Validate via TC_Multi_Sort_Service so column_id whitelist + direction
             // whitelist are enforced server-side. Slice 1 honors only the primary
             // entry (already represented by sort_field/sort_order above); slice 2
@@ -2178,7 +2178,7 @@ class TC_Ajax
             $gt_sort_stack_raw = $_POST['sort_stack'] ?? '';
             $gt_sort_stack = array();
             if (is_string($gt_sort_stack_raw) && $gt_sort_stack_raw !== '' && class_exists('TC_Multi_Sort_Service')) {
-                // #1073 — wp_unslash() tracks wp_magic_quotes state where
+                // #1073 - wp_unslash() tracks wp_magic_quotes state where
                 // the legacy stripslashes idiom does not; required when
                 // decoding JSON payloads off the AJAX boundary.
                 // @codeCoverageIgnoreStart
@@ -2190,10 +2190,10 @@ class TC_Ajax
             }
 
             $page        = max(1, intval($raw_query_args['page']));
-            // #1073 — clamp per_page to [1, 200] to prevent a hostile client
+            // #1073 - clamp per_page to [1, 200] to prevent a hostile client
             // from requesting per_page=999999 and starving the DB. Mirrors
             // the TC_Entry_Repository::find() and REST per_page idiom.
-            // #1691 — resolve_per_page also maps the length selector's "All"
+            // #1691 - resolve_per_page also maps the length selector's "All"
             // sentinel (-1) to a bounded ceiling instead of clamping it to 1.
             $per_page    = self::resolve_per_page($raw_query_args['per_page']);
             $search      = sanitize_text_field($raw_query_args['search']);
@@ -2205,7 +2205,7 @@ class TC_Ajax
             $columns      = $_POST['columns'] ?? array();
             $lookup_fields = $_POST['lookup_fields'] ?? array();
 
-            // #2338 — row grouping sort injection. When row grouping is enabled,
+            // #2338 - row grouping sort injection. When row grouping is enabled,
             // inject the group column(s) as primary sort entries before any
             // visitor-requested sort. This ensures entries arrive in group order
             // so the JS module can insert group-header rows without a client-side
@@ -2241,11 +2241,11 @@ class TC_Ajax
                 // @codeCoverageIgnoreEnd
             }
 
-            // #568 slice 4 — drilldown filters (col:val chips) for cross-page persistence.
+            // #568 slice 4 - drilldown filters (col:val chips) for cross-page persistence.
             $drilldown_filters_raw = $_POST['drilldown_filters'] ?? '';
             $drilldown_filters = array();
             if (is_string($drilldown_filters_raw) && $drilldown_filters_raw !== '') {
-                // #1073 — wp_unslash() over the legacy stripslash idiom
+                // #1073 - wp_unslash() over the legacy stripslash idiom
                 // for the same wp_magic_quotes-tracking reason as the
                 // sort_stack decode above.
                 // @codeCoverageIgnoreStart
@@ -2323,7 +2323,7 @@ class TC_Ajax
                 }
             }
 
-            // #565 slice 2 — inject the validated sort_stack into $table_config
+            // #565 slice 2 - inject the validated sort_stack into $table_config
             // so get_gravity_forms_entries can build a multi-clause ORDER BY.
             // Only inject when the stack has 2+ entries; single-entry stacks
             // are exactly equivalent to the legacy sort_field/sort_order pair
@@ -2405,7 +2405,7 @@ class TC_Ajax
                 // @codeCoverageIgnoreEnd
             }
 
-            // #796 / #798 / #806 — compose multi-input field sub-inputs into
+            // #796 / #798 / #806 - compose multi-input field sub-inputs into
             // the bare $entry[$N] slot so the JS frontend renders something
             // readable instead of blank. address (#796), checkbox (#798), and
             // creditcard (#806) all store their data in $entry["{N}.{sub}"]
@@ -2469,7 +2469,7 @@ class TC_Ajax
                                     }
                                 }
                             }
-                            // #806 — PCI defence: redact creditcard sub-inputs
+                            // #806 - PCI defence: redact creditcard sub-inputs
                             // BEFORE the response ships to the JS frontend. The
                             // safe summary ends up in the bare slot; every
                             // sub-input N.1..N.5 is scrubbed.
@@ -2480,7 +2480,7 @@ class TC_Ajax
                             // @codeCoverageIgnoreEnd
                                 }
                             }
-                            // #808 — post_image: pre-compose the <img> HTML into
+                            // #808 - post_image: pre-compose the <img> HTML into
                             // the bare slot so the cell renderer's post_image
                             // branch passes it through unchanged.
                             // @codeCoverageIgnoreStart
@@ -2493,7 +2493,7 @@ class TC_Ajax
                                     }
                                 }
                             }
-                            // #807 — product: compose "Widget × 3 @ $10.00 = $30.00"
+                            // #807 - product: compose "Widget × 3 @ $10.00 = $30.00"
                             // into the bare slot.
                             // @codeCoverageIgnoreStart
                             if (class_exists('TC_Product_Field_Renderer')) {
@@ -2505,7 +2505,7 @@ class TC_Ajax
                                     }
                                 }
                             }
-                            // #817 — name: compose "Mr. John Smith Jr." into bare slot.
+                            // #817 - name: compose "Mr. John Smith Jr." into bare slot.
                             // @codeCoverageIgnoreStart
                             if (class_exists('TC_Name_Field_Renderer')) {
                                 foreach ($gt_name_field_ids as $gt_fid) {
@@ -2516,7 +2516,7 @@ class TC_Ajax
                                     }
                                 }
                             }
-                            // #818 — time: compose "9:30 am" / "21:30" into bare slot.
+                            // #818 - time: compose "9:30 am" / "21:30" into bare slot.
                             // @codeCoverageIgnoreStart
                             if (class_exists('TC_Time_Field_Renderer')) {
                                 foreach ($gt_time_field_ids as $gt_fid) {
@@ -2527,7 +2527,7 @@ class TC_Ajax
                                     }
                                 }
                             }
-                            // #820 — consent: compose summary into bare slot.
+                            // #820 - consent: compose summary into bare slot.
                             // @codeCoverageIgnoreStart
                             if (class_exists('TC_Consent_Field_Renderer')) {
                                 foreach ($gt_consent_field_ids as $gt_fid) {
@@ -2546,14 +2546,14 @@ class TC_Ajax
                 }
             }
 
-            // #562 slice 3 — pivot view render. After the multi-composite
+            // #562 slice 3 - pivot view render. After the multi-composite
             // handlers have populated bare slots, check the per-table
             // pivot_config. When is_enabled (mode=pivot AND group_by set
             // AND >=1 valid aggregate), replace the entries set with the
             // aggregated rows and set is_pivot=true on the response so
             // the JS frontend can render the pivot column layout.
             // No-op when pivot mode is raw or the config is incomplete.
-            // #1596 — pivot_view=raw is the visitor-toggle override:
+            // #1596 - pivot_view=raw is the visitor-toggle override:
             // skip aggregation for this request so the toggle can show
             // the underlying rows (read-only display choice; rows are
             // permission-filtered upstream like any raw request).
@@ -2578,7 +2578,7 @@ class TC_Ajax
                 // @codeCoverageIgnoreEnd
             }
 
-            // #1598 — computed columns: inject per-row gtc_* values so
+            // #1598 - computed columns: inject per-row gtc_* values so
             // the frontend renders them like any other column and CSV
             // export picks them up from the entry array for free.
             if (class_exists('TC_Formula_Service')
@@ -2604,7 +2604,7 @@ class TC_Ajax
                 if (!empty($render_shortcodes_columns)) {
                     foreach ($entries['entries'] as &$entry) {
                         foreach ($render_shortcodes_columns as $fid) {
-                            // #1672 — only invoke do_shortcode (a global regex over
+                            // #1672 - only invoke do_shortcode (a global regex over
                             // the whole shortcode registry) when the cell actually
                             // contains a shortcode token.
                             if (isset($entry[$fid]) && is_string($entry[$fid]) && strpos($entry[$fid], '[') !== false) {
@@ -2619,11 +2619,11 @@ class TC_Ajax
                 }
             }
 
-            // #613 phase 2 slice 19 (v4.214.0) — inject per-row push baselines
+            // #613 phase 2 slice 19 (v4.214.0) - inject per-row push baselines
             // into the response so the JS can populate self._pushBaselines
             // (renderEntries slice 18, v4.213.0). Completes the optimistic-
             // locking flow end-to-end. The detector returns empty string for
-            // rows that have never been pushed — JS treats those as "no
+            // rows that have never been pushed - JS treats those as "no
             // baseline yet" and the first push of that row always succeeds.
             if (class_exists('TC_Push_Conflict_Detector') && !empty($entries['entries']) && is_array($entries['entries'])) {
                 // @codeCoverageIgnoreStart
@@ -2668,7 +2668,7 @@ class TC_Ajax
                 }
             }
 
-            // #1763 — per-column role visibility, ENFORCED SERVER-SIDE. The
+            // #1763 - per-column role visibility, ENFORCED SERVER-SIDE. The
             // client-side display:none hide (column-role-visibility.js) was a
             // confidentiality leak: restricted values still shipped in this
             // payload. Strip the values for columns this user may not see
@@ -2713,7 +2713,7 @@ class TC_Ajax
     }
 
     /**
-     * Server-side processing endpoint — DataTables SSP protocol.
+     * Server-side processing endpoint - DataTables SSP protocol.
      *
      * Accepts: draw, start, length, search[value], order[0][column], order[0][dir], table_id, nonce.
      * Returns: { draw, recordsTotal, recordsFiltered, data }.
@@ -2808,7 +2808,7 @@ class TC_Ajax
             $data[] = $row;
         }
 
-        // #1735 — Compute per-column bar maxes for SSP data bars. We use
+        // #1735 - Compute per-column bar maxes for SSP data bars. We use
         // TC_Data_Bars_Service::parse_numeric over all entries on the CURRENT
         // PAGE (entries_filtered) as the max for rendering bar widths. This is
         // page-scoped rather than full-dataset-scoped, matching the approach
@@ -2862,7 +2862,7 @@ class TC_Ajax
     }
 
     /**
-     * #2200 — Builder: return WooCommerce product columns (with friendly labels)
+     * #2200 - Builder: return WooCommerce product columns (with friendly labels)
      * + total count so the field picker populates, exactly like the JSON / remote
      * source "Test connection" flow (see assets/js/admin/field-list.js loadJsonColumns).
      */
@@ -2907,7 +2907,7 @@ class TC_Ajax
     }
 
     /**
-     * #2200 — Build the in-builder live preview for a WooCommerce products table.
+     * #2200 - Build the in-builder live preview for a WooCommerce products table.
      * Cells are trusted WC-generated HTML (links / prices / add-to-cart) so they
      * pass through wp_kses_post. Honours the builder's selected columns if set.
      */
@@ -2963,7 +2963,7 @@ class TC_Ajax
     }
 
     /**
-     * #2240 — Builder: connect to Airtable with the entered (or saved) config
+     * #2240 - Builder: connect to Airtable with the entered (or saved) config
      * and return the inferred columns + sampled row count so the field picker
      * populates, mirroring preview_wc_source / the JSON "Test connection" flow.
      */
@@ -3019,7 +3019,7 @@ class TC_Ajax
     }
 
     /**
-     * #2240 — Build the in-builder live preview for an Airtable-source table,
+     * #2240 - Build the in-builder live preview for an Airtable-source table,
      * routed from preview_table() (replaces the "save then view on the
      * frontend" placeholder). Fetches one page live with the entered (or
      * saved) credentials and renders via the shared row-dict preview table.
@@ -3064,7 +3064,7 @@ class TC_Ajax
     }
 
     /**
-     * #2241 — Builder: connect to Notion with the entered (or saved) token
+     * #2241 - Builder: connect to Notion with the entered (or saved) token
      * and return the inferred columns + sampled row count so the field picker
      * populates, mirroring preview_airtable_source (#2240).
      */
@@ -3119,7 +3119,7 @@ class TC_Ajax
     }
 
     /**
-     * #2241 — Build the in-builder live preview for a Notion-source table,
+     * #2241 - Build the in-builder live preview for a Notion-source table,
      * routed from preview_table() (replaces the "save then view on the
      * frontend" placeholder). Fetches one page live with the entered (or
      * saved) token and renders via the shared row-dict preview table.
@@ -3163,7 +3163,7 @@ class TC_Ajax
     }
 
     /**
-     * #2242 — Builder: run the entered read-only query against the selected
+     * #2242 - Builder: run the entered read-only query against the selected
      * saved connection and return the inferred columns + row count so the
      * field picker populates, mirroring preview_airtable_source (#2240) /
      * preview_notion_source (#2241). TC_External_DB::execute_query() enforces
@@ -3208,7 +3208,7 @@ class TC_Ajax
     }
 
     /**
-     * #2242 — Build the in-builder live preview for an External-DB-source
+     * #2242 - Build the in-builder live preview for an External-DB-source
      * table, routed from preview_table() (replaces the "save then view on
      * the frontend" placeholder). Runs the query live and renders via the
      * shared row-dict preview table.
@@ -3241,9 +3241,9 @@ class TC_Ajax
     }
 
     /**
-     * #2240 — Resolve a builder-posted secret (Airtable PAT / Notion token).
+     * #2240 - Resolve a builder-posted secret (Airtable PAT / Notion token).
      * The builder posts the plaintext when the user typed one, and an EMPTY
-     * string when a saved secret sits behind the masked placeholder — in that
+     * string when a saved secret sits behind the masked placeholder - in that
      * case fall back to the saved table's encrypted setting and decrypt it.
      */
     private function resolve_source_secret(string $posted, int $table_id, string $settings_key): string
@@ -3270,7 +3270,7 @@ class TC_Ajax
     }
 
     /**
-     * #2240 — Shared builder-preview table for flat row-dict sources
+     * #2240 - Shared builder-preview table for flat row-dict sources
      * (Airtable; Notion + External DB reuse it in #2241/#2242). Columns are
      * the union of row keys, narrowed + ordered by the saved selection, with
      * headers resolved through the #2205/#2245 humanize/label pipeline.
@@ -3328,7 +3328,7 @@ class TC_Ajax
     }
 
     /**
-     * Union of associative row keys in first-seen order — column inference
+     * Union of associative row keys in first-seen order - column inference
      * for sparse row-dict sources (Airtable records omit empty fields).
      */
     private function union_row_keys(array $rows): array
@@ -3468,7 +3468,7 @@ class TC_Ajax
     }
 
     /**
-     * #1633 — resolve the form_id that a table's "enable_frontend_editing"
+     * #1633 - resolve the form_id that a table's "enable_frontend_editing"
      * grant applies to. Returns the table's form_id ONLY when the caller is
      * a logged-in user, the table is active, and frontend editing is on;
      * 0 otherwise.
@@ -3500,7 +3500,7 @@ class TC_Ajax
     }
 
     /**
-     * #1648 — the GF field id a table uses to identify an entry's owner.
+     * #1648 - the GF field id a table uses to identify an entry's owner.
      * When set, non-admin frontend editors may only edit entries whose
      * owner field holds their user id (see TC_Entry_Owner_Guard). Empty
      * means no ownership restriction (legacy behaviour).
@@ -3526,7 +3526,7 @@ class TC_Ajax
     }
 
     /**
-     * #1633 — true only when every entry id resolves to an entry that
+     * #1633 - true only when every entry id resolves to an entry that
      * belongs to $form_id. Used by bulk_action so a frontend-editing grant
      * on one table cannot be used to act on entries from another form.
      */
@@ -3536,7 +3536,7 @@ class TC_Ajax
             return false;
         }
 
-        // #1668 — validate ownership with one IN query instead of one
+        // #1668 - validate ownership with one IN query instead of one
         // GFAPI::get_entry() per id. get_entries() is scoped to $form_id, so a
         // returned count equal to the unique input count means every requested
         // id exists AND belongs to the form (an unknown or wrong-form id drops
@@ -3560,7 +3560,7 @@ class TC_Ajax
     }
 
     /**
-     * #2143 — Re-render an inline external source for the auto-refresh poller.
+     * #2143 - Re-render an inline external source for the auto-refresh poller.
      *
      * Receives the whitelisted inline shortcode atts (the same set the renderer
      * emitted in data-refresh-atts), reconstructs the [tablecrafter source=...]
@@ -3617,7 +3617,7 @@ class TC_Ajax
             ));
         }
 
-        // #553 slice 2 — WAF-safe payload server-side wire. When the client posts
+        // #553 slice 2 - WAF-safe payload server-side wire. When the client posts
         // an opaque base64 envelope under $_POST['payload'] (slice-3 client-side
         // encode), decode it via TC_WAF_Safe_Payload and feed the result into
         // entry_id / updates. Falls through cleanly for legacy form-encoded
@@ -3673,13 +3673,13 @@ class TC_Ajax
         //             any logged-in user who can view the table is allowed.
         // Priority 3: Fall back to checking whether the user owns the entry (created_by).
         $current_user_id = get_current_user_id();
-        // #1648 — exclude 'driver' cap (drivers lack edit_posts) so they can't bypass the ownership check below.
+        // #1648 - exclude 'driver' cap (drivers lack edit_posts) so they can't bypass the ownership check below.
         $has_admin_cap = current_user_can('edit_posts') || current_user_can('publish_posts');
 
         if (!$has_admin_cap) {
             $can_edit = false;
 
-            // #1633 — grant via the table's "enable_frontend_editing" flag
+            // #1633 - grant via the table's "enable_frontend_editing" flag
             // only when the table belongs to THIS entry's form and the
             // caller is logged in. Binding to the entry's form prevents
             // pointing table_id at an unrelated editing-enabled table to
@@ -3729,16 +3729,16 @@ class TC_Ajax
 
         $gt_blocked_fields = array();
 
-        // #2281 — Load column_config for type-aware sanitization. The table_id
+        // #2281 - Load column_config for type-aware sanitization. The table_id
         // was already consumed for the permission check above; re-read from POST
         // so admin-cap users (who skip the permission block) also benefit.
         $update_table_id        = intval($_POST['table_id'] ?? 0);
         $update_col_config      = $this->load_column_config($update_table_id);
-        // #2282 — Load per-column validation rules (oneOf, notOneOf, phone, unique, hook).
+        // #2282 - Load per-column validation rules (oneOf, notOneOf, phone, unique, hook).
         $update_col_validations = $this->load_column_validations($update_table_id);
 
         foreach ($updates as $field_id => $value) {
-            // #2282 — validate before sanitizing; built-in rules + developer hook.
+            // #2282 - validate before sanitizing; built-in rules + developer hook.
             $field_val_rules = is_array($update_col_validations[(string) $field_id] ?? null)
                 ? $update_col_validations[(string) $field_id]
                 : array();
@@ -3762,7 +3762,7 @@ class TC_Ajax
                 }
             }
 
-            // #2281 — resolve per-field col_type before sanitizing.
+            // #2281 - resolve per-field col_type before sanitizing.
             $field_col_cfg  = is_array($update_col_config[(string) $field_id] ?? null)
                 ? $update_col_config[(string) $field_id]
                 : array();
@@ -3784,7 +3784,7 @@ class TC_Ajax
                 $field_id
             ));
 
-            // #819 — guard against silently clobbering a multi-file
+            // #819 - guard against silently clobbering a multi-file
             // fileupload field (JSON array of URLs) with a single
             // scalar URL string. Inline edit only sees the input
             // value, so without this guard the JSON array would be
@@ -4008,7 +4008,7 @@ class TC_Ajax
 
             // Targeted cache invalidation for this specific entry plus the
             // shared Gravity Forms / Gravity Tables cache groups. No global
-            // wp_cache_flush() — see TC_Ajax::invalidate_table_caches().
+            // wp_cache_flush() - see TC_Ajax::invalidate_table_caches().
             $this->invalidate_table_caches((int) $entry_id);
 
             if ($debug_enabled) {
@@ -4021,12 +4021,12 @@ class TC_Ajax
                 ));
             }
 
-            // #517 slice 4c — Airtable push-back. After the local GFAPI update
+            // #517 slice 4c - Airtable push-back. After the local GFAPI update
             // succeeds, if (a) the table is configured for push_only or two_way,
             // (b) credentials are stored, and (c) the entry has a non-empty
             // value in the per-table airtable_record_id_field, fire a PATCH at
             // Airtable. Failure is swallowed (logged) so the local update's
-            // success response is unaffected — this keeps the inline-edit UX
+            // success response is unaffected - this keeps the inline-edit UX
             // consistent regardless of upstream sync state. Slice 4d+ will add
             // conflict resolution + rate limiting + audit log per #613.
             $this->maybe_pushback_to_airtable((int) $entry_id, $updates);
@@ -4035,7 +4035,7 @@ class TC_Ajax
                 'message' => 'Entry updated successfully',
                 'updated_fields' => $updated_fields,
             );
-            // #819 — surface any fileupload fields whose edit was
+            // #819 - surface any fileupload fields whose edit was
             // skipped because it would have clobbered a multi-file
             // shape. The frontend can show a per-field tooltip.
             if (!empty($gt_blocked_fields)) {
@@ -4044,7 +4044,7 @@ class TC_Ajax
                 $response['message'] = __('Entry updated. Some multi-file fileupload columns were left untouched to prevent data loss; use the GF entry editor to manage multi-file uploads.', 'tc-data-tables');
                 // @codeCoverageIgnoreEnd
             }
-            // #2116 — funnel: the user saved a frontend inline edit. Guarded so
+            // #2116 - funnel: the user saved a frontend inline edit. Guarded so
             // the option is written once.
             if (class_exists('TC_Activation_Funnel') && !TC_Activation_Funnel::has('first_inline_edit_saved')) {
                 TC_Activation_Funnel::record('first_inline_edit_saved');
@@ -4056,7 +4056,7 @@ class TC_Ajax
     }
 
     /**
-     * #517 slice 4c — push-back helper invoked after a successful GFAPI
+     * #517 slice 4c - push-back helper invoked after a successful GFAPI
      * update. Returns silently when any gate fails; never throws into the
      * AJAX response. Failures get logged via safe_log when debug is on.
      */
@@ -4070,7 +4070,7 @@ class TC_Ajax
             return;
             // @codeCoverageIgnoreEnd
         }
-        // #517 slice 4j — push-back permission gate. Even when sync_direction
+        // #517 slice 4j - push-back permission gate. Even when sync_direction
         // is push_only or two_way, only users with the explicit write-back
         // capability can trigger the upstream PATCH. Default cap is
         // manage_options; customers can lower the bar via the
@@ -4123,7 +4123,7 @@ class TC_Ajax
         if (!is_array($tbl_settings)) {
             return;
         }
-        // #1011 v4.182.0 — Accept both legacy (pull_only / push_only /
+        // #1011 v4.182.0 - Accept both legacy (pull_only / push_only /
         // bidirectional) and canonical (pull / push / two_way) naming so the
         // new generic sync_direction picker from #1010 / phase 1 of #613 can
         // unify Airtable into the same flow as JSON + Notion in a future iter.
@@ -4171,14 +4171,14 @@ class TC_Ajax
         foreach ($updates as $field_id => $value) {
             $label = $field_labels[(string) $field_id] ?? '';
             if ($label === '') {
-                continue; // skip fields with no label — can't map to a column name
+                continue; // skip fields with no label - can't map to a column name
             }
             $airtable_fields[$label] = $value;
         }
         if (empty($airtable_fields)) {
             return;
         }
-        // #517 slice 4i — rate-limiter gate. Airtable caps each base at
+        // #517 slice 4i - rate-limiter gate. Airtable caps each base at
         // ~5 req/s; without client-side throttling, a busy admin can lock
         // the base out with 429s. Consult the limiter BEFORE any HTTP call
         // (the slice-4g conflict pre-fetch + the slice-4a update_record
@@ -4209,11 +4209,11 @@ class TC_Ajax
             return;
         }
 
-        // #517 slice 4g — conflict detection (optimistic locking).
+        // #517 slice 4g - conflict detection (optimistic locking).
         // Before pushing, fetch the current Airtable record and compare its
         // Last Modified Time against the locally-stored baseline. If the
         // remote is newer than what we last saw, someone else modified the
-        // record since our last push — abort to avoid silent overwrite.
+        // record since our last push - abort to avoid silent overwrite.
         // Fail-open semantics from slice 4f: missing remote lastmod or
         // missing local baseline → no conflict (don't block on noise).
         // Customers add a "Last Modified Time" field to their Airtable
@@ -4225,7 +4225,7 @@ class TC_Ajax
                 $record_id,
                 $creds['token']
             );
-            // #517 slice 4i — record the conflict pre-fetch in the rate
+            // #517 slice 4i - record the conflict pre-fetch in the rate
             // limiter bucket so subsequent calls in the same window see
             // the running count.
             if (class_exists('TC_Airtable_Rate_Limiter')) {
@@ -4233,7 +4233,7 @@ class TC_Ajax
             }
             if (!empty($current['ok']) && is_array($current['record'])) {
                 // Airtable returns the lastModifiedTime under the "fields"
-                // map (when the schema includes it) — common label is
+                // map (when the schema includes it) - common label is
                 // "Last Modified Time" but customers may use any. Probe a
                 // few canonical candidates; fall through to '' if none.
                 $remote_lastmod = '';
@@ -4278,13 +4278,13 @@ class TC_Ajax
             $airtable_fields,
             $creds['token']
         );
-        // #517 slice 4i — record the write in the rate-limiter bucket
-        // (whether or not it succeeded — the HTTP call still consumed
+        // #517 slice 4i - record the write in the rate-limiter bucket
+        // (whether or not it succeeded - the HTTP call still consumed
         // a request slot per Airtable's accounting).
         if (class_exists('TC_Airtable_Rate_Limiter')) {
             TC_Airtable_Rate_Limiter::record_request($creds['base_id']);
         }
-        // #517 slice 4e — record every push attempt (success + failure) in
+        // #517 slice 4e - record every push attempt (success + failure) in
         // the audit log so admins can inspect recent push activity from the
         // Airtable settings page without grepping debug.log.
         if (class_exists('TC_Airtable_Audit_Log_Service')) {
@@ -4297,7 +4297,7 @@ class TC_Ajax
                 'ok'        => !empty($result['ok']),
             ));
         }
-        // #517 slice 4g — after a successful push, snapshot the new
+        // #517 slice 4g - after a successful push, snapshot the new
         // lastModifiedTime so the next push compares against the latest
         // known state. Pulled from the PATCH response's fields map (same
         // probe order as the conflict-check path above).
@@ -4343,7 +4343,7 @@ class TC_Ajax
             ));
         }
 
-        // #553 slice 2 — WAF-safe payload server-side wire (parity with
+        // #553 slice 2 - WAF-safe payload server-side wire (parity with
         // update_entry above). The bulk-fields handler accepts an encoded
         // envelope under $_POST['payload'] containing entry_id + fields,
         // and falls through to the legacy form-encoded path otherwise.
@@ -4374,7 +4374,7 @@ class TC_Ajax
             wp_send_json_error(__('Invalid entry data', 'tc-data-tables'));
         }
 
-        // #1641 — resolve the entry up-front and apply the table's form-level
+        // #1641 - resolve the entry up-front and apply the table's form-level
         // role gate (parity with update_entry). Reused below as $fields_entry
         // so the bound frontend-editing grant doesn't re-fetch.
         $entry = GFAPI::get_entry($entry_id);
@@ -4389,24 +4389,24 @@ class TC_Ajax
         //             a logged-in user editing an entry of that table's form.
         // Priority 3: Fall back to GF created_by ownership check.
         $current_user_id = get_current_user_id();
-        // #1648 — exclude 'driver' cap (drivers lack edit_posts) so they can't bypass the ownership check below.
+        // #1648 - exclude 'driver' cap (drivers lack edit_posts) so they can't bypass the ownership check below.
         $has_admin_cap = current_user_can('edit_posts') || current_user_can('publish_posts');
 
         if (!$has_admin_cap) {
             $can_edit = false;
 
-            // #1633 — resolve the entry's form so the frontend-editing
+            // #1633 - resolve the entry's form so the frontend-editing
             // grant can be bound to it (mirrors update_entry). Without the
             // binding an attacker could point table_id at an unrelated
             // editing-enabled table to edit arbitrary entries.
-            // #1641 — entry already resolved at the top for the role gate.
+            // #1641 - entry already resolved at the top for the role gate.
             $fields_entry = $entry;
             $fields_entry_form_id = (!is_wp_error($fields_entry) && !empty($fields_entry['form_id']))
                 ? intval($fields_entry['form_id'])
                 : 0;
             $table_id_post = intval($_POST['table_id'] ?? 0);
             $editing_form_id = $this->frontend_editing_form_id($table_id_post);
-            // #1648 — bind the grant to entry ownership when owner_field_id is set.
+            // #1648 - bind the grant to entry ownership when owner_field_id is set.
             if ($editing_form_id > 0 && $fields_entry_form_id > 0 && $editing_form_id === $fields_entry_form_id
                 && TC_Entry_Owner_Guard::entry_owner_matches(is_array($fields_entry) ? $fields_entry : array(), $this->frontend_editing_owner_field_id($table_id_post), get_current_user_id())) {
                 $can_edit = true;
@@ -4426,15 +4426,15 @@ class TC_Ajax
         $success = true;
         $updated_fields = array();
 
-        // #2281 — Load column_config for type-aware sanitization.
+        // #2281 - Load column_config for type-aware sanitization.
         $fields_table_id        = intval($_POST['table_id'] ?? 0);
         $fields_col_config      = $this->load_column_config($fields_table_id);
-        // #2282 — Load per-column validation rules (oneOf, notOneOf, phone, unique, hook).
+        // #2282 - Load per-column validation rules (oneOf, notOneOf, phone, unique, hook).
         $fields_col_validations = $this->load_column_validations($fields_table_id);
         $fields_form_id         = intval($entry['form_id'] ?? 0);
 
         foreach ($fields as $field_id => $value) {
-            // #2282 — validate before sanitizing; built-in rules + developer hook.
+            // #2282 - validate before sanitizing; built-in rules + developer hook.
             $fld_val_rules = is_array($fields_col_validations[(string) $field_id] ?? null)
                 ? $fields_col_validations[(string) $field_id]
                 : array();
@@ -4458,7 +4458,7 @@ class TC_Ajax
                 }
             }
 
-            // #2281 — resolve per-field col_type before sanitizing.
+            // #2281 - resolve per-field col_type before sanitizing.
             $field_col_cfg   = is_array($fields_col_config[(string) $field_id] ?? null)
                 ? $fields_col_config[(string) $field_id]
                 : array();
@@ -4635,7 +4635,7 @@ class TC_Ajax
             || current_user_can('publish_posts');
         if (!$has_admin_cap) {
             $can_bulk = false;
-            // #1633 — grant via "enable_frontend_editing" only when the
+            // #1633 - grant via "enable_frontend_editing" only when the
             // table belongs to the same form as EVERY targeted entry and
             // the caller is logged in. Without the all_entries_in_form
             // check, an editing-enabled table on one form could be used to
@@ -4701,7 +4701,7 @@ class TC_Ajax
         // Form Fields. The default fallback (GFCommon::get_lead_field_display) is unreliable
         // for several real-world cases that produce confusing output in the popup:
         //   1. fileupload fields with NO value return broken HTML iterating the entry tuple
-        //      (entry_id, form_id, dates, ip, user_agent...) as fake `<a>` links — looks like
+        //      (entry_id, form_id, dates, ip, user_agent...) as fake `<a>` links - looks like
         //      total garbage to a non-developer viewer.
         //   2. textarea / multi-input fields whose value is structurally an array cast to
         //      the literal string "Array" once flattened.
@@ -4722,7 +4722,7 @@ class TC_Ajax
             $field_id = (string) $field->id;
             $raw = rgar($entry, $field_id);
 
-            // #820 — `consent` composite. Eye popup uses the dedicated
+            // #820 - `consent` composite. Eye popup uses the dedicated
             // composer so admins see the full label + revision id, not
             // just "1" / "" from the generic scanner.
             if ($field->type === 'consent' && class_exists('TC_Consent_Field_Renderer')) {
@@ -4735,7 +4735,7 @@ class TC_Ajax
                 continue;
             }
 
-            // #818 — `time` composite. Eye popup uses the dedicated
+            // #818 - `time` composite. Eye popup uses the dedicated
             // composer for proper "9:30 am" / "21:30" formatting.
             if ($field->type === 'time' && class_exists('TC_Time_Field_Renderer')) {
                 $t_text = TC_Time_Field_Renderer::render_text($entry, (string) $field->id);
@@ -4747,7 +4747,7 @@ class TC_Ajax
                 continue;
             }
 
-            // #817 — `name` composite. Eye popup uses the dedicated
+            // #817 - `name` composite. Eye popup uses the dedicated
             // composer for predictable "Mr. John Smith Jr." ordering
             // (the generic scanner below joins sub-inputs in entry-
             // map order, which depends on PHP's hash insertion).
@@ -4761,7 +4761,7 @@ class TC_Ajax
                 continue;
             }
 
-            // #810 — `post_content` (and `post_excerpt`): eye popup
+            // #810 - `post_content` (and `post_excerpt`): eye popup
             // gets the full wp_kses_post HTML (allowing safe markup)
             // rather than the truncated preview the cell shows.
             if (($field->type === 'post_content' || $field->type === 'post_excerpt')
@@ -4776,7 +4776,7 @@ class TC_Ajax
                 continue;
             }
 
-            // #807 — `product` composite (name × qty @ price = total).
+            // #807 - `product` composite (name × qty @ price = total).
             // Eye popup uses the composer for the readable summary.
             if ($field->type === 'product' && class_exists('TC_Product_Field_Renderer')) {
                 $p_text = TC_Product_Field_Renderer::render_text($entry, (string) $field->id);
@@ -4788,7 +4788,7 @@ class TC_Ajax
                 continue;
             }
 
-            // #808 — `post_image` composite. Eye popup renders the
+            // #808 - `post_image` composite. Eye popup renders the
             // labelled text shape (URL + Title + Caption + Description
             // + Alt) so each sub-input is visible. The generic
             // multi-input scanner below would also produce text but
@@ -4803,7 +4803,7 @@ class TC_Ajax
                 continue;
             }
 
-            // #806 — `creditcard` HIGH PRIORITY / PCI. Eye popup must
+            // #806 - `creditcard` HIGH PRIORITY / PCI. Eye popup must
             // NEVER concatenate raw sub-inputs (the generic scanner
             // below would dump every $field_id.{1..5} value). Use the
             // safe renderer instead, which emits only the masked tail
@@ -4818,7 +4818,7 @@ class TC_Ajax
                 continue;
             }
 
-            // #798 — `checkbox` fields use the dedicated composer that
+            // #798 - `checkbox` fields use the dedicated composer that
             // iterates every `{field_id}.{N}` sub-input. The generic
             // scanner below would mostly work but doesn't enforce the
             // ksort-by-sub-input-index ordering customers expect.
@@ -4832,7 +4832,7 @@ class TC_Ajax
                 continue;
             }
 
-            // #796 — `address` fields use the slice-1 composer for a
+            // #796 - `address` fields use the slice-1 composer for a
             // postal-layout multi-line render (street \n street2 \n
             // city, state zip \n country) instead of the generic
             // comma-joined sub-input concatenation below.
@@ -4846,7 +4846,7 @@ class TC_Ajax
                 continue;
             }
 
-            // #795 — `list` fields are a special multi-input: they store
+            // #795 - `list` fields are a special multi-input: they store
             // serialised PHP at the BARE field-id slot (not sub-keys like
             // `name` / `address` do). Branch out before the sub-key
             // scanner so the list-field renderer handles deserialisation.
@@ -4932,7 +4932,7 @@ class TC_Ajax
                     // For simple plain-text field types, the raw entry value is the truth and
                     // GFCommon::get_lead_field_display() has been observed to return the literal
                     // string "Array" for textarea fields even when the meta row contains real
-                    // text — bypass it to be safe.
+                    // text - bypass it to be safe.
                     $raw_first_types = array(
                         'text', 'textarea', 'phone', 'website', 'email', 'number',
                         'hidden', 'time', 'name', 'address',
@@ -4949,7 +4949,7 @@ class TC_Ajax
                     // GF 2.9.29 changed the signature: get_lead_field_display($field,
                     // $value, $entry, ...). Pre-2.9.29 sites still accepted the older
                     // ($field, $entry, $currency) shape, which is why this slipped past
-                    // local testing — until customers running 2.10.x reported every
+                    // local testing - until customers running 2.10.x reported every
                     // plain select in the eye popup collapsing to "-" (Katie 2026-05-12).
                     // Use the new signature; older GF still accepts it because $value is
                     // simply forwarded to GF_Field::get_value_entry_detail.
@@ -5047,7 +5047,7 @@ class TC_Ajax
     }
 
     /**
-     * #1649 — sanitize a user-sourced field value before it is serialized to
+     * #1649 - sanitize a user-sourced field value before it is serialized to
      * the client. The JS cell renderers pass values starting with '<' into
      * innerHTML raw, so a submitted '<img onerror=...>' would otherwise run.
      * Delegates to TC_Sanitization_Service::sanitize_display_html (plain text
@@ -5063,7 +5063,7 @@ class TC_Ajax
     }
 
     /**
-     * #1691 — the length selector's "All" option submits per_page = -1. The
+     * #1691 - the length selector's "All" option submits per_page = -1. The
      * #1073 DoS clamp (max(1, min(200, n))) turned that into 1, so "Show All"
      * displayed a single row. Treat -1 as the "All" sentinel and map it to a
      * high but BOUNDED ceiling (covers realistic table sizes without the
@@ -5082,7 +5082,7 @@ class TC_Ajax
     }
 
     /**
-     * #1681 — resolve a typed display-name fragment to the set of lookup
+     * #1681 - resolve a typed display-name fragment to the set of lookup
      * IDs whose label contains it (case-insensitive substring). Pure helper
      * over an already-fetched option list (value => id, label => name), so
      * the SQL builders can constrain meta_value IN (ids). Returns [] for a
@@ -5113,7 +5113,7 @@ class TC_Ajax
     }
 
     /**
-     * #1681 — build the SQL predicate for a per-column 'lookup_name' filter:
+     * #1681 - build the SQL predicate for a per-column 'lookup_name' filter:
      * resolve the typed display-name fragment to the matching lookup IDs and
      * constrain meta_value IN (ids). Shared by the data + count queries.
      * Returns '' when the field isn't a lookup column (or value blank), and
@@ -5122,7 +5122,7 @@ class TC_Ajax
      * order the placeholders appear (meta_key first, then the id set).
      */
     /**
-     * #1663 — build a [field_id => [input_id => label]] map of the form's name
+     * #1663 - build a [field_id => [input_id => label]] map of the form's name
      * fields ONCE, so the per-row render loop can look up name-field components
      * instead of re-scanning $form['fields'] for every column of every row.
      * Hidden inputs are excluded; a simple name field (no inputs) maps to its
@@ -5199,7 +5199,7 @@ class TC_Ajax
         global $wpdb;
         $debug = TC_Debug::get_instance();
 
-        // #1629 — $columns arrives verbatim from $_POST['columns'] and is
+        // #1629 - $columns arrives verbatim from $_POST['columns'] and is
         // interpolated into the SELECT pivot's meta_key literal + field
         // alias below. Reduce it to the fixed special columns plus valid
         // Gravity Forms field IDs so a crafted column value cannot break
@@ -5249,7 +5249,7 @@ class TC_Ajax
         // error_log("GT AJAX: Columns: " . print_r($columns, true));
 
         // Get field types and date field formats from the form for date formatting.
-        // #1669 — fetch the form ONCE here and reuse it for the name-field
+        // #1669 - fetch the form ONCE here and reuse it for the name-field
         // handling below (it used to be fetched a second time a few lines down).
         $field_types = array();
         $date_fields = array();
@@ -5287,7 +5287,7 @@ class TC_Ajax
         }
 
         // Get form structure to handle name fields dynamically.
-        // #1669 — reuse the $form already fetched above (was re-fetched here).
+        // #1669 - reuse the $form already fetched above (was re-fetched here).
 
         // Add column fields to select
         foreach ($columns as $field_id) {
@@ -5327,7 +5327,7 @@ class TC_Ajax
 
             if ($is_name_field && !empty($name_components)) {
                 // For name fields, get all configured sub-components.
-                // #1629 — these component IDs come from the GF form
+                // #1629 - these component IDs come from the GF form
                 // definition (not the request), but validate them anyway
                 // so this interpolation can never become a sink if the
                 // upstream source changes.
@@ -5366,7 +5366,7 @@ class TC_Ajax
 
         $params = array($form_id);
 
-        // Add user filtering based on table configuration. #2091 — admins
+        // Add user filtering based on table configuration. #2091 - admins
         // (manage_options) are EXEMPT: drivers see only their own entries, but an
         // admin who manages the table sees all of them.
         if (
@@ -5448,7 +5448,7 @@ class TC_Ajax
             $params[] = $date_to . ' 23:59:59';
         }
 
-        // #568 slice 4 — drilldown filters (chips) integration.
+        // #568 slice 4 - drilldown filters (chips) integration.
         // These are AND-combined: every active chip must match.
         if (!empty($drilldown_filters)) {
             foreach ($drilldown_filters as $df) {
@@ -5487,7 +5487,7 @@ class TC_Ajax
                             ));
 
                             // Debug: Check what values exist for this field.
-                            // #1670 — gated behind the 'filtering' debug category so
+                            // #1670 - gated behind the 'filtering' debug category so
                             // this meta scan no longer runs on every date_range filter
                             // (it was unconditional; the log call below already no-ops
                             // when disabled, but the query still fired).
@@ -5552,7 +5552,7 @@ class TC_Ajax
                                 // for case_sensitive / exact_match flags. The
                                 // admin UI saves these in filter_configurations
                                 // (admin/views/table-builder.php line 411-419)
-                                // — until #650 these flags were inert; this
+                                // - until #650 these flags were inert; this
                                 // wires them through to the SQL.
                                 $cfg = $table_config['filter_configurations'][$field_id] ?? array();
                                 $case_sensitive = !empty($cfg['case_sensitive']);
@@ -5634,7 +5634,7 @@ class TC_Ajax
                             break;
 
                         case 'lookup_name':
-                            // #1681 — per-column free-text filter on a lookup
+                            // #1681 - per-column free-text filter on a lookup
                             // column: match the typed display name to lookup IDs.
                             if (!empty($filter_data['value'])) {
                                 $query .= $this->build_lookup_name_predicate(
@@ -5663,7 +5663,7 @@ class TC_Ajax
 
         $query .= " GROUP BY e.id";
 
-        // #565 slice 2 — multi-column ORDER BY. Build a stack of sort clauses
+        // #565 slice 2 - multi-column ORDER BY. Build a stack of sort clauses
         // (each one shaped by the same per-field branching logic that lived
         // inline pre-v4.9.x) and implode them. Single-entry stacks produce
         // identical SQL to the legacy single-sort path; multi-entry stacks
@@ -5715,7 +5715,7 @@ class TC_Ajax
 
         $count_params = array($form_id);
 
-        // Add user filtering to count query. #2091 — admins are exempt (see all).
+        // Add user filtering to count query. #2091 - admins are exempt (see all).
         if (
             $table_config && isset($table_config['filter_user_entries']) &&
             ($table_config['filter_user_entries'] === true || $table_config['filter_user_entries'] === 'true') &&
@@ -5788,7 +5788,7 @@ class TC_Ajax
             $count_params[] = $date_to . ' 23:59:59';
         }
 
-        // #568 slice 4 — drilldown filters (chips) integration (count parity).
+        // #568 slice 4 - drilldown filters (chips) integration (count parity).
         if (!empty($drilldown_filters)) {
             foreach ($drilldown_filters as $df) {
                 if (!is_array($df) || empty($df['col'])) { continue; }
@@ -5908,7 +5908,7 @@ class TC_Ajax
                             break;
 
                         case 'lookup_name':
-                            // #1681 — count-query mirror of the per-column
+                            // #1681 - count-query mirror of the per-column
                             // lookup-name filter (must match the data query so
                             // pagination totals stay correct).
                             if (!empty($filter_data['value'])) {
@@ -5952,12 +5952,12 @@ class TC_Ajax
             // error_log("GT AJAX: Count query SQL Error: " . $wpdb->last_error);
         }
 
-        // #1733 — filtered-set server-supplied column max for Data Bars.
+        // #1733 - filtered-set server-supplied column max for Data Bars.
         // Pro-gated; runs only when column_data_bars is configured. We
         // extract the WHERE body from the already-built $count_query and
         // reuse its $count_params so the per-column MAX respects every
         // active filter (search, date range, drilldowns, custom filters,
-        // user-entry gate) — the same scope the total count uses.
+        // user-entry gate) - the same scope the total count uses.
         $bar_column_maxes = array();
         if (
             gt_is_premium()
@@ -6033,7 +6033,7 @@ class TC_Ajax
         $gt_cell_types = (is_array($table_config) && isset($table_config['column_cell_types']) && is_array($table_config['column_cell_types']))
             ? $table_config['column_cell_types']
             : array();
-        // #1741 — TC_Badge_Service per-column badge maps.
+        // #1741 - TC_Badge_Service per-column badge maps.
         $gt_badge_maps = (is_array($table_config) && isset($table_config['column_badge_maps']) && is_array($table_config['column_badge_maps']))
             ? $table_config['column_badge_maps']
             : array();
@@ -6091,7 +6091,7 @@ class TC_Ajax
         // --- BATCH FETCHING END ---
         $entries = array();
 
-        // #1663 — build the name-field component map ONCE so the per-cell
+        // #1663 - build the name-field component map ONCE so the per-cell
         // render below doesn't re-scan $form['fields'] for every column of
         // every row.
         $gt_name_field_map = self::build_name_field_map($form);
@@ -6154,7 +6154,7 @@ class TC_Ajax
                 if ($field_id === 'date_created' || $field_id === 'entry_id' || $field_id === 'created_by' || $field_id === 'ip')
                     continue;
 
-                // #1663 — look up name-field components from the precomputed
+                // #1663 - look up name-field components from the precomputed
                 // map instead of re-scanning $form['fields'] per cell.
                 $base_field_id = strval(intval(floatval($field_id)));
                 $is_name_field = array_key_exists($base_field_id, $gt_name_field_map);
@@ -6242,7 +6242,7 @@ class TC_Ajax
                     && isset($gt_badge_maps[$field_id])
                     && class_exists('TC_Badge_Service')
                 ) {
-                    // #1741 — status badge cell type.
+                    // #1741 - status badge cell type.
                     $entry[$field_id] = apply_filters(
                         'gravity_tables_column_value',
                         TC_Badge_Service::render((string)$value, $gt_badge_maps[$field_id]),
@@ -6284,7 +6284,7 @@ class TC_Ajax
         // column flagged in column_auto_merge. The JS renderer in templates/
         // table.php consumes this map to skip <td> on render=false rows and
         // emit <td rowspan="N"> on the first row of each run. Runs are scoped
-        // to the current page (pagination breaks runs naturally — that's fine).
+        // to the current page (pagination breaks runs naturally - that's fine).
         $directives = array();
         if (
             class_exists('TC_Rowspan_Merge_Service')
@@ -6320,7 +6320,7 @@ class TC_Ajax
             'directives' => $directives,
         );
 
-        // #1733 — attach filtered-set column maxes for Data Bars when computed.
+        // #1733 - attach filtered-set column maxes for Data Bars when computed.
         if (!empty($bar_column_maxes)) {
             $result['bar_column_maxes'] = $bar_column_maxes;
         }
@@ -6329,7 +6329,7 @@ class TC_Ajax
     }
 
     /**
-     * #565 slice 2 — build a single ORDER BY clause (without the leading
+     * #565 slice 2 - build a single ORDER BY clause (without the leading
      * "ORDER BY" keyword) for a given (sort_field, sort_order) pair. Pulls
      * the same six branches that lived inline in get_gravity_forms_entries
      * pre-v4.9.x: entry meta-columns (id / date_created / created_by / ip),
@@ -6375,7 +6375,7 @@ class TC_Ajax
             $sort_field_safe = str_replace('.', '_', $sort_field);
             return "field_{$sort_field_safe} COLLATE utf8mb4_unicode_ci $direction_sql";
         }
-        // Field not in columns — caller decides whether to skip or fall back.
+        // Field not in columns - caller decides whether to skip or fall back.
         return '';
     }
 
@@ -6386,7 +6386,7 @@ class TC_Ajax
     {
         global $wpdb;
 
-        // #1630 — $field_id is interpolated into the meta_key literal of
+        // #1630 - $field_id is interpolated into the meta_key literal of
         // every branch below. It must be a valid GF field ID; if not, omit
         // this sort component entirely (caller treats '' as "skip").
         if (!TC_SQL_Guard::is_safe_field_id($field_id)) {
@@ -6466,7 +6466,7 @@ class TC_Ajax
                     $table = $wpdb->prefix . $table;
                 }
 
-                // #1630 — sanitize_text_field() permits SQL metacharacters,
+                // #1630 - sanitize_text_field() permits SQL metacharacters,
                 // so it is NOT an identifier guard. These three values are
                 // interpolated into identifier positions (table/column) that
                 // $wpdb->prepare() cannot parameterise. Require a strict
@@ -6490,7 +6490,7 @@ class TC_Ajax
     }
 
     /**
-     * #1671 — request-memoized gt_settings read. The per-cell date formatters
+     * #1671 - request-memoized gt_settings read. The per-cell date formatters
      * called get_option('gt_settings') on every row; cache it on the instance
      * so it is read at most once per request (get_option is WP-cached, but the
      * repeated call + array copy is avoidable per-row overhead).
@@ -6531,7 +6531,7 @@ class TC_Ajax
     }
 
     /**
-     * #1662 — resolve a date field's input format once per (form, field) and
+     * #1662 - resolve a date field's input format once per (form, field) and
      * cache it on the instance, so the per-cell date formatter no longer
      * fetches the form and scans every field on each row.
      */
@@ -6583,7 +6583,7 @@ class TC_Ajax
         $date_format = isset($gt_settings['date_format']) ? $gt_settings['date_format'] : 'm/d/Y';
 
 
-        // #1662 — resolve the field's input date format once per (form, field)
+        // #1662 - resolve the field's input date format once per (form, field)
         // via a request-memoized helper instead of fetching the form and
         // scanning its fields on every date cell.
         $input_format = $this->get_date_input_format($form_id, $field_id);
@@ -6679,7 +6679,7 @@ class TC_Ajax
     {
         check_ajax_referer('gravity_tables_nonce', 'nonce');
 
-        // #1765 — deleting entries from the frontend is part of the premium
+        // #1765 - deleting entries from the frontend is part of the premium
         // frontend-editing suite (consistent with inline edit, bulk fill, and
         // duplicate). Gate before any Gravity Forms write so a free-tier site
         // with frontend editing enabled cannot delete real entries.
@@ -6707,7 +6707,7 @@ class TC_Ajax
         // Allow admins/editors, OR allow anyone if the table has frontend editing enabled.
         $can_delete = current_user_can('edit_posts') || current_user_can('publish_posts') || current_user_can('delete_others_posts');
         if (!$can_delete) {
-            // #1633 — bound to this entry's form + login floor. Previously
+            // #1633 - bound to this entry's form + login floor. Previously
             // an unbound table_id with enable_frontend_editing let an
             // anonymous visitor delete entries from any form.
             $table_id_post = intval($_POST['table_id'] ?? 0);
@@ -6743,11 +6743,11 @@ class TC_Ajax
     {
         check_ajax_referer('gravity_tables_nonce', 'nonce');
 
-        // #1069 slice 32 — capability check. Pre-fix this handler only
+        // #1069 slice 32 - capability check. Pre-fix this handler only
         // verified the nonce, so a logged-out visitor with a public-page
         // nonce could POST a file and have it written to the WP uploads
         // directory (subject to wp_check_filetype). upload_files is the
-        // standard WP cap for "may write to the media library" — every
+        // standard WP cap for "may write to the media library" - every
         // legitimate frontend-edit user already has it via the gforms
         // / driver / publish_posts grant in submit_new_entry. Bails
         // BEFORE any $_FILES handling.
@@ -6961,7 +6961,7 @@ class TC_Ajax
             return false;
         }
 
-        // Use GF's own created_by field — do NOT match arbitrary meta values
+        // Use GF's own created_by field - do NOT match arbitrary meta values
         $entry = GFAPI::get_entry($entry_id);
         if (is_wp_error($entry) || !$entry) {
             return false;
@@ -7257,7 +7257,7 @@ class TC_Ajax
         // Convert to string for processing
         $value = strval($value);
 
-        // #2281 — Type-aware dispatch. Fires only when $col_type was explicitly
+        // #2281 - Type-aware dispatch. Fires only when $col_type was explicitly
         // set by the caller (update_entry / update_entry_fields). Falls through
         // to the existing heuristic when $col_type is '' (default).
         if ($col_type !== '') {
@@ -7524,7 +7524,7 @@ class TC_Ajax
             // Output raw HTML for iframe usage.
             // Note: wp_add_inline_script() is not available in this early-exit path,
             // so we build the script block as a variable to keep it CSP-friendly
-            // (no eval, no unsafe patterns — just a static event listener).
+            // (no eval, no unsafe patterns - just a static event listener).
             $postmessage_js = 'jQuery(document).on("gform_confirmation_loaded", function(event, formId) {'
                 . ' window.parent.postMessage({ gtEvent: "form_submitted", formId: formId }, "*"); });';
             $iframe_style = 'body { padding: 20px; background: #fff; } .gt-form-container { margin: 0 auto; max-width: 100%; }';
@@ -7554,7 +7554,7 @@ class TC_Ajax
     {
         check_ajax_referer('gravity_tables_nonce', 'nonce');
 
-        // #1765 — creating entries from the frontend is part of the premium
+        // #1765 - creating entries from the frontend is part of the premium
         // frontend-editing suite (consistent with inline edit, bulk fill, and
         // duplicate). Gate before any Gravity Forms write so a free-tier site
         // with frontend editing enabled cannot create real entries.
@@ -7641,7 +7641,7 @@ class TC_Ajax
         $entry['date_created'] = current_time('mysql');
         $entry['is_starred'] = 0;
         $entry['is_read'] = 0;
-        // #1073 — route $_SERVER reads through gt_request_server_text() so
+        // #1073 - route $_SERVER reads through gt_request_server_text() so
         // missing keys (proxy environments) degrade to '' without notices,
         // and any slashes / tags injected by a hostile client are stripped
         // at the AJAX boundary before they reach the GF entry array.
@@ -7665,7 +7665,7 @@ class TC_Ajax
             $input_name = 'input_' . str_replace('.', '_', $field_id);
 
             if (isset($_POST[$input_name])) {
-                // #1073 — wp_unslash() before any sanitisation so
+                // #1073 - wp_unslash() before any sanitisation so
                 // wp_magic_quotes-added backslashes are stripped (a literal
                 // O'Brien round-trips as O'Brien, not O\'Brien).
                 $value = wp_unslash($_POST[$input_name]);
@@ -7765,7 +7765,7 @@ class TC_Ajax
         }
 
         if (!$table_data) {
-            // #1069 slice 32 — fail-closed on missing config. Pre-fix this
+            // #1069 slice 32 - fail-closed on missing config. Pre-fix this
             // branch silently `return;`d ("backward compatibility"), so
             // orphan form_ids (table config row deleted but a shortcode
             // still references the form) bypassed the role gate entirely.
@@ -7785,7 +7785,7 @@ class TC_Ajax
 
         $table_config_array = json_decode($table_data->settings, true);
         if (!$table_config_array) {
-            // #1069 slice 32 — fail-closed on malformed JSON. Pre-fix this
+            // #1069 slice 32 - fail-closed on malformed JSON. Pre-fix this
             // branch silently `return;`d to "prevent breaking existing
             // tables", but a corrupted settings row should bail rather
             // than skip the gate. If a legitimate table's settings get
@@ -7910,7 +7910,7 @@ class TC_Ajax
             wp_die('Security check failed');
         }
 
-        // #1069 slice 32 — dedicated export capability instead of the
+        // #1069 slice 32 - dedicated export capability instead of the
         // pre-fix `read` cap. `read` is granted to subscribers by
         // default, so the pre-fix gate effectively meant "any logged-in
         // user can export any form". export_gravity_tables is registered
@@ -7925,7 +7925,7 @@ class TC_Ajax
         $table_id = intval($_POST['table_id'] ?? 0);
         $form_id = intval($_POST['form_id'] ?? 0);
 
-        // #1069 slice 32 — per-table access check. Even with the export
+        // #1069 slice 32 - per-table access check. Even with the export
         // capability, the caller must hold the table's configured role
         // gate so an export-capable user cannot enumerate rows from a
         // table they do not have explicit access to. Mirrors the
@@ -7939,7 +7939,7 @@ class TC_Ajax
         $search = sanitize_text_field($_POST['search'] ?? '');
         $sort_field = sanitize_text_field($_POST['sort_field'] ?? 'date_created');
         $sort_order = sanitize_text_field($_POST['sort_order'] ?? 'desc');
-        // #1073 — wp_unslash() over the legacy stripslash idiom:
+        // #1073 - wp_unslash() over the legacy stripslash idiom:
         // wp_magic_quotes-aware and the WP-idiomatic AJAX-boundary choice.
         $filters_raw = json_decode(wp_unslash($_POST['filters'] ?? '{}'), true) ?: array();
         $columns = json_decode(wp_unslash($_POST['columns'] ?? '[]'), true) ?: array();
@@ -7965,7 +7965,7 @@ class TC_Ajax
             wp_die('Form not found');
         }
 
-        // #2116 — funnel: a valid export is proceeding. Guarded so the option
+        // #2116 - funnel: a valid export is proceeding. Guarded so the option
         // is written once.
         if (class_exists('TC_Activation_Funnel') && !TC_Activation_Funnel::has('first_export')) {
             TC_Activation_Funnel::record('first_export');
@@ -7985,7 +7985,7 @@ class TC_Ajax
                 $export_meta['table_name'] = (string) $table_data->name;
             }
         }
-        // #634 — pass id/name through $table_config so the export functions can
+        // #634 - pass id/name through $table_config so the export functions can
         // resolve {table_name} / {table_id} tokens via TC_Export_Filename_Service
         // without changing their signatures.
         $table_config['_export_meta'] = $export_meta;
@@ -7995,7 +7995,7 @@ class TC_Ajax
 
         // For CSV we stream the response in chunks of 500 entries so large
         // datasets (10k+ rows) don't OOM the request. Excel still uses the
-        // single-batch path for now — PhpSpreadsheet doesn't have a clean
+        // single-batch path for now - PhpSpreadsheet doesn't have a clean
         // streaming writer.
         if ($format === 'excel') {
             $entries_result = $this->get_gravity_forms_entries(
@@ -8009,7 +8009,7 @@ class TC_Ajax
             return;
         }
 
-        // #2285 — JSON export: same single-batch pattern as Excel (bounded at
+        // #2285 - JSON export: same single-batch pattern as Excel (bounded at
         // 10 000 rows). JSON encoding is fast enough that streaming is not
         // required at this scale; revisit if large-dataset requests arise.
         if ($format === 'json') {
@@ -8032,7 +8032,7 @@ class TC_Ajax
     }
 
     /**
-     * #634 — resolve the export filename for a given table_config + extension.
+     * #634 - resolve the export filename for a given table_config + extension.
      * If the table has a saved `export_filename_pattern` setting, run it through
      * TC_Export_Filename_Service::expand() with the table_name / table_id
      * context. Otherwise fall back to the legacy hardcoded pattern so
@@ -8226,7 +8226,7 @@ class TC_Ajax
             ]
         ]);
 
-        // Add data rows — use TC_Excel_Float_Service to write numeric cells with
+        // Add data rows - use TC_Excel_Float_Service to write numeric cells with
         // DataType::TYPE_NUMERIC so floats are not corrupted or mis-formatted as dates.
         $row = 2;
         foreach ($entries as $entry) {
@@ -8253,12 +8253,12 @@ class TC_Ajax
     }
 
     /**
-     * #2285 — Export data as JSON.
+     * #2285 - Export data as JSON.
      *
      * Produces an array of objects keyed by column label (matching the column
      * header displayed to the user, not raw field IDs). Column order follows
-     * the configured $columns sequence. Hidden columns — those absent from
-     * $columns — are never included. Encoded with JSON_PRETTY_PRINT |
+     * the configured $columns sequence. Hidden columns - those absent from
+     * $columns - are never included. Encoded with JSON_PRETTY_PRINT |
      * JSON_UNESCAPED_UNICODE; no UTF-8 BOM is emitted.
      */
     private function export_json($entries, $form, $columns, $table_config): void
@@ -8500,7 +8500,7 @@ class TC_Ajax
             }
         }
 
-        // Even if no calc fields, continue — we may still need to recalculate Total fields
+        // Even if no calc fields, continue - we may still need to recalculate Total fields
 
         // Normalize updated field IDs to strings for comparison
         $updated_str = array_map('strval', $updated_field_ids);
@@ -8518,7 +8518,7 @@ class TC_Ajax
             }
         }
 
-        // Process calculation fields — may need multiple passes for nested calcs
+        // Process calculation fields - may need multiple passes for nested calcs
         $max_passes = 3;
         for ($pass = 0; $pass < $max_passes; $pass++) {
             $changed_this_pass = false;
@@ -8645,7 +8645,7 @@ class TC_Ajax
                 gform_delete_meta($entry_id, 'gform_product_info_1_1');
 
                 // Drop only the GF entry cache for this entry so GFAPI reads
-                // fresh data — no global wp_cache_flush().
+                // fresh data - no global wp_cache_flush().
                 $this->invalidate_table_caches((int) $entry_id);
                 $fresh_entry = GFAPI::get_entry($entry_id);
 
@@ -8959,16 +8959,16 @@ class TC_Ajax
     }
 
     /**
-     * #613 phase 2 (v4.197.0) — push a single row update back to the
+     * #613 phase 2 (v4.197.0) - push a single row update back to the
      * configured external data source (currently JSON; Airtable + Notion
      * follow in later slices).
      *
      * Expects:
-     *   $_POST['nonce']    — gt_nonce.
-     *   $_POST['table_id'] — int.
-     *   $_POST['row_id']   — string identifier for the row (appended to
+     *   $_POST['nonce'] - gt_nonce.
+     *   $_POST['table_id'] - int.
+     *   $_POST['row_id'] - string identifier for the row (appended to
      *                        the source URL).
-     *   $_POST['payload']  — assoc array of field => value updates.
+     *   $_POST['payload'] - assoc array of field => value updates.
      *
      * Delegates to TC_JSON_Push_Engine::push_row and surfaces success /
      * error via wp_send_json_*.
@@ -8977,14 +8977,14 @@ class TC_Ajax
     {
         check_ajax_referer('gt_nonce', 'nonce');
 
-        // #613 — writes require an authenticated user with write capability.
+        // #613 - writes require an authenticated user with write capability.
         // Three-tier permission gate:
-        //   1. push_rows_to_source — dedicated capability added in slice 12
+        //   1. push_rows_to_source - dedicated capability added in slice 12
         //      (v4.207.0). Auto-granted to administrators; admins can grant
         //      to other roles for fine-grained access.
-        //   2. gravityforms_edit_entries — legacy fallback so existing users
+        //   2. gravityforms_edit_entries - legacy fallback so existing users
         //      don't lose access on upgrade.
-        //   3. manage_options — administrator override.
+        //   3. manage_options - administrator override.
         if (!current_user_can('push_rows_to_source')
             && !current_user_can('gravityforms_edit_entries')
             && !current_user_can('manage_options')) {
@@ -8994,7 +8994,7 @@ class TC_Ajax
             // @codeCoverageIgnoreEnd
         }
 
-        // #2026 (D1) — two-way sync (writing changes back to the external
+        // #2026 (D1) - two-way sync (writing changes back to the external
         // source) is a Pro feature. Reads stay free; writes require premium.
         if (!gt_is_premium()) {
             wp_send_json_error(__('Two-way sync (writing changes back to the source) is a Pro feature.', 'tc-data-tables'));
@@ -9027,17 +9027,17 @@ class TC_Ajax
             return is_scalar($v) ? sanitize_text_field((string) $v) : $v;
         }, $payload);
 
-        // #613 phase 2 slice 15 (v4.210.0) — optimistic conflict check.
+        // #613 phase 2 slice 15 (v4.210.0) - optimistic conflict check.
         // The caller (bulk-action JS or custom code) may pass a
         // baseline_lastmod token reflecting what they last saw. If our
         // stored baseline differs, refuse the push so the user can
         // re-pull and reconcile rather than blindly overwriting.
         $client_baseline = isset($_POST['baseline_lastmod']) ? sanitize_text_field((string) wp_unslash($_POST['baseline_lastmod'])) : '';
         if ($client_baseline !== '' && class_exists('TC_Push_Conflict_Detector')) {
-            // We don't know the source yet — read it below first.
+            // We don't know the source yet - read it below first.
         }
 
-        // #613 phase 2 slice 8 (v4.203.0) — dispatch by data_source_type.
+        // #613 phase 2 slice 8 (v4.203.0) - dispatch by data_source_type.
         // Look up the table's settings, route to the matching push engine.
         $settings = array();
         if (class_exists('TC_Table_Persistence_Service')
@@ -9052,7 +9052,7 @@ class TC_Ajax
         }
         $source_type = isset($settings['data_source_type']) ? (string) $settings['data_source_type'] : '';
 
-        // #613 phase 2 slice 15 (v4.210.0) — finish the optimistic conflict
+        // #613 phase 2 slice 15 (v4.210.0) - finish the optimistic conflict
         // check now that we know the source. If the stored baseline differs
         // from what the caller expected, refuse the push with a typed
         // 'conflict' error code so the JS can surface it via the per-row
@@ -9076,7 +9076,7 @@ class TC_Ajax
             }
         }
 
-        // #613 phase 2 slice 11 (v4.206.0) — per-source rate-limit gate.
+        // #613 phase 2 slice 11 (v4.206.0) - per-source rate-limit gate.
         // Avoids tripping Airtable's 5 req/sec or Notion's 3 req/sec caps
         // when the user pushes a large batch in one click.
         if (class_exists('TC_Push_Rate_Limiter')
@@ -9120,13 +9120,13 @@ class TC_Ajax
             $result = TC_JSON_Push_Engine::push_row($table_id, $row_id, $payload);
         }
 
-        // #613 phase 2 slice 11 (v4.206.0) — record the request for
+        // #613 phase 2 slice 11 (v4.206.0) - record the request for
         // rate-limit accounting now that the engine has finished.
         if (class_exists('TC_Push_Rate_Limiter')) {
             TC_Push_Rate_Limiter::record_request($source_type !== '' ? $source_type : 'json');
         }
 
-        // #613 phase 2 slice 10 (v4.205.0) — audit-log every push attempt,
+        // #613 phase 2 slice 10 (v4.205.0) - audit-log every push attempt,
         // success or failure, across all 3 source engines. Operators can
         // inspect the most-recent N events via TC_Push_Audit_Log_Service::load.
         if (class_exists('TC_Push_Audit_Log_Service')) {
@@ -9160,11 +9160,11 @@ class TC_Ajax
             // @codeCoverageIgnoreEnd
         }
 
-        // #613 phase 2 slice 15 (v4.210.0) — snapshot a fresh baseline so
+        // #613 phase 2 slice 15 (v4.210.0) - snapshot a fresh baseline so
         // subsequent pushes from a stale client get rejected with a
         // 'conflict' code. Uses the current time as a per-push token;
         // future slice can swap this for the engine's returned lastmod.
-        // #613 phase 2 slice 16 (v4.211.0) — return the new baseline to the
+        // #613 phase 2 slice 16 (v4.211.0) - return the new baseline to the
         // client so it can update self._pushBaselines without a re-pull.
         $new_baseline = (string) microtime(true);
         if (class_exists('TC_Push_Conflict_Detector')) {
@@ -9182,17 +9182,17 @@ class TC_Ajax
     }
 
     /**
-     * #1745 — Bulk Column Fill for Selected Rows (Pro).
+     * #1745 - Bulk Column Fill for Selected Rows (Pro).
      *
      * Writes a single value to one field across multiple GF entries.
      * Pro-gated; authenticated users with edit_entries capability only.
      *
      * Expects:
-     *   $_POST['nonce']      — gt_nonce.
-     *   $_POST['table_id']   — int.
-     *   $_POST['entry_ids']  — array of int entry IDs.
-     *   $_POST['field_id']   — int field ID.
-     *   $_POST['value']      — string value to write.
+     *   $_POST['nonce'] - gt_nonce.
+     *   $_POST['table_id'] - int.
+     *   $_POST['entry_ids'] - array of int entry IDs.
+     *   $_POST['field_id'] - int field ID.
+     *   $_POST['value'] - string value to write.
      */
     public function bulk_fill_column(): void
     {
@@ -9271,16 +9271,16 @@ class TC_Ajax
     }
 
     /**
-     * #1747 — One-Click Entry Duplicate (Pro).
+     * #1747 - One-Click Entry Duplicate (Pro).
      *
      * Reads an existing GF entry and creates a copy with all field values
      * preserved. Date created is set to now; the new entry is marked active.
      * Pro-gated; authenticated users with edit_entries capability only.
      *
      * Expects:
-     *   $_POST['nonce']    — gt_nonce.
-     *   $_POST['entry_id'] — int ID of the source entry.
-     *   $_POST['table_id'] — int table config ID (for capability gate).
+     *   $_POST['nonce'] - gt_nonce.
+     *   $_POST['entry_id'] - int ID of the source entry.
+     *   $_POST['table_id'] - int table config ID (for capability gate).
      */
     public function duplicate_entry(): void
     {
@@ -9326,7 +9326,7 @@ class TC_Ajax
     }
 
     // =========================================================================
-    // #2367 — Manual tables grid editor AJAX handlers
+    // #2367 - Manual tables grid editor AJAX handlers
     // =========================================================================
 
     /**
@@ -9342,7 +9342,7 @@ class TC_Ajax
      *
      * Scaling seam: this handler performs a full replace (DELETE + bulk INSERT).
      * Acceptable for ≤2 k rows at MVP. For larger tables, migrate to a delta
-     * endpoint that only writes changed rows by row_index — the service's
+     * endpoint that only writes changed rows by row_index - the service's
      * replace_rows is the seam to swap out.
      *
      * Non-manual tables are rejected (data_source_type guard) so the endpoint
@@ -9419,7 +9419,7 @@ class TC_Ajax
                 }
             }
         }
-        // #2370 — allow the row-visibility metadata key. Track whether real
+        // #2370 - allow the row-visibility metadata key. Track whether real
         // column keys exist first: when manual_columns is empty the guard below
         // must stay bypassed (accept all keys), matching pre-#2370 behavior.
         $has_column_keys = ! empty( $known_keys );
@@ -9438,7 +9438,7 @@ class TC_Ajax
                     continue;
                 }
                 if ( $key === '_tc_hidden' ) {
-                    // Boolean metadata — only store when true so visible rows
+                    // Boolean metadata - only store when true so visible rows
                     // never carry the key (keeps it out of the legacy
                     // union-of-row-keys column fallback in the shortcode).
                     if ( (bool) $v ) {
@@ -9446,7 +9446,7 @@ class TC_Ajax
                     }
                     continue;
                 }
-                // #2369 — capability-gated sanitization (TablePress model):
+                // #2369 - capability-gated sanitization (TablePress model):
                 // unfiltered_html users store raw HTML; everyone else gets kses.
                 $clean[ $key ] = self::sanitize_manual_cell_value(
                     (string) $v,
@@ -9483,7 +9483,7 @@ class TC_Ajax
                     if ( isset( $label_map[ $ek ] ) ) {
                         $ec['label'] = $label_map[ $ek ];
                     }
-                    // #2370 — preserve hidden flag from incoming columns.
+                    // #2370 - preserve hidden flag from incoming columns.
                     if ( isset( $col_by_key[ $ek ] ) && array_key_exists( 'hidden', $col_by_key[ $ek ] ) ) {
                         $ec['hidden'] = (bool) $col_by_key[ $ek ]['hidden'];
                     }

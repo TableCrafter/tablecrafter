@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/sort.js
+ * TableCrafter - frontend/sort.js
  *
  * Sort handler + multi-column shift-click state machine. #834 slice 3 of N.
  *
@@ -21,7 +21,7 @@
  *   - bindSortEvents($wrapper)
  *       Wires the .gt-sortable click handler. On click:
  *         1. Skip when click is inside .gt-resizer (column resize gesture).
- *         2. Skip when isResponsiveMode() — card view has no headers.
+ *         2. Skip when isResponsiveMode() - card view has no headers.
  *         3. Validate field; if missing from config.columns, push it.
  *         4. Call computeNextSortState to mutate stack/field/order.
  *         5. Call self.loadEntries() to refetch with new sort.
@@ -69,7 +69,7 @@
                         order = existing.direction;
                     }
                 } else {
-                    // New column added — cap at 3.
+                    // New column added - cap at 3.
                     if (stack.length < 3) {
                         stack.push({ column_id: field, direction: 'asc' });
                     } else {
@@ -77,7 +77,7 @@
                     }
                 }
             } else {
-                // Plain click — reset to single-column.
+                // Plain click - reset to single-column.
                 if (currentField === field && currentOrder === 'asc') {
                     order = 'desc';
                 }
@@ -112,7 +112,7 @@
                     return;
                 }
 
-                // Auto-add field to columns if missing — preserves legacy behavior.
+                // Auto-add field to columns if missing - preserves legacy behavior.
                 if (self.config.columns.indexOf(field) === -1) {
                     self.config.columns.push(field);
                 }

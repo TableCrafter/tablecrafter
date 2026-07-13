@@ -573,7 +573,7 @@ class TC_Entry_Repository
     {
         $entries = [];
 
-        // #1664 — pre-resolve each lookup column's values in one batch before
+        // #1664 - pre-resolve each lookup column's values in one batch before
         // the row loop, instead of one process_lookup_value() per row per
         // lookup column. Map shape: [field_id => [raw_value => resolved]].
         $lookup_maps = [];
@@ -623,7 +623,7 @@ class TC_Entry_Repository
 
                 // Process lookup if configured
                 if (!empty($options['lookup_fields'][$field_id])) {
-                    // #1664 — use the pre-batched map; fall back to a per-value
+                    // #1664 - use the pre-batched map; fall back to a per-value
                     // resolve only for values not present in the batch result.
                     if (isset($lookup_maps[$field_id]) && array_key_exists($value, $lookup_maps[$field_id])) {
                         $value = $lookup_maps[$field_id][$value];
@@ -705,7 +705,7 @@ class TC_Entry_Repository
         global $wpdb;
         // @codeCoverageIgnoreEnd
 
-        // #1666 — cap the distinct list so a high-cardinality column (load
+        // #1666 - cap the distinct list so a high-cardinality column (load
         // numbers, dates) doesn't emit thousands of <option> rows per render.
         // Free-text discovery beyond the cap uses getUniqueValuesMatching()
         // (the clamped typeahead path).
@@ -726,7 +726,7 @@ class TC_Entry_Repository
      *
      * Powers the dropdown filter's `sort_options=frequency` and
      * `sort_options=original` modes (#650 second half). The template
-     * sorts the returned rows itself — the SQL just needs to expose
+     * sorts the returned rows itself - the SQL just needs to expose
      * COUNT(*) and MIN(entry_id) so either ordering is reachable.
      *
      * Returns: [ ['value' => string, 'count' => int, 'first_seen' => int], ... ]

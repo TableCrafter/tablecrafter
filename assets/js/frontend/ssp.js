@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/ssp.js
+ * TableCrafter - frontend/ssp.js
  *
  * Server-side processing entries pipeline. #832 slice 2 of N.
  *
@@ -71,7 +71,7 @@
                 if (response && typeof response.recordsTotal !== 'undefined') {
                     self.totalEntries = parseInt(response.recordsTotal, 10) || 0;
                     self.totalFiltered = parseInt(response.recordsFiltered, 10) || self.totalEntries;
-                    // #1735 — store server-supplied per-column bar maxes so
+                    // #1735 - store server-supplied per-column bar maxes so
                     // renderSSPEntries can scale bars against the full filtered set.
                     self._sspBarMaxes = (response.bar_maxes && typeof response.bar_maxes === 'object')
                         ? response.bar_maxes
@@ -95,7 +95,7 @@
             if (!rows || rows.length === 0) {
                 html = '<tr><td colspan="' + ($wrapper.find('thead th').length) + '" class="gt-no-entries">' + ((self.config.pagination_labels && self.config.pagination_labels.no_results) || self.config.no_entries_text || 'No entries found.') + '</td></tr>';
             } else {
-                // #1735 — grab server-supplied bar maxes (set by loadEntriesServerSide).
+                // #1735 - grab server-supplied bar maxes (set by loadEntriesServerSide).
                 var barMaxes = (self._sspBarMaxes && typeof self._sspBarMaxes === 'object')
                     ? self._sspBarMaxes
                     : {};

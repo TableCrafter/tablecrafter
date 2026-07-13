@@ -56,7 +56,7 @@ class TC_Address_Field_Renderer {
         if ($vals === []) {
             return '';
         }
-        // isset (not !empty) — sub_input_values() already strips
+        // isset (not !empty) - sub_input_values() already strips
         // blank values, and !empty would drop a literal '0'. (#1603)
         $lines = [];
         if (isset($vals['street']))   { $lines[] = $vals['street']; }
@@ -94,7 +94,7 @@ class TC_Address_Field_Renderer {
     }
 
     /**
-     * Substring-searchable concatenation — every sub-input joined by
+     * Substring-searchable concatenation - every sub-input joined by
      * spaces. Used by filter paths that test `LIKE %query%` against
      * a row. Empty sub-inputs contribute nothing.
      */

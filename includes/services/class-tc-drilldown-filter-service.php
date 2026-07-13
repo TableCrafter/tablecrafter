@@ -2,7 +2,7 @@
 /**
  * TC_Drilldown_Filter_Service
  *
- * Issue #568 — slice 1 of 3. Pure filter-state helper for the future
+ * Issue #568 - slice 1 of 3. Pure filter-state helper for the future
  * click-to-filter cell drill-down feature. Manages the list of
  * active drill-down filters, applies them to a rows array with AND
  * semantics, toggles individual filters idempotently, and
@@ -153,7 +153,7 @@ class TC_Drilldown_Filter_Service {
             $token = trim($token);
             if ($token === '') { continue; }
             $sep = strpos($token, ':');
-            if ($sep === false) { continue; }   // bare token without ':' — drop
+            if ($sep === false) { continue; }   // bare token without ':' - drop
             $col = substr($token, 0, $sep);
             $val = substr($token, $sep + 1);
             if ($col === '') { continue; }

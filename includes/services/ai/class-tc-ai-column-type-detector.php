@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
  * "Detect column types with AI" button.
  *
  * Why: free users and unconfigured premium installs would always hit the
- * gt_ai_no_provider fallback — surfacing a button that always errors is worse
+ * gt_ai_no_provider fallback - surfacing a button that always errors is worse
  * than not surfacing it at all.
  */
 // @codeCoverageIgnoreStart
@@ -88,7 +88,7 @@ class TC_AI_Column_Type_Detector
      * Build the prompt sent to the provider.
      *
      * Privacy contract: when $privacy_mode is true, the prompt MUST NOT contain
-     * any row-sample values — only the column names and Gravity Forms types.
+     * any row-sample values - only the column names and Gravity Forms types.
      */
     public static function build_prompt(array $form, array $entries, bool $privacy_mode): string
     {
@@ -151,7 +151,7 @@ class TC_AI_Column_Type_Detector
     }
 
     // -----------------------------------------------------------------------
-    // Internal data fetchers — kept thin so tests can substitute via globals.
+    // Internal data fetchers - kept thin so tests can substitute via globals.
     // -----------------------------------------------------------------------
 
     private static function get_form(int $form_id)

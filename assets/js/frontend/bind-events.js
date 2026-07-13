@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/bind-events.js
+ * TableCrafter - frontend/bind-events.js
  *
  * Global event wiring for a GravityTable instance. Tenth slice
  * under #833. One method, ~220 lines.
@@ -33,7 +33,7 @@
         // Remove any stale handlers from a previous init cycle (re-mount safety)
         $wrapper.off('.gt-table');
 
-        // #599 slice 3 — Cascading filter dropdown handler. When the
+        // #599 slice 3 - Cascading filter dropdown handler. When the
         // visitor changes a filter input that has data-gt-cascade-parent,
         // fetch valid child options for the chosen value and update the
         // child filter's placeholder to surface the cascade. Behavior
@@ -78,7 +78,7 @@
             }, 'json');
         });
 
-        // #1679 — per-column filter inputs. The .gt-per-col-filter row was
+        // #1679 - per-column filter inputs. The .gt-per-col-filter row was
         // dead UI: nothing collected the typed values or reloaded the table
         // (only the cascade placeholder hint above was wired). Collect every
         // per-column value into this.filters and reload via the existing
@@ -105,7 +105,7 @@
             }
         });
 
-        // #568 slice 4 — Click-to-filter cell drill-down (URL + AJAX integration).
+        // #568 slice 4 - Click-to-filter cell drill-down (URL + AJAX integration).
         // Visitor clicks a cell value in an enabled column → a chip appears,
         // the URL ?gt_df= parameter is updated, and the table reloads from
         // the server with the new filter applied. Survives pagination.
@@ -194,7 +194,7 @@
             });
         }
 
-        // Row-link interaction (#567) — click + auxclick + keyboard activation
+        // Row-link interaction (#567) - click + auxclick + keyboard activation
         // moved to assets/js/frontend/a11y-keyboard.js (#839). bindRowLinkEvents
         // wires the three handlers in one call.
         self.bindRowLinkEvents($wrapper);
@@ -212,7 +212,7 @@
         // Sort handler + multi-column state machine moved to assets/js/frontend/sort.js (#834 slice 3).
         self.bindSortEvents($wrapper);
 
-        // #1621 — client-side sort for computed columns (no DB column,
+        // #1621 - client-side sort for computed columns (no DB column,
         // so the server sort path can't see them). typeof guard keeps
         // harnesses without the module on the old path.
         if (typeof self.bindComputedSortEvents === 'function') {
@@ -224,13 +224,13 @@
         // .gt-bulk-action-btn click in one call.
         self.bindSelectionEvents($wrapper);
 
-        // #1745 — show/hide Fill Column button based on row selection.
+        // #1745 - show/hide Fill Column button based on row selection.
         $wrapper.on('change', '.gt-entry-checkbox, .gt-select-all', function () {
             var anyChecked = $wrapper.find('.gt-entry-checkbox:checked').length > 0;
             $wrapper.find('.gt-bulk-fill-btn').toggle(anyChecked);
         });
 
-        // #1745 — open fill modal when button clicked.
+        // #1745 - open fill modal when button clicked.
         $wrapper.find('.gt-bulk-fill-btn').on('click', function () {
             if (typeof self.openBulkFillModal === 'function') {
                 var ids = self.getSelectedEntryIds ? self.getSelectedEntryIds() : [];
@@ -258,7 +258,7 @@
             $(this).closest('.gt-export-dropdown').removeClass('open');
         });
 
-        // #1680 — the visible-rows export actions (Copy / CSV / Excel / PDF)
+        // #1680 - the visible-rows export actions (Copy / CSV / Excel / PDF)
         // now live inside the Export dropdown; their actual handlers are wired
         // by initToolbarExport() via the preserved gt-toolbar-*-btn classes.
         // Here we just close the dropdown after the action runs. Delegated so
@@ -295,7 +295,7 @@
             }
         });
 
-        // Close export dropdowns within this wrapper when clicking outside — scoped to
+        // Close export dropdowns within this wrapper when clicking outside - scoped to
         // $wrapper so it cannot capture clicks that belong to other plugins (#435)
         $wrapper.on('click.gt-table', function (e) {
             if (!$(e.target).closest('.gt-export-dropdown').length) {

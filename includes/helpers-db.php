@@ -4,7 +4,7 @@
  *
  * Convergence epic #2006, Phase 5. The plugin's table is renamed
  * wp_gravity_tables -> wp_tablecrafter, but the migration is OPT-IN (prompted in
- * admin after upgrade, never forced — see #2021). To stay safe:
+ * admin after upgrade, never forced - see #2021). To stay safe:
  *
  *   - gt_tables_table_name() returns the LEGACY name by default, and the new
  *     name only once the migration flag (gt_db_table_migrated) is set. Every
@@ -60,7 +60,7 @@ if (!function_exists('gt_tables_table_name')) {
 if (!function_exists('gt_migrated_option_keys')) {
 // @codeCoverageIgnoreEnd
     /**
-     * #2020 — the option keys carried forward to the tc_* brand namespace.
+     * #2020 - the option keys carried forward to the tc_* brand namespace.
      * @return string[] gt_* keys
      */
     function gt_migrated_option_keys(): array
@@ -84,9 +84,9 @@ if (!function_exists('gt_migrated_option_keys')) {
 if (!function_exists('gt_migrate_options')) {
 // @codeCoverageIgnoreEnd
     /**
-     * #2020 — Copy gt_* options to their tc_* counterparts (forward-compat for
+     * #2020 - Copy gt_* options to their tc_* counterparts (forward-compat for
      * the rebrand). Additive: gt_* keys are left in place so existing code keeps
-     * working; new code can read the tc_* keys. Idempotent — skips keys already
+     * working; new code can read the tc_* keys. Idempotent - skips keys already
      * copied. Opt-in (triggered by the admin migration prompt, #2021).
      *
      * @return array{copied:int}
@@ -141,7 +141,7 @@ if (!function_exists('gt_migrate_db_table')) {
         $target_exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $target)) === $target;
 
         if ($target_exists) {
-            // Already physically present — just flip the flag.
+            // Already physically present - just flip the flag.
             update_option('gt_db_table_migrated', 1, false);
             return array('migrated' => true, 'reason' => 'target_present');
         }

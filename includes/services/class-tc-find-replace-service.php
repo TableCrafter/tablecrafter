@@ -2,7 +2,7 @@
 /**
  * TC_Find_Replace_Service
  *
- * Issue #538 — slice 1 of 3. Pure plain-text find / count / replace
+ * Issue #538 - slice 1 of 3. Pure plain-text find / count / replace
  * over an in-memory rows array. Substrate the future admin dialog
  * (slice 2) and undo-aware preview-and-apply UX (slice 3) bind to.
  *

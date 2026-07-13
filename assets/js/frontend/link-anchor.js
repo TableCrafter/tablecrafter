@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/link-anchor.js
+ * TableCrafter - frontend/link-anchor.js
  *
  * Column link-settings anchor builder (#109). #832 slice 5 of N.
  *

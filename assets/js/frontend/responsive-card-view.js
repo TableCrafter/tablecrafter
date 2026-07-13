@@ -1,11 +1,11 @@
 /**
- * TableCrafter — frontend/responsive-card-view.js
+ * TableCrafter - frontend/responsive-card-view.js
  *
  * Responsive view + card-view rendering. #832 slice 20 of N.
  *
  * Thirteen helpers attached to GravityTable.prototype directly (kept as
  * `GravityTable.prototype.X = function...` assignments rather than the
- * Object.assign property-shorthand pattern used by other modules — the
+ * Object.assign property-shorthand pattern used by other modules - the
  * block is large enough that re-folding into Object.assign would risk
  * subtle method-body changes during the move).
  *
@@ -381,7 +381,7 @@
         var cardHtml = '<div class="gt-entry-card" data-entry-id="' + entryId + '">';
 
         // Process each table cell to create card fields
-        // #2340 — skip the index cell; it has no semantic label and the counter
+        // #2340 - skip the index cell; it has no semantic label and the counter
         // is meaningless in the card layout.
         var $cells = $row.find('td:not(.gt-checkbox-cell):not(.gt-actions-column):not(.gt-index-cell)');
         var $headers = $row.closest('table').find('thead th:not(.gt-selection-header):not(.gt-actions-header):not(.gt-index-header)');

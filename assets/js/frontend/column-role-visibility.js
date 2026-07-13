@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/column-role-visibility.js
+ * TableCrafter - frontend/column-role-visibility.js
  *
  * Pro-gated per-column role visibility. Hides th + td elements for
  * columns whose allowed-roles list does not include any role the current
@@ -8,7 +8,7 @@
  * Closes #1746.
  *
  * Surface (GravityTable.prototype):
- *   - applyColumnRoleVisibility() — reads config.column_role_visibility
+ *   - applyColumnRoleVisibility() - reads config.column_role_visibility
  *     (field_id => roles[]) and config.user_roles, hides/shows columns.
  */
 (function (window) {

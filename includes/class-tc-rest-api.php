@@ -46,23 +46,23 @@ class TC_REST_API
      *
      * AUDIT INVARIANT (#545): every `register_rest_route()` call below MUST
      * include a `permission_callback` set to one of:
-     *   - `permission_read`         — read-only routes (login required).
-     *   - `permission_read_table`   — read routes whose table-role allowlist
+     *   - `permission_read` - read-only routes (login required).
+     *   - `permission_read_table` - read routes whose table-role allowlist
      *                                 is checked.
-     *   - `permission_write_table`  — write routes (login + table-role +
+     *   - `permission_write_table` - write routes (login + table-role +
      *                                 strong capability such as edit_posts /
      *                                 publish_posts / gravityforms_edit_entries
      *                                 / administrator).
      *
      * Forbidden patterns:
-     *   - `'permission_callback' => '__return_true'` — public-by-default routes
+     *   - `'permission_callback' => '__return_true'` - public-by-default routes
      *     are NOT permitted in this codebase. If a future route legitimately
      *     needs to be public, prefix the callsite with a `// PUBLIC_ROUTE_OK:`
      *     comment explaining why; the audit suite at
      *     `tests/test-issue-545-rest-permission-callback-guard.php` enforces
      *     this exception via allowlist marker.
      *   - `'permission_callback' => 'is_user_logged_in'` for any
-     *     write-capable method (CREATABLE / EDITABLE / DELETABLE) — a bare
+     *     write-capable method (CREATABLE / EDITABLE / DELETABLE) - a bare
      *     login check is insufficient; require a capability.
      *
      * The audit suite static-scans every `register_rest_route()` call site
@@ -164,7 +164,7 @@ class TC_REST_API
             return new WP_Error('rest_forbidden', __('You cannot view this table.', 'tc-data-tables'), array('status' => 403));
         }
 
-        // #1632 — enforce the per-table password the same way the
+        // #1632 - enforce the per-table password the same way the
         // shortcode does. Without this the password feature was bypassable
         // by hitting the REST data endpoints directly.
         $settings = json_decode($table->settings, true) ?: array();
@@ -181,7 +181,7 @@ class TC_REST_API
         $check = $this->permission_read_table($request);
         if (is_wp_error($check)) return $check;
 
-        // #1635 — gate writes on the plugin's dedicated capabilities
+        // #1635 - gate writes on the plugin's dedicated capabilities
         // instead of edit_posts (held by Contributors). DELETE requires
         // delete_gravity_tables; POST/PUT require edit_gravity_tables.
         // Both are admin-only by default and admin-grantable per role.
@@ -234,7 +234,7 @@ class TC_REST_API
 
         $settings = json_decode($table->settings, true) ?: array();
 
-        // #1076 finding #3 — flip from deny-list (unset of known sensitive keys)
+        // #1076 finding #3 - flip from deny-list (unset of known sensitive keys)
         // to allow-list (keep only documented safe keys). Drift-prone before:
         // any new sensitive field added to settings JSON leaked by default.
         // Allow-list fails closed for unknown future keys; sensitive keys are

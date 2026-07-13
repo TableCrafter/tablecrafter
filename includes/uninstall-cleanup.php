@@ -11,7 +11,7 @@
  * Removes everything the plugin created: the wp_gravity_tables /
  * _audit_log tables, scheduled cron events, and gt_ options/transients
  * (plus the legacy gravity_tables_settings option). Multisite-aware.
- * Freemius manages its own state — not touched here.
+ * Freemius manages its own state - not touched here.
  */
 
 // @codeCoverageIgnoreStart

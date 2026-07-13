@@ -41,7 +41,7 @@ $can_trial = $fs && method_exists($fs, 'is_trial_utilized')
 ?>
 <div class="wrap gt-license-wrap">
 <!-- h1 must be the first element so WP admin notices appear before the hero, not inside it -->
-<h1 class="gt-license-page-title"><?php esc_html_e('TableCrafter — License &amp; Account', 'tc-data-tables'); ?></h1>
+<h1 class="gt-license-page-title"><?php esc_html_e('TableCrafter - License &amp; Account', 'tc-data-tables'); ?></h1>
 
 <?php if ($is_premium): ?>
 
@@ -49,7 +49,7 @@ $can_trial = $fs && method_exists($fs, 'is_trial_utilized')
     <div class="gt-license-hero gt-license-hero--pro">
         <span class="dashicons dashicons-yes-alt gt-license-hero-icon"></span>
         <div>
-            <h2><?php esc_html_e('Pro License — Active', 'tc-data-tables'); ?></h2>
+            <h2><?php esc_html_e('Pro License - Active', 'tc-data-tables'); ?></h2>
             <p><?php esc_html_e('You have full access to all TableCrafter Pro features.', 'tc-data-tables'); ?></p>
         </div>
     </div>
@@ -96,7 +96,7 @@ $can_trial = $fs && method_exists($fs, 'is_trial_utilized')
                 <?php
                 printf(
                     /* translators: %d = days remaining */
-                    esc_html__('%d days remaining — lock in Pro before your trial ends.', 'tc-data-tables'),
+                    esc_html__('%d days remaining - lock in Pro before your trial ends.', 'tc-data-tables'),
                     (int) (method_exists($fs, 'get_trial_days_left') ? $fs->get_trial_days_left() : 0)
                 );
                 ?>
@@ -108,7 +108,7 @@ $can_trial = $fs && method_exists($fs, 'is_trial_utilized')
         <div class="gt-license-card gt-license-card--featured">
             <div class="gt-license-card-badge"><?php esc_html_e('Recommended', 'tc-data-tables'); ?></div>
             <h2><?php esc_html_e('Upgrade to Pro', 'tc-data-tables'); ?></h2>
-            <p><?php esc_html_e('Keep everything you\'ve built — frontend editing, advanced filters &amp; priority support.', 'tc-data-tables'); ?></p>
+            <p><?php esc_html_e('Keep everything you\'ve built - frontend editing, advanced filters &amp; priority support.', 'tc-data-tables'); ?></p>
             <a href="<?php echo esc_url(method_exists($fs, 'get_upgrade_url') ? $fs->get_upgrade_url() : 'https://tablecrafter.com/#pricing'); ?>" class="gt-btn gt-btn--primary gt-btn--lg">
                 <?php esc_html_e('Upgrade Now', 'tc-data-tables'); ?>
             </a>
@@ -124,13 +124,13 @@ $can_trial = $fs && method_exists($fs, 'is_trial_utilized')
 
 <?php else: ?>
 
-    <!-- ── Free Plan — Main Sales Page ── -->
+    <!-- ── Free Plan - Main Sales Page ── -->
     <div class="gt-license-hero">
         <div class="gt-license-hero-inner">
             <span class="gt-license-hero-logo">TC</span>
             <div>
                 <h2><?php esc_html_e('Unlock TableCrafter Pro', 'tc-data-tables'); ?></h2>
-                <p><?php esc_html_e('Powerful, interactive WordPress data tables — without touching code.', 'tc-data-tables'); ?></p>
+                <p><?php esc_html_e('Powerful, interactive WordPress data tables - without touching code.', 'tc-data-tables'); ?></p>
             </div>
         </div>
     </div>
@@ -156,7 +156,7 @@ $can_trial = $fs && method_exists($fs, 'is_trial_utilized')
                 <li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Priority email support', 'tc-data-tables'); ?></li>
             </ul>
             <a href="<?php echo esc_url($fs && method_exists($fs, 'get_upgrade_url') ? $fs->get_upgrade_url() : 'https://tablecrafter.com/#pricing'); ?>" class="gt-btn gt-btn--primary gt-btn--lg">
-                <?php esc_html_e('Start Pro — 7-day free trial', 'tc-data-tables'); ?>
+                <?php esc_html_e('Start Pro - 7-day free trial', 'tc-data-tables'); ?>
             </a>
             <p class="gt-license-small"><?php esc_html_e('No card required for the trial · Cancel anytime · Instant activation', 'tc-data-tables'); ?></p>
         </div>
@@ -276,7 +276,7 @@ if ($_fs_user):
     margin: 0 0 5px;
 }
 
-/* Page-level title — visible for accessibility & WP notice placement, styled to blend */
+/* Page-level title - visible for accessibility & WP notice placement, styled to blend */
 .gt-license-page-title {
     font-size: 14px;
     font-weight: 400;

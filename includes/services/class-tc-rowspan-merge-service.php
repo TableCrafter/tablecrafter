@@ -2,14 +2,14 @@
 /**
  * TC_Rowspan_Merge_Service
  *
- * Issue #518 — slice 1 of 3. Pure helper that walks a column's
+ * Issue #518 - slice 1 of 3. Pure helper that walks a column's
  * values in row order and identifies runs of consecutive duplicates.
  * The future per-column "Auto-merge consecutive duplicate values"
  * toggle will use the directives output to render rowspan'd cells:
  * the first row of a run gets `<td rowspan="N">`; subsequent rows in
  * the run skip rendering the cell entirely.
  *
- * Strict equality (`===`) — `'10'` and `10` are NOT merged together,
+ * Strict equality (`===`) - `'10'` and `10` are NOT merged together,
  * `'A'` and `'a'` are NOT merged. Consecutive nulls ARE merged into
  * one run; consecutive empty strings ARE merged; but null and empty
  * string are NOT merged together (strict equality again).

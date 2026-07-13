@@ -267,7 +267,7 @@ class TC_Entry_Service {
             'date_created' => current_time('mysql'),
             'is_starred' => 0,
             'is_read' => 0,
-            // #1069 slice 32 — route $_SERVER reads through
+            // #1069 slice 32 - route $_SERVER reads through
             // gt_request_server_text() for slice 31 (#1073) parity. The
             // helper wraps each read in wp_unslash() + sanitize_text_field()
             // so wp_magic_quotes-added backslashes are stripped and
@@ -482,7 +482,7 @@ class TC_Entry_Service {
             throw new TC_Validation_Exception(__('Gravity Forms is not available', 'tc-data-tables'));
         }
         
-        // #1675 — fetch only the selected entries via an id/in field filter
+        // #1675 - fetch only the selected entries via an id/in field filter
         // (was: load the whole form's entries, then filter in PHP). Also pins
         // page_size so all selected entries are returned regardless of GF's
         // default paging.
@@ -755,7 +755,7 @@ class TC_Entry_Service {
         $lookup_processor = TC_Lookup::get_instance();
         $entries = [];
 
-        // #1664 — pre-resolve each lookup column's values in one batch before
+        // #1664 - pre-resolve each lookup column's values in one batch before
         // the row loop, instead of one process_lookup_value() per row.
         $lookup_maps = [];
         if (!empty($params['lookup_fields'])) {
@@ -803,7 +803,7 @@ class TC_Entry_Service {
                 
                 // Process lookup if configured
                 if (!empty($params['lookup_fields'][$field_id])) {
-                    // #1664 — use the pre-batched map; per-value fallback only
+                    // #1664 - use the pre-batched map; per-value fallback only
                     // for values not present in the batch result.
                     if (isset($lookup_maps[$field_id]) && array_key_exists($value, $lookup_maps[$field_id])) {
                         $value = $lookup_maps[$field_id][$value];

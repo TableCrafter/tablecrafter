@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 class TC_Admin
 {
 
-    // #667 slice 3 — public so tests can reset the singleton between
+    // #667 slice 3 - public so tests can reset the singleton between
     // it() blocks via `TC_Admin::$instance = null;` (matches the
     // visibility of the test-stub class). Production code reads /
     // writes this property exclusively via self::get_instance(); no
@@ -30,7 +30,7 @@ class TC_Admin
     // across includes/ and admin/).
     public static ?TC_Admin $instance = null;
 
-    // #667 slice 28 — PHPUnit-shim fixture knobs (issue #1087).
+    // #667 slice 28 - PHPUnit-shim fixture knobs (issue #1087).
     //
     // tests/test-issue-90-safe-save.php drives save_table() failure-mode
     // assertions by setting these statics directly on TC_Admin. Under
@@ -41,7 +41,7 @@ class TC_Admin
     // props target THIS class. Declaring them here lets those writes
     // succeed without "Access to undeclared static property" fatals.
     //
-    // Production callers NEVER read these props — the seamed
+    // Production callers NEVER read these props - the seamed
     // get_instance() routes save_table() calls through the test-installed
     // override instance ($GLOBALS['gt_test_admin_override']), which is
     // the only consumer of the static state. Defaults are deliberately
@@ -54,18 +54,18 @@ class TC_Admin
     public static bool $should_return_false = false;
 
     /**
-     * #667 slice 28 — the explicit `: TC_Admin` return-type declaration was
+     * #667 slice 28 - the explicit `: TC_Admin` return-type declaration was
      * dropped to make room for the test-override path (issue #1087). Under
      * the PHPUnit shim, get_instance() can return an anonymous-class fake
      * installed by tests/test-issue-90-safe-save.php; an enforced return
      * type would TypeError on that fake. Production callers still receive
-     * a `TC_Admin` instance byte-identically — the return-type relaxation
+     * a `TC_Admin` instance byte-identically - the return-type relaxation
      * is a runtime no-op for them, and PHPStan / IDEs can still infer the
      * production-path return type from the `self::$instance` write below.
      */
     public static function get_instance()
     {
-        // #667 slice 28 — PHPUnit-shim test seam (issue #1087).
+        // #667 slice 28 - PHPUnit-shim test seam (issue #1087).
         //
         // Production safety: this branch is gated on the TC_PHPUNIT_SHIM
         // constant which is ONLY defined by tests/PHPUnitShimTest.php and
@@ -108,7 +108,7 @@ class TC_Admin
         add_action('admin_init', array($this, 'redirect_legacy_slugs'));
         add_filter('parent_file', array($this, 'fix_menu_highlighting'));
         add_filter('submenu_file', array($this, 'fix_submenu_highlighting'));
-        // Classic (TinyMCE) editor integration — add "Insert Gravity Table" toolbar button (#129)
+        // Classic (TinyMCE) editor integration - add "Insert Gravity Table" toolbar button (#129)
         add_filter('mce_external_plugins', array($this, 'register_tinymce_plugin'));
         add_filter('mce_buttons', array($this, 'add_tinymce_button'));
         add_action('admin_bar_menu', array($this, 'add_admin_bar_menu'), 100);
@@ -149,7 +149,7 @@ class TC_Admin
              style="border-left-color:#0073aa;">
             <p>
                 <strong><?php esc_html_e("What's new in TableCrafter v8.x", 'tc-data-tables'); ?></strong>
-                —
+ - 
                 <?php esc_html_e('One converged, source-agnostic product: Gravity Forms, JSON / REST, CSV, Google Sheets, Airtable, Notion, External DB and Excel sources, one-click demo tables, External DB connection management, and the [tablecrafter] block.', 'tc-data-tables'); ?>
                 <a href="<?php echo $docs_url; ?>"><?php esc_html_e('View highlights →', 'tc-data-tables'); ?></a>
             </p>
@@ -203,7 +203,7 @@ class TC_Admin
         </div>
         <style>
         /* Make the Freemius account-page action buttons readable + on-brand
-           (default rendered green text on a blue button — low contrast). */
+           (default rendered green text on a blue button - low contrast). */
         .gt-account-page .button-primary,
         .gt-account-page a.button-primary {
             background: #0d9488 !important; border-color: #0d9488 !important;
@@ -229,7 +229,7 @@ class TC_Admin
             30
         );
 
-        // All Tables first — replaces the auto-generated duplicate "TableCrafter" entry
+        // All Tables first - replaces the auto-generated duplicate "TableCrafter" entry
         add_submenu_page(
             'gravity-tables',
             __('All Tables', 'tc-data-tables'),
@@ -249,7 +249,7 @@ class TC_Admin
         );
 
         // Dynamic menu title based on free plan limits
-        // #2025 — size caps removed: the free plan has unlimited tables, so the
+        // #2025 - size caps removed: the free plan has unlimited tables, so the
         // menu no longer shows a "(count/limit)" suffix or "(Limit Reached)".
         $create_menu_title = __('Create New', 'tc-data-tables');
 
@@ -263,10 +263,10 @@ class TC_Admin
         );
 
 
-        // Wizard — visible in nav, positioned after Create New.
+        // Wizard - visible in nav, positioned after Create New.
         add_submenu_page(
             'gravity-tables',
-            __('Create Table — Wizard (Beta)', 'tc-data-tables'),
+            __('Create Table - Wizard (Beta)', 'tc-data-tables'),
             __('✦ Wizard', 'tc-data-tables') . ' <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;background:#0d9488;color:#fff;border-radius:6px;padding:1px 5px;vertical-align:middle;">Beta</span>',
             'manage_options',
             'tablecrafter-wizard',
@@ -282,7 +282,7 @@ class TC_Admin
             array($this, 'admin_page_settings')
         );
 
-        // #2040 — External DB connection management (Pro). Gated on the premium
+        // #2040 - External DB connection management (Pro). Gated on the premium
         // class so the free WP.org build (which strips it) never registers it.
         if (class_exists('TC_External_DB')) {
             add_submenu_page(
@@ -305,7 +305,7 @@ class TC_Admin
             array($this, 'admin_page_license')
         );
 
-        // #972 v4.161.0 — Trash admin tab (phase 1c of #593 trash bin).
+        // #972 v4.161.0 - Trash admin tab (phase 1c of #593 trash bin).
         add_submenu_page(
             'gravity-tables',
             __('Trash', 'tc-data-tables'),
@@ -387,7 +387,7 @@ class TC_Admin
             array($this, 'admin_page_debug_logs')
         );
 
-        // #613 phase 2 v4.223.0 — Push Audit Log + Rate-limit status page.
+        // #613 phase 2 v4.223.0 - Push Audit Log + Rate-limit status page.
         // Surfaces TC_Push_Audit_Log_Service (v4.205.0) events and
         // TC_Push_Rate_Limiter (v4.206.0) per-source caps for operators.
         add_submenu_page(
@@ -401,7 +401,7 @@ class TC_Admin
     }
 
     /**
-     * #613 phase 2 v4.223.0 — push audit log admin page callback.
+     * #613 phase 2 v4.223.0 - push audit log admin page callback.
      */
     public function admin_page_push_audit(): void
     {
@@ -429,7 +429,7 @@ class TC_Admin
             return;
         }
 
-        // #2040 — Database Connections management screen (Pro only). Self-contained
+        // #2040 - Database Connections management screen (Pro only). Self-contained
         // jQuery script wiring add/delete/test against TC_External_DB ajax handlers.
         if (strpos($hook, 'gravity-tables-db-connections') !== false && class_exists('TC_External_DB')) {
             wp_enqueue_script(
@@ -473,7 +473,7 @@ class TC_Admin
             true
         );
 
-        // #843 — first slice of admin.js split. Loads AFTER admin.js and
+        // #843 - first slice of admin.js split. Loads AFTER admin.js and
         // extends window.TC_TableBuilder via Object.assign.
         wp_enqueue_script(
             'gravity-tables-admin-core',
@@ -483,8 +483,8 @@ class TC_Admin
             true
         );
 
-        // #844 — second slice. Drag-and-drop column reorder + row reorder.
-        // #1027 — depend on -admin-core so window.TC_TableBuilder.init is
+        // #844 - second slice. Drag-and-drop column reorder + row reorder.
+        // #1027 - depend on -admin-core so window.TC_TableBuilder.init is
         // guaranteed to be defined before this slice's Object.assign runs.
         wp_enqueue_script(
             'gravity-tables-admin-table-builder',
@@ -494,7 +494,7 @@ class TC_Admin
             true
         );
 
-        // #845 — third slice. Per-field configuration modal lifecycle.
+        // #845 - third slice. Per-field configuration modal lifecycle.
         wp_enqueue_script(
             'gravity-tables-admin-field-config-modal',
             TC_PLUGIN_URL . 'assets/js/admin/field-config-modal.js',
@@ -503,7 +503,7 @@ class TC_Admin
             true
         );
 
-        // #846 — fourth slice. Conditional formatting + color picker helpers.
+        // #846 - fourth slice. Conditional formatting + color picker helpers.
         wp_enqueue_script(
             'gravity-tables-admin-conditional-format-rules',
             TC_PLUGIN_URL . 'assets/js/admin/conditional-format-rules.js',
@@ -512,7 +512,7 @@ class TC_Admin
             true
         );
 
-        // #954 — fifth slice. saveTable AJAX flow.
+        // #954 - fifth slice. saveTable AJAX flow.
         wp_enqueue_script(
             'gravity-tables-admin-save-table',
             TC_PLUGIN_URL . 'assets/js/admin/save-table.js',
@@ -521,7 +521,7 @@ class TC_Admin
             true
         );
 
-        // #955 — sixth slice. loadTableData + applySavedSettings (load-side AJAX flow).
+        // #955 - sixth slice. loadTableData + applySavedSettings (load-side AJAX flow).
         wp_enqueue_script(
             'gravity-tables-admin-load-table-data',
             TC_PLUGIN_URL . 'assets/js/admin/load-table-data.js',
@@ -530,7 +530,7 @@ class TC_Admin
             true
         );
 
-        // #957 — seventh slice. Field-selection UI cluster.
+        // #957 - seventh slice. Field-selection UI cluster.
         wp_enqueue_script(
             'gravity-tables-admin-field-list',
             TC_PLUGIN_URL . 'assets/js/admin/field-list.js',
@@ -539,7 +539,7 @@ class TC_Admin
             true
         );
 
-        // #959 — eighth slice. Live preview generation + shortcode helpers.
+        // #959 - eighth slice. Live preview generation + shortcode helpers.
         wp_enqueue_script(
             'gravity-tables-admin-preview-shortcode',
             TC_PLUGIN_URL . 'assets/js/admin/preview-and-shortcode.js',
@@ -548,7 +548,7 @@ class TC_Admin
             true
         );
 
-        // #964 — ninth slice. bindEvents event delegator (the big one).
+        // #964 - ninth slice. bindEvents event delegator (the big one).
         wp_enqueue_script(
             'gravity-tables-admin-bind-events',
             TC_PLUGIN_URL . 'assets/js/admin/bind-events.js',
@@ -557,7 +557,7 @@ class TC_Admin
             true
         );
 
-        // #966 — TENTH and FINAL slice. Misc utilities + initViewportToggles bug fix.
+        // #966 - TENTH and FINAL slice. Misc utilities + initViewportToggles bug fix.
         // After this, admin.js is just IIFE boot scaffolding (~166 lines vs 3,464 original).
         wp_enqueue_script(
             'gravity-tables-admin-utilities',
@@ -567,7 +567,7 @@ class TC_Admin
             true
         );
 
-        // #1601 — builder Data Quality panel (cleanup-suggester UI).
+        // #1601 - builder Data Quality panel (cleanup-suggester UI).
         wp_enqueue_script(
             'gravity-tables-admin-data-quality',
             TC_PLUGIN_URL . 'assets/js/admin/data-quality.js',
@@ -576,7 +576,7 @@ class TC_Admin
             true
         );
 
-        // #1598 — builder Computed Columns repeater.
+        // #1598 - builder Computed Columns repeater.
         wp_enqueue_script(
             'gravity-tables-admin-computed-columns',
             TC_PLUGIN_URL . 'assets/js/admin/computed-columns.js',
@@ -585,7 +585,7 @@ class TC_Admin
             true
         );
 
-        // #1615 — Table History modal on the tables list.
+        // #1615 - Table History modal on the tables list.
         wp_enqueue_script(
             'gravity-tables-admin-revisions-modal',
             TC_PLUGIN_URL . 'assets/js/admin/revisions-modal.js',
@@ -599,7 +599,7 @@ class TC_Admin
             'builder_url' => admin_url('admin.php?page=gravity-tables-new'),
         ));
 
-        // #1614 — Find & Replace modal on the tables list.
+        // #1614 - Find & Replace modal on the tables list.
         wp_enqueue_script(
             'gravity-tables-admin-find-replace-modal',
             TC_PLUGIN_URL . 'assets/js/admin/find-replace-modal.js',
@@ -611,7 +611,7 @@ class TC_Admin
             'ajax_url' => admin_url('admin-ajax.php'),
         ));
 
-        // #1617 — builder pivot multi-aggregate repeater.
+        // #1617 - builder pivot multi-aggregate repeater.
         wp_enqueue_script(
             'gravity-tables-admin-pivot-aggregates',
             TC_PLUGIN_URL . 'assets/js/admin/pivot-aggregates.js',
@@ -620,7 +620,7 @@ class TC_Admin
             true
         );
 
-        // #2367 — Manual tables grid editor. Loaded ONLY on the builder screen
+        // #2367 - Manual tables grid editor. Loaded ONLY on the builder screen
         // for manual-source tables (conditional below). Admin-side only; no
         // frontend weight. No vendored dependency (see engine decision in PR #2374).
         $gt_is_builder_page = isset( $_GET['page'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -757,14 +757,14 @@ class TC_Admin
         $gt_admin_l10n = array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('gt_admin_nonce'),
-            // #1601 — Data Quality panel nonces: dedicated scan nonce +
+            // #1601 - Data Quality panel nonces: dedicated scan nonce +
             // the table nonce the gt_update_entry apply path expects.
             'ai_cleanup_nonce' => wp_create_nonce('gt_ai_cleanup_suggest'),
-            // #1621 — computed-columns inline formula validation.
+            // #1621 - computed-columns inline formula validation.
             'cc_validate_nonce' => wp_create_nonce('gt_cc_validate_formula'),
             'entry_update_nonce' => wp_create_nonce('gravity_tables_nonce'),
             'is_premium' => gt_is_premium(),
-            // #2025 — size caps removed: -1 means unlimited for every plan.
+            // #2025 - size caps removed: -1 means unlimited for every plan.
             'limits' => array(
                 'max_tables'  => -1,
                 'max_columns' => -1,
@@ -799,7 +799,7 @@ class TC_Admin
                     $settings = is_array($decoded) ? $decoded : array();
                     $boot_title = isset($row->title) ? (string) $row->title : '';
 
-                    // #1615 — review-before-commit revision load: when
+                    // #1615 - review-before-commit revision load: when
                     // &gt_revision=N is present, boot the builder from
                     // that snapshot instead of the current state.
                     // NOTHING is saved until the admin clicks Save.
@@ -845,7 +845,7 @@ class TC_Admin
         }
         $legacy_map = array(
             'gravity-tables-dashboard'    => 'tablecrafter-dashboard',
-            // #2147 — 3.5.x free plugin's admin slug. Old bookmarks land here.
+            // #2147 - 3.5.x free plugin's admin slug. Old bookmarks land here.
             'tablecrafter-wp-data-tables' => 'gravity-tables',
         );
         if ( isset( $legacy_map[ $page ] ) ) {
@@ -916,9 +916,9 @@ class TC_Admin
 
         // Handle delete functionality (always allowed)
         $sanitized['enable_delete'] = isset($input['enable_delete']) && $input['enable_delete'];
-        // #1747 — one-click entry duplicate (Pro). Sanitized as boolean; Pro gate enforced at render time.
+        // #1747 - one-click entry duplicate (Pro). Sanitized as boolean; Pro gate enforced at render time.
         $sanitized['enable_duplicate'] = gt_is_premium() && isset( $input['enable_duplicate'] ) && $input['enable_duplicate'];
-        // #1748 — email alert rules (Pro).
+        // #1748 - email alert rules (Pro).
         if ( gt_is_premium() && isset( $input['email_alert_rules'] ) && is_array( $input['email_alert_rules'] ) ) {
             $sanitized['email_alert_rules'] = TC_Email_Alerts::sanitize_rules( $input['email_alert_rules'] );
         } else {
@@ -983,7 +983,7 @@ class TC_Admin
             }
         }
 
-        // #2116 — funnel: the user opened the table builder. Guarded so the
+        // #2116 - funnel: the user opened the table builder. Guarded so the
         // option is written once, not on every builder page view.
         if (class_exists('TC_Activation_Funnel') && !TC_Activation_Funnel::has('builder_opened')) {
             TC_Activation_Funnel::record('builder_opened');
@@ -1024,7 +1024,7 @@ class TC_Admin
 
     public function admin_page_debug_logs(): void
     {
-        // #1542 — guard the include because the view file is optional. The
+        // #1542 - guard the include because the view file is optional. The
         // TC_Debug class (includes/class-tc-debug.php) handles its own admin
         // page registration when its category settings page is enabled; this
         // method is a separate menu entry that ships a static dump if a site
@@ -1051,7 +1051,7 @@ class TC_Admin
     {
         global $wpdb;
 
-        // #968 v4.159.0 — exclude soft-deleted rows from the main listing.
+        // #968 v4.159.0 - exclude soft-deleted rows from the main listing.
         // Restore + Trash-tab queries (phase 1c, not yet shipped) will set
         // `deleted_at IS NOT NULL` explicitly.
         return $wpdb->get_results(
@@ -1108,7 +1108,7 @@ class TC_Admin
     }
 
     /**
-     * #2376 — merge grid-editor header renames into manual column definitions.
+     * #2376 - merge grid-editor header renames into manual column definitions.
      *
      * save-table.js posts `manual_columns_labels` as {colKey: label} (built
      * from the grid model). Pure helper: applies label changes by key, keeps
@@ -1168,7 +1168,7 @@ class TC_Admin
 
     /**
      * JSON string safe for embedding in HTML (`window.gtTableData = …`).
-     * Never returns empty — avoids invalid JS like `window.gtTableData = ;`.
+     * Never returns empty - avoids invalid JS like `window.gtTableData = ;`.
      *
      * @param array<string, mixed> $data Payload keys must survive wp_json_encode.
      */
@@ -1228,9 +1228,9 @@ class TC_Admin
                 'filter_user_entries',
                 'enable_vertical_scroll',
                 'show_table_summary',
-                // #2254 — per-table external DB public-render opt-in.
+                // #2254 - per-table external DB public-render opt-in.
                 'external_db_public_render',
-                // #2308 — boolean keys missing from the list; jQuery $.param()
+                // #2308 - boolean keys missing from the list; jQuery $.param()
                 // serialises JS false as the string "false" which PHP's (bool)
                 // or !empty() reads as true. filter_var handles strings correctly.
                 'collapsible_enabled',
@@ -1245,9 +1245,9 @@ class TC_Admin
                 'show_length_selector',
                 'show_column_picker',
                 'enable_duplicate',
-                // #2340 — index column (1..n display-order counter).
+                // #2340 - index column (1..n display-order counter).
                 'show_index_column',
-                // #2369 — opt-in shortcode expansion in manual-table cells.
+                // #2369 - opt-in shortcode expansion in manual-table cells.
                 'manual_render_shortcodes',
             ];
 
@@ -1280,14 +1280,14 @@ class TC_Admin
                 }
             }
 
-            // #2307/#2308 — Normalise nested compound settings that carry boolean
+            // #2307/#2308 - Normalise nested compound settings that carry boolean
             // sub-keys. These arrive as nested arrays within $data['settings']
             // when the builder posts its payload via jQuery $.param(). The
             // top-level sanitiser blocks further down in save_table() handle the
             // same keys when they arrive at the top level ($data['toolbar_visibility']
             // etc.), but those blocks never see the nested variant.
 
-            // toolbar_visibility — six-component bool map. Delegate to the
+            // toolbar_visibility - six-component bool map. Delegate to the
             // service's normalize() which now uses TC_Bool::cast() internally.
             if (isset($settings['toolbar_visibility']) && is_array($settings['toolbar_visibility'])
                 && class_exists('TC_Toolbar_Visibility_Service')) {
@@ -1296,7 +1296,7 @@ class TC_Admin
                 );
             }
 
-            // print_settings — enabled / repeat_header / row_striping sub-booleans.
+            // print_settings - enabled / repeat_header / row_striping sub-booleans.
             // Delegate to the service's normalize() which now uses TC_Bool::cast().
             if (isset($settings['print_settings']) && is_array($settings['print_settings'])
                 && class_exists('TC_Print_Settings_Service')) {
@@ -1309,16 +1309,16 @@ class TC_Admin
             if (isset($settings['per_page'])) {
                 $settings['per_page'] = intval($settings['per_page']);
             }
-            // #1743 — auto-refresh interval (Free). Clamp to 0 (off) or 5+ seconds.
+            // #1743 - auto-refresh interval (Free). Clamp to 0 (off) or 5+ seconds.
             if (isset($settings['auto_refresh_interval'])) {
                 $interval = (int) $settings['auto_refresh_interval'];
                 $settings['auto_refresh_interval'] = $interval > 0 ? max(5, $interval) : 0;
             }
-            // #1744 — column visibility picker toggle (Free).
+            // #1744 - column visibility picker toggle (Free).
             $settings['show_column_picker'] = ! empty( $settings['show_column_picker'] );
-            // #1747 — one-click entry duplicate toggle (Pro).
+            // #1747 - one-click entry duplicate toggle (Pro).
             $settings['enable_duplicate'] = gt_is_premium() && ! empty( $settings['enable_duplicate'] );
-            // #1748 — email alert rules (Pro).
+            // #1748 - email alert rules (Pro).
             if ( gt_is_premium() && isset( $settings['email_alert_rules'] ) && is_array( $settings['email_alert_rules'] ) ) {
                 $settings['email_alert_rules'] = TC_Email_Alerts::sanitize_rules( $settings['email_alert_rules'] );
             } else {
@@ -1487,7 +1487,7 @@ class TC_Admin
             $settings['expiry_inverse'] = filter_var($data['expiry_inverse'], FILTER_VALIDATE_BOOLEAN);
         }
 
-        // #1598 — computed columns. The builder posts a JSON list of
+        // #1598 - computed columns. The builder posts a JSON list of
         // {label, formula}; the service sanitizer validates formulas,
         // strips labels, caps the count, and assigns gtc_N ids.
         if (isset($data['computed_columns']) && class_exists('TC_Formula_Service')) {
@@ -1511,7 +1511,7 @@ class TC_Admin
             );
         }
 
-        // #2323 — arbitrary cell merges (rowspan/colspan). Storage shape:
+        // #2323 - arbitrary cell merges (rowspan/colspan). Storage shape:
         //   cell_merges: [{row, col, rowspan, colspan}, ...]  (0-based indices)
         // Each entry is validated by TC_Cell_Merge_Service::validate_merge to
         // guarantee non-overlapping rectangles. Invalid or overlapping entries
@@ -1575,7 +1575,7 @@ class TC_Admin
             $settings['toolbar_visibility'] = TC_Toolbar_Visibility_Service::normalize($raw);
         }
 
-        // #519 slice 3 — Scheduled outbound export per-table settings.
+        // #519 slice 3 - Scheduled outbound export per-table settings.
         // Six top-level POST keys land in $data; we sanitize each into
         // $settings so the slice-2 runner picks them up from
         // $table_config at run time. Then we reconcile the WP-Cron
@@ -1603,7 +1603,7 @@ class TC_Admin
             $settings['scheduled_export_filename_pattern'] = sanitize_text_field($pat);
         }
         if (isset($data['scheduled_export_email_recipients'])) {
-            // Permissive on the sanitizer side — service-side parse_
+            // Permissive on the sanitizer side - service-side parse_
             // recipients() runs sanitize_email + is_email on each
             // entry before wp_mail is called.
             $settings['scheduled_export_email_recipients'] = sanitize_text_field((string) $data['scheduled_export_email_recipients']);
@@ -1611,7 +1611,7 @@ class TC_Admin
         if (isset($data['scheduled_export_honor_filters'])) {
             $settings['scheduled_export_honor_filters'] = filter_var($data['scheduled_export_honor_filters'], FILTER_VALIDATE_BOOLEAN);
         }
-        // #562 slice 2 — pivot view admin opt-in. Composes the four
+        // #562 slice 2 - pivot view admin opt-in. Composes the four
         // flat keys (mode / group_by / aggregate_col / aggregate_op)
         // into the pivot_config object shape and delegates to slice-1
         // TC_Pivot_Service::normalize for the mode whitelist + group_by
@@ -1621,7 +1621,7 @@ class TC_Admin
                 || isset($data['pivot_aggregate_col']) || isset($data['pivot_aggregate_op']))
             && class_exists('TC_Pivot_Service')
         ) {
-            // #1617 — repeater payload wins; the legacy single
+            // #1617 - repeater payload wins; the legacy single
             // col/op pair stays as the fallback for pre-repeater
             // clients (and as the empty-state no-op).
             $raw_aggregates = [];
@@ -1645,7 +1645,7 @@ class TC_Admin
             $settings['pivot_config'] = TC_Pivot_Service::normalize($raw_cfg);
         }
 
-        // #560 slice 2 — server-side pagination opt-in + default page size.
+        // #560 slice 2 - server-side pagination opt-in + default page size.
         // Delegates to slice-1 TC_Pagination_Service::normalize_settings
         // for the bool coerce + page-size clamp (1..500).
         if ((isset($data['server_side_pagination']) || isset($data['default_page_size']))
@@ -1660,7 +1660,7 @@ class TC_Admin
             $settings['default_page_size'] = $norm['default_page_size'];
         }
 
-        // #526 slice 2/3 — per-table fallback image URL picked via the
+        // #526 slice 2/3 - per-table fallback image URL picked via the
         // GT Media Folder adapter (which surfaces folder-plugin UI in
         // the wp.media frame). Stored as a raw URL; the frontend
         // renderer reads it from $table_settings when an image-cell
@@ -1669,7 +1669,7 @@ class TC_Admin
             $settings['default_image_fallback_url'] = esc_url_raw(trim((string) $data['default_image_fallback_url']));
         }
 
-        // #519 slice 3 — WP-Cron reconciliation happens after $table_id
+        // #519 slice 3 - WP-Cron reconciliation happens after $table_id
         // is known. See the update / insert branches below; both
         // dispatch to TC_Scheduled_Export_Service::schedule_for_table
         // or clear_schedule_for_table based on the toggle.
@@ -1681,13 +1681,13 @@ class TC_Admin
         // for this table even when sync_direction != pull_only.
         if (isset($data['airtable_record_id_field'])) {
             $f = (string) $data['airtable_record_id_field'];
-            // GF supports composite ids like "3.2" — allow alphanumeric + dot.
+            // GF supports composite ids like "3.2" - allow alphanumeric + dot.
             $f = preg_replace('/[^a-zA-Z0-9_.]+/', '', $f);
             $settings['airtable_record_id_field'] = $f;
         }
 
         // #517 slice 4b: per-table Airtable sync_direction (write-back gate).
-        // Whitelist: pull_only (default — read-only, current behavior) /
+        // Whitelist: pull_only (default - read-only, current behavior) /
         // push_only / two_way. Invalid values default to pull_only (safest:
         // never push without explicit opt-in). Slice 4c will wire the AJAX
         // endpoint to consult this when deciding whether to invoke the
@@ -1699,7 +1699,7 @@ class TC_Admin
             $settings['sync_direction'] = in_array($raw, $allowed_directions, true) ? $raw : 'pull_only';
         }
 
-        // #1648 — per-table owner field: the GF field id holding the owning
+        // #1648 - per-table owner field: the GF field id holding the owning
         // user id. When set, non-admin frontend editors may only edit entries
         // whose owner field matches their user id (TC_Entry_Owner_Guard).
         if (isset($data['owner_field_id'])) {
@@ -1798,7 +1798,7 @@ class TC_Admin
         // When updating an existing table, load the current settings from the DB
         // and merge the incoming payload on top. This preserves any style keys
         // (e.g. custom colors, border styles) that the admin form did not include
-        // in this save — which is the root cause of styles resetting after a
+        // in this save - which is the root cause of styles resetting after a
         // plugin update (issue #186).
         if ( isset( $data['table_id'] ) && $data['table_id'] ) {
             $existing_json = $wpdb->get_var( $wpdb->prepare(
@@ -1814,7 +1814,7 @@ class TC_Admin
             }
         }
 
-        // #2366 — For manual-source tables, provision an empty grid on first
+        // #2366 - For manual-source tables, provision an empty grid on first
         // save (when manual_columns hasn't been set yet). Stores the column
         // definitions in settings; actual row data goes to tablecrafter_manual_rows
         // via TC_Manual_Rows_Service::provision_empty_grid().
@@ -1828,7 +1828,7 @@ class TC_Admin
         $gt_manual_initial_rows = isset($settings['manual_initial_rows']) ? max(1, (int) $settings['manual_initial_rows']) : 5;
         $gt_manual_initial_cols = isset($settings['manual_initial_cols']) ? max(1, (int) $settings['manual_initial_cols']) : 3;
 
-        // #2376 — grid-editor header renames. Without this the posted
+        // #2376 - grid-editor header renames. Without this the posted
         // manual_columns_labels map was silently dropped and renames
         // reverted on builder reload.
         if (
@@ -1865,7 +1865,7 @@ class TC_Admin
                 $table_id = intval($data['table_id']);
                 $user_id  = get_current_user_id();
                 wp_cache_delete('gt_table_' . $table_id, 'gravity_tables');
-                // #2366 — provision empty grid on first update of manual table
+                // #2366 - provision empty grid on first update of manual table
                 // if column definitions weren't set yet (e.g. race on create).
                 if ($gt_needs_manual_provision && $table_id > 0) {
                     $manual_cols = TC_Manual_Rows_Service::provision_empty_grid(
@@ -1883,7 +1883,7 @@ class TC_Admin
                     );
                     wp_cache_delete('gt_table_' . $table_id, 'gravity_tables');
                 }
-                // #519 slice 3 — reconcile scheduled export cron.
+                // #519 slice 3 - reconcile scheduled export cron.
                 if (isset($data['scheduled_export_enabled']) && class_exists('TC_Scheduled_Export_Service')) {
                     // @codeCoverageIgnoreStart
                     if (!empty($settings['scheduled_export_enabled'])) {
@@ -1924,7 +1924,7 @@ class TC_Admin
                     array('%d')
                 );
 
-                // #2366 — provision empty grid for new manual tables.
+                // #2366 - provision empty grid for new manual tables.
                 if ($gt_needs_manual_provision && $table_id > 0) {
                     $manual_cols = TC_Manual_Rows_Service::provision_empty_grid(
                         $table_id,
@@ -1945,7 +1945,7 @@ class TC_Admin
                 }
 
                 $user_id = get_current_user_id();
-                // #519 slice 3 — reconcile scheduled export cron for newly created tables.
+                // #519 slice 3 - reconcile scheduled export cron for newly created tables.
                 if (isset($data['scheduled_export_enabled']) && class_exists('TC_Scheduled_Export_Service')) {
                     if (!empty($settings['scheduled_export_enabled'])) {
                         // @codeCoverageIgnoreStart
@@ -1997,7 +1997,7 @@ class TC_Admin
     }
 
     /**
-     * #972 v4.161.0 — Get all trashed tables for the Trash admin tab.
+     * #972 v4.161.0 - Get all trashed tables for the Trash admin tab.
      *
      * Returns rows where soft-delete has been invoked: status='deleted'
      * AND deleted_at IS NOT NULL. Ordered by deleted_at desc so the
@@ -2016,7 +2016,7 @@ class TC_Admin
     }
 
     /**
-     * #972 v4.161.0 — Restore a soft-deleted table.
+     * #972 v4.161.0 - Restore a soft-deleted table.
      *
      * Inverse of delete_table(): clears the deleted_at timestamp and
      * flips status back to 'active'. Cache invalidated so the next
@@ -2045,7 +2045,7 @@ class TC_Admin
     }
 
     /**
-     * #972 v4.161.0 — Permanently delete a trashed table.
+     * #972 v4.161.0 - Permanently delete a trashed table.
      *
      * The real DELETE FROM. Only callable from the Trash admin tab's
      * "Delete Permanently" action (and, in phase 1d, the WP-cron
@@ -2063,7 +2063,7 @@ class TC_Admin
 
         if ($result !== false) {
             wp_cache_delete('gt_table_' . intval($id), 'gravity_tables');
-            // #2366 — purge manual rows for this table on permanent delete.
+            // #2366 - purge manual rows for this table on permanent delete.
             if (class_exists('TC_Manual_Rows_Service')) {
                 TC_Manual_Rows_Service::delete_rows($id);
             }
@@ -2073,7 +2073,7 @@ class TC_Admin
     }
 
     /**
-     * #978 v4.164.0 — Auto-purge past-retention soft-deleted rows.
+     * #978 v4.164.0 - Auto-purge past-retention soft-deleted rows.
      *
      * Called by the daily WP-cron job (hook gravity_tables_purge_expired_trash,
      * registered in the activation hook of the main plugin file). Hard-deletes
@@ -2082,7 +2082,7 @@ class TC_Admin
      * gravity_tables_trash_retention_days filter).
      *
      * Returns the deletion count for logging. Live rows (status='active') and
-     * within-window trashed rows are NEVER touched — the WHERE clause filters
+     * within-window trashed rows are NEVER touched - the WHERE clause filters
      * on BOTH status='deleted' AND deleted_at < cutoff so a misconfigured
      * filter cannot accidentally take out live data.
      */
@@ -2119,7 +2119,7 @@ class TC_Admin
 
         foreach ($ids as $id) {
             wp_cache_delete('gt_table_' . $id, 'gravity_tables');
-            // #2366 — purge manual rows for each expired table.
+            // #2366 - purge manual rows for each expired table.
             if (class_exists('TC_Manual_Rows_Service')) {
                 TC_Manual_Rows_Service::delete_rows($id);
             }
@@ -2131,11 +2131,11 @@ class TC_Admin
     }
 
     /**
-     * #974 v4.162.0 — Bulk permanent-delete every row currently in the Trash.
+     * #974 v4.162.0 - Bulk permanent-delete every row currently in the Trash.
      *
      * Used by the "Empty Trash" button on the Trash admin tab (phase 1c-2
      * of #593). Returns the number of rows deleted (zero is allowed and
-     * meaningful — means the trash was already empty).
+     * meaningful - means the trash was already empty).
      */
     public function empty_trash(): int
     {
@@ -2164,7 +2164,7 @@ class TC_Admin
 
         foreach ($ids as $id) {
             wp_cache_delete('gt_table_' . $id, 'gravity_tables');
-            // #2366 — purge manual rows for each empty-trash table.
+            // #2366 - purge manual rows for each empty-trash table.
             if (class_exists('TC_Manual_Rows_Service')) {
                 TC_Manual_Rows_Service::delete_rows($id);
             }
@@ -2174,7 +2174,7 @@ class TC_Admin
     }
 
     /**
-     * #972 v4.161.0 — Render the Trash admin page.
+     * #972 v4.161.0 - Render the Trash admin page.
      */
     public function admin_page_trash(): void
     {
@@ -2186,7 +2186,7 @@ class TC_Admin
     }
 
     /**
-     * #2040 — External DB connection management screen (Pro). Lists stored
+     * #2040 - External DB connection management screen (Pro). Lists stored
      * connections and renders the add-connection form. All mutations run through
      * the nonce-protected TC_External_DB ajax handlers via db-connections.js.
      */
@@ -2276,7 +2276,7 @@ class TC_Admin
     }
 
     /**
-     * Apply v4.8.x / v4.9.x feature sanitizers — extracted from save_table()
+     * Apply v4.8.x / v4.9.x feature sanitizers - extracted from save_table()
      * so the test #468 wp_cache_delete locality window doesn't fight every
      * new sanitizer addition. Each block here matches one wire-up release.
      *
@@ -2285,7 +2285,7 @@ class TC_Admin
      */
     private function apply_v48_v49_sanitizers(array &$settings, array $data): void
     {
-        // #599 slice 2 — cascading filter chain (parent → child).
+        // #599 slice 2 - cascading filter chain (parent → child).
         // Two flat scalar fields. The pair is normalized via the
         // service so self-references and empty inputs are rejected
         // consistently with slice 1's contract.
@@ -2309,7 +2309,7 @@ class TC_Admin
             }
         }
 
-        // #618 slice 5 — per-row action config (recipient field, webhook URL).
+        // #618 slice 5 - per-row action config (recipient field, webhook URL).
         if (isset($data['send_email_recipient_field'])) {
             $f = (string) $data['send_email_recipient_field'];
             // Allow empty (falls back to auto-detect) or a sanitized
@@ -2321,7 +2321,7 @@ class TC_Admin
             $url = (string) $data['per_row_webhook_url'];
             $settings['per_row_webhook_url'] = $url === '' ? '' : esc_url_raw($url);
         }
-        // #607 slice 2 — per-table password.
+        // #607 slice 2 - per-table password.
         // Empty plaintext = keep existing hash. Non-empty plaintext =
         // hash + store. Sentinel '__GT_CLEAR__' = remove. Slice 1's
         // TC_Table_Password_Service (v4.10.1) does the actual hashing.
@@ -2334,27 +2334,27 @@ class TC_Admin
             }
             // else: empty + existing hash → preserve (nothing to do).
         }
-        // #634 — export filename pattern.
+        // #634 - export filename pattern.
         if (isset($data['export_filename_pattern'])) {
             $p = (string) $data['export_filename_pattern'];
             $p = preg_replace('/[\x00-\x1F\x7F]/u', '', $p);
             $settings['export_filename_pattern'] = trim(str_replace(['/', '\\', '..'], '', $p));
         }
-        // #547 — schema (service normalize).
+        // #547 - schema (service normalize).
         if (isset($data['schema']) && is_array($data['schema']) && class_exists('TC_Schema_Service')) {
             $settings['schema'] = TC_Schema_Service::normalize($data['schema']);
         }
-        // TC_Pagination_Label_Service — five customizable labels; empty = use default.
+        // TC_Pagination_Label_Service - five customizable labels; empty = use default.
         foreach (['info_text', 'previous_label', 'next_label', 'no_results', 'loading'] as $k) {
             if (isset($data[$k])) {
                 $settings[$k] = sanitize_text_field((string) $data[$k]);
             }
         }
-        // #565 — multi-sort toggle (default ON via service).
+        // #565 - multi-sort toggle (default ON via service).
         if (isset($data['enable_multi_sort'])) {
             $settings['enable_multi_sort'] = filter_var($data['enable_multi_sort'], FILTER_VALIDATE_BOOLEAN);
         }
-        // #531 — print settings (service normalize).
+        // #531 - print settings (service normalize).
         if (isset($data['print_settings']) && is_array($data['print_settings']) && class_exists('TC_Print_Settings_Service')) {
             $settings['print_settings'] = TC_Print_Settings_Service::normalize($data['print_settings']);
         }
@@ -2375,7 +2375,7 @@ class TC_Admin
                 return in_array((string) $v, ['', 'star_rating', 'badge'], true) ? (string) $v : '';
             }, $data['column_cell_types']);
         }
-        // #1741 — TC_Badge_Service per-column badge map. Sanitized by the service.
+        // #1741 - TC_Badge_Service per-column badge map. Sanitized by the service.
         if (isset($data['column_badge_maps']) && is_array($data['column_badge_maps']) && class_exists('TC_Badge_Service')) {
             $badge_maps = [];
             foreach ($data['column_badge_maps'] as $field_id => $raw_map) {
@@ -2390,7 +2390,7 @@ class TC_Admin
                 $settings['column_badge_maps'] = $badge_maps;
             }
         }
-        // #1742 — TC_Validation_Service per-column inline-edit validation rules (Pro).
+        // #1742 - TC_Validation_Service per-column inline-edit validation rules (Pro).
         // PERSIST-STRIP on free tier: the free-tier gate matches the server-side
         // gt_is_premium() check in templates/table.php (RENDER-STRIP). Both layers
         // must agree so a free user can never add validation rules to cells they
@@ -2409,7 +2409,7 @@ class TC_Admin
                 return in_array($u, $allowed, true) ? $u : '';
             }, $data['column_aggregations']);
         }
-        // Data Bars (#1731) — Pro-gated per-column value bars. The service
+        // Data Bars (#1731) - Pro-gated per-column value bars. The service
         // persist-strips the whole block on the free tier (returns []), so
         // a free user can never persist it even via a hand-edited payload.
         // Only write the key when there is something to store.
@@ -2419,7 +2419,7 @@ class TC_Admin
                 $settings['column_data_bars'] = $gt_bars;
             }
         }
-        // TC_Row_Height_Service — row_height / header_height accept preset
+        // TC_Row_Height_Service - row_height / header_height accept preset
         // names or CSS values; service runtime validates via regex. Server
         // here just trims + sanitize_text_field; bad values render as
         // empty (no inline style emitted).
@@ -2433,7 +2433,7 @@ class TC_Admin
             $om = (string) $data['row_overflow_mode'];
             $settings['row_overflow_mode'] = in_array($om, ['ellipsis', 'expand'], true) ? $om : 'ellipsis';
         }
-        // TC_Detail_Rows_Service — per-column detail-only flag (#556).
+        // TC_Detail_Rows_Service - per-column detail-only flag (#556).
         // Service's normalize_column coerces truthy strings (1/true/on/yes)
         // + literal true / int 1; everything else is false. We mirror that
         // shape here for each entry in the flat field_id => bool map.
@@ -2452,7 +2452,7 @@ class TC_Admin
             $settings['column_detail_only'] = $clean;
         }
 
-        // #1746 — per-column role visibility (Pro).
+        // #1746 - per-column role visibility (Pro).
         // column_role_visibility: field_id => string[] of allowed WP role slugs.
         if ( gt_is_premium() && isset( $data['column_role_visibility'] ) && is_array( $data['column_role_visibility'] ) ) {
             $crv = [];
@@ -2468,7 +2468,7 @@ class TC_Admin
             $settings['column_role_visibility'] = $crv;
         }
 
-        // TC_Default_Sort_Service — per-table default sort column + direction.
+        // TC_Default_Sort_Service - per-table default sort column + direction.
         // Service's get_sort_column runs sanitize_key, get_sort_direction
         // normalizes to asc/desc. Mirror the same shape here.
         if (isset($data['default_sort_column'])) {
@@ -2482,14 +2482,14 @@ class TC_Admin
         if (isset($data['persist_filters_localstorage'])) {
             $settings['persist_filters_localstorage'] = filter_var($data['persist_filters_localstorage'], FILTER_VALIDATE_BOOLEAN);
         }
-        // TC_Collapsible_Service — whole-table collapse toggle (off by default).
+        // TC_Collapsible_Service - whole-table collapse toggle (off by default).
         if (isset($data['collapsible_enabled'])) {
             $settings['collapsible_enabled'] = filter_var($data['collapsible_enabled'], FILTER_VALIDATE_BOOLEAN);
         }
         if (isset($data['collapsible_default_collapsed'])) {
             $settings['collapsible_default_collapsed'] = filter_var($data['collapsible_default_collapsed'], FILTER_VALIDATE_BOOLEAN);
         }
-        // #2338 — TC_Row_Grouping_Service: group rows under sub-heading rows.
+        // #2338 - TC_Row_Grouping_Service: group rows under sub-heading rows.
         // group_by_column  : single field_id (string, sanitize_key).
         // group_by_columns : ordered field_id array for hierarchical grouping.
         // group_default_collapsed : whether groups start collapsed (bool).
@@ -2514,7 +2514,7 @@ class TC_Admin
             $settings['group_label_prefix'] = sanitize_text_field((string) $data['group_label_prefix']);
         }
 
-        // #2340 — index column label (plain text, defaults to "#" on the frontend).
+        // #2340 - index column label (plain text, defaults to "#" on the frontend).
         if (isset($data['index_column_label'])) {
             $settings['index_column_label'] = sanitize_text_field((string) $data['index_column_label']);
         }
@@ -2841,7 +2841,7 @@ class TC_Admin
                 $sanitized_config['width'] = sanitize_text_field($config['width']);
             }
 
-            // #2281 — column_type override for type-aware inline-edit sanitization
+            // #2281 - column_type override for type-aware inline-edit sanitization
             // and frontend editor selection. Whitelist matches the types handled
             // by sanitize_field_value and edit-field.js.
             if (isset($config['column_type']) && is_string($config['column_type'])) {
@@ -2964,7 +2964,7 @@ class TC_Admin
                     $i = $end;
                     continue;
                 }
-                // Has a block — scope the inner content
+                // Has a block - scope the inner content
                 $depth = 1;
                 $j = $brace_pos + 1;
                 while ($j < $len && $depth > 0) {

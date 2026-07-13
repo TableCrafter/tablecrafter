@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/row-link-resolver.js
+ * TableCrafter - frontend/row-link-resolver.js
  *
  * Row-link template resolver (#567). #832 slice 3 of N.
  *
@@ -21,7 +21,7 @@
  *       empty.
  *
  *       aria-label uses entry_id when present (#567 slice 2.1); falls
- *       back to plain "Open entry" when entry_id is undefined — custom
+ *       back to plain "Open entry" when entry_id is undefined - custom
  *       data sources like woocommerce_products and JSON/REST adapters
  *       don't expose a numeric entry_id, and screen readers should
  *       never announce "Open entry #undefined" (#567 slice 2.2).

@@ -2,7 +2,7 @@
 /**
  * TC_Airtable_Sync_Engine
  *
- * Issue #517 — slice 2 of N. HTTP layer over the slice-1 request
+ * Issue #517 - slice 2 of N. HTTP layer over the slice-1 request
  * builder. Calls wp_remote_get under the hood (injectable so unit
  * tests don't require WP), auto-paginates, and surfaces errors as
  * a structured return shape.
@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
 // @codeCoverageIgnoreEnd
 class TC_Airtable_Sync_Engine {
 
-    const MAX_PAGES = 100; // safety cap — 100 pages * 100 records = 10k rows per sync.
+    const MAX_PAGES = 100; // safety cap - 100 pages * 100 records = 10k rows per sync.
 
     /**
      * Fetch all records for a base+table, auto-paginating until the
@@ -37,7 +37,7 @@ class TC_Airtable_Sync_Engine {
      * @param string        $table_id  table name or id
      * @param string        $token     Airtable API key / PAT
      * @param array         $opts      ['page_size' => int, 'max_pages' => int]
-     *                                 max_pages caps pagination (#2240 — the
+     *                                 max_pages caps pagination (#2240 - the
      *                                 builder preview samples one page instead
      *                                 of pulling the whole table).
      * @param callable|null $http      injectable transport with the
@@ -127,7 +127,7 @@ class TC_Airtable_Sync_Engine {
 
     /**
      * PATCH a single record's fields. The write half of two-way sync
-     * (#517 slice 4 / #613 broader). Pure addition — no admin caller
+     * (#517 slice 4 / #613 broader). Pure addition - no admin caller
      * yet (slice 4b owes the AJAX wire).
      *
      * @param string        $base_id    Airtable base id (e.g. "appAbc")
@@ -135,7 +135,7 @@ class TC_Airtable_Sync_Engine {
      * @param string        $record_id  e.g. "recXyZ"
      * @param array         $fields     map of Airtable column name => new value
      * @param string        $token      Airtable PAT with data.records:write scope
-     * @param callable|null $http       transport (wp_remote_request shape) — injected for tests
+     * @param callable|null $http       transport (wp_remote_request shape) - injected for tests
      *
      * @return array ['ok' => bool, 'record' => array|null, 'http_code' => int|null, 'error' => string|null]
      */
@@ -144,7 +144,7 @@ class TC_Airtable_Sync_Engine {
             return ['ok' => false, 'record' => null, 'http_code' => null, 'error' => 'missing token / auth'];
         }
         if (empty($fields)) {
-            return ['ok' => false, 'record' => null, 'http_code' => null, 'error' => 'empty fields — nothing to update'];
+            return ['ok' => false, 'record' => null, 'http_code' => null, 'error' => 'empty fields - nothing to update'];
         }
         $url = TC_Airtable_Request_Builder::build_record_url($base_id, $table_id, $record_id);
         if ($url === '') {
@@ -180,7 +180,7 @@ class TC_Airtable_Sync_Engine {
     /**
      * Whether an HTTP status code is worth retrying. 429 (rate limit)
      * and 5xx (server-side) are retryable; 2xx + 4xx (except 429) are
-     * terminal — caller shouldn't keep hammering on them.
+     * terminal - caller shouldn't keep hammering on them.
      */
     public static function is_retryable_status(int $http_code): bool {
         if ($http_code === 429) {
@@ -190,7 +190,7 @@ class TC_Airtable_Sync_Engine {
     }
 
     /**
-     * #994 v4.173.0 — Phase C of #517. Per-table cached rows helper.
+     * #994 v4.173.0 - Phase C of #517. Per-table cached rows helper.
      *
      * Mirrors TC_JSON_Source_Service::get_cached_rows_for_table from #987.
      * Loads the table's stored Airtable settings, decrypts the PAT, fetches
@@ -246,7 +246,7 @@ class TC_Airtable_Sync_Engine {
             return new \WP_Error('gt_airtable_decrypt_failed', __('Could not decrypt stored Airtable PAT', 'tc-data-tables'));
         }
 
-        // Reuse the json_refresh_minutes shape — same semantics, mirrored across the two
+        // Reuse the json_refresh_minutes shape - same semantics, mirrored across the two
         // data-source families. Default 30, clamped to [5*MINUTE, DAY_IN_SECONDS].
         $refresh_minutes = isset($settings['json_refresh_minutes']) ? (int) $settings['json_refresh_minutes'] : 30;
         $ttl = max(5 * MINUTE_IN_SECONDS, min(DAY_IN_SECONDS, $refresh_minutes * MINUTE_IN_SECONDS));
@@ -374,7 +374,7 @@ class TC_Airtable_Sync_Engine {
     }
 
     /**
-     * #1920 — List Airtable bases accessible with the given PAT.
+     * #1920 - List Airtable bases accessible with the given PAT.
      *
      * Calls GET https://api.airtable.com/v0/meta/bases (requires
      * `schema.bases:read` scope on the PAT).
@@ -423,7 +423,7 @@ class TC_Airtable_Sync_Engine {
     }
 
     /**
-     * #1920 — List tables in a specific Airtable base.
+     * #1920 - List tables in a specific Airtable base.
      *
      * Calls GET https://api.airtable.com/v0/meta/bases/{baseId}/tables
      * (requires `schema.bases:read` scope on the PAT).

@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/detail-row.js
+ * TableCrafter - frontend/detail-row.js
  *
  * #556 expandable detail-rows render path. #832 slice 9 of N.
  *

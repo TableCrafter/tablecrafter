@@ -1,14 +1,14 @@
 /**
- * TableCrafter — frontend/row-edit.js
+ * TableCrafter - frontend/row-edit.js
  *
  * Full-row edit feature. Fifteenth slice under #833. Two methods,
  * ~126 lines.
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - editEntireRow(entryId) — expand a row into "edit-all-cells"
+ *   - editEntireRow(entryId) - expand a row into "edit-all-cells"
  *     mode: render every editable cell as an inline input at once.
- *   - saveAllFields(entryId) — batch-save AJAX: collect every cell
+ *   - saveAllFields(entryId) - batch-save AJAX: collect every cell
  *     value in the row, POST as a single gt_update_entry call.
  */
 (function (window) {
@@ -101,7 +101,7 @@
             entry_id: entryId,
             fields: fieldsToSave
         };
-        // #553 slice 3 — WAF-safe payload encode for the bulk-edit path.
+        // #553 slice 3 - WAF-safe payload encode for the bulk-edit path.
         // Mirrors the per-field encode above; same gt_waf_safe_payload_enabled
         // filter gate; same opaque base64 envelope under `payload`.
         if (this.config && this.config.waf_safe_payload) {

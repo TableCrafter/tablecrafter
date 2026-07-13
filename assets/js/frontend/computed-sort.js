@@ -1,7 +1,7 @@
 /**
- * TableCrafter — frontend/computed-sort.js
+ * TableCrafter - frontend/computed-sort.js
  *
- * #1621 — client-side sort for computed columns. Computed values
+ * #1621 - client-side sort for computed columns. Computed values
  * (gtc_*) have no DB column, so SQL ORDER BY can't see them; their
  * th carries .gt-client-sortable (instead of .gt-sortable) and this
  * module reorders the LOADED page's rows in the DOM. Numeric-aware:

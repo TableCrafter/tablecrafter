@@ -2,7 +2,7 @@
 /**
  * TC_Table_Password_Service
  *
- * Issue #607 — slice 1 of N. Pure helper for per-table password
+ * Issue #607 - slice 1 of N. Pure helper for per-table password
  * protection. Slice 2 wires the admin "Password (optional)" field +
  * AJAX save sanitization. Slice 3 wires the frontend gate (visitor
  * sees a password form instead of the table; correct password
@@ -150,7 +150,7 @@ class TC_Table_Password_Service {
     }
 
     /**
-     * #1632 — request-context unlock check for stateless callers (REST /
+     * #1632 - request-context unlock check for stateless callers (REST /
      * AJAX). Reads the visitor's signed cookie and verifies it the same
      * way TC_Shortcode::apply_password_gate() does. Returns true when the
      * table has no password set, or when a valid unlock cookie is present.

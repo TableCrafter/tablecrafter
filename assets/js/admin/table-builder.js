@@ -1,5 +1,5 @@
 /**
- * TableCrafter — admin/table-builder.js
+ * TableCrafter - admin/table-builder.js
  *
  * Second slice of #842 (admin.js monolith split). Drag-and-drop interaction layer.
  *
@@ -71,7 +71,7 @@
                 onAdd: function (evt) {
                     var fieldId = evt.item.getAttribute('data-field-id');
 
-                    // Free plan column limit — undo the drop by reattaching to source
+                    // Free plan column limit - undo the drop by reattaching to source
                     if (gtAdmin.limits.max_columns !== -1 && self.selectedFields.length >= gtAdmin.limits.max_columns) {
                         if (evt.from && typeof evt.oldIndex === 'number') {
                             var siblings = evt.from.children;

@@ -3,7 +3,7 @@
  *
  * Server-rendered block that displays a TableCrafter table by id. The preview
  * in the editor uses ServerSideRender so it matches the front end exactly. No
- * build step — written against the wp.* globals with wp.element.createElement.
+ * build step - written against the wp.* globals with wp.element.createElement.
  *
  * #2351 additions:
  *  - Inspector controls: perPage (RangeControl), search / showExport / filters /
@@ -236,14 +236,14 @@
 			return [ inspector, el( 'div', { key: 'gt-block' }, body ) ];
 		},
 
-		// Dynamic block — rendered by PHP render_callback.
+		// Dynamic block - rendered by PHP render_callback.
 		save: function () {
 			return null;
 		},
 	} );
 
 	// -----------------------------------------------------------------
-	// #2144 — back-compat for the 3.5.x `tablecrafter/data-table` block
+	// #2144 - back-compat for the 3.5.x `tablecrafter/data-table` block
 	// -----------------------------------------------------------------
 	blocks.registerBlockType( 'tablecrafter/data-table', {
 		apiVersion: 2,
@@ -298,7 +298,7 @@
 			return [ inspector, el( 'div', { key: 'gt-legacy-block' }, body ) ];
 		},
 
-		// Dynamic block — rendered by PHP render_callback.
+		// Dynamic block - rendered by PHP render_callback.
 		save: function () {
 			return null;
 		},

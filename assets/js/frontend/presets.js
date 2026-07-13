@@ -1,30 +1,30 @@
 /**
- * TableCrafter — frontend/presets.js
+ * TableCrafter - frontend/presets.js
  *
  * Saved-filter / saved-view "preset" subsystem. Fifth slice under
  * #833. Eight helpers, ~232 lines.
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - initPresets()              — bootstrap UI, wire toolbar
+ *   - initPresets() - bootstrap UI, wire toolbar
  *                                  handlers (select change, save,
  *                                  delete), kick off loadPresets.
- *   - findPresetById(presetId)   — pure linear search in
+ *   - findPresetById(presetId) - pure linear search in
  *                                  this._presets.
- *   - renderPresetOptions()      — populate the toolbar <select>
+ *   - renderPresetOptions() - populate the toolbar <select>
  *                                  from this._presets, restore the
  *                                  currently-selected value if it
  *                                  survived the refresh.
- *   - loadPresets()              — AJAX gt_get_filter_presets, write
+ *   - loadPresets() - AJAX gt_get_filter_presets, write
  *                                  response into this._presets, then
  *                                  renderPresetOptions.
- *   - savePresetPrompt()         — window.prompt for the name, then
+ *   - savePresetPrompt() - window.prompt for the name, then
  *                                  AJAX gt_save_filter_preset with the
  *                                  current this.filters payload.
- *   - deletePreset(presetId)     — AJAX gt_delete_filter_preset, then
+ *   - deletePreset(presetId) - AJAX gt_delete_filter_preset, then
  *                                  refresh options.
- *   - applyPresetById(presetId)  — findPresetById + applyPresetFilters.
- *   - applyPresetFilters(filters)— write filter values into the input
+ *   - applyPresetById(presetId) - findPresetById + applyPresetFilters.
+ *   - applyPresetFilters(filters) - write filter values into the input
  *                                  DOM, handling each filter type
  *                                  (date_range, number_range, dropdown,
  *                                  lookup, checkboxes, text), then call
@@ -93,9 +93,9 @@
         return null;
     };
 
-    // #1605 — capture the full visitor-adjustable view state so a
+    // #1605 - capture the full visitor-adjustable view state so a
     // preset survives device changes (column order, sort stack, page
-    // size — the pieces that previously lived only in localStorage).
+    // size - the pieces that previously lived only in localStorage).
     GravityTable.prototype.capturePresetView = function () {
         var $wrapper = $('#' + this.wrapperId);
         var order = [];
@@ -112,7 +112,7 @@
         };
     };
 
-    // #1605 — re-apply a stored view. Column order routes through the
+    // #1605 - re-apply a stored view. Column order routes through the
     // existing stored-order helpers so localStorage stays in sync and
     // the established head/body reorder path does the DOM work.
     GravityTable.prototype.applyPresetView = function (view) {
@@ -146,7 +146,7 @@
         return null;
     };
 
-    // #1605 — one-shot default-view application on load. Skips when
+    // #1605 - one-shot default-view application on load. Skips when
     // the visitor already has explicit state (URL filters, restored
     // localStorage filters, or an active search) so the pin only
     // fills the fresh-device gap it was designed for.
@@ -170,7 +170,7 @@
         var html = '<option value="">Saved presets&hellip;</option>';
         var arr = this._presets || [];
         for (var i = 0; i < arr.length; i++) {
-            // #1605 — star-prefix the default view.
+            // #1605 - star-prefix the default view.
             var label = (arr[i].is_default ? '★ ' : '') + arr[i].name;
             html += '<option value="' + this.escapeHtml(arr[i].id) + '">' + this.escapeHtml(label) + '</option>';
         }
@@ -194,7 +194,7 @@
             if (response && response.success && response.data && Array.isArray(response.data.presets)) {
                 self._presets = response.data.presets;
                 self.renderPresetOptions();
-                // #1605 — default pin auto-applies on fresh devices.
+                // #1605 - default pin auto-applies on fresh devices.
                 if (typeof self.maybeApplyDefaultPreset === 'function') {
                     self.maybeApplyDefaultPreset();
                 }
@@ -212,7 +212,7 @@
             return;
         }
         var filtersJson = JSON.stringify(this.filters || {});
-        // #1605 — capture the full view state + default pin.
+        // #1605 - capture the full view state + default pin.
         var viewJson = JSON.stringify(typeof this.capturePresetView === 'function' ? this.capturePresetView() : {});
         var isDefault = window.confirm('Make this your default view for this table?') ? '1' : '0';
         $.post(this.config.ajax_url, {
@@ -259,7 +259,7 @@
     GravityTable.prototype.applyPresetById = function (presetId) {
         var preset = this.findPresetById(presetId);
         if (!preset) return;
-        // #1605 — view first (column order / sort / page size), then
+        // #1605 - view first (column order / sort / page size), then
         // filters; applyPresetFilters ends in applyFilters, which
         // reloads entries once with the full state in place.
         if (typeof this.applyPresetView === 'function' && preset.view) {
@@ -301,7 +301,7 @@
                     var $toHtml5 = $field.find('.gt-date-to-html5');
                     // Saved values are display-formatted; setting the html5 input expects YYYY-MM-DD,
                     // so write into the display input which existing apply path can re-read. The
-                    // existing applyFilters reads the html5 input only — so we restore both.
+                    // existing applyFilters reads the html5 input only - so we restore both.
                     if ($singleHtml5.length && f.from && f.from === f.to) {
                         var iso = parseDateToIso(f.from);
                         if (iso) $singleHtml5.val(iso);

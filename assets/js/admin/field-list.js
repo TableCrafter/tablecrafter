@@ -1,5 +1,5 @@
 /**
- * TableCrafter — admin/field-list.js
+ * TableCrafter - admin/field-list.js
  *
  * Seventh slice of #842 (filed as #957). Field-selection UI cluster:
  *
@@ -202,7 +202,7 @@
             //console.log('removeFieldFromSelection called with fieldId:', fieldId, typeof fieldId);
             //console.log('Current selectedFields:', this.selectedFields);
 
-            // Guard: cannot delete last column — table must have at least one column
+            // Guard: cannot delete last column - table must have at least one column
             if (this.selectedFields.length <= 1) {
                 console.warn('GT Admin: Cannot delete last column. A table must have at least one column.');
                 return;

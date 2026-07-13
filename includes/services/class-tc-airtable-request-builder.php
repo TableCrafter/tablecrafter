@@ -2,8 +2,8 @@
 /**
  * TC_Airtable_Request_Builder
  *
- * Issue #517 — slice 1 of N. Pure-function builder for Airtable REST
- * API requests. No HTTP — slice 2 (sync engine) layers on top of this.
+ * Issue #517 - slice 1 of N. Pure-function builder for Airtable REST
+ * API requests. No HTTP - slice 2 (sync engine) layers on top of this.
  *
  * Pairs with the existing TC_Airtable_Field_Mapper (schema mapping).
  *

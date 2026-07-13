@@ -34,7 +34,7 @@
                 self.saveTable($(this));
             });
 
-            // #526 slice 2/3 — Pick fallback image via GT Media Folder
+            // #526 slice 2/3 - Pick fallback image via GT Media Folder
             // adapter. Detected folder plugins (FileBird / FolderPress /
             // WP Media Folder / Real Media Library) get their folder UI
             // surfaced inside the wp.media frame automatically.
@@ -52,15 +52,15 @@
                 });
             });
 
-            // #985 v4.168.0 — JSON data source admin UI (slice 3b-2 of #512).
-            // #990 v4.171.0 — Airtable picker preview (phase A of #517).
-            // #998 v4.175.0 — Notion picker preview (phase 1 of #592).
-            // #1010 v4.181.0 — sync_direction picker for JSON + Notion (phase 1 of #613).
-            // #1013 v4.183.0 — Unified sync_direction picker across all 3 external sources
+            // #985 v4.168.0 - JSON data source admin UI (slice 3b-2 of #512).
+            // #990 v4.171.0 - Airtable picker preview (phase A of #517).
+            // #998 v4.175.0 - Notion picker preview (phase 1 of #592).
+            // #1010 v4.181.0 - sync_direction picker for JSON + Notion (phase 1 of #613).
+            // #1013 v4.183.0 - Unified sync_direction picker across all 3 external sources
             // now that the Airtable push consumer accepts both legacy + canonical naming (#1011).
             $(document).on('change', '#gt-data-source-type', function () {
                 var val = $(this).val();
-                // #2002 — google_sheets joins the external-source set.
+                // #2002 - google_sheets joins the external-source set.
                 var isExternal = (val === 'json' || val === 'airtable' || val === 'notion' || val === 'google_sheets' || val === 'xml' || val === 'csv' || val === 'external_db' || val === 'xlsx' || val === 'manual');
                 $('.gt-manual-source-fields').toggle(val === 'manual'); // #2366
                 $('.gt-json-source-fields').toggle(val === 'json');
@@ -72,12 +72,12 @@
                 $('.gt-xlsx-source-fields').toggle(val === 'xlsx');
                 $('.gt-external-db-source-fields').toggle(val === 'external_db');
                 $('.gt-woocommerce-source-fields').toggle(val === 'woocommerce_products');
-                // #2200 — WooCommerce needs no URL/config, so auto-load its product
+                // #2200 - WooCommerce needs no URL/config, so auto-load its product
                 // columns into the picker the moment the source is selected.
                 if (val === 'woocommerce_products') {
                     setTimeout(function () { $('.gt-wc-load-columns').trigger('click'); }, 100);
                 }
-                // #2240 — Airtable needs per-table config; auto-load only when the
+                // #2240 - Airtable needs per-table config; auto-load only when the
                 // base + table are already filled in (switching back to a
                 // configured source, or editing a saved table).
                 if (val === 'airtable'
@@ -85,31 +85,31 @@
                     && ($('input[name="airtable_table_id"]').val() || '')) {
                     setTimeout(function () { $('.gt-airtable-load-columns').trigger('click'); }, 100);
                 }
-                // #2241 — same for Notion when the database id is filled in (the
+                // #2241 - same for Notion when the database id is filled in (the
                 // saved token rides the table_id fallback server-side).
                 if (val === 'notion' && ($('input[name="notion_database_id"]').val() || '')) {
                     setTimeout(function () { $('.gt-notion-load-columns').trigger('click'); }, 100);
                 }
-                // #2242 — same for External DB when a connection + query are set.
+                // #2242 - same for External DB when a connection + query are set.
                 if (val === 'external_db'
                     && ($('select[name="external_db_connection"]').val() || '') !== ''
                     && ($('textarea[name="external_db_query"]').val() || '')) {
                     setTimeout(function () { $('.gt-external-db-load-columns').trigger('click'); }, 100);
                 }
                 $('.gt-sync-direction-field').toggle(isExternal);
-                // #2108 — the Gravity Form picker is only relevant for the
+                // #2108 - the Gravity Form picker is only relevant for the
                 // gravity_forms source. Hide it (and drop its `required`) for
                 // every other source so a hidden field never blocks the form.
                 var isGf = (val === 'gravity_forms');
                 $('.gt-gravity-forms-source-fields').toggle(isGf);
                 $('#gravity-form').prop('required', isGf);
-                // #2118 — contextual Pro upsell: show it the moment a free user
+                // #2118 - contextual Pro upsell: show it the moment a free user
                 // selects a Pro source (the <option> carries data-pro="1").
                 var isPro = $(this).find('option:selected').attr('data-pro') === '1';
                 $('[data-gt-source-upsell]').toggle(isPro);
             });
 
-            // #985 — Test connection button. Fires the gt_preview_json_source AJAX
+            // #985 - Test connection button. Fires the gt_preview_json_source AJAX
             // endpoint (slice 3a / v4.166.0) with the form's URL + headers + dot_path
             // and renders the inferred columns + first 5 rows in a preview block.
             $(document).on('click', '#gt-json-test-connection', function () {
@@ -162,7 +162,7 @@
                 });
             });
 
-            // #2015 — generic remote-source preview. Paste a URL, click Preview,
+            // #2015 - generic remote-source preview. Paste a URL, click Preview,
             // and see the inferred columns + total row count fetched live via the
             // matching engine (CSV / XML / Google Sheets).
             $(document).on('click', '.gt-remote-source-preview', function () {
@@ -218,7 +218,7 @@
                 });
             });
 
-            // #2200 — WooCommerce: load product columns (friendly labels) into the
+            // #2200 - WooCommerce: load product columns (friendly labels) into the
             // field picker + trigger the preview, mirroring the JSON / remote flow.
             $(document).on('click', '.gt-wc-load-columns', function () {
                 var $btn    = $(this);
@@ -243,7 +243,7 @@
                     .always(function () { $btn.prop('disabled', false); });
             });
 
-            // #2240 — Airtable: live-fetch columns with the entered (or saved)
+            // #2240 - Airtable: live-fetch columns with the entered (or saved)
             // credentials into the field picker + preview, mirroring the WC flow.
             // A blank PAT with a saved table falls back to the stored encrypted
             // token server-side (via table_id).
@@ -281,7 +281,7 @@
                   .always(function () { $btn.prop('disabled', false); });
             });
 
-            // #2241 — Notion: live-fetch columns with the entered (or saved)
+            // #2241 - Notion: live-fetch columns with the entered (or saved)
             // token into the field picker + preview, mirroring the Airtable flow.
             $(document).on('click', '.gt-notion-load-columns', function () {
                 var $btn    = $(this);
@@ -315,7 +315,7 @@
                   .always(function () { $btn.prop('disabled', false); });
             });
 
-            // #2242 — External DB: run the entered query against the selected
+            // #2242 - External DB: run the entered query against the selected
             // saved connection and load the result columns into the field
             // picker + preview, mirroring the Airtable / Notion flow.
             $(document).on('click', '.gt-external-db-load-columns', function () {
@@ -350,11 +350,11 @@
                   .always(function () { $btn.prop('disabled', false); });
             });
 
-            // #2063 — one-click demo table creation.
+            // #2063 - one-click demo table creation.
             $(document).on('click', '.gt-load-demo', function () {
                 var $btn    = $(this);
                 var demo    = $btn.data('demo');
-                // #2196 — template cards live in .gt-template-card (no <p> ancestor),
+                // #2196 - template cards live in .gt-template-card (no <p> ancestor),
                 // so widen the lookup; fall back to a sibling so feedback always lands.
                 var $result = $btn.closest('p, .gt-template-card').find('.gt-load-demo-result');
                 if (!$result.length) { $result = $btn.siblings('.gt-load-demo-result'); }
@@ -376,7 +376,7 @@
                     .always(function () { $btn.prop('disabled', false); });
             });
 
-            // #2021 — run the rebrand data migration from the admin prompt.
+            // #2021 - run the rebrand data migration from the admin prompt.
             $(document).on('click', '.gt-run-migration', function () {
                 var $btn    = $(this);
                 var $notice = $btn.closest('.gt-migration-notice');
@@ -401,13 +401,13 @@
                 });
             });
 
-            // #2021 — persist dismissal when the notice's X is clicked.
+            // #2021 - persist dismissal when the notice's X is clicked.
             $(document).on('click', '.gt-migration-notice .notice-dismiss', function () {
                 var nonce = $(this).closest('.gt-migration-notice').data('nonce') || gtAdmin.nonce;
                 $.post(gtAdmin.ajax_url, { action: 'gt_dismiss_migration_notice', nonce: nonce });
             });
 
-            // #2022 — migrate deprecated [gravity_table] shortcodes in post content.
+            // #2022 - migrate deprecated [gravity_table] shortcodes in post content.
             $(document).on('click', '.gt-migrate-shortcodes', function () {
                 var $btn    = $(this);
                 var dryRun  = String($btn.data('dry-run')) === '1';
@@ -438,7 +438,7 @@
                 });
             });
 
-            // #516 slice 2 — clipboard paste preview + apply.
+            // #516 slice 2 - clipboard paste preview + apply.
             $(document).on('click', '#gt-paste-preview-btn', function () {
                 var $btn    = $(this);
                 var $status = $('#gt-paste-status');
@@ -488,7 +488,7 @@
                   .always(function () { $btn.prop('disabled', false); });
             });
 
-            // #519 slice 3 — "Run export now" button. Calls the
+            // #519 slice 3 - "Run export now" button. Calls the
             // wp_ajax_gt_run_scheduled_export handler on
             // TC_Scheduled_Export_Service. Capability gate is
             // server-side (manage_options).
@@ -693,7 +693,7 @@
                 self.handleFilterTypeChange($(this).val());
             });
 
-            // #1741 — show/hide badge map textarea when cell type switches to/from badge
+            // #1741 - show/hide badge map textarea when cell type switches to/from badge
             $('#field-cell-type').on('change', function () {
                 $('.gt-badge-map-row').toggle($(this).val() === 'badge');
             });
@@ -886,7 +886,7 @@
                 }
             });
 
-            // #1748 — email alert rule add/remove
+            // #1748 - email alert rule add/remove
             $(document).off('click', '#gt-add-alert-rule');
             $(document).on('click', '#gt-add-alert-rule', function (e) {
                 e.preventDefault();

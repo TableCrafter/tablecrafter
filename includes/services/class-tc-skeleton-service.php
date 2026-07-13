@@ -103,13 +103,13 @@ class TC_Skeleton_Service {
     /**
      * Generate CSS for the skeleton animation, scoped to the given table.
      *
-     * Uses CSS-only @keyframes shimmer — no JS required. Includes a
+     * Uses CSS-only @keyframes shimmer - no JS required. Includes a
      * prefers-reduced-motion media query that disables animation for users
      * who have that OS preference set.
      *
      * @param int   $table_id
      * @param array $settings
-     * @return string  CSS string (no <style> wrapper — use wp_add_inline_style).
+     * @return string  CSS string (no <style> wrapper - use wp_add_inline_style).
      */
     public static function get_css( int $table_id, array $settings ): string {
         $table_id = (int) $table_id;
@@ -123,7 +123,7 @@ class TC_Skeleton_Service {
         $row_height = preg_match( '/^\d+(\.\d+)?(px|em|rem|vh)$/', $row_height ) ? $row_height : '48px';
 
         $css = "
-/* Gravity Tables skeleton loader — table #gt-table-{$table_id} */
+/* Gravity Tables skeleton loader - table #gt-table-{$table_id} */
 @keyframes gt-shimmer-{$table_id} {
     0%   { background-position: -400px 0; }
     100% { background-position: 400px 0; }
@@ -171,7 +171,7 @@ class TC_Skeleton_Service {
     to { transform: rotate(360deg); }
 }
 
-/* Respect user OS preference — disable all animation */
+/* Respect user OS preference - disable all animation */
 @media (prefers-reduced-motion: reduce) {
     #gt-skeleton-{$table_id} .gt-skeleton-bar,
     #gt-skeleton-{$table_id} .gt-spinner {

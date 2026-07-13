@@ -4,7 +4,7 @@
  *
  * Issue #798 (child of #793). GF checkbox fields store each option
  * as a separate sub-input (`N.1`, `N.2`, `N.3`, ...). The bare
- * `$entry[N]` slot is empty for composites — without this renderer,
+ * `$entry[N]` slot is empty for composites - without this renderer,
  * checkbox-field cells appear blank.
  *
  * This service composes the non-empty sub-inputs into a single
@@ -46,7 +46,7 @@ class TC_Checkbox_Field_Renderer {
                 continue;
             }
             $tail = substr($key_str, $prefix_len);
-            // Tail must be a positive integer — guards against
+            // Tail must be a positive integer - guards against
             // accidental matches like "5.foo" or "5.1.2" (defensive).
             if (!ctype_digit($tail) || (int) $tail < 1) {
                 continue;
@@ -90,7 +90,7 @@ class TC_Checkbox_Field_Renderer {
     }
 
     /**
-     * Substring-searchable concatenation — space-joined selected
+     * Substring-searchable concatenation - space-joined selected
      * values. Used by filter paths that test `LIKE %query%`.
      */
     public static function searchable_blob(array $entry, string $field_id): string {

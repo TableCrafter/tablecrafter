@@ -1,6 +1,6 @@
 <?php
 /**
- * Wizard Step 3 — Column picker (#1981)
+ * Wizard Step 3 - Column picker (#1981)
  *
  * @package GravityTables
  */

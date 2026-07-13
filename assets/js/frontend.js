@@ -7,7 +7,7 @@
     // .parseCurrency / .currencySort / .checkVersionMismatch / .VERSION.
     // TC_JS_VERSION kept here as a local alias for the few existing call
     // sites in this file (init() still references it via the namespace).
-    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.44';
+    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.45';
 
     // Initialize all tables on the page
     $(document).ready(function () {
@@ -86,7 +86,7 @@
             this.currentPage = 1;
             this.sortField = 'date_created';
             this.sortOrder = 'desc';
-            // #565 — multi-column sort stack (max 3). sortField/sortOrder kept
+            // #565 - multi-column sort stack (max 3). sortField/sortOrder kept
             // as the primary entry for backward compat with the single-sort
             // SQL path; the stack is sent to the server as additional state and
             // surfaced visually via numbered badges on the column headers.
@@ -94,7 +94,7 @@
             this.sortStack = [{ column_id: this.sortField, direction: this.sortOrder }];
             this.searchTerm = '';
             this.filters = {};
-            // #568 slice 4 — Seed initial drilldown filters from config (URL-seeded in template).
+            // #568 slice 4 - Seed initial drilldown filters from config (URL-seeded in template).
             this.drilldownFilters = (config && config.drilldown_filters && Array.isArray(config.drilldown_filters)) ? config.drilldown_filters : [];
         };
         if (existingProto) {
@@ -104,14 +104,14 @@
         window.GravityTable = GT;
     })();
 
-    // init moved to assets/js/frontend/init.js (#833 slice 23 / #947 — FINAL slice).
+    // init moved to assets/js/frontend/init.js (#833 slice 23 / #947 - FINAL slice).
 
     // initializeColumnResizing moved to assets/js/frontend/column-resizing.js (#833 slice 17 / #935).
 
     // Persistent filter state via browser localStorage. Storage key matches
     // the column-widths / column-order pattern: tied to this.config.table_id
     // so multiple tables on the same page persist independently. Try/catch
-    // around every localStorage call — defensive for quota exceeded, private
+    // around every localStorage call - defensive for quota exceeded, private
     // browsing, or disabled localStorage. Sort state is intentionally NOT
     // persisted; per-table default sort (v4.9.11) handles initial sort.
     // Filter state localStorage persistence (_filterStateStorageKey,
@@ -119,7 +119,7 @@
     // moved to assets/js/frontend/filter-state-persistence.js (#832 slice 14).
 
 
-    // #568 slice 4 — Update the browser URL with the current drilldown filter state.
+    // #568 slice 4 - Update the browser URL with the current drilldown filter state.
     // Serializes this.drilldownFilters into ?gt_df=col:val,col:val and uses
     // history.pushState to update the address bar without a reload.
     // updateDrilldownUrlState + applyUrlFilters moved to assets/js/frontend/url-state.js (#833 slice 20 / #941).
@@ -153,7 +153,7 @@
 
     // destroy moved to assets/js/frontend/table-utils.js (#833 slice 19 / #939).
 
-    // initVisibilityObserver moved to assets/js/frontend/observers.js (#840 — second
+    // initVisibilityObserver moved to assets/js/frontend/observers.js (#840 - second
     // child of #830). Module attaches to GravityTable.prototype via Object.assign so
     // the public surface (this.initVisibilityObserver(...)) stays unchanged.
 
@@ -162,7 +162,7 @@
     /* -----------------------------------------------------------------
      * Undo / Redo (#39)
      *
-     * #833 slice 1 — nine helpers (initUndoRedo, pushHistoryEntry,
+     * #833 slice 1 - nine helpers (initUndoRedo, pushHistoryEntry,
      * updateUndoRedoButtons, undoLastEdit, redoLastEdit,
      * replayHistoryEntry, getFieldLabel, shortValue, showUndoToast)
      * moved to assets/js/frontend/edit-history.js.

@@ -52,7 +52,7 @@ class TC_Blocks {
      * Server-side render callback for the gravity-tables/table block.
      *
      * Delegates to do_shortcode() so the block and the shortcode always produce
-     * identical markup — no separate rendering path to maintain.
+     * identical markup - no separate rendering path to maintain.
      *
      * @param array $attributes Block attributes from the editor.
      * @return string HTML output.

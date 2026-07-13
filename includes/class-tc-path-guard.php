@@ -4,7 +4,7 @@
  *
  * Used wherever the plugin reads a file path that may come from
  * configuration or user input. Guarantees the resolved real path lives
- * inside an explicitly allowed base directory — defeats `../`, backslash,
+ * inside an explicitly allowed base directory - defeats `../`, backslash,
  * doubled-dot, and null-byte traversal payloads in one place.
  */
 
@@ -30,7 +30,7 @@ class TC_Path_Guard
             return false;
         }
 
-        // Null-byte injection (`evil.xml\0.jpg`) — refuse outright.
+        // Null-byte injection (`evil.xml\0.jpg`) - refuse outright.
         if (strpos($path, "\0") !== false) {
             return false;
         }

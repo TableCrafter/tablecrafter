@@ -1,4 +1,4 @@
-/* TableCrafter Admin Dashboard — admin-dashboard.css */
+/* TableCrafter Admin Dashboard - admin-dashboard.css */
 
 .gt-dashboard-layout {
     max-width: 1200px;
@@ -99,7 +99,7 @@
     border: none;
 }
 
-/* Stats widget. #2257 — the card count varies (Total/Active/Trash + one per
+/* Stats widget. #2257 - the card count varies (Total/Active/Trash + one per
    data source in use), so let the grid flow instead of fixing 3 columns. */
 .gt-stats-grid {
     display: grid;

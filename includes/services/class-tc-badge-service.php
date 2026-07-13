@@ -1,6 +1,6 @@
 <?php
 /**
- * #1741 — Status Badge Cell Type (Free).
+ * #1741 - Status Badge Cell Type (Free).
  *
  * Renders a colored pill badge for a cell value when the value appears
  * in the configured badge map for that column. Pure static helpers.

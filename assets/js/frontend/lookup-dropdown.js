@@ -1,8 +1,8 @@
 /**
- * TableCrafter — frontend/lookup-dropdown.js
+ * TableCrafter - frontend/lookup-dropdown.js
  *
  * Generic (non-AJS-toolkit) lookup-field dropdown populator. Eighth
- * slice under #833. One method, ~275 lines — the largest single
+ * slice under #833. One method, ~275 lines - the largest single
  * extraction yet.
  *
  * Public surface (attached directly to GravityTable.prototype):
@@ -25,7 +25,7 @@
  *      message, then falls back to a plain text editor after 3
  *      seconds with the same keyboard / blur save lifecycle.
  *
- * Pairs with edit-save.js (slice 2) — every save path routes through
+ * Pairs with edit-save.js (slice 2) - every save path routes through
  * this.saveField on the prototype.
  */
 (function (window) {
@@ -140,7 +140,7 @@
 
         // Make AJAX call to get lookup options.
         // #914: previously emitted a `console.log('GT Lookup: Making AJAX
-        // request...')` on every customer edit — removed to keep the console
+        // request...')` on every customer edit - removed to keep the console
         // clean. Re-enable behind a debug flag if diagnostics needed.
 
         $.post(this.config.ajax_url, {

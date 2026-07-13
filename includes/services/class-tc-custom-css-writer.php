@@ -3,7 +3,7 @@
  * Cross-platform custom CSS file writer for Gravity Tables.
  *
  * Writes per-table custom CSS to the uploads directory using the WP_Filesystem
- * API so the correct file abstraction layer is used on all server types —
+ * API so the correct file abstraction layer is used on all server types - 
  * including Windows (IIS) and network-share (UNC) paths where the raw PHP
  * filesystem call fails silently.
  *
@@ -130,7 +130,7 @@ class TC_Custom_CSS_Writer {
             return;
         }
         echo '<div class="notice notice-warning is-dismissible"><p>';
-        echo '<strong>' . esc_html__( 'TableCrafter — CSS Write Warning:', 'tc-data-tables' ) . '</strong> ';
+        echo '<strong>' . esc_html__( 'TableCrafter - CSS Write Warning:', 'tc-data-tables' ) . '</strong> ';
         echo esc_html( $error );
         echo '</p></div>';
     }

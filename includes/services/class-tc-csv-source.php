@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_CSV_Source — live remote-CSV data source.
+ * TC_CSV_Source - live remote-CSV data source.
  *
  * Issue #2010 (convergence epic #2006, Phase 2). Ported from the free plugin's
  * TC_CSV_Source. Distinct from the one-shot TC_Import: this fetches a CSV URL
@@ -26,7 +26,7 @@ class TC_CSV_Source
             return $cached;
         }
 
-        // Bundled demo files are trusted local assets — read from disk so the
+        // Bundled demo files are trusted local assets - read from disk so the
         // demos work on private/local hosts (the SSRF gate blocks loopback URLs).
         if (class_exists('TC_Demo_Data')) {
             $local = \TC_Demo_Data::read_local_body($url);
@@ -37,7 +37,7 @@ class TC_CSV_Source
             }
         }
 
-        // SSRF gate — block loopback / private subnets (shared validator, #1075).
+        // SSRF gate - block loopback / private subnets (shared validator, #1075).
         if (function_exists('gt_validate_outbound_url') && !gt_validate_outbound_url($url)) {
             return new WP_Error(
                 'gt_outbound_url_rejected',

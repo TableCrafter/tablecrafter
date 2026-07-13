@@ -2,7 +2,7 @@
 /**
  * TC_Row_Expiry_Service
  *
- * Issue #501 — slice 1 of 3. Pure date-math helper that decides
+ * Issue #501 - slice 1 of 3. Pure date-math helper that decides
  * whether a row's expiry date has passed, and which mode the table
  * operator picked (hide / strikethrough / move-to-bottom / upcoming
  * only). Future slices add:
@@ -11,7 +11,7 @@
  *     'Behavior' selector, optional 'Grace period' /
  *     'Show only upcoming' toggles), persisted via the existing
  *     settings save chain.
- *   - Slice 3: AJAX / render integration — frontend query path
+ *   - Slice 3: AJAX / render integration - frontend query path
  *     filters or annotates rows according to the per-table setting.
  *
  * The service is timezone-aware (defaults to UTC), supports a grace
@@ -26,7 +26,7 @@
  *   - 'upcoming_only'  → INVERSE: only future-dated rows render.
  *                        Useful for sneak-peek / pre-order tables.
  *
- * Unknown modes default to render-true (defensive — better to over-show
+ * Unknown modes default to render-true (defensive - better to over-show
  * than silently hide if the per-table setting got garbled).
  *
  * @since 4.7.30

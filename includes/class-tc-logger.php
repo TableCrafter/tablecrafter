@@ -21,7 +21,7 @@ class TC_Logger {
     private $max_log_size = 5242880; // 5MB
     private $max_log_files = 5;
 
-    // #667 slice 28 — PHPUnit-shim fixture knob (issue #1087).
+    // #667 slice 28 - PHPUnit-shim fixture knob (issue #1087).
     //
     // tests/test-issue-72-insert-row-errors.php drives logging
     // assertions by writing to TC_Logger::$last_log. Under
@@ -32,7 +32,7 @@ class TC_Logger {
     // prop target THIS class. Declaring it here lets those writes
     // succeed without "Access to undeclared static property" fatals.
     //
-    // Production callers NEVER read this prop — it exists solely as a
+    // Production callers NEVER read this prop - it exists solely as a
     // test fixture sink. Default is the empty array so a stray
     // production read would be safe-by-default.
     //
@@ -47,7 +47,7 @@ class TC_Logger {
     }
 
     public static function get_instance() {
-        // #667 slice 28 — PHPUnit-shim test seam (issue #1087).
+        // #667 slice 28 - PHPUnit-shim test seam (issue #1087).
         //
         // Production safety: this branch is gated on the TC_PHPUNIT_SHIM
         // constant which is ONLY defined by tests/PHPUnitShimTest.php and

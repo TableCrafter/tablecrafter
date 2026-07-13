@@ -2,13 +2,13 @@
 /**
  * TC_Excel_Date_Decoder
  *
- * Issue #559 — convert Excel-epoch serial numbers (e.g. `44927`) to
+ * Issue #559 - convert Excel-epoch serial numbers (e.g. `44927`) to
  * human-readable ISO 8601 dates (`2023-01-01`). Mirrors a recurring
  * TablePress complaint where the underlying PhpSpreadsheet library
  * returns dates as numeric Excel-epoch values and naive importers
  * store the number verbatim.
  *
- * Pure helper — no PhpSpreadsheet dependency. Foundational service
+ * Pure helper - no PhpSpreadsheet dependency. Foundational service
  * ahead of the XLSX import path (deferred per
  * `class-tc-import.php:11`). When that import lands, every cell in a
  * date-typed column routes through this decoder.
@@ -32,7 +32,7 @@ class TC_Excel_Date_Decoder {
 
     /**
      * True iff `$value` is a positive numeric in the shape an Excel
-     * serial date takes — int / float / numeric-string with no
+     * serial date takes - int / float / numeric-string with no
      * date-separator characters. Strings containing `-` or `/` are
      * treated as date strings, not serials.
      */
@@ -104,7 +104,7 @@ class TC_Excel_Date_Decoder {
         // sides count from the same anchor). For serials 1-59
         // (pre-1900-03-01) the formula naturally returns the date
         // ONE day earlier than Excel's own display, which matches
-        // PhpSpreadsheet's convention — they map day 1 to 1899-12-31.
+        // PhpSpreadsheet's convention - they map day 1 to 1899-12-31.
         $unix = ($serial - 25569) * 86400;
         $int_part = (int) floor($unix);
         $has_time = abs($serial - floor($serial)) > 1e-9;

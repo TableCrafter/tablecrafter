@@ -58,7 +58,7 @@ class TC_RTL_Service {
         // class-tc-shortcode.php::register_assets (since v4.8.14 the handle
         // is `gravity-tables-frontend`, not the legacy `gt-frontend`).
         // wp_enqueue_style silently skips a missing dep, so the legacy
-        // string didn't break loading — it just didn't enforce load order.
+        // string didn't break loading - it just didn't enforce load order.
         wp_enqueue_style(
             'gt-frontend-rtl',
             TC_PLUGIN_URL . 'assets/css/frontend-rtl.css',

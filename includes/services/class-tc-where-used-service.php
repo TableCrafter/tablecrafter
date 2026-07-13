@@ -4,13 +4,13 @@
  *
  * Slice 1 of #542. Surfaces the "where am I using this table" view
  * admins repeatedly ask for before deleting tables. Scans post content
- * for all supported shortcode variants — `[tablecrafter id="X"]` (canonical),
- * `[gravity_table id="X"]` and `[gravity_tables id="X"]` (deprecated) —
+ * for all supported shortcode variants - `[tablecrafter id="X"]` (canonical),
+ * `[gravity_table id="X"]` and `[gravity_tables id="X"]` (deprecated) - 
  * plus the Gutenberg block prefix, and returns the matching posts so the
  * Tables list can render a count + collapsible list per row.
  *
  * Design notes:
- *   - On-render WP_Query is fine for the typical 5–50-table install.
+ *   - On-render WP_Query is fine for the typical 5 - 50-table install.
  *     Save-time indexer + on-deactivate cleanup are deferred to slice 2
  *     once scale matters.
  *   - SQL LIKE narrows the candidate set; a precise PHP regex per id
@@ -59,13 +59,13 @@ class TC_Where_Used_Service {
             }
         }
 
-        // Sites with custom post types can extend / override the list — useful
+        // Sites with custom post types can extend / override the list - useful
         // for builders that store shortcode in postmeta or a JSON field.
         return (array) apply_filters('gt_where_used_results', $hits, $table_id);
     }
 
     /**
-     * Pure helper — true iff `$content` contains any recognised shortcode
+     * Pure helper - true iff `$content` contains any recognised shortcode
      * or block targeting exactly `$table_id`. Recognised shortcode names:
      *   - [tablecrafter ...] (canonical)
      *   - [gravity_table ...]  (deprecated singular)
@@ -86,7 +86,7 @@ class TC_Where_Used_Service {
 
         $id = preg_quote((string) $table_id, '/');
 
-        // Classic shortcode — all three tag names, three quoting styles.
+        // Classic shortcode - all three tag names, three quoting styles.
         // The trailing lookahead `(?=[\s\]])` ensures id="3" doesn't match id="30".
         $shortcode_pattern = '/\[(?:tablecrafter|gravity_tables?)\s+[^\]]*?id\s*=\s*'
                            . '(?:"' . $id . '"|\'' . $id . '\'|' . $id . '(?=[\s\]]))'
@@ -105,7 +105,7 @@ class TC_Where_Used_Service {
 
     /**
      * Fetch every post whose content contains the literal `[gravity_table`
-     * substring. SQL-side narrowing — PHP regex does the precise filter.
+     * substring. SQL-side narrowing - PHP regex does the precise filter.
      *
      * @return array<int, object> Array of objects with ID, post_title,
      *                            post_content, post_type, post_status.
@@ -157,7 +157,7 @@ class TC_Where_Used_Service {
     }
 
     /**
-     * Test seam — let the test runner reset the in-memory cache between
+     * Test seam - let the test runner reset the in-memory cache between
      * scenarios without faking the wpdb global.
      */
     public static function _reset_cache_for_tests(): void {

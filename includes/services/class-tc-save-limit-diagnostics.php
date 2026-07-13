@@ -2,10 +2,10 @@
 /**
  * TC_Save_Limit_Diagnostics
  *
- * Issue #530 — surfaces the actual PHP ini directive responsible for
+ * Issue #530 - surfaces the actual PHP ini directive responsible for
  * a silent save failure on very large tables. Instead of "could not
  * save", users get an actionable message like "the request body
- * (50 MB) exceeded post_max_size (8M) — ask your host to raise it".
+ * (50 MB) exceeded post_max_size (8M) - ask your host to raise it".
  *
  * Pure, dependency-free helper. No globals. Each detector accepts
  * its inputs explicitly so the same code can be exercised in unit
@@ -13,13 +13,13 @@
  *
  * Two detectors are wired into `TC_Ajax::save_table()`:
  *
- *   1. detect_post_max_size_truncation — PHP silently empties $_POST
+ *   1. detect_post_max_size_truncation - PHP silently empties $_POST
  *      when the request body exceeds post_max_size, but the
  *      Content-Length header still reflects the real size. We
  *      compare the two and translate the mismatch into a named
  *      error envelope.
  *
- *   2. detect_max_input_vars_truncation — PHP silently truncates
+ *   2. detect_max_input_vars_truncation - PHP silently truncates
  *      $_POST when the number of input variables exceeds
  *      max_input_vars (default 1000 on many shared hosts). A table
  *      with 30+ columns × 35+ rows blows past the default limit.
@@ -75,7 +75,7 @@ class TC_Save_Limit_Diagnostics {
      * Counts POST variables recursively (so a table with 30 columns ×
      * 35 rows of column-config arrays is counted at full depth) and
      * compares against the configured limit. Hitting or exceeding the
-     * limit is treated as probable truncation — when PHP truncates,
+     * limit is treated as probable truncation - when PHP truncates,
      * the count saturates at exactly the limit, so equality is the
      * tell-tale.
      *
@@ -110,7 +110,7 @@ class TC_Save_Limit_Diagnostics {
     /**
      * Snapshot of the four canonical PHP directives that affect the
      * save path. Returned as a name-keyed array so the values can be
-     * spliced into error envelopes verbatim — no parsing needed by
+     * spliced into error envelopes verbatim - no parsing needed by
      * the caller.
      *
      * @return array<string,string|int|null>

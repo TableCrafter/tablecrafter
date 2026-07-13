@@ -2,14 +2,14 @@
 /**
  * TC_Scheduled_Export_Service
  *
- * Issue #519 — slice 2 of 3. Outbound counterpart to TC_Auto_Import.
+ * Issue #519 - slice 2 of 3. Outbound counterpart to TC_Auto_Import.
  * On a configurable WP-Cron cadence (hourly / 6h / daily / weekly),
  * renders a table's current entry set to a CSV (or XLSX when
  * PhpSpreadsheet is loaded) and writes it under
  * `wp-content/uploads/gravity-tables-exports/`.
  *
  * Slice 1 (v4.7.37): pure `TC_Export_Filename_Service` token expander.
- * Slice 2 (this slice): the runner — WP-Cron registration + file
+ * Slice 2 (this slice): the runner - WP-Cron registration + file
  *   writer + failure logging.
  * Slice 3 (deferred): admin UI ("Scheduled export" panel), email
  *   destination + recipient list, "Run export now" button, and the
@@ -34,7 +34,7 @@
 if (!defined('ABSPATH')) { exit; }
 // @codeCoverageIgnoreEnd
 
-// #1636 — export writers neutralize formula injection via
+// #1636 - export writers neutralize formula injection via
 // TC_CSV_Formula_Detector, which is loaded on-demand (not in the main
 // bootstrap list), so guarantee it is available here.
 if (!class_exists('TC_CSV_Formula_Detector')) {
@@ -59,7 +59,7 @@ class TC_Scheduled_Export_Service {
      *   - `wp_ajax_gt_run_scheduled_export` → the admin "Run export now"
      *     button handler (slice 3, v4.65.0)
      *
-     * Idempotent — safe to call from tablecrafter.php's `init` path.
+     * Idempotent - safe to call from tablecrafter.php's `init` path.
      */
     public static function boot(): void {
         if (function_exists('add_filter')) {
@@ -67,7 +67,7 @@ class TC_Scheduled_Export_Service {
         }
         if (function_exists('add_action')) {
             add_action(self::HOOK, [self::class, 'run_scheduled_export']);
-            // Slice 3 — Run-now AJAX handler.
+            // Slice 3 - Run-now AJAX handler.
             add_action('wp_ajax_gt_run_scheduled_export', [self::class, 'ajax_run_now']);
         }
     }
@@ -114,7 +114,7 @@ class TC_Scheduled_Export_Service {
     /**
      * Schedule the recurring export for a table. Whitelists the
      * recurrence; invalid values fall back to 'daily' (safest default).
-     * Idempotent — bails when an event is already queued for this
+     * Idempotent - bails when an event is already queued for this
      * table_id.
      */
     public static function schedule_for_table(int $table_id, string $recurrence = 'daily'): void {
@@ -203,7 +203,7 @@ class TC_Scheduled_Export_Service {
         $form_id = (int) ($row->form_id ?? 0);
 
         // Resolve uploads target. wp_upload_dir() returns false-ish
-        // on misconfigured installs — bail with a write failure.
+        // on misconfigured installs - bail with a write failure.
         if (!function_exists('wp_upload_dir')) {
             // @codeCoverageIgnoreStart
             return self::fail('gt_export_unavailable', 'wp_upload_dir not available', $table_id);
@@ -220,7 +220,7 @@ class TC_Scheduled_Export_Service {
 
         $filepath = $dir . '/' . $filename;
 
-        // Slice 3 — `scheduled_export_honor_filters` opt-in. The runner
+        // Slice 3 - `scheduled_export_honor_filters` opt-in. The runner
         // exposes the search criteria via the `gt_scheduled_export_
         // search_criteria` filter so theme / snippet code can inject
         // GF field_filters. Default search is the full active-entries
@@ -256,11 +256,11 @@ class TC_Scheduled_Export_Service {
             // @codeCoverageIgnoreEnd
         }
 
-        // Slice 3 — email destination. When the per-table
+        // Slice 3 - email destination. When the per-table
         // `scheduled_export_email_recipients` setting carries one or
         // more comma-separated addresses, attach the file and ship it
         // via wp_mail. Mail failures are logged but do NOT fail the
-        // run — the file already landed on disk and that's the
+        // run - the file already landed on disk and that's the
         // primary destination per the AC.
         $email_sent = false;
         $recipients_raw = (string) ($config['scheduled_export_email_recipients'] ?? '');
@@ -359,7 +359,7 @@ class TC_Scheduled_Export_Service {
         }
         // PHP 8.5+ requires the $escape arg explicitly. Pass ''
         // (no escape char) so backslashes in field values aren't
-        // interpreted — matches RFC 4180 and PhpSpreadsheet default.
+        // interpreted - matches RFC 4180 and PhpSpreadsheet default.
         fputcsv($fh, TC_CSV_Formula_Detector::neutralize_row($header), ',', '"', ''); // #1636
 
         foreach ($entries as $entry) {
@@ -390,7 +390,7 @@ class TC_Scheduled_Export_Service {
             // #1568 / PhpSpreadsheet 2.x: setCellValueByColumnAndRow was
             // removed in the 2.0 release. Use the [col, row] coordinate
             // form of setCellValue which works on both 1.x and 2.x.
-            // #1636 — force every cell to an explicit STRING type so Excel
+            // #1636 - force every cell to an explicit STRING type so Excel
             // never evaluates a leading "=" / "+" / "-" / "@" as a formula.
             // (For the typed XLSX format this is the correct defence; the
             // CSV path uses the single-quote prefix via neutralize_row.)
@@ -417,7 +417,7 @@ class TC_Scheduled_Export_Service {
             return file_exists($filepath);
         // @codeCoverageIgnoreStart
         } catch (\Throwable $e) {
-            error_log('TC_Scheduled_Export_Service: xlsx write failed — ' . $e->getMessage());
+            error_log('TC_Scheduled_Export_Service: xlsx write failed - ' . $e->getMessage());
             return false;
         // @codeCoverageIgnoreEnd
         }
@@ -428,7 +428,7 @@ class TC_Scheduled_Export_Service {
      * the WordPress debug.log without needing the slice-3 admin notice.
      */
     private static function fail(string $code, string $message, int $table_id): \WP_Error {
-        error_log(sprintf('TC_Scheduled_Export_Service: table %d export failed [%s] — %s', $table_id, $code, $message));
+        error_log(sprintf('TC_Scheduled_Export_Service: table %d export failed [%s] - %s', $table_id, $code, $message));
         return new \WP_Error($code, $message, ['status' => 500, 'table_id' => $table_id]);
     }
 }

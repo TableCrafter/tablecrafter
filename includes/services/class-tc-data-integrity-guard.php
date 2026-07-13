@@ -2,7 +2,7 @@
 /**
  * TC_Data_Integrity_Guard
  *
- * Issue #557 — defensive runtime guard against silent / catastrophic
+ * Issue #557 - defensive runtime guard against silent / catastrophic
  * loss of all tables. Mirrors a recurring competitor failure mode
  * (Supsystic 1-star reviews: "Lost all my 12 tables data,"
  * "Spontaneous Loss of Data") where a malformed save POST body, a
@@ -11,13 +11,13 @@
  *
  * Two layers of defense ship in this codebase:
  *
- *   1. Runtime guard (this service) — `assert_safe_table_save()` is
+ *   1. Runtime guard (this service) - `assert_safe_table_save()` is
  *      invoked from the AJAX save handler BEFORE any UPDATE statement
  *      runs. It compares the incoming payload against the existing-
  *      table snapshot and refuses the save when the shape suggests
  *      silent data loss.
  *
- *   2. Build-time audit (sibling test) — `tests/test-issue-557-data-
+ *   2. Build-time audit (sibling test) - `tests/test-issue-557-data-
  *      integrity-guard.php` static-scans `includes/` and fails the
  *      build if any code path adds a destructive pattern:
  *
@@ -41,7 +41,7 @@
  *   - Empty / null / missing `columns` array when the existing table
  *     had >0 columns (silent loss of all column config).
  *
- * The guard is paranoid by design — false positives are recoverable
+ * The guard is paranoid by design - false positives are recoverable
  * (the user retries the save with a complete payload) but false
  * negatives are catastrophic (silent data loss).
  *
@@ -60,12 +60,12 @@ class TC_Data_Integrity_Guard {
      * destructive.
      *
      * The caller (AJAX handler) returns the envelope to the client
-     * with HTTP 409 / wp_send_json_error — the user sees a clear
+     * with HTTP 409 / wp_send_json_error - the user sees a clear
      * "save aborted to protect your data" message instead of silent
      * loss.
      */
     public static function assert_safe_table_save(array $payload, ?array $existing_table = null): ?array {
-        // Fresh-create with no existing snapshot — the integrity guard
+        // Fresh-create with no existing snapshot - the integrity guard
         // doesn't second-guess anything here. Validation belongs in the
         // per-form layer, not the integrity guard.
         if ($existing_table === null) {
@@ -124,7 +124,7 @@ class TC_Data_Integrity_Guard {
     /**
      * Tally helper used by the autobackup-before-mutate machinery
      * (future slice) and the dashboard "Active" stat. Returns the count of
-     * currently-active tables. #2257 — also requires deleted_at IS NULL so a
+     * currently-active tables. #2257 - also requires deleted_at IS NULL so a
      * row carrying both an active status and a trash timestamp (should not
      * exist, but real data has held inconsistent soft-delete signals before)
      * can never inflate Active.
@@ -144,7 +144,7 @@ class TC_Data_Integrity_Guard {
     }
 
     /**
-     * #2257 — count of trashed tables for the dashboard "Trash" stat. The
+     * #2257 - count of trashed tables for the dashboard "Trash" stat. The
      * WHERE clause mirrors the Trash tab list query (get_trashed_tables in
      * class-tc-admin.php) exactly, so the card and the tab always agree.
      */
@@ -163,7 +163,7 @@ class TC_Data_Integrity_Guard {
     }
 
     /**
-     * #2257 — active-table counts grouped by data_source_type (stored inside
+     * #2257 - active-table counts grouped by data_source_type (stored inside
      * each row's settings JSON; absent/empty means gravity_forms, the same
      * default the builder and preview paths use). Feeds both the stats cards
      * and the Data Sources widget on the dashboard.
@@ -193,9 +193,9 @@ class TC_Data_Integrity_Guard {
     }
 
     /**
-     * #2257 — count of live tables actually embedded somewhere (shortcode or
+     * #2257 - count of live tables actually embedded somewhere (shortcode or
      * block in a post/page), via TC_Where_Used_Service (#542). A table count
-     * alone reads meaningless when demo tables pile up — "In use" is what
+     * alone reads meaningless when demo tables pile up - "In use" is what
      * admins actually want to know. The where-used candidate query is cached
      * per request, so this costs one posts query + a regex per live table.
      */
@@ -208,7 +208,7 @@ class TC_Data_Integrity_Guard {
             return 0;
         }
         // The where-used service is lazily required by the tables-list view
-        // only — on the dashboard it isn't loaded yet, and a bare
+        // only - on the dashboard it isn't loaded yet, and a bare
         // class_exists() bail made this count silently read 0.
         if (!class_exists('TC_Where_Used_Service')) {
             $svc_path = __DIR__ . '/class-tc-where-used-service.php';
@@ -232,7 +232,7 @@ class TC_Data_Integrity_Guard {
     }
 
     /**
-     * #2257 — friendly display labels for every supported data_source_type.
+     * #2257 - friendly display labels for every supported data_source_type.
      * Unknown/future types should fall back to ucwords at the call site.
      *
      * @return array<string,string>
@@ -254,10 +254,10 @@ class TC_Data_Integrity_Guard {
     }
 
     /**
-     * #2257 — one-time self-heal for legacy "ghost" rows: soft-deletes from
+     * #2257 - one-time self-heal for legacy "ghost" rows: soft-deletes from
      * before the #593 deleted_at trash system carry status='deleted' with
      * deleted_at NULL, which matches NEITHER the tables-list query NOR the
-     * Trash tab query — the rows are invisible everywhere and counted
+     * Trash tab query - the rows are invisible everywhere and counted
      * nowhere. Backfilling deleted_at folds them into the Trash tab
      * (restorable / purgeable). NOW() rather than updated_at so they get a
      * full retention window before the auto-purge cron may remove them.
@@ -281,7 +281,7 @@ class TC_Data_Integrity_Guard {
     }
 
     /**
-     * #2229 — count of all tables the user actually has: everything except
+     * #2229 - count of all tables the user actually has: everything except
      * soft-deleted (Trash) rows. This is the dashboard's "Total". A bare
      * COUNT(*) counted trashed tables too, so Total ballooned past Active.
      *

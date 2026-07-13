@@ -49,7 +49,7 @@ class TC_Post_Image_Field_Renderer {
      */
     public static function render_html(array $entry, string $field_id): string {
         $vals = self::sub_input_values($entry, $field_id);
-        // isset (not empty) — sub_input_values() already strips blank
+        // isset (not empty) - sub_input_values() already strips blank
         // values, and empty('0') would drop a literal '0' URL. (#1603)
         if (!isset($vals['url'])) {
             return '';

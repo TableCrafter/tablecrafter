@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/entry-duplicate.js
+ * TableCrafter - frontend/entry-duplicate.js
  *
  * Pro-gated one-click entry duplicate. POSTs to gt_duplicate_entry
  * AJAX handler which creates a new GF entry copying all field values
@@ -8,7 +8,7 @@
  * Closes #1747.
  *
  * Surface (GravityTable.prototype):
- *   - duplicateEntry(entryId) — fires AJAX, reloads on success.
+ *   - duplicateEntry(entryId) - fires AJAX, reloads on success.
  */
 (function (window) {
     'use strict';

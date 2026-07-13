@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/column-order-persistence.js
+ * TableCrafter - frontend/column-order-persistence.js
  *
  * localStorage persistence of the user's per-table column order.
  * #832 slice 15 of N.

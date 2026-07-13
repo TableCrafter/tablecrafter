@@ -1,5 +1,5 @@
 /*
- * Gravity Tables — print stylesheet
+ * Gravity Tables - print stylesheet
  *
  * Loaded with media="print", so all rules in this file only apply when
  * the user is printing or viewing print preview.
@@ -45,7 +45,7 @@
     display: none !important;
 }
 
-/* Print header — populated by JS via .gt-print-header */
+/* Print header - populated by JS via .gt-print-header */
 .gt-print-header {
     display: block !important;
     margin: 0 0 12pt 0;
@@ -163,7 +163,7 @@ body.gt-printing > *:not(.gt-print-root) {
     border-left-style: double !important;
 }
 
-/* Links should print as plain text — but show URL in parentheses for
+/* Links should print as plain text - but show URL in parentheses for
    external links if it's useful */
 .gt-table-wrapper a {
     color: #000 !important;
@@ -175,7 +175,7 @@ body.gt-printing > *:not(.gt-print-root) {
     margin: 0.6in 0.5in;
 }
 
-/* Print-only pagination notice — shown in print, hidden on screen */
+/* Print-only pagination notice - shown in print, hidden on screen */
 .gt-print-pagination-notice {
     display: block !important;
     font-size: 8pt;

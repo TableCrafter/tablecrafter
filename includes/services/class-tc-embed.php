@@ -4,7 +4,7 @@
  *
  * Built-in virality (Typeform / Calendly model): any table can be embedded on
  * an external site via an <iframe>, and the free embed carries a subtle
- * "Made with TableCrafter" attribution link — every embed is an ad. Pro removes
+ * "Made with TableCrafter" attribution link - every embed is an ad. Pro removes
  * the attribution.
  *
  * This class holds the pure pieces (iframe snippet, attribution markup, request
@@ -31,7 +31,7 @@ class TC_Embed {
 	/**
 	 * Build the <iframe> embed snippet for a table.
 	 *
-	 * @param mixed  $table_id Table id (cast to int — no raw passthrough).
+	 * @param mixed  $table_id Table id (cast to int - no raw passthrough).
 	 * @param string $site_url Site base URL (defaults to home_url()).
 	 */
 	public static function embed_code( $table_id, string $site_url = '' ): string {
@@ -81,7 +81,7 @@ class TC_Embed {
 if ( ! function_exists( 'tc_embed_template_redirect' ) ) {
 // @codeCoverageIgnoreEnd
 	/**
-	 * template_redirect handler — render the bare public embed page for
+	 * template_redirect handler - render the bare public embed page for
 	 * `?tc_embed=<id>` and exit. Calls wp_head()/wp_footer() so the table's
 	 * registered styles/scripts load, then appends the (Free-only) attribution.
 	 *

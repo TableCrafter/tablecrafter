@@ -2,7 +2,7 @@
 /**
  * TC_Airtable_Field_Mapper
  *
- * Issue #517 — slice 1 of 3. Pure helper that translates Airtable
+ * Issue #517 - slice 1 of 3. Pure helper that translates Airtable
  * field schemas into Gravity Tables column definitions.
  *
  * Slices 2 and 3 add the HTTP client (PAT auth + rate-limit-aware

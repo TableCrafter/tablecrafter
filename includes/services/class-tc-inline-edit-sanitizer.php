@@ -2,7 +2,7 @@
 /**
  * Sanitiser for inline-edit AJAX payloads going into wp_gf_entry_meta.
  *
- * Issue #507 — wpDataTables shipped a fix for inline-editing on dropdown / select
+ * Issue #507 - wpDataTables shipped a fix for inline-editing on dropdown / select
  * columns silently dropping the selected value. The original sanitize path here
  * returned arrays untouched from `sanitize_field_value()`, which `$wpdb->update()`
  * then coerced to the literal string `"Array"`. This service is the single source
@@ -46,7 +46,7 @@ class TC_Inline_Edit_Sanitizer {
         if ( is_array( $value ) ) {
             $clean = [];
             foreach ( $value as $entry ) {
-                // Drop nested arrays / objects — they cannot be stored as a single string.
+                // Drop nested arrays / objects - they cannot be stored as a single string.
                 if ( is_array( $entry ) || is_object( $entry ) ) {
                     continue;
                 }
@@ -70,7 +70,7 @@ class TC_Inline_Edit_Sanitizer {
             return is_string( $encoded ) ? $encoded : '';
         }
 
-        // Object / resource — cannot be stored.
+        // Object / resource - cannot be stored.
         if ( is_object( $value ) || is_resource( $value ) ) {
             return '';
         }
@@ -107,7 +107,7 @@ class TC_Inline_Edit_Sanitizer {
     /**
      * Sanitise a single scalar payload.
      *
-     * Plain scalar (no `<` character): pass through `sanitize_text_field()` —
+     * Plain scalar (no `<` character): pass through `sanitize_text_field()` - 
      * preserves `&`, quotes, accented characters, hyphens, underscores; strips
      * raw HTML and inline event handlers. This is the existing behaviour for
      * dropdown / select / checkbox / numeric values.
@@ -130,7 +130,7 @@ class TC_Inline_Edit_Sanitizer {
      * The allowlist for inline-edit rich-text payloads.
      *
      * Mirrors `TC_Sanitization_Service::sanitize_cell_html()` so the inline-edit
-     * AJAX path and the bulk-save path apply identical rules — preventing the
+     * AJAX path and the bulk-save path apply identical rules - preventing the
      * silent-strip-on-update bug reported as #532. Kept as a private method
      * (not a property) so it stays a single source of truth on each call and
      * cannot drift via mutation.

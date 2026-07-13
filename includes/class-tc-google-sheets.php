@@ -64,7 +64,7 @@ class TC_Google_Sheets {
      * Example output: https://docs.google.com/spreadsheets/d/{ID}/export?format=csv&gid=0
      */
     public function to_csv_export_url( string $url ): string {
-        // Already a pub CSV URL — return as-is.
+        // Already a pub CSV URL - return as-is.
         if ( strpos( $url, '/pub?' ) !== false && strpos( $url, 'output=csv' ) !== false ) {
             return $url;
         }
@@ -97,7 +97,7 @@ class TC_Google_Sheets {
     public function fetch_public_csv( string $url ) {
         $csv_url  = $this->to_csv_export_url( $url );
 
-        // #1075 — SSRF gate. to_csv_export_url() returns the input URL
+        // #1075 - SSRF gate. to_csv_export_url() returns the input URL
         // verbatim when its regex doesn't match (line 73), so $csv_url
         // can be arbitrary user-controlled text. Route every Sheets
         // fetch through the shared validator before wp_remote_get().

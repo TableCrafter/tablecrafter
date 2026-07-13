@@ -1,21 +1,21 @@
 /**
- * TableCrafter — frontend/column-reorder-dnd.js
+ * TableCrafter - frontend/column-reorder-dnd.js
  *
  * Column reorder drag-and-drop UI. #832 slice 19 of N.
  *
  * Eight helpers attached to GravityTable.prototype via Object.assign.
- * Pairs with column-order-persistence.js (#832 slice 15) — these methods
+ * Pairs with column-order-persistence.js (#832 slice 15) - these methods
  * provide the UI, the persistence module provides the storage.
  *
- *   - getReorderableHeaders()       — return jQuery set of draggable <th>s
- *   - fieldIdFromTh(th)             — pure: extract field id from gt-column-* class
- *   - applyStoredColumnOrderToHead()— reorder thead per stored order, sync config.columns
- *   - applyStoredColumnOrderToBody()— reorder tbody cells to match stored order
- *   - bindColumnDragEvents()        — wire dragstart/dragover/drop on headers
- *   - reorderColumn(src, tgt)       — compute new order, persist, re-apply, update reset btn
- *   - initColumnReorder()           — entry point: skip on touch-only, inject reset button,
+ *   - getReorderableHeaders() - return jQuery set of draggable <th>s
+ *   - fieldIdFromTh(th) - pure: extract field id from gt-column-* class
+ *   - applyStoredColumnOrderToHead() - reorder thead per stored order, sync config.columns
+ *   - applyStoredColumnOrderToBody() - reorder tbody cells to match stored order
+ *   - bindColumnDragEvents() - wire dragstart/dragover/drop on headers
+ *   - reorderColumn(src, tgt) - compute new order, persist, re-apply, update reset btn
+ *   - initColumnReorder() - entry point: skip on touch-only, inject reset button,
  *                                     snapshot defaults, apply stored order, bind drag, update btn
- *   - updateColumnReorderResetButton() — toggle reset button visibility based on stored order
+ *   - updateColumnReorderResetButton() - toggle reset button visibility based on stored order
  */
 (function (window) {
     'use strict';
@@ -83,7 +83,7 @@
         applyStoredColumnOrderToBody: function () {
             var saved = this.readStoredColumnOrder();
             if (!saved.length) return;
-            // #1049 Option 2 v4.220.0 — hot-loop perf refactor. Behavior pinned
+            // #1049 Option 2 v4.220.0 - hot-loop perf refactor. Behavior pinned
             // by 4 e2e vitest tests; equivalence verified pre/post.
             // 1. $.each -> native for-loop on the row list.
             // 2. $(this).attr -> el.getAttribute (saves a jQuery wrap per cell).
@@ -177,7 +177,7 @@
         initColumnReorder: function () {
             var $wrapper = $('#' + this.wrapperId);
 
-            // Skip on touch-primary devices (mobile) — column drag isn't practical there.
+            // Skip on touch-primary devices (mobile) - column drag isn't practical there.
             var isTouchOnly = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
             if (isTouchOnly) return;
 

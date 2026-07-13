@@ -2,7 +2,7 @@
 /**
  * TC_Table_Usage_Indexer
  *
- * Issue #542 — slice 1 of 3. Pure helper that extracts the list of
+ * Issue #542 - slice 1 of 3. Pure helper that extracts the list of
  * Gravity Tables ids referenced in a post's content (classic
  * shortcode + Gutenberg block). Substrate the future save_post hook
  * + admin "Where used" badge bind to.

@@ -94,7 +94,7 @@ class TC_AMP_Compat {
      *
      * The returned markup uses only block-level HTML elements with no
      * inline event handlers, no script references, and no external CSS links
-     * — safe to embed in any AMP page.
+     * - safe to embed in any AMP page.
      *
      * @param array $columns     Column definitions: [ ['id' => ..., 'label' => ...], ... ]
      * @param array $rows        Data rows: [ [ column_id => value, ... ], ... ]

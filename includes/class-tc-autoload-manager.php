@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Autoload_Manager — controls WordPress option autoload for Gravity Tables (#213).
+ * TC_Autoload_Manager - controls WordPress option autoload for Gravity Tables (#213).
  *
  * Plugin options that store per-table data (rows, columns, settings) should
  * NOT be autoloaded because WordPress loads all autoloaded options on every
@@ -31,7 +31,7 @@ class TC_Autoload_Manager
     /**
      * Return the total byte-size of all GT options currently in the WP autoload set.
      *
-     * Queries the wp_options table directly for accuracy — get_option() would
+     * Queries the wp_options table directly for accuracy - get_option() would
      * already have loaded autoloaded options into the WP object cache and would
      * not reflect the on-disk autoload=yes state reliably.
      *

@@ -1,18 +1,18 @@
 /**
- * TableCrafter — frontend/print.js
+ * TableCrafter - frontend/print.js
  *
  * Print-preparation helpers. Sixth slice under #833. Three methods:
  *
- *   - initPrint()              — wire the .gt-print-btn click to a
+ *   - initPrint() - wire the .gt-print-btn click to a
  *                                preparePrintHeader + (optional)
  *                                load-all-rows + window.print sequence.
  *                                Honors config.print_all_rows (default
  *                                true) and the #531 5000-row cap with
  *                                an afterprint listener that restores
  *                                pagination.
- *   - preparePrintHeader()     — fill .gt-print-header with timestamp
+ *   - preparePrintHeader() - fill .gt-print-header with timestamp
  *                                and active-filter summary.
- *   - summarizeActiveFilters() — pure helper rendering the active
+ *   - summarizeActiveFilters() - pure helper rendering the active
  *                                filter state as a human-readable
  *                                string (handles each filter type).
  */
@@ -33,7 +33,7 @@
         $wrapper.on('click', '.gt-print-btn', function (e) {
             e.preventDefault();
 
-            // #1024 — re-entrancy guard. If the previous print-prep is still
+            // #1024 - re-entrancy guard. If the previous print-prep is still
             // in flight (AJAX hasn't returned yet), a second click would
             // mutate per_page from its already-mutated value, corrupt the
             // restore state, and stack a second afterprint listener.
@@ -59,11 +59,11 @@
                 return;
             }
 
-            // Hide the legacy "current page only" notice — no longer relevant
+            // Hide the legacy "current page only" notice - no longer relevant
             // when we're loading everything.
             $wrapper.find('.gt-print-pagination-notice').hide();
 
-            // #1024 — skip the heavy refetch when the table already has every
+            // #1024 - skip the heavy refetch when the table already has every
             // entry in the DOM. The original print-all-rows flow ALWAYS
             // pushed per_page to 5000 and re-fetched even when the current
             // pagination already covered every row, which on slow networks
@@ -107,7 +107,7 @@
             // supposed to ADD rows, not remove them.
             self.config.per_page = Math.max(originalPerPage || 0, 5000);
             self.currentPage = 1;
-            self._printPrepInFlight = true; // #1024 — re-entrancy guard
+            self._printPrepInFlight = true; // #1024 - re-entrancy guard
             self.loadEntries(function (response) {
                 self._printPrepInFlight = false; // clear in-flight flag
                 // #531 slice 1.2: only print when the AJAX succeeded. On
@@ -118,7 +118,7 @@
                     // DOM has a chance to commit the newly rendered rows.
                     setTimeout(function () { window.print(); }, 50);
                 } else {
-                    // Restore pagination immediately — the afterprint event
+                    // Restore pagination immediately - the afterprint event
                     // won't fire because the dialog never opened. Without
                     // this, the table stays at per_page=5000 with broken
                     // tbody content.

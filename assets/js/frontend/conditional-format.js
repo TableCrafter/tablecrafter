@@ -1,35 +1,35 @@
 /**
- * TableCrafter — frontend/conditional-format.js
+ * TableCrafter - frontend/conditional-format.js
  *
  * Conditional formatting rule engine. Third module under #830.
  *
  * Closes #838.
  *
  * Surface (all attached to GravityTable.prototype via Object.assign):
- *   - applyConditionalFormatting()          — entry point, walks rows.
- *   - getColumnIndex(fieldId)               — string/number lookup
+ *   - applyConditionalFormatting() - entry point, walks rows.
+ *   - getColumnIndex(fieldId) - string/number lookup
  *                                             with selection-checkbox
  *                                             offset adjustment.
- *   - getCellValue($cell, fieldId)          — extracts text from a
+ *   - getCellValue($cell, fieldId) - extracts text from a
  *                                             cell, preferring inline
  *                                             editor content when set.
  *   - evaluateCondition(cellValue, op,
  *                       criteriaValue,
- *                       columnType)         — pure rule evaluator.
+ *                       columnType) - pure rule evaluator.
  *                                             Supports eq/neq/lt/lteq/
  *                                             gt/gteq/contains/
  *                                             contains_not/empty/
  *                                             not_empty.
  *   - applyFormattingAction($cell, $row,
  *                            action,
- *                            setValue)      — dispatcher for
+ *                            setValue) - dispatcher for
  *                                             setCellColor /
  *                                             setCellContent /
  *                                             setCellClass /
  *                                             setRowColor / setRowClass.
  *
- * evaluateCondition is intentionally pure — it does no DOM access and
- * no jQuery calls — so the behavioral test suite can exercise every
+ * evaluateCondition is intentionally pure - it does no DOM access and
+ * no jQuery calls - so the behavioral test suite can exercise every
  * operator with controlled inputs.
  */
 (function (window) {
@@ -53,7 +53,7 @@
                 return;
             }
 
-            // #1049 Option 2 v4.219.0 — hot-loop perf refactor. Behavior
+            // #1049 Option 2 v4.219.0 - hot-loop perf refactor. Behavior
             // unchanged (pinned by end-to-end vitest); just faster.
             // 1. Cache the tbody row list ONCE outside the outer loop
             //    (was re-queried per column_config entry).

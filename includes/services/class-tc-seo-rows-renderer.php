@@ -2,7 +2,7 @@
 /**
  * TC_SEO_Rows_Renderer
  *
- * Issue #551 — opt-in `<noscript>` block emitted after the visible
+ * Issue #551 - opt-in `<noscript>` block emitted after the visible
  * Gravity Tables table that contains a server-rendered HTML `<table>`
  * with all rows. Mirrors a wpDataTables 1-star review pattern: when
  * pagination is JS-driven, only the first per-page rows are present
@@ -14,7 +14,7 @@
  * enabled). The visible table continues to lazy-load via AJAX as
  * before.
  *
- * Opt-in via filter, not a UI setting in this slice — power users /
+ * Opt-in via filter, not a UI setting in this slice - power users /
  * SEO-conscious site owners enable it with a one-line `add_filter`
  * call. A future slice can add a per-table UI toggle.
  *

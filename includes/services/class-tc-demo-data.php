@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Demo_Data — bundled sample datasets for one-click demo tables (#2062).
+ * TC_Demo_Data - bundled sample datasets for one-click demo tables (#2062).
  *
  * Onboarding-port epic #2061. Ports the standalone free plugin's demo-data
  * fixtures so a new user can spin up a working table instantly. The loader
@@ -19,7 +19,7 @@ class TC_Demo_Data
     const DIR = 'demo-data/';
 
     /**
-     * #2106 — Google Sheets one-click demo. Points at Google's long-stable
+     * #2106 - Google Sheets one-click demo. Points at Google's long-stable
      * public sample spreadsheet (the "Class Data" sheet used across Google's
      * own Sheets API docs and TableCrafter's guides), so there is no fragile
      * self-hosted sheet to keep published. Requires outbound internet; the
@@ -68,7 +68,7 @@ class TC_Demo_Data
     }
 
     /**
-     * #2063 — Build the table settings for a demo dataset (a JSON or CSV remote
+     * #2063 - Build the table settings for a demo dataset (a JSON or CSV remote
      * source pointing at the bundled fixture). Null for an unknown key.
      *
      * @return array<string,mixed>|null
@@ -85,7 +85,7 @@ class TC_Demo_Data
             'table_title'      => 'Demo: ' . $def['label'],
         );
         if ($def['type'] === 'google_sheets') {
-            // External source — a full sheet URL, not a bundled file.
+            // External source - a full sheet URL, not a bundled file.
             $settings['google_sheets_url'] = (string) ($def['url'] ?? '');
         } elseif ($def['type'] === 'csv') {
             $settings['csv_url'] = self::url($def['file']);
@@ -96,7 +96,7 @@ class TC_Demo_Data
     }
 
     /**
-     * #2063 follow-up — infer the column keys for a demo so the loader can
+     * #2063 follow-up - infer the column keys for a demo so the loader can
      * pre-select all of them (selected_fields). Without this a demo table is
      * created with a source but no columns, so it renders empty and the builder
      * preview stays blank until the user manually drags columns in. Returns the
@@ -115,7 +115,7 @@ class TC_Demo_Data
         if ($def['type'] === 'google_sheets') {
             // Network fetch of the public sheet; returns its header row as the
             // column keys. Empty (no pre-selected columns) when offline or the
-            // sheet is unreachable — the table still renders, just unconfigured.
+            // sheet is unreachable - the table still renders, just unconfigured.
             if (!class_exists('TC_Google_Sheets')) {
                 // @codeCoverageIgnoreStart -- free-build-only fallback; TC_Google_Sheets is autoloaded in this build.
                 return array();
@@ -172,7 +172,7 @@ class TC_Demo_Data
     /**
      * If $url points at one of our OWN bundled demo files, return its contents
      * read straight from disk; otherwise null. Demo files are trusted local
-     * assets, so callers can serve them without an HTTP fetch — which also makes
+     * assets, so callers can serve them without an HTTP fetch - which also makes
      * the demos work on private/local hosts where the SSRF guard (correctly)
      * blocks loopback URLs. Path-traversal-safe (basename only).
      */

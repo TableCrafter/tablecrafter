@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/core.js
+ * TableCrafter - frontend/core.js
  *
  * Pure helper functions extracted from the head of frontend.js into
  * a namespaced API. Eighth module under #830.
@@ -27,7 +27,7 @@
  *   - GTCore.checkVersionMismatch(config, scriptVersion)
  *       Compares config.plugin_version to scriptVersion. When they
  *       differ, emits a console.warn and prepends a single
- *       .gt-stale-cache-notice banner to <body> (idempotent — won't
+ *       .gt-stale-cache-notice banner to <body> (idempotent - won't
  *       duplicate on repeat calls).
  *
  *   - GTCore.VERSION
@@ -40,19 +40,19 @@
  * reordering the WordPress enqueue dependency chain (currently every
  * split module's IIFE guards `typeof window.GravityTable !== 'function'`
  * and depends on frontend.js defining it first). The cohesive block
- * that DOES factor cleanly is the 4 pure helpers shipped here — they
+ * that DOES factor cleanly is the 4 pure helpers shipped here - they
  * have no dependency on the constructor and are fully unit-testable.
  * Constructor + init extraction is deferred to a follow-up effort.
  */
 (function (window) {
     'use strict';
 
-    var VERSION = '8.0.44';
+    var VERSION = '8.0.45';
     // TC_JS_VERSION preserved as a top-level literal so the pre-#831 file-grep
     // contract in #99 (script must declare a quoted-semver var named TC_JS_VERSION)
     // keeps matching the bundle. It's also the parameter name in the comparison
     // below so the "TC_JS_VERSION === plugin_version" pattern check still passes.
-    var TC_JS_VERSION = '8.0.44';
+    var TC_JS_VERSION = '8.0.45';
 
     // Internal names retained as gtNaturalSort / gtParseCurrency /
     // gtCurrencySort / gtCheckVersionMismatch so the pre-#831 file-grep

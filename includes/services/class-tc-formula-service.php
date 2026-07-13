@@ -23,7 +23,7 @@
  *
  * ## Security and trust model
  * Formulas come exclusively from admin-authored table configuration stored in
- * wp_options — visitor input NEVER reaches the evaluator. PhpSpreadsheet's
+ * wp_options - visitor input NEVER reaches the evaluator. PhpSpreadsheet's
  * Calculation engine cannot execute PHP code (it is a pure formula parser).
  * Additional guards:
  *  - Formula length is capped at MAX_FORMULA_LENGTH characters before eval.
@@ -32,10 +32,10 @@
  *  - The singleton's calculation cache is disabled for per-row evaluation so
  *    identical formula text with different substituted values never collides.
  *  - CSV/XLSX export injection protection (TC_CSV_Formula_Detector) operates
- *    on OUTPUT values and is unaffected — computed-column results that happen
+ *    on OUTPUT values and is unaffected - computed-column results that happen
  *    to start with '=' are still neutralized before export.
  *
- * No dynamic code evaluation is used on either path — no PHP eval.
+ * No dynamic code evaluation is used on either path - no PHP eval.
  */
 
 // @codeCoverageIgnoreStart
@@ -207,7 +207,7 @@ class TC_Formula_Service {
     private static function evaluate_via_phpspreadsheet(string $expr): string {
         $calc = self::ps_calc();
         if ($calc === null) {
-            // PhpSpreadsheet unavailable — fall back to the fast-path parser
+            // PhpSpreadsheet unavailable - fall back to the fast-path parser
             // for backward compat with simple arithmetic formulas using '=' prefix.
             $fallback = ltrim($expr, '=');
             try {
@@ -516,7 +516,7 @@ class TC_Formula_Service {
             if ($label === '' || $formula === '') {
                 continue;
             }
-            // #1621 — optional per-column number format.
+            // #1621 - optional per-column number format.
             $format = isset($def['format']) && is_string($def['format']) && in_array($def['format'], ['int', '2dp'], true)
                 ? $def['format']
                 : '';
@@ -595,7 +595,7 @@ class TC_Formula_Service {
             }
             foreach ($clean as $def) {
                 $value = self::evaluate_expression($def['formula'], $row);
-                // #1621 — optional number format; '#ERR' and non-numeric
+                // #1621 - optional number format; '#ERR' and non-numeric
                 // results pass through untouched.
                 if (!empty($def['format']) && $value !== '#ERR' && is_numeric($value)) {
                     if ($def['format'] === 'int') {

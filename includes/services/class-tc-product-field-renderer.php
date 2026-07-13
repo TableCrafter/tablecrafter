@@ -44,7 +44,7 @@ class TC_Product_Field_Renderer {
      * completeness):
      *
      *   "Widget × 3 @ $10.00 = $30.00"   (all three present + numeric)
-     *   "Widget × 3 @ $10.00"            (no line total — price not numeric)
+     *   "Widget × 3 @ $10.00"            (no line total - price not numeric)
      *   "Widget × 3"                     (no price)
      *   "Widget @ $10.00"                (no quantity)
      *   "Widget"                         (name only)
@@ -134,7 +134,7 @@ class TC_Product_Field_Renderer {
     /**
      * Format a float with two decimal places, no thousands separator.
      * Theme code can override via the `gt_product_money_format`
-     * filter if needed (rarely required — the rendered cell goes
+     * filter if needed (rarely required - the rendered cell goes
      * inside a table and respects the column's text alignment).
      */
     private static function format_money(float $amount): string {

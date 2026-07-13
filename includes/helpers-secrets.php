@@ -1,12 +1,12 @@
 <?php
 // @codeCoverageIgnoreStart
 /**
- * Shared secret-encryption helpers — issue #1076.
+ * Shared secret-encryption helpers - issue #1076.
  *
  * Extracts the AES-256-CBC cipher from TC_Airtable_Credential_Service
  * (#517 slice 3a) into a free-standing helper so every credential store
  * in the plugin uses the same primitive. The Airtable credential service
- * remains as the wp_options orchestrator for the Airtable PAT triple —
+ * remains as the wp_options orchestrator for the Airtable PAT triple - 
  * its encrypt/decrypt internals continue to work as-is for backward
  * compatibility (envelopes produced by either path are decryptable by
  * the other, given the matching salt).
@@ -31,13 +31,13 @@
  *   - AES-256-CBC: matches the existing Airtable PAT pattern; widely
  *     available; well-understood. We don't need authenticated encryption
  *     (AES-GCM) here because the threat model is "DB row read" not
- *     "active attacker mutates ciphertext" — the AUTH_KEY is co-located
+ *     "active attacker mutates ciphertext" - the AUTH_KEY is co-located
  *     with the DB inside wp-config.php, so an attacker capable of
  *     forging ciphertext already has the key. CBC fail-closes on tamper
  *     via the decrypt-error return path.
  *
  *   - Key derivation: sha256(AUTH_KEY + salt), first 32 bytes. The
- *     per-call salt parameter gives us domain separation — cloud
+ *     per-call salt parameter gives us domain separation - cloud
  *     storage tokens and AI api_keys live in different keyspaces, so
  *     a leak of one envelope can't cross-decrypt the other. This is
  *     bit-identical to TC_Airtable_Credential_Service::derive_key().
@@ -77,13 +77,13 @@ if (!function_exists('gt_encrypt_secret')) {
             // sees the same shape as a tampered envelope and surfaces an error.
             return '';
         }
-        // #1645 — emit v2 envelopes keyed by the RAW 256-bit sha256 digest.
+        // #1645 - emit v2 envelopes keyed by the RAW 256-bit sha256 digest.
         // The v1 key was substr(sha256_hex, 0, 32): 32 chars from a 16-symbol
         // alphabet = 128 bits of effective entropy. v2 uses the raw 32-byte
         // digest for the full 256 bits. Decrypt still accepts v1 (below).
         $key = _gt_derive_secret_key_v2($salt);
         if ($key === '') {
-            // #1637 — no secure key available (AUTH_KEY missing). Fail
+            // #1637 - no secure key available (AUTH_KEY missing). Fail
             // closed rather than emit an envelope under a public key.
             return '';
         }
@@ -111,7 +111,7 @@ if (!function_exists('gt_decrypt_secret')) {
      *
      * Fail-closed: tampered or malformed envelopes return '' (not the
      * legacy-plaintext value) so a caller can distinguish "configured but
-     * broken" from "not configured" — empty string means "decrypt failed".
+     * broken" from "not configured" - empty string means "decrypt failed".
      *
      * @param string $envelope Envelope to decrypt (or legacy plaintext).
      * @param string $salt     Domain-separation salt; must match encrypt() call.
@@ -121,10 +121,10 @@ if (!function_exists('gt_decrypt_secret')) {
         if ($envelope === '') {
             return '';
         }
-        // #1645 — version-tagged envelopes. v2 = raw 256-bit key; v1 = legacy
+        // #1645 - version-tagged envelopes. v2 = raw 256-bit key; v1 = legacy
         // hex key (still readable so secrets stored before the upgrade keep
         // working and migrate to v2 on the next save). No sentinel == legacy
-        // plaintext (pre-#1076 token) — passed through unchanged.
+        // plaintext (pre-#1076 token) - passed through unchanged.
         if (strpos($envelope, 'gt_enc_v2:') === 0) {
             $b64 = substr($envelope, strlen('gt_enc_v2:'));
             $key = _gt_derive_secret_key_v2($salt);
@@ -144,10 +144,10 @@ if (!function_exists('gt_decrypt_secret')) {
         $iv     = substr($raw, 0, 16);
         $cipher = substr($raw, 16);
         if ($key === '') {
-            // #1637 — fail closed when no secure key is available.
+            // #1637 - fail closed when no secure key is available.
             return '';
         }
-        // Flag 0 mirrors the encrypt path — openssl_decrypt expects the
+        // Flag 0 mirrors the encrypt path - openssl_decrypt expects the
         // ciphertext to be base64-encoded (which it is, because encrypt()
         // used flag 0 too).
         $plain  = openssl_decrypt($cipher, 'AES-256-CBC', $key, 0, $iv);
@@ -159,7 +159,7 @@ if (!function_exists('gt_is_encrypted_secret')) {
      * True when the input carries a gt_enc_v2: (current) or gt_enc_v1:
      * (legacy) sentinel prefix. Use this to decide whether an option value
      * is already an envelope (no prefix == legacy plaintext == due for
-     * encryption on next save). #1645 — also recognises v2.
+     * encryption on next save). #1645 - also recognises v2.
      */
     function gt_is_encrypted_secret(string $value): bool {
         return $value !== ''
@@ -174,7 +174,7 @@ if (!function_exists('_gt_derive_secret_key')) {
      * interoperable envelopes.
      */
     function _gt_derive_secret_key(string $salt): string {
-        // #1637 — fail closed when AUTH_KEY is unavailable. The previous
+        // #1637 - fail closed when AUTH_KEY is unavailable. The previous
         // fallback to a hardcoded literal made the encryption key fully
         // derivable from public plugin source on any install whose
         // WordPress salts were missing. Return '' so the encrypt/decrypt
@@ -183,12 +183,12 @@ if (!function_exists('_gt_derive_secret_key')) {
             return '';
         }
         // hex output, first 32 hex chars == 16 bytes when treated as binary
-        // — but we want 32 RAW bytes for AES-256, so take 32 chars of the
+        // - but we want 32 RAW bytes for AES-256, so take 32 chars of the
         // sha256 hex and treat them as ASCII (matches the existing Airtable
         // pattern, where derive_key returns substr(hash('sha256', ...), 0, 32)
         // and openssl_* treats the result as a 32-byte string).
         //
-        // #1645 — this is the LEGACY v1 key: 32 hex chars = 128 bits of
+        // #1645 - this is the LEGACY v1 key: 32 hex chars = 128 bits of
         // effective entropy. Retained only for decrypting pre-#1645
         // envelopes; new envelopes use _gt_derive_secret_key_v2().
         return substr(hash('sha256', AUTH_KEY . $salt), 0, 32);
@@ -196,7 +196,7 @@ if (!function_exists('_gt_derive_secret_key')) {
 }
 if (!function_exists('_gt_derive_secret_key_v2')) {
     /**
-     * #1645 — full 256-bit AES key: the RAW 32-byte sha256 digest of
+     * #1645 - full 256-bit AES key: the RAW 32-byte sha256 digest of
      * AUTH_KEY + salt (hash(..., true)). Replaces the v1 hex key, which
      * only carried 128 bits of effective entropy. Bit-identical to
      * TC_Airtable_Credential_Service::derive_key_v2() when
@@ -235,7 +235,7 @@ if (!function_exists('gt_ai_settings_encrypt')) {
             ? gt_decrypt_secret($api_key, 'gt_ai_keys')
             : $api_key;
         if ($plaintext === '') {
-            // decrypt failed — leave the existing (broken) envelope rather
+            // decrypt failed - leave the existing (broken) envelope rather
             // than wipe the user's settings.
             return $settings;
         }
@@ -276,7 +276,7 @@ if (!function_exists('gt_rest_filter_safe_settings')) {
      *
      * Sensitive keys (credentials, webhook URLs, notify emails, internal
      * connection state) are NEVER in the safe list and cannot be added
-     * via the filter — feature code that needs to surface those over REST
+     * via the filter - feature code that needs to surface those over REST
      * must use a dedicated endpoint with its own permission gate.
      *
      * @param array $settings Decoded settings dict.

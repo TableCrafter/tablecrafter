@@ -1,5 +1,5 @@
 /**
- * GT Media Folder — JS adapter for media-library folder plugins.
+ * GT Media Folder - JS adapter for media-library folder plugins.
  *
  * Issue #526 slice 2. Wraps wp.media() so the rest of the admin
  * (image-type cells, anywhere an image picker is needed) can call
@@ -7,7 +7,7 @@
  *
  * Folder plugins (FileBird / FolderPress / WP Media Folder / Real
  * Media Library) hook wp.media via their own JS bundles when
- * loaded, so this adapter only has to open the frame — the folder
+ * loaded, so this adapter only has to open the frame - the folder
  * UI then appears automatically via those plugins' filters.
  *
  * Config is read from `window.gtMediaFolder` which the PHP-side
@@ -28,14 +28,14 @@
          * 'select' event listener.
          *
          * opts:
-         *   onSelect(attachment) — called with the chosen attachment.
-         *   title — frame title (default 'Select image').
-         *   library — overrides for wp.media library spec.
+         *   onSelect(attachment) - called with the chosen attachment.
+         *   title - frame title (default 'Select image').
+         *   library - overrides for wp.media library spec.
          */
         openFrame: function (opts) {
             opts = opts || {};
             if (typeof window.wp === 'undefined' || !window.wp.media) {
-                // wp.media isn't on the page — nothing to do.
+                // wp.media isn't on the page - nothing to do.
                 return null;
             }
             var cfg = window.gtMediaFolder || { supports_folder_ui: false, active_plugin: null };
@@ -50,7 +50,7 @@
             // When a supported folder plugin is detected, surface its
             // id on the frame instance so the plugin's own filters
             // (which look for gt_folder_plugin) can opt into our flow.
-            // No-op when supports_folder_ui is false — the plain
+            // No-op when supports_folder_ui is false - the plain
             // wp.media frame still opens.
             if (cfg.supports_folder_ui && cfg.active_plugin) {
                 frame.gt_folder_plugin = cfg.active_plugin;

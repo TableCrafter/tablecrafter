@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Shortcode_Content_Migrator — rewrite deprecated shortcodes in post content.
+ * TC_Shortcode_Content_Migrator - rewrite deprecated shortcodes in post content.
  *
  * Issue #2022 (convergence epic #2006, Phase 5). The deprecated
  * [gravity_table] / [gravity_tables] shortcodes stay registered for back-compat,

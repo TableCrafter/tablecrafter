@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_JSON_Push_Engine — phase 2 of #613 (two-way sync).
+ * TC_JSON_Push_Engine - phase 2 of #613 (two-way sync).
  *
  * HTTP PUTs a row update back to a JSON data source URL. Counterpart
  * to TC_JSON_Source_Service (which handles the pull side).
@@ -38,7 +38,7 @@ class TC_JSON_Push_Engine {
         $direction = isset($settings['sync_direction']) ? (string) $settings['sync_direction'] : 'pull';
         $canonical = self::canonicalize_direction($direction);
         if ($canonical === 'pull') {
-            return new WP_Error('pull_only', 'sync_direction is pull — pushes are not allowed for this table');
+            return new WP_Error('pull_only', 'sync_direction is pull - pushes are not allowed for this table');
         }
 
         // Guard 3: json_url must be set.
@@ -49,11 +49,11 @@ class TC_JSON_Push_Engine {
 
         // Guard 4: payload must be non-empty.
         if (empty($payload)) {
-            return new WP_Error('invalid_payload', 'payload is empty — nothing to push');
+            return new WP_Error('invalid_payload', 'payload is empty - nothing to push');
         }
 
         // Guard 5: SSRF safety on the constructed URL.
-        // #1075 — promoted to the shared gt_validate_outbound_url() helper.
+        // #1075 - promoted to the shared gt_validate_outbound_url() helper.
         if (function_exists('gt_validate_outbound_url') && !gt_validate_outbound_url($url)) {
             return new WP_Error('unsafe_url', 'json_url failed the SSRF safety check');
         }

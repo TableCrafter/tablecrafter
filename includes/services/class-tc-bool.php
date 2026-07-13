@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Bool — shared boolean coercion helper.
+ * TC_Bool - shared boolean coercion helper.
  *
  * Implements `rest_sanitize_boolean` semantics so all read and save
  * paths in the plugin agree on what counts as true/false, regardless

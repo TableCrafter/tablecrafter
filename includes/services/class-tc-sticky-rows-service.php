@@ -2,7 +2,7 @@
 /**
  * TC_Sticky_Rows_Service
  *
- * Issue #544 — slice 1 of 3. Pure config helper for the multi-row
+ * Issue #544 - slice 1 of 3. Pure config helper for the multi-row
  * frozen-header feature. Existing `sticky_header` boolean already
  * ships end-to-end (single-row sticky); this service adds the
  * `frozen_top_rows` count knob (default 1, max 10) so multi-row

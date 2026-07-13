@@ -73,7 +73,7 @@ class TC_Cloud_Storage {
     public function fetch_remote_file( string $url ) {
         $direct_url = $this->resolve_download_url( $url );
 
-        // #1638 — validate the RESOLVED url against the shared SSRF gate
+        // #1638 - validate the RESOLVED url against the shared SSRF gate
         // (every other outbound fetcher in the plugin does this). Blocks
         // loopback / RFC1918 / link-local / cloud-metadata targets and
         // non-http(s) schemes. resolve_download_url() can rewrite the host,
@@ -129,7 +129,7 @@ class TC_Cloud_Storage {
         $data = $this->fetch_remote_file( $url );
 
         if ( $data === false ) {
-            // Remote unreachable — surface an admin notice and return stale data.
+            // Remote unreachable - surface an admin notice and return stale data.
             set_transient( 'gt_cloud_fetch_error_' . $table_id, true, HOUR_IN_SECONDS );
             return $this->get_stale_data( $table_id );
         }
@@ -137,7 +137,7 @@ class TC_Cloud_Storage {
         $ttl = $this->interval_to_seconds( $settings['cloud_refresh_interval'] ?? 'hourly' );
         set_transient( self::CACHE_PREFIX . $table_id, $data, $ttl );
 
-        // Update persistent stale copy (no TTL — survives even after primary transient expires).
+        // Update persistent stale copy (no TTL - survives even after primary transient expires).
         update_option( self::STALE_PREFIX . $table_id, $data, false );
 
         return $data;
@@ -224,7 +224,7 @@ class TC_Cloud_Storage {
             return 'https://drive.google.com/uc?export=download&id=' . $m[1];
         }
 
-        // Google Sheets published-to-web CSV URL — pass through as-is.
+        // Google Sheets published-to-web CSV URL - pass through as-is.
         if ( strpos( $url, 'docs.google.com/spreadsheets' ) !== false ) {
             return $url;
         }
@@ -331,7 +331,7 @@ class TC_Cloud_Storage {
         $envelope   = function_exists( 'gt_encrypt_secret' )
             ? gt_encrypt_secret( $token, 'gt_cloud_tokens' )
             // @codeCoverageIgnoreStart
-            : $token; // openssl unavailable — degrade to plaintext rather than fail-closed silently
+            : $token; // openssl unavailable - degrade to plaintext rather than fail-closed silently
             // @codeCoverageIgnoreEnd
         update_option( $option_key, $envelope, false );
         if ( $expires > 0 ) {
@@ -343,7 +343,7 @@ class TC_Cloud_Storage {
      * Retrieve a previously-stored OAuth access token in plaintext.
      *
      * Handles both the post-#1076 encrypted envelope (decrypt path) and
-     * the pre-#1076 legacy plaintext (passthrough — see gt_decrypt_secret()'s
+     * the pre-#1076 legacy plaintext (passthrough - see gt_decrypt_secret()'s
      * sentinel detection). Returns '' when no token is stored or when an
      * encrypted envelope fails to decrypt (fail-closed).
      */

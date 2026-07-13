@@ -4,10 +4,10 @@
  *
  * Rules are stored as a map keyed by row id (or row index) → rule string:
  *
- *   'everyone'        – default, always visible (also matched by empty string)
- *   'logged-in'       – visible only to authenticated users
- *   'logged-out'      – visible only to guests
- *   '<role-slug>'     – visible only to users that hold that WP role
+ *   'everyone' - default, always visible (also matched by empty string)
+ *   'logged-in' - visible only to authenticated users
+ *   'logged-out' - visible only to guests
+ *   '<role-slug>' - visible only to users that hold that WP role
  *
  * Rules are evaluated server-side before render so hidden rows never reach
  * the browser. The class is intentionally framework-light: every public

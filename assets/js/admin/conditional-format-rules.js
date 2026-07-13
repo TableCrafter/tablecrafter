@@ -1,5 +1,5 @@
 /**
- * TableCrafter — admin/conditional-format-rules.js
+ * TableCrafter - admin/conditional-format-rules.js
  *
  * Fourth slice of #842 (admin.js monolith split). Conditional formatting
  * rule builder + color picker helpers.
@@ -193,7 +193,7 @@
             var top, left;
 
             if (spaceBelow < pickerHeight && rect.top > pickerHeight) {
-                // Not enough space below but enough above — flip upward
+                // Not enough space below but enough above - flip upward
                 top = rect.top - pickerHeight;
             } else {
                 top = rect.bottom + 4;

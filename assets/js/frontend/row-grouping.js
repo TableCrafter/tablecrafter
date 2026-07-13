@@ -1,7 +1,7 @@
 /**
- * TableCrafter — frontend/row-grouping.js
+ * TableCrafter - frontend/row-grouping.js
  *
- * #2338 — Row Grouping: inject group-header <tr> rows into the rendered
+ * #2338 - Row Grouping: inject group-header <tr> rows into the rendered
  * tbody so rows are visually grouped under sub-headings by shared column
  * values. Supports single-column and hierarchical multi-column grouping.
  *
@@ -15,11 +15,11 @@
  *     is enabled). Visitor-initiated sorts work as secondary sort within
  *     groups; the JS layer re-applies row grouping after each render.
  *   - Pagination policy: groups spanning a page boundary show the header
- *     on each page. The simplest correct behavior — no DB-level group
+ *     on each page. The simplest correct behavior - no DB-level group
  *     awareness required.
  *   - Collapsible support: groups are collapsible via click when
  *     group_default_collapsed is set; state is tracked in-memory per
- *     session (no localStorage persistence — avoids stale state across
+ *     session (no localStorage persistence - avoids stale state across
  *     filter/search changes).
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
@@ -39,7 +39,7 @@
     var $ = window.jQuery;
 
     // -------------------------------------------------------------------------
-    // Escape helper (mirrors util.js escapeHtml — available on proto but we
+    // Escape helper (mirrors util.js escapeHtml - available on proto but we
     // keep a local copy so this module is self-contained in unit tests).
     // -------------------------------------------------------------------------
     function escHtml(s) {

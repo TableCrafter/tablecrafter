@@ -49,14 +49,14 @@ class TC_Fuzzy_Search_Service {
      * @param string $search_term Raw, unsanitised search string from the request.
      * @param string $meta_alias  Alias for the gf_entry_meta table in the sub-query.
      * @return array{sql: string, params: list<string>}
-     *   'sql'    — comma-free SQL snippet ready to drop into WHERE … AND (…)
-     *   'params' — ordered binding values for $wpdb->prepare()
+     *   'sql' - comma-free SQL snippet ready to drop into WHERE … AND (…)
+     *   'params' - ordered binding values for $wpdb->prepare()
      */
     public static function build_meta_where( \wpdb $db, string $search_term, string $meta_alias = 'em_search' ): array {
         $conditions = [];
         $params     = [];
 
-        // Exact substring match — always present.
+        // Exact substring match - always present.
         $conditions[] = "{$meta_alias}.meta_value LIKE %s";
         $params[]     = '%' . $db->esc_like( $search_term ) . '%';
 

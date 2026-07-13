@@ -2,7 +2,7 @@
 /**
  * TC_Clipboard_Paste_Handler
  *
- * Issue #516 — slice 2 of 3. Admin-side AJAX wire-up that takes a
+ * Issue #516 - slice 2 of 3. Admin-side AJAX wire-up that takes a
  * pasted Excel / Sheets / Numbers clipboard payload (TSV), parses it
  * via the slice-1 TC_TSV_Parser_Service, and either previews the
  * detected shape or applies the rows as new Gravity Forms entries
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) { exit; }
 class TC_Clipboard_Paste_Handler {
 
     /**
-     * Bootstrap. Idempotent — invoked from tablecrafter.php on init.
+     * Bootstrap. Idempotent - invoked from tablecrafter.php on init.
      */
     public static function boot(): void {
         if (function_exists('add_action')) {
@@ -64,9 +64,9 @@ class TC_Clipboard_Paste_Handler {
     /**
      * AJAX: apply the parsed payload as new Gravity Forms entries on
      * the table's bound form. `mode` selects:
-     *   - 'append' (default, safest) — adds parsed rows alongside
+     *   - 'append' (default, safest) - adds parsed rows alongside
      *     existing entries.
-     *   - 'replace' — deletes all existing active entries for the
+     *   - 'replace' - deletes all existing active entries for the
      *     form first, then adds the parsed rows.
      *
      * When `has_headers` is true the first parsed row is treated as
@@ -111,7 +111,7 @@ class TC_Clipboard_Paste_Handler {
         $config  = $admin->get_table_config($table_id);
         $columns = (isset($config['columns']) && is_array($config['columns'])) ? array_values($config['columns']) : [];
 
-        // Slice 3 — header-match column-type preservation. When
+        // Slice 3 - header-match column-type preservation. When
         // $has_headers is true AND every parsed header matches one
         // of the table's saved column labels, rewire the column-id
         // order to follow the pasted header order so column moves /
@@ -173,13 +173,13 @@ class TC_Clipboard_Paste_Handler {
     }
 
     /**
-     * Slice 3 — rewire column ids by header match.
+     * Slice 3 - rewire column ids by header match.
      *
      * Given a row of pasted header labels and the table's saved
      * (columns, column_labels), return a reordered list of column
      * ids matching the header order. Returns null when the headers
      * don't fully match the saved labels (partial matches are
-     * deliberately rejected — silently dropping unmatched cells
+     * deliberately rejected - silently dropping unmatched cells
      * into wrong columns is a worse failure mode than falling back
      * to positional mapping).
      *
@@ -209,7 +209,7 @@ class TC_Clipboard_Paste_Handler {
         foreach ($headers as $h) {
             $k = strtolower(trim((string) $h));
             if ($k === '' || !isset($label_to_id[$k])) {
-                // Any unmatched header aborts the rewire — caller
+                // Any unmatched header aborts the rewire - caller
                 // falls back to positional mapping (slice-2 contract).
                 return null;
             }

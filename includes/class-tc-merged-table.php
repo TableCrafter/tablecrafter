@@ -85,7 +85,7 @@ class TC_Merged_Table {
     }
 
     public function get_total_count(array $source_table_ids): int {
-        // #1135: see note on get_entries — GFAPI is a class, not a function.
+        // #1135: see note on get_entries - GFAPI is a class, not a function.
         if (empty($source_table_ids) || !class_exists('GFAPI')) { return 0; }
         $admin = TC_Admin::get_instance();
         $total = 0;

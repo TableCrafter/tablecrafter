@@ -8,7 +8,7 @@
  *
  * For each step we store the first time it was reached and how many times it
  * happened. This is what lets the operator see "100 installs, 60 opened the
- * builder, 35 created a table, 12 published" — i.e. where users fall off.
+ * builder, 35 created a table, 12 published" - i.e. where users fall off.
  *
  * Privacy: storage is a single local wp_option (gt_activation_funnel). Nothing
  * leaves the site. Mirrors the {@see TC_AI_Usage_Tracker} pattern.

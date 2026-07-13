@@ -5,15 +5,15 @@
  * Produces the inline JavaScript that polls a chart's data endpoint at a
  * configured interval. Fixes three common bugs:
  *
- *  1. Interval accumulation — calling setInterval() again on each successful
+ *  1. Interval accumulation - calling setInterval() again on each successful
  *     fetch means N fetches → N intervals → exponential request storm. We
  *     always clear the previous ID before setting a new one.
  *
- *  2. Orphaned intervals — if the chart element is removed from the DOM (e.g.
+ *  2. Orphaned intervals - if the chart element is removed from the DOM (e.g.
  *     a tab widget hides it), the interval keeps firing. A MutationObserver on
  *     the parent clears the interval when the element is disconnected.
  *
- *  3. Hidden-tab waste — when document.visibilityState === 'hidden', each
+ *  3. Hidden-tab waste - when document.visibilityState === 'hidden', each
  *     interval tick checks the flag and skips the fetch. The interval itself
  *     stays registered so timing is preserved when the tab becomes visible again.
  */
@@ -72,7 +72,7 @@ class TC_Chart_Refresh_Service {
     function setIntervalId(id) { el.dataset.gtIntervalId = String(id); }
 
     function doRefresh() {
-        // Skip fetch when the tab is hidden — preserves interval timing.
+        // Skip fetch when the tab is hidden - preserves interval timing.
         if (document.visibilityState === 'hidden') { return; }
 
         // Skip if element was removed from DOM between ticks.
@@ -86,7 +86,7 @@ class TC_Chart_Refresh_Service {
                 }
             })
             .catch(function () {
-                // Network or server error — log silently and let the next tick try again.
+                // Network or server error - log silently and let the next tick try again.
                 // Do NOT call clearInterval here; the interval must survive failures.
                 if (typeof console !== 'undefined') {
                     console.warn('[GT Chart] Refresh fetch failed for chart ' + chartId + '. Will retry.');

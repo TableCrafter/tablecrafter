@@ -1,6 +1,6 @@
 /* global gtAdminAutosaveData */
 /**
- * Gravity Tables — admin editor auto-save (#455).
+ * Gravity Tables - admin editor auto-save (#455).
  *
  * Periodically writes the in-progress table editor state to localStorage
  * keyed by table id. If the user leaves the tab with unsaved changes, the
@@ -9,10 +9,10 @@
  * banner offers to Restore or Discard.
  *
  * Public surface (window.GTAdminAutosave):
- *   saveDraft()             — write current form state to localStorage
- *   loadDraft()             — return the parsed local draft or null
- *   discardDraft()          — remove the local draft entry
- *   hasUnsavedChanges()     — true while the form is dirty since last save
+ *   saveDraft() - write current form state to localStorage
+ *   loadDraft() - return the parsed local draft or null
+ *   discardDraft() - remove the local draft entry
+ *   hasUnsavedChanges() - true while the form is dirty since last save
  */
 (function (window, document) {
     'use strict';
@@ -64,7 +64,7 @@
                 savedAt: Date.now(),
                 state:   state
             }));
-        } catch (e) { /* QuotaExceeded — silently bail. */ return; }
+        } catch (e) { /* QuotaExceeded - silently bail. */ return; }
         dirty = false;
         updateTimestamp();
     }
@@ -93,7 +93,7 @@
 
     function onBeforeUnload(e) {
         if (!hasUnsavedChanges()) { return; }
-        // Standards-compliant prompt — most browsers ignore the message
+        // Standards-compliant prompt - most browsers ignore the message
         // string and show their own copy.
         e.preventDefault();
         e.returnValue = '';
@@ -120,7 +120,7 @@
         // Compare local draft savedAt (ms) with server updated_at (mysql).
         var serverMs = cfg.serverUpdatedAt ? Date.parse(cfg.serverUpdatedAt.replace(' ', 'T') + 'Z') : 0;
         if (serverMs && draft.savedAt <= serverMs) {
-            // Server is newer or equal — local draft is stale, drop it silently.
+            // Server is newer or equal - local draft is stale, drop it silently.
             discardDraft();
             return;
         }

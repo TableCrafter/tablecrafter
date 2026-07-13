@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/alignment-resolver.js
+ * TableCrafter - frontend/alignment-resolver.js
  *
  * Cell alignment style + class builder (#549). #832 slice 4 of N.
  *
@@ -9,9 +9,9 @@
  *       Pure helper. Returns { style, valignClass } given the table
  *       config + a (fieldId, entryId) lookup pair. Three layers
  *       stack (later wins) per #549 slice 3:
- *         1. column_alignments[fieldId] — horizontal text-align.
- *         2. column_vertical_alignments[fieldId] — vertical-align base.
- *         3. cell_vertical_alignments[entryId][fieldId] — per-cell
+ *         1. column_alignments[fieldId] - horizontal text-align.
+ *         2. column_vertical_alignments[fieldId] - vertical-align base.
+ *         3. cell_vertical_alignments[entryId][fieldId] - per-cell
  *            v-align override.
  *
  *       Output shape:
@@ -19,7 +19,7 @@
  *           valignClass: ' gt-valign-X' | '' }
  *
  *       Empty `colVAlign` means: emit no vertical-align so the
- *       browser default of `middle` applies — preserves prior
+ *       browser default of `middle` applies - preserves prior
  *       behavior. `middle` explicitly does NOT emit a class (also
  *       browser default).
  *

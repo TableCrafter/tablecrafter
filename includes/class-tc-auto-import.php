@@ -43,7 +43,7 @@ class TC_Auto_Import {
         add_action('wp_ajax_gt_manual_import', [$this, 'ajax_manual_import']);
 
         // Re-register any missing cron events after plugin updates.
-        // register_activation_hook only fires on activation — not on updates.
+        // register_activation_hook only fires on activation - not on updates.
         // By hooking to 'init' we ensure every table's schedule survives
         // a plugin version upgrade without requiring a deactivate/reactivate cycle.
         add_action('init', [$this, 'maybe_reschedule_all']);
@@ -168,7 +168,7 @@ class TC_Auto_Import {
             return;
         }
 
-        // #2322 — Apply share-URL fixups (Google Sheets, OneDrive, Dropbox)
+        // #2322 - Apply share-URL fixups (Google Sheets, OneDrive, Dropbox)
         // before SSRF validation so the resolved direct-download URL is what
         // we actually fetch. fix_share_url() only converts known share-link
         // patterns to canonical CDN/export URLs from the same provider.
@@ -178,7 +178,7 @@ class TC_Auto_Import {
 
         $state          = $this->get_state($table_id);
 
-        // #1075 — SSRF gate. auto_refresh_url is admin-set but we run
+        // #1075 - SSRF gate. auto_refresh_url is admin-set but we run
         // it through the shared validator anyway: an admin account
         // compromise (or a typo'd metadata IP) shouldn't be able to
         // turn a scheduled background job into a credential-leak vector.
@@ -210,7 +210,7 @@ class TC_Auto_Import {
 
         $code = wp_remote_retrieve_response_code($response);
 
-        // 304 Not Modified – nothing to do, reset failure count
+        // 304 Not Modified - nothing to do, reset failure count
         if ($code === 304) {
             $this->record_success($table_id, $state);
             return;
@@ -218,7 +218,7 @@ class TC_Auto_Import {
 
         if ($code !== 200) {
             // 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout are
-            // treated as transient — the source is up but its infra is having a
+            // treated as transient - the source is up but its infra is having a
             // moment. Log it and let the next scheduled cycle retry, without
             // incrementing the failure_count toward the admin-email threshold.
             $is_transient = in_array($code, [502, 503, 504], true);
@@ -364,14 +364,14 @@ class TC_Auto_Import {
             // Transient infra blip (5xx gateway errors): log it but do NOT
             // increment failure_count toward the email-spam threshold. The
             // recurring cron will retry on its own cadence.
-            error_log("TC_Auto_Import: table {$table_id} transient import failure — {$message}");
+            error_log("TC_Auto_Import: table {$table_id} transient import failure - {$message}");
             $this->save_state($table_id, $state);
             return;
         }
 
         $state['failure_count'] = ($state['failure_count'] ?? 0) + 1;
 
-        error_log("TC_Auto_Import: table {$table_id} import failed — {$message}");
+        error_log("TC_Auto_Import: table {$table_id} import failed - {$message}");
 
         // Send admin email after FAILURE_THRESHOLD consecutive failures
         if ($state['failure_count'] >= self::FAILURE_THRESHOLD) {

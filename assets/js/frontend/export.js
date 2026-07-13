@@ -1,15 +1,15 @@
 /**
- * TableCrafter — frontend/export.js
+ * TableCrafter - frontend/export.js
  *
  * Toolbar export pipeline. Fourteenth slice under #833. Two methods,
  * ~150 lines.
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - initToolbarExport() — wire the export dropdown click handlers
+ *   - initToolbarExport() - wire the export dropdown click handlers
  *     (Copy / CSV / Excel / PDF). Pairs with the pure formatters in
  *     toolbar-export.js (#832 slice 13).
- *   - exportTable(format)  — orchestrate the actual export: fetch all
+ *   - exportTable(format) - orchestrate the actual export: fetch all
  *     entries, build the payload via the pure formatters, trigger
  *     download (Blob + anchor + revoke).
  */
@@ -48,7 +48,7 @@
             self.toolbarDownloadPDF();
         });
 
-        // #2285 — visible-rows JSON export button.
+        // #2285 - visible-rows JSON export button.
         $wrapper.on('click', '.gt-toolbar-json-btn', function (e) {
             e.preventDefault();
             self.toolbarDownloadJSON();

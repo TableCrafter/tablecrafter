@@ -2,9 +2,9 @@
 /**
  * TC_JSON_Source_Service
  *
- * Issue #512 — slice 1 of 3. Pure JSON parser + column inference for
+ * Issue #512 - slice 1 of 3. Pure JSON parser + column inference for
  * the new "JSON file / REST API URL" data source type. No HTTP, no
- * encryption, no admin UI in this slice — those land in slices 2/3.
+ * encryption, no admin UI in this slice - those land in slices 2/3.
  *
  * Three primitives:
  *
@@ -40,7 +40,7 @@ if (!defined('ABSPATH')) { exit; }
 // @codeCoverageIgnoreEnd
 
 use JsonMachine\Items as JsonMachineItems;
-// #1075 — is_safe_url() delegates to gt_validate_outbound_url(). Pull
+// #1075 - is_safe_url() delegates to gt_validate_outbound_url(). Pull
 // the helper file in directly when running under unit-test harnesses
 // that include this class without going through tablecrafter.php
 // (e.g. tests/test-issue-512-*.php, tests/test-issue-984-*.php).
@@ -240,7 +240,7 @@ class TC_JSON_Source_Service {
 
     private static function flatten_into($value, string $prefix, string $separator, array &$out): void {
         if (is_array($value) && !self::is_list($value)) {
-            // Associative — recurse.
+            // Associative - recurse.
             foreach ($value as $k => $v) {
                 $key = $prefix === '' ? (string) $k : $prefix . $separator . $k;
                 self::flatten_into($v, $key, $separator, $out);
@@ -267,7 +267,7 @@ class TC_JSON_Source_Service {
     }
 
     /**
-     * #980 v4.165.0 — slice 2 of #512.
+     * #980 v4.165.0 - slice 2 of #512.
      *
      * Fetch a JSON document from a remote URL with optional auth headers,
      * SSRF guard, and structured error surfacing. Returns the parsed row
@@ -280,7 +280,7 @@ class TC_JSON_Source_Service {
      * @return array|\WP_Error
      */
     public static function fetch_from_url(string $url, array $headers = [], int $timeout = 15, ?string $dot_path = null) {
-        // Bundled demo files are trusted local assets — read from disk so the
+        // Bundled demo files are trusted local assets - read from disk so the
         // demos work on private/local hosts (the SSRF guard blocks loopback URLs).
         if (class_exists('TC_Demo_Data')) {
             $local = \TC_Demo_Data::read_local_body($url);
@@ -368,17 +368,17 @@ class TC_JSON_Source_Service {
     /**
      * True streaming preview fetch: opens an HTTP connection, parses JSON
      * incrementally with halaxa/json-machine, and aborts as soon as $limit
-     * rows are collected. The TCP connection is dropped at that point — the
+     * rows are collected. The TCP connection is dropped at that point - the
      * server stops sending. For a 5-row preview of a 5MB file this downloads
-     * ~5–20KB instead of the full payload.
+     * ~5 - 20KB instead of the full payload.
      *
      * Strategy:
-     *   1. Send `Range: bytes=0-131071` — servers that honour it (GitHub, S3,
+     *   1. Send `Range: bytes=0-131071` - servers that honour it (GitHub, S3,
      *      CDNs, most REST APIs) return only the first 128KB via HTTP 206.
      *   2. Parse incrementally via Items::fromStream(); break after $limit rows.
      *      This aborts the connection even when Range is not supported.
      *   3. json-machine throws on truncated JSON (206 cutoff or early break).
-     *      Catch \Throwable and return whatever rows were parsed — that is the
+     *      Catch \Throwable and return whatever rows were parsed - that is the
      *      correct behaviour for a "give me 5 sample rows" preview.
      *   4. Falls back to fetch_from_url() when allow_url_fopen is off.
      *
@@ -394,7 +394,7 @@ class TC_JSON_Source_Service {
         ?string $dot_path = null,
         int $limit = 5
     ) {
-        // Bundled demo files are trusted local assets — read from disk (see
+        // Bundled demo files are trusted local assets - read from disk (see
         // fetch_from_url) so "Test connection" works on private/local hosts.
         if (class_exists('TC_Demo_Data')) {
             $local = \TC_Demo_Data::read_local_body($url);
@@ -438,7 +438,7 @@ class TC_JSON_Source_Service {
                 'method'        => 'GET',
                 'header'        => $header_string,
                 'timeout'       => 30,
-                'ignore_errors' => true, // Don't throw on 4xx/5xx — we check the status ourselves.
+                'ignore_errors' => true, // Don't throw on 4xx/5xx - we check the status ourselves.
             ],
             'ssl'  => [
                 'verify_peer'      => true,
@@ -464,8 +464,8 @@ class TC_JSON_Source_Service {
                 }
             }
         }
-        // 200 = full response (Range ignored or not supported — still works).
-        // 206 = partial content (Range honoured — fastest path).
+        // 200 = full response (Range ignored or not supported - still works).
+        // 206 = partial content (Range honoured - fastest path).
         // Anything else is an error.
         if ($status !== 0 && ($status < 200 || $status >= 300) && $status !== 206) {
             fclose($stream);
@@ -492,7 +492,7 @@ class TC_JSON_Source_Service {
             foreach (JsonMachineItems::fromStream($stream, $opts) as $item) {
                 $rows[] = is_array($item) ? $item : (array) $item;
                 if (count($rows) >= $limit) {
-                    break; // Drop the TCP connection — server stops sending.
+                    break; // Drop the TCP connection - server stops sending.
                 }
             }
         } catch (\Throwable $e) {
@@ -518,7 +518,7 @@ class TC_JSON_Source_Service {
     /**
      * Stream-parse a downloaded JSON temp file using halaxa/json-machine.
      * Avoids loading the full decoded structure into memory simultaneously
-     * with the raw body string — critical for 5MB+ responses.
+     * with the raw body string - critical for 5MB+ responses.
      *
      * @param string      $path     Absolute path to the temp file.
      * @param string|null $dot_path Optional dot-path into the JSON tree.
@@ -554,7 +554,7 @@ class TC_JSON_Source_Service {
         fclose($fh);
 
         if ($first === '[') {
-            // Top-level array — stream each item without loading all into memory at once.
+            // Top-level array - stream each item without loading all into memory at once.
             $rows = [];
             foreach (JsonMachineItems::fromFile($path) as $item) {
                 $rows[] = is_array($item) ? $item : (array) $item;
@@ -563,7 +563,7 @@ class TC_JSON_Source_Service {
         }
 
         if ($first === '{') {
-            // Object — mirror parse()'s single-array-key auto-detect.
+            // Object - mirror parse()'s single-array-key auto-detect.
             $pairs = [];
             foreach (JsonMachineItems::fromFile($path) as $key => $value) {
                 $pairs[(string) $key] = $value;
@@ -587,7 +587,7 @@ class TC_JSON_Source_Service {
     }
 
     /**
-     * #1919 — Paginated REST API fetch.
+     * #1919 - Paginated REST API fetch.
      *
      * Follows a paginated REST API endpoint across multiple pages, merging
      * the row arrays from every page into a single flat result. Stops when:
@@ -596,8 +596,8 @@ class TC_JSON_Source_Service {
      *   - The next-page URL is identical to the current URL (infinite-loop guard).
      *
      * Next-page detection (two strategies, in order):
-     *   1. RFC 5988 Link response header — Link: <URL>; rel="next"
-     *   2. Response-body JSON field — {"next":"URL"} or {"next_url":"URL"}
+     *   1. RFC 5988 Link response header - Link: <URL>; rel="next"
+     *   2. Response-body JSON field - {"next":"URL"} or {"next_url":"URL"}
      *      at the top level or inside a "links"/"pagination" envelope.
      *
      * All HTTP requests share the same $headers and $timeout as fetch_from_url
@@ -714,8 +714,8 @@ class TC_JSON_Source_Service {
     }
 
     /**
-     * #980 v4.165.0 — SSRF guard.
-     * #1075 v5.2.0 — delegates to gt_validate_outbound_url() so every
+     * #980 v4.165.0 - SSRF guard.
+     * #1075 v5.2.0 - delegates to gt_validate_outbound_url() so every
      * outbound HTTP call site in the plugin shares one well-tested gate.
      * The new helper also adds a DNS-rebinding re-check that this
      * inlined version explicitly skipped (see prior docblock).
@@ -732,7 +732,7 @@ class TC_JSON_Source_Service {
     }
 
     /**
-     * #987 v4.169.0 — slice 3b-3a of #512.
+     * #987 v4.169.0 - slice 3b-3a of #512.
      *
      * Per-table transient-cached wrapper around fetch_from_url. Reads the
      * table's stored settings (json_url, json_headers, json_dot_path,
@@ -740,7 +740,7 @@ class TC_JSON_Source_Service {
      * stores back to the transient.
      *
      * Slice 3b-3b will call this from the frontend render path. This slice
-     * is the primitive — also useful for admin debug, REST endpoints, etc.
+     * is the primitive - also useful for admin debug, REST endpoints, etc.
      *
      * @param int  $table_id      The wp_gravity_tables row id.
      * @param bool $force_refresh If true, bypass cache and re-fetch.
@@ -799,7 +799,7 @@ class TC_JSON_Source_Service {
 
         $rows = self::fetch_from_url($url, $headers, 15, $dot_path);
         if (is_wp_error($rows)) {
-            // Don't cache errors — next page view should retry. Surfaced upstream.
+            // Don't cache errors - next page view should retry. Surfaced upstream.
             return $rows;
         }
 

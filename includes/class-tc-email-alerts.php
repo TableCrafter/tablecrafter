@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Email_Alerts — value-threshold notification emails + scheduled exports (Pro).
+ * TC_Email_Alerts - value-threshold notification emails + scheduled exports (Pro).
  *
  * Rules are stored in table settings as:
  *   email_alert_rules: [
@@ -282,7 +282,7 @@ class TC_Email_Alerts {
     }
 
     /**
-     * WP cron callback — build and send the scheduled CSV export.
+     * WP cron callback - build and send the scheduled CSV export.
      *
      * @param int    $table_id   Table record ID.
      * @param string $recipient  Recipient email address.

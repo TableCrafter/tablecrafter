@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/row-actions.js
+ * TableCrafter - frontend/row-actions.js
  *
  * Handlers behind the per-row action buttons. Seventh slice under
  * #833. Pairs with actions-cell.js (#832 slice 7) which renders the
@@ -7,17 +7,17 @@
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - loadWooCommerceProducts() — populate the WC product list via
+ *   - loadWooCommerceProducts() - populate the WC product list via
  *     gt_get_wc_products AJAX. Used when the table is configured as
  *     a WC product browser (config.is_wc_products_table).
- *   - createWooCommerceProduct(entryId, $btn) — POST to
+ *   - createWooCommerceProduct(entryId, $btn) - POST to
  *     gt_create_wc_product to spin up a draft WC product from a row.
  *     Confirms first, swaps button to a spinner icon, opens the
  *     edit URL in a new tab on success, alerts on failure.
- *   - viewEntryHistory(entryId) — AJAX gt_get_entry_history and
+ *   - viewEntryHistory(entryId) - AJAX gt_get_entry_history and
  *     render the change-log in the detail popup (showDetailsPopup
  *     lives in detail-popup.js, #837).
- *   - triggerInlineEditForEntry(entryId) — find a row by entryId in
+ *   - triggerInlineEditForEntry(entryId) - find a row by entryId in
  *     the DOM, scroll to it, mark it gt-row-selected, and call
  *     showEditIndicator. Used by deep-link URLs and the inline-edit
  *     icon.

@@ -2,16 +2,16 @@
 /**
  * TC_Media_Folder_Adapter
  *
- * Issue #526 — slice 1 of 3. Pure feature-detection adapter for
+ * Issue #526 - slice 1 of 3. Pure feature-detection adapter for
  * WordPress media-library folder/tree plugins. Tells the JS layer
  * which folder plugin is active so the wp.media frame can be opened
  * with the right folder-UI extension.
  *
- * Supported folder plugins (canonical order — first match wins):
- *   filebird            — FileBird (free + pro)
- *   folderpress         — FolderPress
- *   wp_media_folder     — WP Media Folder
- *   real_media_library  — Real Media Library
+ * Supported folder plugins (canonical order - first match wins):
+ *   filebird - FileBird (free + pro)
+ *   folderpress - FolderPress
+ *   wp_media_folder - WP Media Folder
+ *   real_media_library - Real Media Library
  *
  * Slice 2 ships the JS adapter (`assets/js/gt-media-folder.js`) that
  * reads this config from a localized var and invokes the wp.media
@@ -90,7 +90,7 @@ class TC_Media_Folder_Adapter {
      * Slice 2 bootstrap. Hooks `admin_enqueue_scripts` to register
      * the JS adapter (`assets/js/gt-media-folder.js`) and localize
      * the runtime config under `window.gtMediaFolder`. Idempotent
-     * — invoked from tablecrafter.php on init.
+     * - invoked from tablecrafter.php on init.
      *
      * @since 4.67.0
      */

@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/entry-cell.js
+ * TableCrafter - frontend/entry-cell.js
  *
  * Per-column cell dispatcher. #832 slice 10 of N.
  *
@@ -80,7 +80,7 @@
             var valignClass = _gtAlign.valignClass;
 
             // Build cellHtml: if the value starts with '<' it contains
-            // server-sanitized HTML (e.g. <img> tags) — pass through raw
+            // server-sanitized HTML (e.g. <img> tags) - pass through raw
             // so images render (#439). Otherwise escape the plain-text
             // value to prevent double-escaping when link settings later
             // wrap displayValue in an <a> tag (#132).

@@ -30,7 +30,7 @@ foreach ($forms as $form) {
     <h1 class="wp-heading-inline"><?php _e('TableCrafter', 'tc-data-tables'); ?></h1>
 
     <?php
-    // #2063 — getting-started: one-click demo tables. Click a dataset to create a
+    // #2063 - getting-started: one-click demo tables. Click a dataset to create a
     // ready-to-view table instantly (great for first-run / evaluation).
     if (current_user_can('manage_options') && class_exists('TC_Demo_Data')) :
         ?>
@@ -46,7 +46,7 @@ foreach ($forms as $form) {
     <?php endif; ?>
 
     <?php
-    // #2022 — offer to migrate deprecated [gravity_table] shortcodes in post
+    // #2022 - offer to migrate deprecated [gravity_table] shortcodes in post
     // content to [tablecrafter]. Shown to admins; runs a dry-run preview first.
     if (current_user_can('manage_options')) :
         global $wpdb;
@@ -100,8 +100,8 @@ foreach ($forms as $form) {
     </a>
     <a href="<?php echo esc_url(admin_url('admin.php?page=gravity-tables-import')); ?>" class="page-title-action"><?php _e('Import from CSV', 'tc-data-tables'); ?></a>
     <?php
-    // TC_Bulk_Migration_Bundle_Service slice 2a (v4.9.16) — Export-all
-    // button. Slice 2b (v4.9.17) — Import bundle (button toggles a hidden
+    // TC_Bulk_Migration_Bundle_Service slice 2a (v4.9.16) - Export-all
+    // button. Slice 2b (v4.9.17) - Import bundle (button toggles a hidden
     // form below the header).
     if (class_exists('TC_Bulk_Migration_Bundle_Service')):
     ?>
@@ -140,15 +140,15 @@ foreach ($forms as $form) {
     }() );
     </script>
 
-    <?php // #1615 — Table History modal (hidden until the Revisions row action opens it). ?>
+    <?php // #1615 - Table History modal (hidden until the Revisions row action opens it). ?>
     <div id="gt-rev-modal" hidden style="position:fixed;top:15%;left:50%;transform:translateX(-50%);z-index:100000;background:#fff;border:1px solid #c3c4c7;border-radius:4px;box-shadow:0 3px 12px rgba(0,0,0,.2);padding:16px;min-width:560px;max-height:70vh;overflow:auto;">
         <h2 style="margin-top:0;"><?php _e('Table history', 'tc-data-tables'); ?></h2>
-        <p class="description"><?php _e('"Load into builder" opens the snapshot for review — nothing changes until you click Save there. "Restore now" overwrites the current configuration immediately.', 'tc-data-tables'); ?></p>
+        <p class="description"><?php _e('"Load into builder" opens the snapshot for review - nothing changes until you click Save there. "Restore now" overwrites the current configuration immediately.', 'tc-data-tables'); ?></p>
         <div class="gt-rev-list"></div>
         <p><button type="button" class="button gt-rev-cancel"><?php _e('Close', 'tc-data-tables'); ?></button></p>
     </div>
 
-    <?php // #1614 — Find & Replace modal (hidden until a row action opens it). ?>
+    <?php // #1614 - Find & Replace modal (hidden until a row action opens it). ?>
     <div id="gt-fr-modal" hidden style="position:fixed;top:20%;left:50%;transform:translateX(-50%);z-index:100000;background:#fff;border:1px solid #c3c4c7;border-radius:4px;box-shadow:0 3px 12px rgba(0,0,0,.2);padding:16px;min-width:420px;">
         <h2 style="margin-top:0;"><?php _e('Find &amp; Replace', 'tc-data-tables'); ?></h2>
         <p>
@@ -176,7 +176,7 @@ foreach ($forms as $form) {
     </div>
 
     <?php
-    // Slice 2b — Import bundle form. Hidden inside <details> so it's
+    // Slice 2b - Import bundle form. Hidden inside <details> so it's
     // invocable via the "Import bundle" button but doesn't clutter the
     // page when not in use. Read the result transient pattern from
     // TC_Import for the post-redirect notice.
@@ -207,7 +207,7 @@ foreach ($forms as $form) {
     <details id="gt-bundle-import" style="margin:12px 0;background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:12px;">
         <summary style="font-weight:600;cursor:pointer;"><?php _e('Import bundle from JSON', 'tc-data-tables'); ?></summary>
         <p class="description" style="margin-top:8px;"><?php _e('Upload a JSON bundle previously exported from this or another TableCrafter site. Each table is processed individually with the conflict-resolution policy you select below.', 'tc-data-tables'); ?></p>
-        <?php // #1602 — secret-scrub disclaimer so importers know to re-enter credentials. ?>
+        <?php // #1602 - secret-scrub disclaimer so importers know to re-enter credentials. ?>
         <p class="description gt-bundle-secret-note" style="margin-top:4px;"><?php _e('Credentials are never included in bundles: API keys, Airtable/Notion tokens, webhook URLs, notification emails and similar secrets are stripped on export. After importing on a new site, reconfigure those credentials on each table that uses an integration.', 'tc-data-tables'); ?></p>
         <form method="post" enctype="multipart/form-data" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-top:8px;">
             <?php wp_nonce_field('gt_bundle_import', 'gt_bundle_import_nonce'); ?>
@@ -219,9 +219,9 @@ foreach ($forms as $form) {
             <p>
                 <label for="gt-bundle-policy"><strong><?php _e('Conflict resolution policy', 'tc-data-tables'); ?></strong></label><br>
                 <select id="gt-bundle-policy" name="conflict_policy">
-                    <option value="skip"><?php _e('Skip — keep existing tables, only create new ones', 'tc-data-tables'); ?></option>
-                    <option value="overwrite"><?php _e('Overwrite — replace existing tables with bundle versions', 'tc-data-tables'); ?></option>
-                    <option value="create_as_new"><?php _e('Create as new — always insert; never overwrite', 'tc-data-tables'); ?></option>
+                    <option value="skip"><?php _e('Skip - keep existing tables, only create new ones', 'tc-data-tables'); ?></option>
+                    <option value="overwrite"><?php _e('Overwrite - replace existing tables with bundle versions', 'tc-data-tables'); ?></option>
+                    <option value="create_as_new"><?php _e('Create as new - always insert; never overwrite', 'tc-data-tables'); ?></option>
                 </select>
                 <span class="description" style="display:block;margin-top:4px;"><?php _e('"Existing" matches by id (within this site). For cross-site migration, prefer "Create as new" to avoid id collisions.', 'tc-data-tables'); ?></span>
             </p>
@@ -255,8 +255,8 @@ foreach ($forms as $form) {
     <div class="tc-upgrade-card">
         <div class="tc-upgrade-free">
             <span class="tc-badge-free"><?php _e('FREE PLAN', 'tc-data-tables'); ?></span>
-            <h3 class="tc-upgrade-h"><?php _e('You\'re on Free — and it\'s genuinely generous', 'tc-data-tables'); ?></h3>
-            <p class="tc-upgrade-sub"><?php _e('Unlimited tables, columns &amp; rows from JSON, CSV, Google Sheets &amp; Excel — with search, sort, pagination &amp; export.', 'tc-data-tables'); ?></p>
+            <h3 class="tc-upgrade-h"><?php _e('You\'re on Free - and it\'s genuinely generous', 'tc-data-tables'); ?></h3>
+            <p class="tc-upgrade-sub"><?php _e('Unlimited tables, columns &amp; rows from JSON, CSV, Google Sheets &amp; Excel - with search, sort, pagination &amp; export.', 'tc-data-tables'); ?></p>
         </div>
         <div class="tc-upgrade-pro">
             <div class="tc-pro-title"><?php _e('Do more with', 'tc-data-tables'); ?> <span class="tc-pro-word">PRO</span></div>
@@ -326,7 +326,7 @@ foreach ($forms as $form) {
                             require_once $mt_path;
                         }
                     }
-                    // #2271 — compact display labels for the Source column,
+                    // #2271 - compact display labels for the Source column,
                     // resolved once for the whole list.
                     $gt_source_labels = class_exists('TC_Data_Integrity_Guard')
                         ? TC_Data_Integrity_Guard::source_labels()
@@ -366,7 +366,7 @@ foreach ($forms as $form) {
                                     |
                                     <span class="find-replace">
                                         <?php
-                                        // #1614 — column scope for the Find/Replace modal.
+                                        // #1614 - column scope for the Find/Replace modal.
                                         $gt_fr_settings = json_decode((string) ($table->settings ?? ''), true);
                                         $gt_fr_cols = array();
                                         if (is_array($gt_fr_settings)) {
@@ -416,7 +416,7 @@ foreach ($forms as $form) {
                                     </span>
                                 </div>
                                 <?php
-                                // #538 slice 3 — minimal Find / Replace dialog driven by
+                                // #538 slice 3 - minimal Find / Replace dialog driven by
                                 // browser prompts. Fancier modal can come later. For each
                                 // table, when the user clicks Find / Replace:
                                 //   1. prompt for find text
@@ -428,7 +428,7 @@ foreach ($forms as $form) {
                             </td>
                             <td class="source column-source" data-colname="<?php esc_attr_e('Source', 'tc-data-tables'); ?>">
                                 <?php
-                                // #2271 — show the table's data source instead of the old
+                                // #2271 - show the table's data source instead of the old
                                 // "Gravity Form" column, which rendered a meaningless
                                 // numeric form-id fallback for every non-GF table.
                                 // Settings are stored as JSON; an absent data_source_type
@@ -443,7 +443,7 @@ foreach ($forms as $form) {
                                     : ucwords(str_replace('_', ' ', $gt_source_key));
                                 echo esc_html($gt_source_label);
                                 // For GF-source tables the form title is the useful
-                                // detail — keep it visible next to the source name.
+                                // detail - keep it visible next to the source name.
                                 if ($gt_source_key === 'gravity_forms' && isset($form_titles[$table->form_id])) {
                                     echo ': ' . esc_html($form_titles[$table->form_id]);
                                 }
@@ -455,7 +455,7 @@ foreach ($forms as $form) {
                                     <?php _e('Copy', 'tc-data-tables'); ?>
                                 </button>
                                 <?php
-                                // #2133 — embeddable public table: offer the <iframe> snippet so
+                                // #2133 - embeddable public table: offer the <iframe> snippet so
                                 // the table can be embedded on any external site.
                                 if (class_exists('TC_Embed')) :
                                     $gt_embed_code = TC_Embed::embed_code($table->id);

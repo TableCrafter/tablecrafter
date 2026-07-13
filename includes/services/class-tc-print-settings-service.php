@@ -2,7 +2,7 @@
 /**
  * TC_Print_Settings_Service
  *
- * Issue #531 — slice 1 of 3. Pure helper for the future per-table
+ * Issue #531 - slice 1 of 3. Pure helper for the future per-table
  * print configuration. The existing `assets/css/frontend-print.css`
  * already provides the base print stylesheet (hides chrome, expands
  * rows). This service defines the per-table opt-in struct + paper
@@ -11,11 +11,11 @@
  * print-CSS generator (slice 3) against a single contract.
  *
  * Settings struct:
- *   enabled            bool      — show Print button in toolbar
- *   paper_size         string    — letter / a4 / legal / a3 / tabloid
- *   repeat_header      bool      — repeat <thead> on each printed page
- *   row_striping       bool      — alternate row backgrounds for readability
- *   excluded_columns   string[]  — column ids to hide in print
+ *   enabled            bool - show Print button in toolbar
+ *   paper_size         string - letter / a4 / legal / a3 / tabloid
+ *   repeat_header      bool - repeat <thead> on each printed page
+ *   row_striping       bool - alternate row backgrounds for readability
+ *   excluded_columns   string[] - column ids to hide in print
  *
  * @since 4.7.42
  */

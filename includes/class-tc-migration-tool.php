@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Migration_Tool — legacy-to-current table format migration (#214).
+ * TC_Migration_Tool - legacy-to-current table format migration (#214).
  *
  * "Legacy" tables are those whose settings still use the old `selected_fields`
  * array (a flat list of Gravity Forms field IDs) instead of the modern `columns`

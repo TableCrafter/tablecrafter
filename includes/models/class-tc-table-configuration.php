@@ -78,7 +78,7 @@ class TC_Table_Configuration {
      * Get the configured column order as an array of field IDs.
      *
      * Returns the column IDs (integers or system-field strings) in exactly
-     * the order they were saved by the admin — never sorted numerically.
+     * the order they were saved by the admin - never sorted numerically.
      * Use this instead of getSelectedFields() wherever column render order matters.
      *
      * @return array<int, int|string> Field IDs in configured display order.
@@ -88,7 +88,7 @@ class TC_Table_Configuration {
         if (!is_array($columns) || empty($columns)) {
             return [];
         }
-        // Preserve insertion order exactly — do NOT cast to int so that system
+        // Preserve insertion order exactly - do NOT cast to int so that system
         // field IDs like 'entry_id' and 'date_created' remain strings.
         return array_values($columns);
     }

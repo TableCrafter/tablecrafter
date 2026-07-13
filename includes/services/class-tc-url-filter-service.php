@@ -4,7 +4,7 @@
  *
  * When enabled per table, visitors can pre-filter a table by appending
  * ?gt_col_{column_id}=value query parameters to the page URL. Filters are
- * applied client-side via the DataTables search API — no raw SQL is involved.
+ * applied client-side via the DataTables search API - no raw SQL is involved.
  *
  * This feature is OFF by default (allow_url_filters = false) for security:
  * enabling it on a per-table basis is an explicit admin decision.
@@ -26,7 +26,7 @@ class TC_URL_Filter_Service {
     /**
      * Whether URL-based pre-filtering is enabled for this table.
      *
-     * Defaults to false — admins must opt in per table.
+     * Defaults to false - admins must opt in per table.
      *
      * @param array $settings Table settings array.
      * @return bool
@@ -83,7 +83,7 @@ class TC_URL_Filter_Service {
     /**
      * Build a JSON-encoded DataTables column search state for the active URL filters.
      *
-     * @param array $filters   Active filters from parse_filters() — keyed by column ID.
+     * @param array $filters   Active filters from parse_filters() - keyed by column ID.
      * @param array $columns   Ordered column definitions, each with an 'id' key.
      * @return string  JSON array of { column: index, search: value } objects, or '[]'.
      */

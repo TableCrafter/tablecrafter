@@ -1,11 +1,11 @@
 <?php
 /**
- * TC_Parity_Detector — v3.5.6 takeover parity check (#2028).
+ * TC_Parity_Detector - v3.5.6 takeover parity check (#2028).
  *
  * Convergence epic #2006, Phase 5 / D2. When the converged build takes over the
  * WordPress.org slug from the standalone free plugin, existing free installs
- * must keep working. By design (D1) the free tier is a superset of v3.5.6 —
- * Airtable-read, JSON, CSV and public Google Sheets all stay free — so existing
+ * must keep working. By design (D1) the free tier is a superset of v3.5.6 - 
+ * Airtable-read, JSON, CSV and public Google Sheets all stay free - so existing
  * tables continue to render. This detector runs once, records a parity-checked
  * flag, and surfaces a one-time reassurance notice listing what an existing
  * install keeps.

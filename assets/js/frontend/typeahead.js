@@ -1,13 +1,13 @@
 /**
- * TableCrafter — frontend/typeahead.js
+ * TableCrafter - frontend/typeahead.js
  *
- * Text-filter typeahead. #834 slice 5 of 5 — closes #834.
+ * Text-filter typeahead. #834 slice 5 of 5 - closes #834.
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
  *
  *   - initTextFilterTypeaheads($wrapper)
  *       Wires each `input.gt-text-filter` inside the wrapper as a
- *       typeahead. Idempotent via a `gtTypeaheadInit` data flag —
+ *       typeahead. Idempotent via a `gtTypeaheadInit` data flag - 
  *       safe to call after re-render.
  *
  *       Per input:
@@ -91,7 +91,7 @@
                 }
 
                 function refreshActive() {
-                    // #1049 Option 2 v4.221.0 — vanilla DOM. Fires on every
+                    // #1049 Option 2 v4.221.0 - vanilla DOM. Fires on every
                     // arrow-key press in a typeahead; was $list.children('li')
                     // jQuery selector parse + .each() + $(this).css() per
                     // item. Native: children NodeList + el.style.background.

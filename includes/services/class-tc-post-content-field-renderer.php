@@ -4,7 +4,7 @@
  *
  * Issue #810 (child of #793). GF `post_content` fields store HTML
  * markup (a post body). The default cell render escapes the HTML
- * so tags appear as literal text — not useful.
+ * so tags appear as literal text - not useful.
  *
  * Strategy:
  *   - Cell render: strip HTML and truncate to N characters with
@@ -81,13 +81,13 @@ class TC_Post_Content_Field_Renderer {
         if (function_exists('wp_kses_post')) {
             return wp_kses_post($value);
         }
-        // Fallback (test env) — strip every tag rather than risk
+        // Fallback (test env) - strip every tag rather than risk
         // emitting unsafe markup.
         return strip_tags($value);
     }
 
     /**
-     * Searchable plain-text shape — strip + collapse whitespace,
+     * Searchable plain-text shape - strip + collapse whitespace,
      * no truncation. For filter / sort substring matching.
      */
     public static function searchable_text($value): string {

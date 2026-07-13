@@ -1,7 +1,7 @@
 /**
- * TableCrafter — frontend/filter-apply.js
+ * TableCrafter - frontend/filter-apply.js
  *
- * applyFilters + clearFilters — the orchestrator pair for the
+ * applyFilters + clearFilters - the orchestrator pair for the
  * advanced-filter pipeline. #834 slice 4 of N.
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
@@ -197,7 +197,7 @@
             this.loadEntries();
         },
 
-        // #1679 — per-column filter row (.gt-per-col-filter inputs under the
+        // #1679 - per-column filter row (.gt-per-col-filter inputs under the
         // header). Each input filters its own column via the existing server
         // text-filter path (filter_<fieldId> => {type:'text', value}). Merges
         // into this.filters without clobbering advanced-panel filters; an
@@ -217,7 +217,7 @@
                 var key = 'filter_' + fieldId;
                 var value = $(this).val();
                 if (value !== null && value !== undefined && String(value).trim() !== '') {
-                    // #1681 — lookup columns store an ID but display a name, so
+                    // #1681 - lookup columns store an ID but display a name, so
                     // a typed name must be resolved server-side (lookup_name);
                     // plain columns use a straight text LIKE.
                     var isLookup = $(this).attr('data-lookup') === '1' || $(this).data('lookup') === 1;

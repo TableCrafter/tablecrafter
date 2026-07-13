@@ -1,11 +1,11 @@
 /**
- * TableCrafter — frontend/responsive-visibility.js
+ * TableCrafter - frontend/responsive-visibility.js
  *
  * Pure visibility helpers for responsive card-view rendering.
  * #832 slice 12 of N.
  *
  * Five small helpers attached to GravityTable.prototype via Object.assign.
- * All read `this.config.responsive_settings` keyed by fieldId — when the
+ * All read `this.config.responsive_settings` keyed by fieldId - when the
  * key is absent or the entire map is missing, default to visible.
  *
  *   - isFieldVisibleInCards(fieldId, isTabletView)
@@ -25,7 +25,7 @@
  *       otherwise falls back to defaultLabel.
  *
  *   - isFieldVisibleOnCurrentDevice(fieldId, isTabletView)
- *       Alias of isFieldVisibleInCards — same branch table, used at
+ *       Alias of isFieldVisibleInCards - same branch table, used at
  *       different call sites in card render. Pre-existing duplication.
  */
 (function (window) {

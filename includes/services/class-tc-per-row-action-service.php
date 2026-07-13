@@ -2,9 +2,9 @@
 /**
  * TC_Per_Row_Action_Service
  *
- * Issue #618 — slice 1 of N. Pure registry + render helper for the
+ * Issue #618 - slice 1 of N. Pure registry + render helper for the
  * per-row action button feature requested via:
- *   "Per-row action buttons — trigger email, webhook, or custom
+ *   "Per-row action buttons - trigger email, webhook, or custom
  *    workflow from each row."
  *
  * Slice 1 (this release): registry service, normalize + visibility
@@ -136,7 +136,7 @@ class TC_Per_Row_Action_Service {
     }
 
     /**
-     * #618 slice 3 — Built-in send_email action.
+     * #618 slice 3 - Built-in send_email action.
      *
      * Returns the action shape the gt_per_row_actions filter expects.
      * The url_template targets the admin-post.php handler registered
@@ -163,12 +163,12 @@ class TC_Per_Row_Action_Service {
     }
 
     /**
-     * #618 slice 4 — Built-in post_webhook action.
+     * #618 slice 4 - Built-in post_webhook action.
      *
      * Mirrors register_builtin_send_email's shape but targets the
      * gt_action_post_webhook admin-post handler. The handler reads
      * the destination URL from the gt_post_webhook_url filter (no
-     * admin UI yet — slice 5 ships per-table config).
+     * admin UI yet - slice 5 ships per-table config).
      */
     public static function register_builtin_post_webhook(): array {
         $url = '/wp-admin/admin-post.php?action=gt_action_post_webhook&table={table}&row={row}';

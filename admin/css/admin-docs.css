@@ -1,4 +1,4 @@
-/* TableCrafter — Admin Docs Page Styles (#1976) */
+/* TableCrafter - Admin Docs Page Styles (#1976) */
 :root {
     --tc: #0d9488;
     --tc-dark: #0f766e;
@@ -326,7 +326,7 @@
     margin-top: 0;
 }
 
-/* Suppress WP page h1 — our hero replaces it */
+/* Suppress WP page h1 - our hero replaces it */
 .gravity-tables_page_gravity-tables-docs .wrap > h1:first-of-type {
     display: none;
 }

@@ -4,7 +4,7 @@
  *
  * The "enable_frontend_editing" grant lets any logged-in user who can view
  * an editing-enabled table edit entries on that table's form. For a
- * multi-user form (one row per driver) that is too broad — every driver
+ * multi-user form (one row per driver) that is too broad - every driver
  * could edit every other driver's row. When a table sets owner_field_id,
  * a non-admin editor must additionally OWN the target entry: the entry's
  * owner field must hold their user id.

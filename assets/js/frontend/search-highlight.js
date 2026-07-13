@@ -1,7 +1,7 @@
 /**
- * TableCrafter — frontend/search-highlight.js
+ * TableCrafter - frontend/search-highlight.js
  *
- * #1606 — search-term highlighting in matched cells. When a global
+ * #1606 - search-term highlighting in matched cells. When a global
  * search term is active, matched substrings in cell text are wrapped
  * in <mark class="gt-search-hit"> so users can see WHERE the match
  * occurred instead of scanning every column.

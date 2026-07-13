@@ -1,5 +1,5 @@
 /**
- * TableCrafter — Accessibility JS (WCAG 2.1 AA)
+ * TableCrafter - Accessibility JS (WCAG 2.1 AA)
  *
  * Handles:
  *  - Keyboard navigation within tables (Tab/Shift+Tab/Enter/Escape)

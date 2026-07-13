@@ -1,21 +1,21 @@
 /**
- * TableCrafter — admin/find-replace-modal.js
+ * TableCrafter - admin/find-replace-modal.js
  *
- * #1614 — Find & Replace modal v2. Replaces the #538 slice-3 prompt
+ * #1614 - Find & Replace modal v2. Replaces the #538 slice-3 prompt
  * flow on the tables list: find + replace inputs, column-scope
  * multi-select, case-sensitivity + whole-cell toggles, debounced
  * live match-count preview via gt_find_matches, and an Apply button
  * that stays disabled until a non-zero count has previewed. The
  * endpoints have accepted case_sensitive / whole_cell / columns[]
- * since #538 — the prompt UI just never sent them.
+ * since #538 - the prompt UI just never sent them.
  *
  * Surface (window.TC_FindReplace.*):
  *   - open(tableId, nonce, columns)
  *   - close()
- *   - collectOptions()   — {case_sensitive, whole_cell, columns}
- *   - preview()          — POST gt_find_matches, update count + Apply
- *   - schedulePreview()  — 400ms debounce around preview()
- *   - apply()            — confirm + POST gt_apply_replace
+ *   - collectOptions() - {case_sensitive, whole_cell, columns}
+ *   - preview() - POST gt_find_matches, update count + Apply
+ *   - schedulePreview() - 400ms debounce around preview()
+ *   - apply() - confirm + POST gt_apply_replace
  */
 (function (window, $) {
     'use strict';

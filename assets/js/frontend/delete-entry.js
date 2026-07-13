@@ -1,10 +1,10 @@
 /**
- * TableCrafter — frontend/delete-entry.js
+ * TableCrafter - frontend/delete-entry.js
  *
  * Single-entry delete flow. Eighteenth slice under #833. One method,
  * ~53 lines.
  *
- *   - deleteEntry(entryId, $row) — confirm dialog + AJAX delete +
+ *   - deleteEntry(entryId, $row) - confirm dialog + AJAX delete +
  *     row removal + success/error message.
  */
 (function (window) {

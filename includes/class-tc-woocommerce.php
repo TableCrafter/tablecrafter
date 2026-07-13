@@ -6,7 +6,7 @@
  * WC product attributes (title / regular_price / sku / description) per
  * Gravity Tables row. A "Create Product" row action then converts that
  * row's GF entry into a WooCommerce simple draft product via the
- * official WC_Product CRUD class — no direct DB writes.
+ * official WC_Product CRUD class - no direct DB writes.
  *
  * Configuration is stored alongside the rest of the table settings as
  * settings.wc_mapping = [
@@ -180,7 +180,7 @@ class TC_WooCommerce
             try {
                 $product->set_sku($sku);
             } catch (\Exception $e) {
-                // SKU collisions raise WC_Data_Exception — fall back to no SKU
+                // SKU collisions raise WC_Data_Exception - fall back to no SKU
                 // rather than failing the whole create.
                 $product->set_sku('');
             }
@@ -213,10 +213,10 @@ class TC_WooCommerce
      *
      * Problems solved:
      *  1. DataTables' own row-click / cell-click handlers must not swallow clicks
-     *     destined for .add_to_cart_button or .qty inputs — we use event delegation
+     *     destined for .add_to_cart_button or .qty inputs - we use event delegation
      *     at document level with explicit checks so those elements are never blocked.
      *  2. After a DataTables draw (sort, filter, pagination) the WooCommerce AJAX
-     *     add-to-cart script loses its bindings on newly injected DOM nodes —
+     *     add-to-cart script loses its bindings on newly injected DOM nodes - 
      *     we trigger 'wc-fragments-loaded' and reinitialise quantity inputs.
      *  3. Multiple [add_to_cart] shortcodes on the same page can share duplicate
      *     id attributes; we scope reinit to the table container.
@@ -236,7 +236,7 @@ class TC_WooCommerce
     //    swallowed by Gravity Tables row/cell click handlers.
     //    We use document-level delegation so this works even after DataTables redraws.
     $(document).on('click', '.gt-table-wrap .add_to_cart_button, .gt-table-wrap .single_add_to_cart_button', function (e) {
-        // Allow the click to reach WooCommerce — do NOT stopPropagation.
+        // Allow the click to reach WooCommerce - do NOT stopPropagation.
         e.stopImmediatePropagation && e.stopImmediatePropagation();
     });
 
@@ -377,7 +377,7 @@ JS;
     }
 
     /**
-     * #1914 — Query WooCommerce orders and return them as table rows.
+     * #1914 - Query WooCommerce orders and return them as table rows.
      *
      * Each row includes: order_id, date, customer name + email, order_status,
      * total, item count, payment method, and a link to the WC order admin page.
@@ -466,9 +466,9 @@ JS;
     }
 
     /**
-     * #1922 — Update a WooCommerce order status inline and fire WC status hooks.
+     * #1922 - Update a WooCommerce order status inline and fire WC status hooks.
      *
-     * Calling `$order->update_status()` is the canonical WC API — it automatically
+     * Calling `$order->update_status()` is the canonical WC API - it automatically
      * fires `woocommerce_order_status_changed`, sends customer emails, and logs
      * the status change in the order notes. No direct DB writes needed.
      *

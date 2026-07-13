@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/edit-validation.js
+ * TableCrafter - frontend/edit-validation.js
  *
  * Per-column inline-edit validation rules (#1742, Pro).
  *
@@ -40,7 +40,7 @@
      *
      * @param {string|number} fieldId
      * @param {string} value
-     * @param {number|string} [entryId]  Current entry ID — used by the unique rule to exclude
+     * @param {number|string} [entryId]  Current entry ID - used by the unique rule to exclude
      *                                   the row being edited from the duplicate scan.
      * @returns {{valid: boolean, message: string}}
      */
@@ -80,7 +80,7 @@
                     return { valid: false, message: rules.regex_message || 'Invalid format.' };
                 }
             } catch (e) {
-                // invalid pattern — silently skip
+                // invalid pattern - silently skip
             }
         }
 
@@ -98,7 +98,7 @@
             }
         }
 
-        // #2282 — oneOf: value must be in the allowed list (strict string comparison).
+        // #2282 - oneOf: value must be in the allowed list (strict string comparison).
         // An empty oneOf array means no restriction (skip the rule).
         if (rules.oneOf && Array.isArray(rules.oneOf) && rules.oneOf.length > 0) {
             if (rules.oneOf.indexOf(str) === -1) {
@@ -106,38 +106,38 @@
             }
         }
 
-        // #2282 — notOneOf: value must NOT be in the blocked list (strict string comparison).
+        // #2282 - notOneOf: value must NOT be in the blocked list (strict string comparison).
         if (rules.notOneOf && Array.isArray(rules.notOneOf) && rules.notOneOf.length > 0) {
             if (rules.notOneOf.indexOf(str) !== -1) {
                 return { valid: false, message: 'Value is not allowed.' };
             }
         }
 
-        // #2282 — phone validation: dual mode — permissive or E.164.
+        // #2282 - phone validation: dual mode - permissive or E.164.
         if (rules.phone) {
             if (rules.phone === 'permissive') {
                 // Permissive: strip formatting chars (spaces, parens, dots, +, dashes),
-                // then require 7–15 remaining digit characters.
+                // then require 7 - 15 remaining digit characters.
                 var stripped = str.replace(/[\s().+\-]/g, '');
                 if (!/^\d{7,15}$/.test(stripped)) {
                     return { valid: false, message: 'Please enter a valid phone number.' };
                 }
             } else {
-                // E.164 mode: optional + prefix, first significant digit [1-9], 1–14 more digits.
+                // E.164 mode: optional + prefix, first significant digit [1-9], 1 - 14 more digits.
                 if (!/^\+?[1-9]\d{1,14}$/.test(str)) {
                     return { valid: false, message: 'Please enter a valid phone number (E.164 format).' };
                 }
             }
         }
 
-        // #2282 — unique: client-side pre-check by scanning this.config.table_data.
+        // #2282 - unique: client-side pre-check by scanning this.config.table_data.
         //
         // In non-SSP mode, when table_data is available (pre-loaded rows array), scan
         // it synchronously to catch obvious duplicates before the AJAX save round-trip.
         // The server enforces the authoritative unique constraint via GFAPI::get_entries
         // or via the gt_check_unique endpoint (used for SSP and any missed client cases).
         //
-        // Skip in server-side processing (SSP) mode — all rows are not loaded locally.
+        // Skip in server-side processing (SSP) mode - all rows are not loaded locally.
         if (rules.unique) {
             var tableData = config.table_data;
             var isSSP = config.processing_mode === 'server';
@@ -154,7 +154,7 @@
                     }
                 }
             }
-            // SSP mode or no table_data — skip client-side check; server enforces.
+            // SSP mode or no table_data - skip client-side check; server enforces.
         }
 
         return { valid: true, message: '' };

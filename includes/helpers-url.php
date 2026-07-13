@@ -1,6 +1,6 @@
 <?php
 /**
- * Outbound-URL SSRF gate — issue #1075.
+ * Outbound-URL SSRF gate - issue #1075.
  *
  * Shared helper that every wp_remote_*() call site in the plugin routes
  * through. Promotes the original TC_JSON_Source_Service::is_safe_url()
@@ -13,7 +13,7 @@
  *   - includes/services/class-tc-json-source-service.php
  *                                              (fetch_from_url defense-in-depth)
  *   - includes/services/class-tc-json-push-engine.php
- *                                              (push-to-URL — already gated)
+ *                                              (push-to-URL - already gated)
  *
  * Security audit reference:
  *   https://github.com/TableCrafter/gravity-tables/issues/1075#issuecomment-4583955144
@@ -21,12 +21,12 @@
  * Why each guard exists:
  *
  *   - Scheme allow-list (http / https): rejects javascript:, data:,
- *     file://, gopher://, ftp:// — these are XSS / LFI / SSRF tunnels.
+ *     file://, gopher://, ftp:// - these are XSS / LFI / SSRF tunnels.
  *
  *   - Loopback hostnames (localhost, localhost.localdomain,
  *     broadcasthost) + .local mDNS: an admin-supplied URL pointing at
  *     loopback would let the server fetch its own internal endpoints
- *     (admin-only APIs, debug pages, etc.) — classic SSRF.
+ *     (admin-only APIs, debug pages, etc.) - classic SSRF.
  *
  *   - RFC1918 private ranges (10/8, 172.16/12, 192.168/16) + IPv6 ULA
  *     fc00::/7: same SSRF surface as loopback, scoped to the LAN.
@@ -57,7 +57,7 @@ if (!defined('ABSPATH')) { exit; }
 if (!function_exists('gt_validate_outbound_url')) {
 // @codeCoverageIgnoreEnd
     /**
-     * Validate that $url is safe to pass to wp_remote_*() — i.e. it
+     * Validate that $url is safe to pass to wp_remote_*() - i.e. it
      * points at a clearly-public HTTP(S) endpoint, not at loopback /
      * a private LAN address / a cloud metadata IP.
      *
@@ -94,7 +94,7 @@ if (!function_exists('gt_validate_outbound_url')) {
             return false;
         }
 
-        // mDNS .local — not addressable from a public server and a
+        // mDNS .local - not addressable from a public server and a
         // common shape for "I forgot to swap to prod" misconfigs.
         if (substr($host, -6) === '.local') {
             return false;
@@ -115,7 +115,7 @@ if (!function_exists('gt_validate_outbound_url')) {
 
         if ($resolved === '' || $resolved === $host || filter_var($resolved, FILTER_VALIDATE_IP) === false) {
             // gethostbyname() returns the input string unchanged when
-            // it cannot resolve. This is ambiguous — it could mean
+            // it cannot resolve. This is ambiguous - it could mean
             // "DNS is unavailable" (CI sandbox, locked-down host) or
             // "the name doesn't exist." We degrade to the pre-#1075
             // behaviour and trust the hostname rather than fail closed,
@@ -142,10 +142,10 @@ if (!function_exists('_gt_ip_is_public')) {
      * sanity check for 0.0.0.0 (PHP's flags do not catch the
      * "any address" sentinel as reserved on all builds).
      *
-     * Internal helper — not part of the public API.
+     * Internal helper - not part of the public API.
      */
     function _gt_ip_is_public(string $ip): bool {
-        // 0.0.0.0 is the "unspecified" address — never publicly routable.
+        // 0.0.0.0 is the "unspecified" address - never publicly routable.
         if ($ip === '0.0.0.0') {
             return false;
         }
@@ -165,7 +165,7 @@ if (!function_exists('_gt_resolve_host')) {
      * Resolve $host to an IPv4 address. Internal helper for the
      * DNS-rebinding guard. Tests can inject a deterministic resolver
      * by setting $GLOBALS['gt_test_resolver'] = function($host): string
-     * before exercising the helper — only honoured under TC_PHPUNIT_SHIM
+     * before exercising the helper - only honoured under TC_PHPUNIT_SHIM
      * so production traffic always uses the real gethostbyname().
      *
      * @return string The resolved IP, or '' on lookup failure.
@@ -175,7 +175,7 @@ if (!function_exists('_gt_resolve_host')) {
             return (string) call_user_func($GLOBALS['gt_test_resolver'], $host);
         }
         if (!function_exists('gethostbyname')) {
-            // Hosts without the dns extension. Fail closed — we cannot
+            // Hosts without the dns extension. Fail closed - we cannot
             // run the rebinding guard, so we cannot trust the hostname.
             // @codeCoverageIgnoreStart
             return '';

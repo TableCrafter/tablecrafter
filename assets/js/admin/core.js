@@ -1,5 +1,5 @@
 /**
- * TableCrafter — admin/core.js
+ * TableCrafter - admin/core.js
  *
  * First slice of #842 (admin.js monolith split). Page-bootstrap chunk:
  *   - init: prevents re-entry, calls bindEvents + showAllSections, loads table data
@@ -15,10 +15,10 @@
  * and extends it via Object.assign. The guard `|| {}` preserves load-order
  * safety in case enqueue order ever flips.
  *
- * NOT in this slice — intentionally deferred to later #842 sub-issues:
+ * NOT in this slice - intentionally deferred to later #842 sub-issues:
  *   - bindEvents (~465 lines of event delegation, will be subdivided per feature)
  *   - initDragAndDrop, initRowReorder, updateFieldOrder, saveRowOrder (#844 table-builder.js)
- *   - initViewportToggles (deferred — references an undefined `self` outside its scope; bug to address separately)
+ *   - initViewportToggles (deferred - references an undefined `self` outside its scope; bug to address separately)
  *
  * @since 4.149.0
  */
@@ -48,7 +48,7 @@
 
                 // For a saved remote JSON source the field metadata (formFields)
                 // isn't known until the columns are fetched, so the field picker +
-                // Table Columns would render empty. Auto-fetch them on load — the
+                // Table Columns would render empty. Auto-fetch them on load - the
                 // existing Test connection handler calls loadJsonColumns(), which
                 // builds formFields, re-applies saved settings, and renders the
                 // available fields, the selected Table Columns, and the preview.
@@ -77,25 +77,25 @@
                         }.bind(this), 100);
                     }
                 } else if (srcType === 'woocommerce_products') {
-                    // #2200 — WooCommerce has no URL; auto-load product columns into
+                    // #2200 - WooCommerce has no URL; auto-load product columns into
                     // the picker on edit so saved/selectable columns + preview appear.
                     setTimeout(function () {
                         $('.gt-wc-load-columns').trigger('click');
                     }, 150);
                 } else if (srcType === 'airtable' && ($('input[name="airtable_base_id"]').val() || '')) {
-                    // #2240 — saved Airtable tables auto-load columns on edit; the
+                    // #2240 - saved Airtable tables auto-load columns on edit; the
                     // saved PAT is reused server-side via the table_id fallback.
                     setTimeout(function () {
                         $('.gt-airtable-load-columns').trigger('click');
                     }, 150);
                 } else if (srcType === 'notion' && ($('input[name="notion_database_id"]').val() || '')) {
-                    // #2241 — saved Notion tables auto-load columns on edit; the
+                    // #2241 - saved Notion tables auto-load columns on edit; the
                     // saved token is reused server-side via the table_id fallback.
                     setTimeout(function () {
                         $('.gt-notion-load-columns').trigger('click');
                     }, 150);
                 } else if (srcType === 'external_db' && ($('textarea[name="external_db_query"]').val() || '')) {
-                    // #2242 — saved External DB tables auto-load columns on edit by
+                    // #2242 - saved External DB tables auto-load columns on edit by
                     // re-running the stored query against the saved connection.
                     setTimeout(function () {
                         $('.gt-external-db-load-columns').trigger('click');
@@ -159,7 +159,7 @@
 
             // Wait for DOM to be ready
             setTimeout(function () {
-                // Open all sections first, then collapse 2 and 3 — only 1 and 4 open by default.
+                // Open all sections first, then collapse 2 and 3 - only 1 and 4 open by default.
                 $('.gt-section-content').removeClass('collapsed');
                 $('.gt-collapsible').removeClass('collapsed');
 

@@ -66,7 +66,7 @@ class TC_Scroll_Buttons_Service {
      * page has show_scroll_buttons enabled.
      */
     public static function enqueue_assets(): void {
-        // #1673 — don't load the scroll-buttons JS on pages without a table
+        // #1673 - don't load the scroll-buttons JS on pages without a table
         // (matches the sibling accessibility service gate).
         if (class_exists('TC_Asset_Enqueue_Gate') && !TC_Asset_Enqueue_Gate::page_has_table()) {
             return;

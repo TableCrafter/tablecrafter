@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/util.js
+ * TableCrafter - frontend/util.js
  *
  * Pure helper methods extracted from the monolithic frontend.js as the
  * first module under #830 (split frontend.js into composable modules).
@@ -10,7 +10,7 @@
  * Object.assign so the public surface stays byte-identical to the
  * pre-extraction state. Every existing call (self.escapeHtml(...),
  * this.formatDate(...), etc.) continues to work because the prototype
- * carries the same methods — just defined in a different source file.
+ * carries the same methods - just defined in a different source file.
  *
  * Load order: this module must be enqueued BEFORE frontend.js so that
  * GravityTable's constructor finds the helpers on its prototype when
@@ -20,7 +20,7 @@
  *
  * Defensive guard: if frontend.js hasn't loaded for some reason (e.g.
  * a customisation enqueues this module standalone), the IIFE bails
- * silently. Better than throwing — keeps a broken site recoverable.
+ * silently. Better than throwing - keeps a broken site recoverable.
  */
 (function (window) {
     'use strict';
@@ -57,9 +57,9 @@
         // fill can never disagree with its own column total. Strips
         // currency symbols / thousands separators, then parseFloat.
         // Returns the Number, or null when not finite-numeric.
-        // #1736 — locale-aware two-pass normalizer.
+        // #1736 - locale-aware two-pass normalizer.
         //
-        // Heuristic: scan from the right — the last separator is the decimal
+        // Heuristic: scan from the right - the last separator is the decimal
         // separator ONLY when it is followed by 1 or 2 digits (not 3).
         // Three digits after a separator => it is a thousands-grouping char.
         //
@@ -82,7 +82,7 @@
             var lastSepMatch = stripped.match(/[,.](\d+)$/);
 
             if (!lastSepMatch) {
-                // No separator at all — plain integer.
+                // No separator at all - plain integer.
                 normalized = stripped;
             } else {
                 var afterLast = lastSepMatch[1].length; // digits after last separator
@@ -90,7 +90,7 @@
                 var isThou = (afterLast === 3);          // 3 digits => thousands grouping
 
                 if (isThou) {
-                    // Last separator is a thousands char — strip ALL commas and periods
+                    // Last separator is a thousands char - strip ALL commas and periods
                     // (they are all grouping chars; no decimal portion present).
                     normalized = stripped.replace(/[,.]/g, '');
                 } else if (lastSepChar === ',') {
@@ -213,7 +213,7 @@
         // commits a value and we need to mirror it back into a text cell.
         // Returns inputValue unchanged when the value doesn't match the
         // HTML5 regex. Falls back to this.config.date_format ('m/d/Y' default)
-        // when format is omitted. #832 slice 16 — moved from frontend.js.
+        // when format is omitted. #832 slice 16 - moved from frontend.js.
         parseDateInput: function (inputValue, format) {
             if (!inputValue) return '';
 

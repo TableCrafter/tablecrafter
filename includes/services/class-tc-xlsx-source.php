@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_XLSX_Source — read a remote Excel (.xlsx) file as table rows (#1998).
+ * TC_XLSX_Source - read a remote Excel (.xlsx) file as table rows (#1998).
  *
  * Mirrors TC_CSV_Source (transient cache + demo-disk bypass + SSRF gate + remote
  * fetch) but parses the workbook via PhpOffice\PhpSpreadsheet. The first row is
@@ -40,7 +40,7 @@ class TC_XLSX_Source
             }
         }
 
-        // SSRF gate — block loopback / private subnets (shared validator, #1075).
+        // SSRF gate - block loopback / private subnets (shared validator, #1075).
         if (function_exists('gt_validate_outbound_url') && !gt_validate_outbound_url($url)) {
             return new WP_Error(
                 'gt_outbound_url_rejected',

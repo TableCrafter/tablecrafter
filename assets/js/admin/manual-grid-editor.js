@@ -1,7 +1,7 @@
 /**
- * TableCrafter — admin/manual-grid-editor.js
+ * TableCrafter - admin/manual-grid-editor.js
  *
- * #2367 — P1-1b: Manual tables spreadsheet grid editor MVP.
+ * #2367 - P1-1b: Manual tables spreadsheet grid editor MVP.
  *
  * Engine decision: lean grid built on our existing admin inline-edit stack.
  * Rationale: avoids a vendored dependency (jSpreadsheet ~180 KB minified).
@@ -10,12 +10,12 @@
  * + jQuery already on the page. Scaling seam: replace_rows is a full-replace
  * (DELETE + bulk INSERT); acceptable for ≤2 k rows at MVP. When row count
  * grows beyond that, migrate to a delta-patch endpoint that only writes
- * changed row_index values — the AJAX handler is intentionally separate
+ * changed row_index values - the AJAX handler is intentionally separate
  * (gt_save_manual_rows) to make that seam easy to replace.
  *
  * This file exposes:
- *   window.TCManualGridModel  — pure model (no DOM; unit-testable)
- *   window.TCManualGridEditor — DOM binding layer (jQuery)
+ *   window.TCManualGridModel - pure model (no DOM; unit-testable)
+ *   window.TCManualGridEditor - DOM binding layer (jQuery)
  *
  * Loaded ONLY on the table-builder screen for manual-source tables; see
  * TC_Admin::enqueue_admin_scripts() for the conditional enqueue.
@@ -28,7 +28,7 @@
     'use strict';
 
     // =========================================================================
-    // TCManualGridModel — pure model, no DOM dependency
+    // TCManualGridModel - pure model, no DOM dependency
     // =========================================================================
 
     /**
@@ -42,7 +42,7 @@
         // Deep-clone so we never mutate the caller's arrays.
         var cols = (options.columns || []).map(function (c) {
             var col = { key: c.key, label: c.label || c.key };
-            // #2370 — preserve column visibility flag from server data.
+            // #2370 - preserve column visibility flag from server data.
             if (c.hidden === true) { col.hidden = true; }
             return col;
         });
@@ -51,7 +51,7 @@
             cols.forEach(function (c) {
                 copy[c.key] = Object.prototype.hasOwnProperty.call(r, c.key) ? String(r[c.key]) : '';
             });
-            // #2370 — preserve row visibility flag from server data.
+            // #2370 - preserve row visibility flag from server data.
             if (r._tc_hidden === true) { copy._tc_hidden = true; }
             return copy;
         });
@@ -328,7 +328,7 @@
      * Move the column at fromIdx to toIdx, remapping every row's cell order.
      *
      * The column definitions array is reordered; all row objects already hold
-     * data by key so no key remapping is needed — only the column definition
+     * data by key so no key remapping is needed - only the column definition
      * array position changes.
      *
      * @param {int} fromIdx
@@ -441,7 +441,7 @@
      * Paste TSV text starting at (anchorRow, anchorCol).
      *
      * Handles \r\n and \n line endings. Clips to grid boundaries (does not
-     * add rows or columns — MVP scope; row/col add is #2368).
+     * add rows or columns - MVP scope; row/col add is #2368).
      *
      * @param {string} tsv         clipboard text (tab-delimited, newline rows)
      * @param {int}    anchorRow   row index of the top-left paste target
@@ -474,7 +474,7 @@
     window.TCManualGridModel = TCManualGridModel;
 
     // =========================================================================
-    // TCManualGridEditor — DOM binding layer
+    // TCManualGridEditor - DOM binding layer
     // =========================================================================
 
     /**
@@ -505,7 +505,7 @@
         var html = '<div class="gt-grid-wrapper" tabindex="0">';
         html += '<table class="gt-manual-grid wp-list-table widefat fixed striped">';
 
-        // Header row — col-index gutter + per-column header with action menu.
+        // Header row - col-index gutter + per-column header with action menu.
         html += '<thead><tr>';
         // Row-ops gutter header (drag handle column + row-number column)
         html += '<th class="gt-grid-rowidx gt-grid-row-gutter"></th>';
@@ -532,7 +532,7 @@
         }
         html += '</tr></thead>';
 
-        // Data rows — draggable handle gutter + row number + data cells.
+        // Data rows - draggable handle gutter + row number + data cells.
         html += '<tbody class="gt-rows-draggable">';
         for (var r = 0; r < numRows; r++) {
             var rowHidden = model.isRowHidden(r);
@@ -603,7 +603,7 @@
     TCManualGridEditor.prototype._bindEvents = function () {
         var self = this;
 
-        // Unbind any previous handlers before re-binding — prevents duplicate
+        // Unbind any previous handlers before re-binding - prevents duplicate
         // handlers accumulating when _bindEvents is called after each re-render.
         this.$container.off('.gtGrid');
 
@@ -663,7 +663,7 @@
             var row = parseInt($(this).data('row'), 10);
             self.$container.find('.gt-row-menu').hide();
             if (self.model.getRowCount() <= 1) { return; }
-            // Check if row has content — confirm if so.
+            // Check if row has content - confirm if so.
             var hasContent = false;
             for (var c = 0; c < self.model.getColCount(); c++) {
                 if (self.model.getCell(row, c) !== '') { hasContent = true; break; }
@@ -824,7 +824,7 @@
 
         // ── Cell input blur: commit ────────────────────────────────────────
         // Guard: do NOT commit when focus is moving into the picker toolbar or
-        // link popover — the user is interacting with a picker action, not
+        // link popover - the user is interacting with a picker action, not
         // leaving the cell. We check relatedTarget first (synchronously
         // available in most browsers); fall back to a 0 ms timeout reading
         // document.activeElement for browsers that deliver a null relatedTarget
@@ -844,14 +844,14 @@
             var related = e.relatedTarget || null;
             if (related && self._$pickerToolbar &&
                 $(related).closest(self._$pickerToolbar).length) {
-                return; // Focus moved into the toolbar — keep edit state alive.
+                return; // Focus moved into the toolbar - keep edit state alive.
             }
 
             if (related !== null) {
                 // relatedTarget was available and is NOT inside the toolbar.
                 self._commitCellEdit(row, col);
             } else {
-                // relatedTarget is null — defer one tick to read activeElement.
+                // relatedTarget is null - defer one tick to read activeElement.
                 setTimeout(function () {
                     var active = document.activeElement;
                     if (active && self._$pickerToolbar &&
@@ -1012,7 +1012,7 @@
         // The captured values are used in the 'select' callback instead of
         // reading them from the (now-unfocused) input at that later point.
         // The media modal is a full overlay outside the toolbar so the blur
-        // guard cannot cover it — the cell WILL commit when the modal opens.
+        // guard cannot cover it - the cell WILL commit when the modal opens.
         // Instead, we write directly to the model at the captured cursor
         // position, then update the cell display from the model data.
         if (hasMedia) {
@@ -1037,7 +1037,7 @@
                     } else {
                         snippet = model.buildLinkSnippet(attachment.url, attachment.filename || attachment.url);
                     }
-                    // Use captured cursor position — selectionStart/End are 0
+                    // Use captured cursor position - selectionStart/End are 0
                     // after the modal stole focus, so reading them now is stale.
                     model.insertAtCursor(capturedRow, capturedCol, snippet, capturedStart, capturedEnd);
                     var newVal = model.getCell(capturedRow, capturedCol);
@@ -1159,7 +1159,7 @@
     window.TCManualGridEditor = TCManualGridEditor;
 
     // =========================================================================
-    // Builder integration — wire up on DOM ready when source is 'manual'
+    // Builder integration - wire up on DOM ready when source is 'manual'
     // =========================================================================
 
     // Only run in a real browser context (skip during vitest model tests).

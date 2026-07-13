@@ -1,7 +1,7 @@
 /**
- * TableCrafter — admin/save-table.js
+ * TableCrafter - admin/save-table.js
  *
- * Fifth slice of #842 (filed as #954). The saveTable AJAX flow — the
+ * Fifth slice of #842 (filed as #954). The saveTable AJAX flow - the
  * single biggest remaining method in admin.js after the slice 1-4 cleanup.
  *
  *   - saveTable: assemble the full table-config payload, validate, post
@@ -48,10 +48,10 @@
             var lookupFields = {};
             var conditionalFormatting = {};
             var fieldConfigurations = {}; // Individual field configurations
-            var columnAlignments = {}; // #661 — per-column text alignment
-            var columnWrapModes = {}; // #662 — per-column word-wrap mode
-            var columnVerticalAlignments = {}; // #663 — per-column vertical alignment
-            var columnLinkSettings = {}; // #664 — per-column link target / color / underline
+            var columnAlignments = {}; // #661 - per-column text alignment
+            var columnWrapModes = {}; // #662 - per-column word-wrap mode
+            var columnVerticalAlignments = {}; // #663 - per-column vertical alignment
+            var columnLinkSettings = {}; // #664 - per-column link target / color / underline
             var columnCellTypes = {}; // TC_Star_Rating_Service per-column cell type ('' or 'star_rating')
             var columnAggregations = {}; // TC_Formula_Service per-column totals-row aggregation
             var columnDetailOnly = {};   // TC_Detail_Rows_Service per-column detail-only flag
@@ -80,7 +80,7 @@
                         // TC_Wrap_Mode_Service::sanitize_map (default,
                         // break-word, hyphenate, nowrap). The service skips
                         // 'default' in its output to keep saved settings
-                        // minimal — we mirror that here.
+                        // minimal - we mirror that here.
                         columnWrapModes[fieldId] = field.wrap_mode;
                     }
                     if (field.vertical_alignment) {
@@ -97,7 +97,7 @@
                         // class-tc-admin.php:920 whitelists target values,
                         // sanitizes color (sanitize_hex_color), bool-validates
                         // underline. Skip a field's entry entirely when all
-                        // sub-keys are empty/default — no need to bloat the
+                        // sub-keys are empty/default - no need to bloat the
                         // saved JSON with every column's link defaults.
                         var hasNonDefaultLink =
                             (field.link_settings.link_target && field.link_settings.link_target !== '') ||
@@ -110,12 +110,12 @@
                     if (field.cell_type && field.cell_type !== '') {
                         // TC_Star_Rating_Service: server-side sanitizer
                         // whitelists '' (plain text default) and 'star_rating'
-                        // — anything else is coerced back to ''. Empty values
+                        // - anything else is coerced back to ''. Empty values
                         // omitted here so saved settings stay minimal.
                         columnCellTypes[fieldId] = field.cell_type;
                     }
                     if (field.aggregation && field.aggregation !== '') {
-                        // TC_Formula_Service::SUPPORTED_AGGREGATIONS — server-side
+                        // TC_Formula_Service::SUPPORTED_AGGREGATIONS - server-side
                         // sanitizer whitelists. Empty = "auto" (legacy SUM-for-numeric).
                         columnAggregations[fieldId] = field.aggregation;
                     }
@@ -126,7 +126,7 @@
                         columnValidations[fieldId] = field.validation_rules;
                     }
                     if (field.data_bar_enabled) {
-                        // #1731 — Data Bars (Pro). The server-side sanitizer
+                        // #1731 - Data Bars (Pro). The server-side sanitizer
                         // (TC_Data_Bars_Service::sanitize) strips this whole
                         // block on the free tier, so a free user can never
                         // persist it even via a hand-edited payload.
@@ -136,11 +136,11 @@
                         };
                     }
                     if (field.allowed_roles && field.allowed_roles.length) {
-                        // #1746 — per-column role visibility (Pro). Only persist when non-empty.
+                        // #1746 - per-column role visibility (Pro). Only persist when non-empty.
                         columnRoleVisibility[fieldId] = field.allowed_roles;
                     }
                     if (field.detail_only) {
-                        // TC_Detail_Rows_Service — flat field_id => true map.
+                        // TC_Detail_Rows_Service - flat field_id => true map.
                         // Sanitizer at class-tc-admin.php normalizes via service.
                         columnDetailOnly[fieldId] = true;
                     }
@@ -216,7 +216,7 @@
             // Collect bulk actions.
             //
             // The legacy bulk_delete / bulk_export / bulk_edit checkboxes were
-            // removed from the table builder in v4.7.178 (#635) — the section
+            // removed from the table builder in v4.7.178 (#635) - the section
             // is now a paragraph pointing at the global Settings → Bulk
             // Actions toggle. The selectors below no longer match anything,
             // so reading them produces an empty array, which used to bypass
@@ -227,7 +227,7 @@
             // markup is somehow still present (in the wild during a partial
             // migration). Per-table opt-in returns when #635 is wired up.
             var bulkActions = ['delete', 'edit', 'export'];
-            // Legacy checkbox path — currently a no-op; preserved so a
+            // Legacy checkbox path - currently a no-op; preserved so a
             // partial-migration page state can still narrow the action set.
             if ($('input[name="bulk_delete"]').length || $('input[name="bulk_export"]').length || $('input[name="bulk_edit"]').length) {
                 bulkActions = [];
@@ -271,10 +271,10 @@
                 column_detail_only: columnDetailOnly, // TC_Detail_Rows_Service per-column detail-only flag
                 column_auto_merge: columnAutoMerge, // TC_Rowspan_Merge_Service per-column auto-merge flag (#518 slice 2)
                 drilldown_columns: drilldownColumns, // TC_Drilldown_Filter_Service flat list (#568 slice 2)
-                // #2323 — arbitrary cell merges. JSON string from the builder
+                // #2323 - arbitrary cell merges. JSON string from the builder
                 // textarea; server sanitizer validates via TC_Cell_Merge_Service.
                 cell_merges: $('textarea[name="cell_merges"]').val() || '[]',
-                // #501 slice 2 — row-expiry admin opt-in. Posted at top-level
+                // #501 slice 2 - row-expiry admin opt-in. Posted at top-level
                 // of formData so they land in $_POST where save_table's
                 // sanitizer block (class-tc-admin.php:709-726) reads them
                 // straight from $data. Slice 1 (v4.7.30) shipped TC_Row_Expiry_
@@ -285,7 +285,7 @@
                 expiry_behavior:   $('select[name="expiry_behavior"]').val() || 'hide',
                 expiry_grace_days: parseInt($('input[name="expiry_grace_days"]').val(), 10) || 0,
                 expiry_inverse:    $('input[name="expiry_inverse"]').is(':checked') ? true : false,
-                // #1598 — computed columns repeater. Collected by
+                // #1598 - computed columns repeater. Collected by
                 // admin/computed-columns.js; sanitized server-side via
                 // TC_Formula_Service::sanitize_computed_columns().
                 computed_columns: JSON.stringify(
@@ -293,11 +293,11 @@
                         ? window.TC_TableBuilder.collectComputedColumns()
                         : []
                 ),
-                // #519 slice 3 — scheduled export admin opt-in. Posted at
+                // #519 slice 3 - scheduled export admin opt-in. Posted at
                 // top-level so class-tc-admin.php sanitizers (line ~760)
                 // can read them from $data and reconcile the WP-Cron
                 // queue via TC_Scheduled_Export_Service.
-                // #2338 — row grouping. Same top-level contract: the
+                // #2338 - row grouping. Same top-level contract: the
                 // class-tc-admin.php sanitizers read these from $data.
                 group_by_column:          $('select[name="group_by_column"]').val() || '',
                 group_default_collapsed:  $('input[name="group_default_collapsed"]').is(':checked') ? true : false,
@@ -308,18 +308,18 @@
                 scheduled_export_filename_pattern:  $('input[name="scheduled_export_filename_pattern"]').val() || '',
                 scheduled_export_email_recipients:  $('input[name="scheduled_export_email_recipients"]').val() || '',
                 scheduled_export_honor_filters:     $('input[name="scheduled_export_honor_filters"]').is(':checked') ? true : false,
-                // #526 slice 2/3 — fallback image URL picked via GT Media
+                // #526 slice 2/3 - fallback image URL picked via GT Media
                 // Folder adapter (supports folder-aware media browsers).
                 default_image_fallback_url:         $('input[name="default_image_fallback_url"]').val() || '',
-                // #560 slice 2 — server-side pagination admin opt-in.
+                // #560 slice 2 - server-side pagination admin opt-in.
                 server_side_pagination:             $('input[name="server_side_pagination"]').is(':checked') ? true : false,
                 default_page_size:                  parseInt($('input[name="default_page_size"]').val(), 10) || 50,
-                // #562 slice 2 — pivot view admin opt-in (single-aggregate UI).
+                // #562 slice 2 - pivot view admin opt-in (single-aggregate UI).
                 pivot_mode:          $('select[name="pivot_mode"]').val() || 'raw',
                 pivot_group_by:      $('select[name="pivot_group_by"]').val() || '',
                 pivot_aggregate_col: $('select[name="pivot_aggregate_col"]').val() || '', // legacy pre-#1617 builders
                 pivot_aggregate_op:  $('select[name="pivot_aggregate_op"]').val() || 'sum', // legacy pre-#1617 builders
-                // #1617 — multi-aggregate repeater. Collected by
+                // #1617 - multi-aggregate repeater. Collected by
                 // admin/pivot-aggregates.js; TC_Admin composes via
                 // TC_Pivot_Service::parse_aggregates_input + normalize.
                 pivot_aggregates: JSON.stringify(
@@ -327,7 +327,7 @@
                         ? window.TC_TableBuilder.collectPivotAggregates()
                         : []
                 ),
-                table_password: $('#gt-table-password').val() || '', // #607 slice 2 — empty = keep existing; '__GT_CLEAR__' = remove
+                table_password: $('#gt-table-password').val() || '', // #607 slice 2 - empty = keep existing; '__GT_CLEAR__' = remove
                 send_email_recipient_field: $('#gt-send-email-recipient-field').val() || '', // #618 slice 5
                 per_row_webhook_url: $('#gt-per-row-webhook-url').val() || '', // #618 slice 5
                 cascading_filter_parent_field: $('#gt-cascading-filter-parent').val() || '', // #599 slice 2
@@ -345,12 +345,12 @@
                     enable_delete: $('input[name="enable_delete"]').is(':checked') ? true : false,
                     sticky_header: $('input[name="sticky_header"]').is(':checked') ? true : false,
                 frozen_top_rows: parseInt($('input[name="frozen_top_rows"]').val(), 10) || 1, // TC_Sticky_Rows_Service (#544 slice 2; clamped server-side to 1..10)
-                sync_direction: $('select[name="sync_direction"]').val() || 'pull_only', // #517 slice 4b — Airtable sync direction (pull_only / push_only / two_way; server whitelists)
-                airtable_record_id_field: $('input[name="airtable_record_id_field"]').val() || '', // #517 slice 4c — GF field id that holds the Airtable record id (server sanitizes alphanumeric + dot)
+                sync_direction: $('select[name="sync_direction"]').val() || 'pull_only', // #517 slice 4b - Airtable sync direction (pull_only / push_only / two_way; server whitelists)
+                airtable_record_id_field: $('input[name="airtable_record_id_field"]').val() || '', // #517 slice 4c - GF field id that holds the Airtable record id (server sanitizes alphanumeric + dot)
                     freeze_first_column: $('input[name="freeze_first_column"]').is(':checked') ? true : false,
                     responsive_table: $('input[name="responsive_table"]').is(':checked') ? true : false,
                     responsive_mode: $('select[name="responsive_mode"]').val() || 'basic',
-                    // flip_breakpoint (#653) — no admin UI today; reading from
+                    // flip_breakpoint (#653) - no admin UI today; reading from
                     // the non-existent input selector saved a hard-coded 768
                     // on every re-save and clobbered any value set via the
                     // gravity_tables_table_config filter or direct DB edit.
@@ -363,13 +363,13 @@
                     show_deleted_entries: $('input[name="show_deleted_entries"]').is(':checked') ? true : false,
                     filter_user_entries: $('input[name="filter_user_entries"]').is(':checked') ? true : false,
                     show_column_totals: $('input[name="show_column_totals"]').is(':checked') ? true : false,
-                    // #2340 — index column: 1..n display-order counter.
+                    // #2340 - index column: 1..n display-order counter.
                     show_index_column: $('input[name="show_index_column"]').is(':checked') ? true : false,
                     index_column_label: $('input[name="index_column_label"]').val() || '#',
                     // Export toolbar buttons + processing/template/data-source
                     // (#654). These named UI controls existed in
                     // admin/views/table-builder.php but were never in this
-                    // save payload — admins toggled them and the value
+                    // save payload - admins toggled them and the value
                     // silently reverted on save. The runtime layer
                     // (templates/table.php:456-459, server_side_entries
                     // AJAX handler, comparison-table renderer) is fully
@@ -381,22 +381,22 @@
                     processing_mode:    $('select[name="processing_mode"]').val() || 'client',
                     template_type:      $('select[name="template_type"]').val() || 'standard',
                     data_source_type:   $('select[name="data_source_type"]').val() || 'gravity_forms',
-                    // #2369 — opt-in shortcode expansion in manual-table cells.
+                    // #2369 - opt-in shortcode expansion in manual-table cells.
                     manual_render_shortcodes: $('#gt-manual-render-shortcodes').is(':checked'),
-                    // #2002 — Google Sheets data source URL.
+                    // #2002 - Google Sheets data source URL.
                     google_sheets_url:  $('input[name="google_sheets_url"]').val() || '',
-                    // #2004 — XML data source URL + repeating-element path.
+                    // #2004 - XML data source URL + repeating-element path.
                     xml_url:            $('input[name="xml_url"]').val() || '',
                     xml_row_path:       $('input[name="xml_row_path"]').val() || '',
-                    // #2010 — live CSV data source URL.
+                    // #2010 - live CSV data source URL.
                     csv_url:            $('input[name="csv_url"]').val() || '',
                     xlsx_url:           $('input[name="xlsx_url"]').val() || '',
-                    // #2003 — External database connection index + read-only query.
+                    // #2003 - External database connection index + read-only query.
                     external_db_connection:     $('select[name="external_db_connection"]').val() || '',
                     external_db_query:          $('textarea[name="external_db_query"]').val() || '',
-                    // #2254 — per-table public render opt-in for external DB tables.
+                    // #2254 - per-table public render opt-in for external DB tables.
                     external_db_public_render:  $('input[name="external_db_public_render"]').is(':checked') ? true : false,
-                    // #985 v4.168.0 — JSON data source payload (slice 3b-2 of #512).
+                    // #985 v4.168.0 - JSON data source payload (slice 3b-2 of #512).
                     // Convert the textarea "Key: Value" lines back to an associative
                     // array for the server; the server-side sanitizer also handles
                     // the parse, but we send the structured form so the round-trip
@@ -419,7 +419,7 @@
                     })(),
                     json_dot_path:      $('input[name="json_dot_path"]').val() || '',
                     json_refresh_minutes: parseInt($('input[name="json_refresh_minutes"]').val(), 10) || 30,
-                    // #992 v4.172.0 — Airtable wizard payload (phase B of #517).
+                    // #992 v4.172.0 - Airtable wizard payload (phase B of #517).
                     // PAT only sent when the user has typed something; the server
                     // treats empty as "keep existing" so existing creds aren't
                     // wiped by an unrelated edit.
@@ -427,16 +427,16 @@
                     airtable_base_id:  $('input[name="airtable_base_id"]').val() || '',
                     airtable_table_id: $('input[name="airtable_table_id"]').val() || '',
                     airtable_view:     $('input[name="airtable_view"]').val() || '',
-                    // #998 v4.175.0 — Notion data source payload (phase 1 of #592).
+                    // #998 v4.175.0 - Notion data source payload (phase 1 of #592).
                     notion_token:       $('input[name="notion_token"]').val() || '',
                     notion_database_id: $('input[name="notion_database_id"]').val() || '',
-                    // #2366 — manual data source: initial dimension hints + column defs.
+                    // #2366 - manual data source: initial dimension hints + column defs.
                     // manual_columns is owned by the server on first save (provisioned
                     // via TC_Manual_Rows_Service::provision_empty_grid); subsequent saves
                     // post the persisted value back so it isn't clobbered.
                     manual_initial_rows: parseInt($('input[name="manual_initial_rows"]').val(), 10) || 5,
                     manual_initial_cols: parseInt($('input[name="manual_initial_cols"]').val(), 10) || 3,
-                    // #2367 — grid editor: collect updated column labels so header edits
+                    // #2367 - grid editor: collect updated column labels so header edits
                     // are included in the main save payload. The grid editor may also
                     // call gt_save_manual_rows independently (for row data); this key
                     // only carries label changes that came through the column-header inputs.
@@ -446,7 +446,7 @@
                         var editor = $editor.data('gtGridEditor');
                         return editor.model.getColumnLabelsMap();
                     })(),
-                    // #1010 v4.181.0 — sync_direction (phase 1 of #613 two-way sync).
+                    // #1010 v4.181.0 - sync_direction (phase 1 of #613 two-way sync).
                     sync_direction:     $('select[name="sync_direction"]').val() || 'pull',
                     bulk_actions: bulkActions,
                     per_page: parseInt($('select[name="per_page"]').val()),
@@ -462,7 +462,7 @@
                         sku: $('select[name="wc_mapping[sku]"]').val() || '',
                         description: $('select[name="wc_mapping[description]"]').val() || ''
                     },
-                    // Top-N (#347 / #660) — UI restored in v4.8.8.
+                    // Top-N (#347 / #660) - UI restored in v4.8.8.
                     // Read directly when the inputs exist on the page; the
                     // selectors are now real (admin/views/table-builder.php
                     // section 3 → Display Options → Top-N rows). Pre-v4.8.8
@@ -472,18 +472,18 @@
                     top_n_count:     parseInt($('input[name="top_n_count"]').val(), 10) || 0,
                     top_n_column:    $('select[name="top_n_column"]').val() || '',
                     top_n_direction: $('select[name="top_n_direction"]').val() || 'desc',
-                    // #634 — token-driven export filename pattern. Server-side
+                    // #634 - token-driven export filename pattern. Server-side
                     // sanitizer at class-tc-admin.php strips path separators
                     // and parent-traversal. Empty string falls back to the
                     // legacy hardcoded pattern at runtime.
                     export_filename_pattern: $('input[name="export_filename_pattern"]').val() || '',
-                    // #547 — schema.org JSON-LD. Server-side sanitizer
+                    // #547 - schema.org JSON-LD. Server-side sanitizer
                     // delegates to TC_Schema_Service::normalize which
                     // whitelists the schema_type. Off = no JSON-LD emitted.
                     schema: {
                         schema_type: $('select[name="schema[schema_type]"]').val() || 'off'
                     },
-                    // TC_Pagination_Label_Service wire-up — five customizable
+                    // TC_Pagination_Label_Service wire-up - five customizable
                     // pagination/info labels. Empty string per field means
                     // "use the plugin default at runtime" (the service's
                     // get_labels() merges over defaults, so empty keys do
@@ -494,9 +494,9 @@
                     next_label:     $('input[name="next_label"]').val() || '',
                     no_results:     $('input[name="no_results"]').val() || '',
                     loading:        $('input[name="loading"]').val() || '',
-                    // #565 — multi-column sort toggle. Service default is ON.
+                    // #565 - multi-column sort toggle. Service default is ON.
                     enable_multi_sort: $('input[name="enable_multi_sort"]').is(':checked'),
-                    // #531 — per-table print settings. Server-side sanitizer
+                    // #531 - per-table print settings. Server-side sanitizer
                     // delegates to TC_Print_Settings_Service::normalize so the
                     // paper_size whitelist + bool coercion + excluded_columns
                     // string-array filter live in one place. Disabled = no
@@ -521,19 +521,19 @@
                     default_sort_direction: $('select[name="default_sort_direction"]').val() || 'asc',
                     // Persistent filters via localStorage (off by default).
                     persist_filters_localstorage: $('input[name="persist_filters_localstorage"]').is(':checked'),
-                    // TC_Collapsible_Service — whole-table collapse toggle.
+                    // TC_Collapsible_Service - whole-table collapse toggle.
                     collapsible_enabled:           $('input[name="collapsible_enabled"]').is(':checked'),
                     collapsible_default_collapsed: $('input[name="collapsible_default_collapsed"]').is(':checked'),
                     // Visitor-side length selector ("Show N entries" dropdown).
                     show_length_selector:    $('input[name="show_length_selector"]').is(':checked'),
                     length_selector_options: $('input[name="length_selector_options"]').val() || '',
-                    // #1743 — auto-refresh on interval (Free).
+                    // #1743 - auto-refresh on interval (Free).
                     auto_refresh_interval: parseInt($('input[name="auto_refresh_interval"]').val(), 10) || 0,
-                    // #1744 — column visibility picker (Free).
+                    // #1744 - column visibility picker (Free).
                     show_column_picker: $('input[name="show_column_picker"]').is(':checked'),
-                    // #1747 — one-click entry duplicate (Pro).
+                    // #1747 - one-click entry duplicate (Pro).
                     enable_duplicate: $('input[name="enable_duplicate"]').is(':checked'),
-                    // #1748 — email alert rules (Pro).
+                    // #1748 - email alert rules (Pro).
                     email_alert_rules: (function() {
                         var rules = [];
                         $('#gt-alert-rules-container .gt-alert-rule').each(function() {
@@ -578,7 +578,7 @@
             var originalText = $clickedButton.text().trim();
             $clickedButton.prop('disabled', true).text(gtAdmin.strings.saving || 'Saving...');
 
-            // Send AJAX request — 30-second timeout prevents an indefinite spinner (#434)
+            // Send AJAX request - 30-second timeout prevents an indefinite spinner (#434)
             $.ajax({
                 url: gtAdmin.ajax_url,
                 method: 'POST',
@@ -593,7 +593,7 @@
                             self.generatePreview();
                         }
 
-                        // #2367 — if a manual grid editor is active and dirty, save
+                        // #2367 - if a manual grid editor is active and dirty, save
                         // its rows via gt_save_manual_rows. This is a fire-and-forget
                         // secondary POST; failures surface a console warning but don't
                         // block the primary save success UX.
@@ -648,7 +648,7 @@
                 },
                 error: function (xhr, status) {
                     var errMsg = status === 'timeout'
-                        ? 'Save timed out — server did not respond. Please try again.'
+                        ? 'Save timed out - server did not respond. Please try again.'
                         : 'Could not reach the server. Please check your connection and try again.';
                     $('#gt-save-status').text(errMsg);
                     $clickedButton.prop('disabled', false).text(originalText);

@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/selection.js
+ * TableCrafter - frontend/selection.js
  *
  * Row selection state + bulk action toolbar wire-up. Fourth module
  * under #830.
@@ -8,7 +8,7 @@
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
  *
- *   - bindSelectionEvents($wrapper)   — wires .gt-select-all change
+ *   - bindSelectionEvents($wrapper) - wires .gt-select-all change
  *                                       (toggle every gt-entry-checkbox)
  *                                       + .gt-bulk-action-btn click
  *                                       (delegates to performBulkAction
@@ -16,18 +16,18 @@
  *                                       selected). Called once from
  *                                       bindEvents in frontend.js.
  *
- *   - getSelectedEntryIds()           — collects values from every
+ *   - getSelectedEntryIds() - collects values from every
  *                                       checked .gt-entry-checkbox
  *                                       inside the wrapper. Pure-DOM
  *                                       helper, no side effects.
  *
- *   - performBulkAction(action)       — collects selected ids; alerts
+ *   - performBulkAction(action) - collects selected ids; alerts
  *                                       and returns early when none;
  *                                       confirms on delete; POSTs to
  *                                       the gt_bulk_action AJAX
  *                                       endpoint; on success: alerts
  *                                       the response message, unchecks
- *                                       every checkbox (#130 — prevent
+ *                                       every checkbox (#130 - prevent
  *                                       stale selections after reload),
  *                                       reloads entries.
  *
@@ -83,11 +83,11 @@
                 return;
             }
 
-            // #613 phase 2 slice 5 (v4.200.0) — intercept push_to_source and
+            // #613 phase 2 slice 5 (v4.200.0) - intercept push_to_source and
             // delegate to pushRowToSource per entry. Reads each row's current
             // values from its tbody cells (keyed by data-field-id) so the
             // payload reflects the user's latest inline edits.
-            // #613 phase 2 slice 6 (v4.201.0) — aggregate success/failure
+            // #613 phase 2 slice 6 (v4.201.0) - aggregate success/failure
             // feedback. After all per-row pushes complete, surface a single
             // alert with success and failure counts so the user sees the
             // outcome (previously silent).
@@ -110,7 +110,7 @@
                     });
                     self.pushRowToSource(rowId, payload, function (response) {
                         completed++;
-                        // #613 phase 2 slice 7 (v4.202.0) — per-row visual
+                        // #613 phase 2 slice 7 (v4.202.0) - per-row visual
                         // feedback. Mark each row with a class so CSS can
                         // tint it; on failure, surface the typed error code
                         // via a title attribute the user can hover to read.

@@ -1,13 +1,13 @@
 <?php
 /**
- * Wizard Step 1 — Data source selector (#1979)
+ * Wizard Step 1 - Data source selector (#1979)
  *
  * @package GravityTables
  */
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-// #2011 — the source cards are data-driven from TC_Source_Registry::for_wizard()
+// #2011 - the source cards are data-driven from TC_Source_Registry::for_wizard()
 // so wizard-eligible sources come from one source of truth (convergence #2006).
 if ( ! class_exists( 'TC_Source_Registry' ) ) {
     require_once dirname( __DIR__, 2 ) . '/includes/services/class-tc-source-registry.php';

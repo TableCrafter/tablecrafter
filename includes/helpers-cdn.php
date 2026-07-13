@@ -1,20 +1,20 @@
 <?php
 /**
- * Third-party CDN opt-out gate — issues #600 slice 1 + slice 2.
+ * Third-party CDN opt-out gate - issues #600 slice 1 + slice 2.
  *
  * EU site owners need explicit ways to disable or replace every external
  * CDN connection the plugin would otherwise make (Google Fonts, Leaflet
  * from unpkg, etc.) for GDPR / Schrems II compliance.
  *
- * Slice 1 — global opt-out:
+ * Slice 1 - global opt-out:
  *   add_filter('gt_disable_third_party_cdn', '__return_true');
  *
- * Slice 2 — per-source opt-out (overrides nothing on its own; the global
+ * Slice 2 - per-source opt-out (overrides nothing on its own; the global
  * filter still wins as a kill-switch):
  *   add_filter('gt_disable_third_party_cdn_leaflet',      '__return_true');
  *   add_filter('gt_disable_third_party_cdn_google_fonts', '__return_true');
  *
- * Slice 2 — self-host hooks: every external base URL is filterable so
+ * Slice 2 - self-host hooks: every external base URL is filterable so
  * site owners can route each enqueue through their own mirror without
  * disabling the feature outright. See gt_leaflet_url_base and
  * gt_google_fonts_url_base in their respective call sites.
@@ -46,14 +46,14 @@ if (!function_exists('gt_third_party_cdn_source_disabled')) {
      * per-source filter (`gt_disable_third_party_cdn_<source>`).
      *
      * Per-source filter names are documented at the call sites:
-     *   - 'leaflet'       — includes/class-tc-map.php
-     *   - 'google_fonts'  — includes/services/class-tc-typography-service.php
+     *   - 'leaflet' - includes/class-tc-map.php
+     *   - 'google_fonts' - includes/services/class-tc-typography-service.php
      *
      * The global kill-switch is checked first so site owners can flip
      * one switch and disable everything; per-source filters layer on
      * top for fine-grained control.
      *
-     * @param string $source Identifier — '/^[a-z0-9_]+$/i' recommended.
+     * @param string $source Identifier - '/^[a-z0-9_]+$/i' recommended.
      * @return bool
      */
     function gt_third_party_cdn_source_disabled(string $source): bool {

@@ -1,5 +1,5 @@
 /**
- * TableCrafter — Horizontal scroll navigation buttons
+ * TableCrafter - Horizontal scroll navigation buttons
  *
  * For each .gt-table-wrapper that has scroll buttons rendered alongside it:
  *  - Detect whether the table overflows its container
@@ -13,7 +13,7 @@
 (function ($) {
     'use strict';
 
-    var MOBILE_BREAKPOINT = 768; // px – matches the card-view media query
+    var MOBILE_BREAKPOINT = 768; // px - matches the card-view media query
 
     /**
      * Return true if the table wrapper is in mobile card view.

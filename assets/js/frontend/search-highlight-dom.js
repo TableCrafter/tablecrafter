@@ -1,7 +1,7 @@
 /**
- * TableCrafter — frontend/search-highlight-dom.js
+ * TableCrafter - frontend/search-highlight-dom.js
  *
- * #1612 — search-highlight v2: DOM text-node walker.
+ * #1612 - search-highlight v2: DOM text-node walker.
  *
  * v6.1.4 (#1606) highlighted plain-text cells at the string level and
  * deliberately skipped cells with server-rendered markup so the
@@ -13,8 +13,8 @@
  * (scoped to their own column's cells).
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
- *   - highlightTextNodes(rootEl, term)   — returns wrap count
- *   - applyDomSearchHighlight($wrapper)  — post-render pass
+ *   - highlightTextNodes(rootEl, term) - returns wrap count
+ *   - applyDomSearchHighlight($wrapper) - post-render pass
  */
 (function (window) {
     'use strict';

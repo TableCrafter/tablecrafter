@@ -2,7 +2,7 @@
 /**
  * TC_Cache_Invalidator
  *
- * Issue #550 — invalidate page-cache plugins when table data changes.
+ * Issue #550 - invalidate page-cache plugins when table data changes.
  * Mirrors a recurring TablePress / WP Table Builder complaint: tables
  * embedded as static rendered HTML are served from the page-cache
  * snapshot until the cache TTL expires, so users see stale data after
@@ -12,14 +12,14 @@
  * post-purge action. Missing plugins are no-ops because the actions
  * have no listeners.
  *
- *   - WP Rocket            — `rocket_clean_post( $post_id )`
+ *   - WP Rocket - `rocket_clean_post( $post_id )`
  *                            (function call; no-op when WP Rocket is not loaded)
- *   - W3 Total Cache       — `do_action( 'w3tc_flush_post', $post_id )`
- *   - LiteSpeed Cache      — `do_action( 'litespeed_purge_post', $post_id )`
- *   - WordPress core       — `clean_post_cache( $post_id )` (object cache)
+ *   - W3 Total Cache - `do_action( 'w3tc_flush_post', $post_id )`
+ *   - LiteSpeed Cache - `do_action( 'litespeed_purge_post', $post_id )`
+ *   - WordPress core - `clean_post_cache( $post_id )` (object cache)
  *
  * Filter:
- *   `gt_purge_post_ids( array $post_ids, int $table_id )` — lets users
+ *   `gt_purge_post_ids( array $post_ids, int $table_id )` - lets users
  *   extend OR replace the post-id list before purging. Useful for
  *   builder pages (Elementor / Divi / Beaver) where the static
  *   shortcode-detection LIKE query misses, and for sites where a
@@ -36,7 +36,7 @@
  *       gravity_tables_entry_created /
  *       gravity_tables_entry_deleted        -> resolve form_id -> table_id
  *
- * The new listener is purely additive — existing hook signatures and
+ * The new listener is purely additive - existing hook signatures and
  * fire-shapes are unchanged.
  *
  * @since 4.7.20
@@ -49,7 +49,7 @@ class TC_Cache_Invalidator {
 
     /**
      * Find IDs of published posts whose post_content references the
-     * given Gravity Tables table — either via classic shortcode
+     * given Gravity Tables table - either via classic shortcode
      * `[gravity_table id="N"]` or Gutenberg block
      * `<!-- wp:gravity-tables/table {"id":N`.
      *
@@ -83,14 +83,14 @@ class TC_Cache_Invalidator {
      * Fire the post-purge hook of every supported page-cache plugin
      * for `$post_id`, plus WordPress core's object-cache purge.
      *
-     * Each integration is independent — missing plugins simply have
+     * Each integration is independent - missing plugins simply have
      * no listener for their action and the call is a no-op.
      */
     public static function purge_post_caches(int $post_id): void {
         if ($post_id <= 0) {
             return;
         }
-        // WP Rocket — function call when present; the hook is also
+        // WP Rocket - function call when present; the hook is also
         // documented but the function-call path is canonical.
         if (function_exists('rocket_clean_post')) {
             rocket_clean_post($post_id);
@@ -114,7 +114,7 @@ class TC_Cache_Invalidator {
             return;
         }
 
-        // #1674 — clear the plugin's own object-cache entry for this table.
+        // #1674 - clear the plugin's own object-cache entry for this table.
         // Entry create/update/delete + import route through here only, and the
         // page-cache purges below don't touch it, so on a persistent object
         // cache (Redis/Memcached) the gt_table_<id> config row could go stale.

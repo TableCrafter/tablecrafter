@@ -6,15 +6,15 @@
  * store either a single URL string or a JSON-encoded array of URLs
  * (multi-file uploads with `multipleFiles` enabled on the form
  * field). The inline-edit AJAX path treated the incoming value as
- * a single scalar — submitting an edit on a multi-file column
+ * a single scalar - submitting an edit on a multi-file column
  * would clobber the JSON array with the single string, losing every
  * URL except the one currently in the input.
  *
  * This guard surfaces that "would clobber" case so the update loop
- * can skip it and return an "edit blocked — multi-file field"
+ * can skip it and return an "edit blocked - multi-file field"
  * response instead of silently destroying data.
  *
- * Full wp.media multi-file modal is out of scope for this slice —
+ * Full wp.media multi-file modal is out of scope for this slice - 
  * deferred to a separate ticket. This is the safety patch.
  *
  * @since 4.86.0
@@ -27,7 +27,7 @@ class TC_Fileupload_Edit_Guard {
 
     /**
      * True iff `$existing` looks like a JSON-encoded array of URLs
-     * (the GF multi-file shape). Conservative — only matches when:
+     * (the GF multi-file shape). Conservative - only matches when:
      *   - the value parses as JSON
      *   - the decoded value is a non-empty array
      *   - every element is a string
@@ -41,7 +41,7 @@ class TC_Fileupload_Edit_Guard {
         }
         $trimmed = trim($existing);
         if ($trimmed === '' || $trimmed[0] !== '[') {
-            // Quick reject — JSON arrays start with '['.
+            // Quick reject - JSON arrays start with '['.
             return false;
         }
         $decoded = json_decode($trimmed, true);
@@ -58,7 +58,7 @@ class TC_Fileupload_Edit_Guard {
 
     /**
      * True when `$existing` is multi-file-shaped AND `$incoming` is
-     * NOT — meaning a write would replace the JSON array with a
+     * NOT - meaning a write would replace the JSON array with a
      * scalar string and lose every URL except the one the user
      * happens to have in the input.
      *
@@ -72,7 +72,7 @@ class TC_Fileupload_Edit_Guard {
             return false;
         }
         if (is_array($incoming)) {
-            // Caller's writing a structured value — assume they
+            // Caller's writing a structured value - assume they
             // know what they're doing. Same-shape replacement isn't
             // a clobber.
             return false;

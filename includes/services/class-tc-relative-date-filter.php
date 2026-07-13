@@ -7,9 +7,9 @@
  * persistence land under a follow-up; this class is the testable seam.
  *
  * All ranges are inclusive [start, end] with wall-clock 00:00:00 /
- * 23:59:59 boundaries in the supplied timezone — never UTC. Day, week,
+ * 23:59:59 boundaries in the supplied timezone - never UTC. Day, week,
  * month, quarter and year boundaries follow the calendar (ISO-8601 Mon
- * for week, Q1 = Jan–Mar for quarter).
+ * for week, Q1 = Jan - Mar for quarter).
  *
  * @package GravityTables
  * @since 4.7.2
@@ -148,7 +148,7 @@ class TC_Relative_Date_Filter
     }
 
     /**
-     * Calendar quarter (Q1 = Jan–Mar, Q2 = Apr–Jun, Q3 = Jul–Sep, Q4 = Oct–Dec)
+     * Calendar quarter (Q1 = Jan - Mar, Q2 = Apr - Jun, Q3 = Jul - Sep, Q4 = Oct - Dec)
      * for the quarter containing $anchor, full wall-clock window.
      */
     private static function quarter_range(DateTimeImmutable $anchor): array

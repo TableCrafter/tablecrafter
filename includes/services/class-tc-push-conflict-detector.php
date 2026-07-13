@@ -1,13 +1,13 @@
 <?php
 /**
- * TC_Push_Conflict_Detector — phase 2 slice 13 of #613 (two-way sync).
+ * TC_Push_Conflict_Detector - phase 2 slice 13 of #613 (two-way sync).
  *
  * Source-agnostic counterpart to TC_Airtable_Conflict_Detector (#517).
  * Stores per-{source,row_id} baseline lastmod timestamps so the push
  * flow can compare against the remote's current lastmod before
  * overwriting.
  *
- * Wire-up to the push flow lands in the next slice — this slice ships
+ * Wire-up to the push flow lands in the next slice - this slice ships
  * the service + tests.
  *
  * @since 4.208.0

@@ -1,4 +1,4 @@
-/* TableCrafter — Admin Docs Page JS (#1976) */
+/* TableCrafter - Admin Docs Page JS (#1976) */
 (function () {
     /* Section icons keyed by id */
     var ICONS = {
@@ -120,7 +120,7 @@
         });
     }
 
-    /* ── Scroll spy — highlight active TOC link ──────────────────────────── */
+    /* ── Scroll spy - highlight active TOC link ──────────────────────────── */
     function scrollSpy() {
         var sections = Array.prototype.slice.call(
             document.querySelectorAll('.gt-docs-section[id]')

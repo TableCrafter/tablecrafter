@@ -76,7 +76,7 @@ function gt_register_gravity_tables_elementor_widget($widgets_manager)
                     )
                 );
 
-                // #2145 — legacy inline data source (back-compat with the 3.5.x
+                // #2145 - legacy inline data source (back-compat with the 3.5.x
                 // widget). When set, it takes precedence over Table ID and
                 // renders the URL directly (JSON / CSV / public Google Sheet).
                 $this->add_control(
@@ -182,7 +182,7 @@ function gt_register_gravity_tables_elementor_widget($widgets_manager)
             {
                 $settings = $this->get_settings_for_display();
 
-                // #2145 — legacy inline source takes precedence over table id,
+                // #2145 - legacy inline source takes precedence over table id,
                 // so 3.5.x Elementor elements (and new inline ones) render.
                 if (class_exists('TC_Inline_Shortcode_Compat')) {
                     $inline = TC_Inline_Shortcode_Compat::elementor_inline_shortcode($settings);
@@ -196,7 +196,7 @@ function gt_register_gravity_tables_elementor_widget($widgets_manager)
                 if ($table_id <= 0) {
                     if (\Elementor\Plugin::$instance->editor->is_edit_mode()) {
                         echo '<div class="gt-elementor-placeholder">' .
-                            esc_html__('Gravity Table — set a Table ID in the widget controls.', 'tc-data-tables') .
+                            esc_html__('Gravity Table - set a Table ID in the widget controls.', 'tc-data-tables') .
                             '</div>';
                     }
                     return;
@@ -219,7 +219,7 @@ function gt_register_gravity_tables_elementor_widget($widgets_manager)
                     $atts_str .= ' ' . esc_attr($key) . '="' . esc_attr($value) . '"';
                 }
 
-                // #2014 — canonical shortcode. The shortcode dispatches by the
+                // #2014 - canonical shortcode. The shortcode dispatches by the
                 // table's stored data_source_type, so this renders any source
                 // (Gravity Forms or external) for the given table id.
                 echo do_shortcode('[tablecrafter' . $atts_str . ']');
@@ -240,7 +240,7 @@ function gt_register_gravity_tables_elementor_widget($widgets_manager)
 //
 // #682: WP_INT_TEST short-circuit. When the file is required from
 // tests/bootstrap.php (which defines WP_INT_TEST=true), did_action /
-// add_action don't exist yet — WP_Mock's Patchwork shims activate after
+// add_action don't exist yet - WP_Mock's Patchwork shims activate after
 // the require chain. Skipping the file-top wiring under test mode lets
 // PHPUnit boot without the prior fatal.
 // @codeCoverageIgnoreStart

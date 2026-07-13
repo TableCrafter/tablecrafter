@@ -1,7 +1,7 @@
 /**
- * TableCrafter — admin/pivot-aggregates.js
+ * TableCrafter - admin/pivot-aggregates.js
  *
- * #1617 — builder pivot multi-aggregate repeater. The engine
+ * #1617 - builder pivot multi-aggregate repeater. The engine
  * (TC_Pivot_Service) and the v6.1.6 frontend pivot view always
  * supported several aggregates per group; the builder exposed one.
  * Rows clone the PHP-rendered <template id="gt-pa-row-template">
@@ -11,7 +11,7 @@
  *
  * Surface (window.TC_TableBuilder.*):
  *   - paAddRow(col?, op?)
- *   - collectPivotAggregates()  — [{col, op}] from the DOM
+ *   - collectPivotAggregates() - [{col, op}] from the DOM
  */
 (function (window, $) {
     'use strict';

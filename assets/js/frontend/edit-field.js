@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/edit-field.js
+ * TableCrafter - frontend/edit-field.js
  *
  * Inline-editor dispatcher. Ninth slice under #833. One method,
  * ~280 lines.
@@ -85,7 +85,7 @@
         //console.log('GT Edit: Lookup config for field:', this.config.lookup_fields ? this.config.lookup_fields[fieldId] : 'No lookup fields config');
 
         // Check if this field has predefined choices (dropdown/select fields from form configuration).
-        // #2281: exclude multiselect and checkbox_group — those types own their choices rendering
+        // #2281: exclude multiselect and checkbox_group - those types own their choices rendering
         // in the switch block below and must NOT be caught here by the single-select path.
         var hasChoices = fieldType !== 'multiselect' && fieldType !== 'checkbox_group' && this.config.column_config && this.config.column_config[fieldId] && this.config.column_config[fieldId].choices && Array.isArray(this.config.column_config[fieldId].choices) && this.config.column_config[fieldId].choices.length > 0;
         //console.log('GT Edit: Has predefined choices?', hasChoices);
@@ -422,13 +422,13 @@
                 }
             } catch (e) {
                 /* c8 ignore next */
-                // Swallow — focus is the important side-effect; selection is
+                // Swallow - focus is the important side-effect; selection is
                 // an extra convenience that can be skipped on input types
                 // that reject it.
             }
         }, 100);
 
-        // #2281 — client-side URL guard. Fires before saveField for url-type
+        // #2281 - client-side URL guard. Fires before saveField for url-type
         // inputs (type="url"). Returns an error message string on invalid input,
         // null when the value is valid or the input is not a URL field.
         var checkUrlValidity = function (val) {
@@ -502,7 +502,7 @@
 
                     // Only save if value actually changed and is not empty (unless original was empty)
                     if (newValue !== originalValue && (newValue !== '' || originalValue !== '')) {
-                        // #2281 — URL guard on blur
+                        // #2281 - URL guard on blur
                         var urlErrBlur = checkUrlValidity(newValue);
                         if (urlErrBlur) {
                             if (self.showValidationError) self.showValidationError($field, $input, urlErrBlur);

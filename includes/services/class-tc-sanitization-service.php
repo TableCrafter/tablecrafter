@@ -194,7 +194,7 @@ class TC_Sanitization_Service {
             $sanitized['bulk_actions'] = array_intersect($settings['bulk_actions'], $allowedActions);
         }
 
-        // #984 v4.167.0 — JSON data source storage layer (slice 3b-1 of #512).
+        // #984 v4.167.0 - JSON data source storage layer (slice 3b-1 of #512).
         // Defines the contract for the new data_source='json' table type.
         // Admin UI (slice 3b-2) + frontend render (3b-3) consume these keys.
         if (isset($settings['data_source'])) {
@@ -235,7 +235,7 @@ class TC_Sanitization_Service {
             $sanitized['json_refresh_minutes'] = max(5, min(1440, (int) $settings['json_refresh_minutes']));
         }
 
-        // #992 v4.172.0 — Airtable connection wizard (phase B of #517).
+        // #992 v4.172.0 - Airtable connection wizard (phase B of #517).
         // PAT is encrypted-at-rest via TC_Airtable_Credential_Service::encrypt.
         // Empty submitted PAT means "keep existing" so edits don't accidentally
         // wipe credentials when the user just changes the table name.
@@ -260,8 +260,8 @@ class TC_Sanitization_Service {
             $sanitized['airtable_view'] = sanitize_text_field((string) $settings['airtable_view']);
         }
 
-        // #998 v4.175.0 — Notion data source storage (phase 1 of #592).
-        // Reuses the same encrypt/decrypt utility as Airtable for the token —
+        // #998 v4.175.0 - Notion data source storage (phase 1 of #592).
+        // Reuses the same encrypt/decrypt utility as Airtable for the token - 
         // TC_Airtable_Credential_Service is generic; a future refactor will
         // extract it to a TC_Credential_Service shared base.
         if (isset($settings['notion_token'])) {
@@ -278,7 +278,7 @@ class TC_Sanitization_Service {
             $sanitized['notion_database_id'] = sanitize_text_field((string) $settings['notion_database_id']);
         }
 
-        // #1010 v4.181.0 — sync_direction contract (phase 1 of #613 two-way sync).
+        // #1010 v4.181.0 - sync_direction contract (phase 1 of #613 two-way sync).
         // Accepts BOTH the new canonical names (pull / push / two_way) AND the
         // legacy Airtable-specific names (pull_only / push_only / bidirectional)
         // so the existing Airtable pushback code in class-tc-ajax.php keeps
@@ -509,7 +509,7 @@ class TC_Sanitization_Service {
      * Sanitize HTML content stored in a table cell.
      *
      * Uses wp_kses() with an explicit allowlist that preserves <ul> and <ol>
-     * as distinct tags — they are NEVER converted to each other. This is the
+     * as distinct tags - they are NEVER converted to each other. This is the
      * canonical sanitizer for cell content and must be used on every save path
      * to prevent list-type mutations across plugin updates.
      *
@@ -539,7 +539,7 @@ class TC_Sanitization_Service {
             'p'          => ['class' => true, 'style' => true],
             'span'       => ['class' => true, 'style' => true],
             // Both <ul> and <ol> are listed separately so wp_kses() preserves
-            // the exact list type — unordered lists NEVER become ordered lists.
+            // the exact list type - unordered lists NEVER become ordered lists.
             'ul'         => ['class' => true, 'style' => true],
             'ol'         => ['class' => true, 'style' => true, 'start' => true, 'type' => true],
             'li'         => ['class' => true, 'style' => true, 'value' => true],
@@ -559,7 +559,7 @@ class TC_Sanitization_Service {
     }
 
     /**
-     * #1649 — sanitize a field value for safe display in a table cell.
+     * #1649 - sanitize a field value for safe display in a table cell.
      *
      * The JS cell renderers pass any value whose first character is '<'
      * straight into innerHTML so server-rendered HTML (images, star-rating
@@ -567,7 +567,7 @@ class TC_Sanitization_Service {
      * client-side, so it must be returned byte-for-byte here to avoid double
      * encoding. Only HTML-looking values are routed through the canonical
      * sanitize_cell_html() allowlist (keeps <img>/<a>, strips <script> and
-     * on* event handlers) — neutralising stored XSS in submitted field
+     * on* event handlers) - neutralising stored XSS in submitted field
      * values without affecting plain-text cells.
      *
      * @param mixed $value Raw field value bound for the client.

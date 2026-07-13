@@ -18,7 +18,7 @@
  *   width     int (px)             default 540
  *   height    int (px)             default 280
  *
- * Renders pure inline SVG — no JS dependency, no external chart library.
+ * Renders pure inline SVG - no JS dependency, no external chart library.
  *
  * Deferred follow-ups: pie, line, multi-series, color theme picker, lazy
  * Chart.js for richer interactivity, "show alongside table" coordination,

@@ -38,7 +38,7 @@ class TC_Accessibility_Service {
      * Return a visually-hidden <span> containing screen-reader-only text.
      *
      * The span uses the .gt-sr-only class (defined in accessibility.css) which
-     * clips the element to a 1×1 px box — visible to screen readers but not
+     * clips the element to a 1×1 px box - visible to screen readers but not
      * sighted users.
      *
      * @param string $text Plain text to announce to screen readers.
@@ -75,7 +75,7 @@ class TC_Accessibility_Service {
      * are available on any page that renders a Gravity Tables shortcode.
      */
     public static function enqueue_a11y_assets(): void {
-        // #546 — only ship a11y assets when the current page actually
+        // #546 - only ship a11y assets when the current page actually
         // renders a Gravity Tables table. Saves ~25KB CSS + ~15KB JS on
         // shortcode-less pages sitewide. The `gt_always_enqueue_assets`
         // filter inside the gate bypasses this for cache-plugin scenarios.

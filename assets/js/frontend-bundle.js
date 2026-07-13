@@ -10,7 +10,7 @@
 
 /* ===== assets/js/frontend/core.js ===== */
 /**
- * TableCrafter — frontend/core.js
+ * TableCrafter - frontend/core.js
  *
  * Pure helper functions extracted from the head of frontend.js into
  * a namespaced API. Eighth module under #830.
@@ -38,7 +38,7 @@
  *   - GTCore.checkVersionMismatch(config, scriptVersion)
  *       Compares config.plugin_version to scriptVersion. When they
  *       differ, emits a console.warn and prepends a single
- *       .gt-stale-cache-notice banner to <body> (idempotent — won't
+ *       .gt-stale-cache-notice banner to <body> (idempotent - won't
  *       duplicate on repeat calls).
  *
  *   - GTCore.VERSION
@@ -51,19 +51,19 @@
  * reordering the WordPress enqueue dependency chain (currently every
  * split module's IIFE guards `typeof window.GravityTable !== 'function'`
  * and depends on frontend.js defining it first). The cohesive block
- * that DOES factor cleanly is the 4 pure helpers shipped here — they
+ * that DOES factor cleanly is the 4 pure helpers shipped here - they
  * have no dependency on the constructor and are fully unit-testable.
  * Constructor + init extraction is deferred to a follow-up effort.
  */
 (function (window) {
     'use strict';
 
-    var VERSION = '8.0.44';
+    var VERSION = '8.0.45';
     // TC_JS_VERSION preserved as a top-level literal so the pre-#831 file-grep
     // contract in #99 (script must declare a quoted-semver var named TC_JS_VERSION)
     // keeps matching the bundle. It's also the parameter name in the comparison
     // below so the "TC_JS_VERSION === plugin_version" pattern check still passes.
-    var TC_JS_VERSION = '8.0.44';
+    var TC_JS_VERSION = '8.0.45';
 
     // Internal names retained as gtNaturalSort / gtParseCurrency /
     // gtCurrencySort / gtCheckVersionMismatch so the pre-#831 file-grep
@@ -165,7 +165,7 @@
     // .parseCurrency / .currencySort / .checkVersionMismatch / .VERSION.
     // TC_JS_VERSION kept here as a local alias for the few existing call
     // sites in this file (init() still references it via the namespace).
-    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.44';
+    var TC_JS_VERSION = (window.GTCore && window.GTCore.VERSION) || '8.0.45';
 
     // Initialize all tables on the page
     $(document).ready(function () {
@@ -244,7 +244,7 @@
             this.currentPage = 1;
             this.sortField = 'date_created';
             this.sortOrder = 'desc';
-            // #565 — multi-column sort stack (max 3). sortField/sortOrder kept
+            // #565 - multi-column sort stack (max 3). sortField/sortOrder kept
             // as the primary entry for backward compat with the single-sort
             // SQL path; the stack is sent to the server as additional state and
             // surfaced visually via numbered badges on the column headers.
@@ -252,7 +252,7 @@
             this.sortStack = [{ column_id: this.sortField, direction: this.sortOrder }];
             this.searchTerm = '';
             this.filters = {};
-            // #568 slice 4 — Seed initial drilldown filters from config (URL-seeded in template).
+            // #568 slice 4 - Seed initial drilldown filters from config (URL-seeded in template).
             this.drilldownFilters = (config && config.drilldown_filters && Array.isArray(config.drilldown_filters)) ? config.drilldown_filters : [];
         };
         if (existingProto) {
@@ -262,14 +262,14 @@
         window.GravityTable = GT;
     })();
 
-    // init moved to assets/js/frontend/init.js (#833 slice 23 / #947 — FINAL slice).
+    // init moved to assets/js/frontend/init.js (#833 slice 23 / #947 - FINAL slice).
 
     // initializeColumnResizing moved to assets/js/frontend/column-resizing.js (#833 slice 17 / #935).
 
     // Persistent filter state via browser localStorage. Storage key matches
     // the column-widths / column-order pattern: tied to this.config.table_id
     // so multiple tables on the same page persist independently. Try/catch
-    // around every localStorage call — defensive for quota exceeded, private
+    // around every localStorage call - defensive for quota exceeded, private
     // browsing, or disabled localStorage. Sort state is intentionally NOT
     // persisted; per-table default sort (v4.9.11) handles initial sort.
     // Filter state localStorage persistence (_filterStateStorageKey,
@@ -277,7 +277,7 @@
     // moved to assets/js/frontend/filter-state-persistence.js (#832 slice 14).
 
 
-    // #568 slice 4 — Update the browser URL with the current drilldown filter state.
+    // #568 slice 4 - Update the browser URL with the current drilldown filter state.
     // Serializes this.drilldownFilters into ?gt_df=col:val,col:val and uses
     // history.pushState to update the address bar without a reload.
     // updateDrilldownUrlState + applyUrlFilters moved to assets/js/frontend/url-state.js (#833 slice 20 / #941).
@@ -311,7 +311,7 @@
 
     // destroy moved to assets/js/frontend/table-utils.js (#833 slice 19 / #939).
 
-    // initVisibilityObserver moved to assets/js/frontend/observers.js (#840 — second
+    // initVisibilityObserver moved to assets/js/frontend/observers.js (#840 - second
     // child of #830). Module attaches to GravityTable.prototype via Object.assign so
     // the public surface (this.initVisibilityObserver(...)) stays unchanged.
 
@@ -320,7 +320,7 @@
     /* -----------------------------------------------------------------
      * Undo / Redo (#39)
      *
-     * #833 slice 1 — nine helpers (initUndoRedo, pushHistoryEntry,
+     * #833 slice 1 - nine helpers (initUndoRedo, pushHistoryEntry,
      * updateUndoRedoButtons, undoLastEdit, redoLastEdit,
      * replayHistoryEntry, getFieldLabel, shortValue, showUndoToast)
      * moved to assets/js/frontend/edit-history.js.
@@ -391,7 +391,7 @@
 
 /* ===== assets/js/frontend/util.js ===== */
 /**
- * TableCrafter — frontend/util.js
+ * TableCrafter - frontend/util.js
  *
  * Pure helper methods extracted from the monolithic frontend.js as the
  * first module under #830 (split frontend.js into composable modules).
@@ -402,7 +402,7 @@
  * Object.assign so the public surface stays byte-identical to the
  * pre-extraction state. Every existing call (self.escapeHtml(...),
  * this.formatDate(...), etc.) continues to work because the prototype
- * carries the same methods — just defined in a different source file.
+ * carries the same methods - just defined in a different source file.
  *
  * Load order: this module must be enqueued BEFORE frontend.js so that
  * GravityTable's constructor finds the helpers on its prototype when
@@ -412,7 +412,7 @@
  *
  * Defensive guard: if frontend.js hasn't loaded for some reason (e.g.
  * a customisation enqueues this module standalone), the IIFE bails
- * silently. Better than throwing — keeps a broken site recoverable.
+ * silently. Better than throwing - keeps a broken site recoverable.
  */
 (function (window) {
     'use strict';
@@ -449,9 +449,9 @@
         // fill can never disagree with its own column total. Strips
         // currency symbols / thousands separators, then parseFloat.
         // Returns the Number, or null when not finite-numeric.
-        // #1736 — locale-aware two-pass normalizer.
+        // #1736 - locale-aware two-pass normalizer.
         //
-        // Heuristic: scan from the right — the last separator is the decimal
+        // Heuristic: scan from the right - the last separator is the decimal
         // separator ONLY when it is followed by 1 or 2 digits (not 3).
         // Three digits after a separator => it is a thousands-grouping char.
         //
@@ -474,7 +474,7 @@
             var lastSepMatch = stripped.match(/[,.](\d+)$/);
 
             if (!lastSepMatch) {
-                // No separator at all — plain integer.
+                // No separator at all - plain integer.
                 normalized = stripped;
             } else {
                 var afterLast = lastSepMatch[1].length; // digits after last separator
@@ -482,7 +482,7 @@
                 var isThou = (afterLast === 3);          // 3 digits => thousands grouping
 
                 if (isThou) {
-                    // Last separator is a thousands char — strip ALL commas and periods
+                    // Last separator is a thousands char - strip ALL commas and periods
                     // (they are all grouping chars; no decimal portion present).
                     normalized = stripped.replace(/[,.]/g, '');
                 } else if (lastSepChar === ',') {
@@ -605,7 +605,7 @@
         // commits a value and we need to mirror it back into a text cell.
         // Returns inputValue unchanged when the value doesn't match the
         // HTML5 regex. Falls back to this.config.date_format ('m/d/Y' default)
-        // when format is omitted. #832 slice 16 — moved from frontend.js.
+        // when format is omitted. #832 slice 16 - moved from frontend.js.
         parseDateInput: function (inputValue, format) {
             if (!inputValue) return '';
 
@@ -643,9 +643,9 @@
 
 /* ===== assets/js/frontend/observers.js ===== */
 /**
- * TableCrafter — frontend/observers.js
+ * TableCrafter - frontend/observers.js
  *
- * Tabs / Accordion visibility observer (#77, #529) — extracted from
+ * Tabs / Accordion visibility observer (#77, #529) - extracted from
  * the monolithic frontend.js as the second module under #830.
  *
  * Closes #840.
@@ -654,17 +654,17 @@
  *
  * Three recovery paths, in order of preference:
  *
- *   1. IntersectionObserver — fires as soon as any pixel of the
+ *   1. IntersectionObserver - fires as soon as any pixel of the
  *      wrapper enters the viewport. Covers Gutenberg block tabs,
  *      native HTML5 details/summary, and most CSS-only reveals.
  *      One-shot: disconnects after the first reveal.
  *
- *   2. ResizeObserver — catches animated accordion height
+ *   2. ResizeObserver - catches animated accordion height
  *      transitions that start at 0 height (IntersectionObserver
  *      may not fire for those because the wrapper has zero size).
  *      Fires adjustColumns only on the 0 -> >0 transition.
  *
- *   3. Public `gt:redraw` custom event (#529) — escape hatch for
+ *   3. Public `gt:redraw` custom event (#529) - escape hatch for
  *      bespoke tab/accordion libraries (Bootstrap tabs, jQuery UI
  *      tabs, custom Elementor widgets) that swap visibility via
  *      mechanisms our two observers can't catch. Integrators
@@ -677,14 +677,14 @@
  *
  *      The handler calls `adjustColumns()`, the same code path the
  *      observers use, so all three recovery paths converge on a
- *      single re-measurement routine. Deliberately NOT one-shot —
+ *      single re-measurement routine. Deliberately NOT one-shot - 
  *      integrators may need to redraw on every subsequent tab
  *      change, not just the first.
  *
  * Defensive guards: if either observer API is missing from the host
  * environment (older browsers, jsdom), that recovery path is skipped
  * silently. If the wrapper has no underlying DOM element, the
- * function returns early — nothing to observe.
+ * function returns early - nothing to observe.
  */
 (function (window) {
     'use strict';
@@ -702,7 +702,7 @@
             var el = $wrapper[0];
             if (!el) return;
 
-            // 1. IntersectionObserver — fires once when the wrapper enters the viewport.
+            // 1. IntersectionObserver - fires once when the wrapper enters the viewport.
             if (typeof window.IntersectionObserver !== 'undefined') {
                 var io = new window.IntersectionObserver(function (entries) {
                     entries.forEach(function (entry) {
@@ -715,7 +715,7 @@
                 io.observe(el);
             }
 
-            // 2. ResizeObserver — catches 0 -> >0 height transitions.
+            // 2. ResizeObserver - catches 0 -> >0 height transitions.
             if (typeof window.ResizeObserver !== 'undefined') {
                 var prevHeight = el.offsetHeight;
                 var ro = new window.ResizeObserver(function () {
@@ -740,37 +740,37 @@
 
 /* ===== assets/js/frontend/conditional-format.js ===== */
 /**
- * TableCrafter — frontend/conditional-format.js
+ * TableCrafter - frontend/conditional-format.js
  *
  * Conditional formatting rule engine. Third module under #830.
  *
  * Closes #838.
  *
  * Surface (all attached to GravityTable.prototype via Object.assign):
- *   - applyConditionalFormatting()          — entry point, walks rows.
- *   - getColumnIndex(fieldId)               — string/number lookup
+ *   - applyConditionalFormatting() - entry point, walks rows.
+ *   - getColumnIndex(fieldId) - string/number lookup
  *                                             with selection-checkbox
  *                                             offset adjustment.
- *   - getCellValue($cell, fieldId)          — extracts text from a
+ *   - getCellValue($cell, fieldId) - extracts text from a
  *                                             cell, preferring inline
  *                                             editor content when set.
  *   - evaluateCondition(cellValue, op,
  *                       criteriaValue,
- *                       columnType)         — pure rule evaluator.
+ *                       columnType) - pure rule evaluator.
  *                                             Supports eq/neq/lt/lteq/
  *                                             gt/gteq/contains/
  *                                             contains_not/empty/
  *                                             not_empty.
  *   - applyFormattingAction($cell, $row,
  *                            action,
- *                            setValue)      — dispatcher for
+ *                            setValue) - dispatcher for
  *                                             setCellColor /
  *                                             setCellContent /
  *                                             setCellClass /
  *                                             setRowColor / setRowClass.
  *
- * evaluateCondition is intentionally pure — it does no DOM access and
- * no jQuery calls — so the behavioral test suite can exercise every
+ * evaluateCondition is intentionally pure - it does no DOM access and
+ * no jQuery calls - so the behavioral test suite can exercise every
  * operator with controlled inputs.
  */
 (function (window) {
@@ -794,7 +794,7 @@
                 return;
             }
 
-            // #1049 Option 2 v4.219.0 — hot-loop perf refactor. Behavior
+            // #1049 Option 2 v4.219.0 - hot-loop perf refactor. Behavior
             // unchanged (pinned by end-to-end vitest); just faster.
             // 1. Cache the tbody row list ONCE outside the outer loop
             //    (was re-queried per column_config entry).
@@ -921,7 +921,7 @@
 
 /* ===== assets/js/frontend/selection.js ===== */
 /**
- * TableCrafter — frontend/selection.js
+ * TableCrafter - frontend/selection.js
  *
  * Row selection state + bulk action toolbar wire-up. Fourth module
  * under #830.
@@ -930,7 +930,7 @@
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
  *
- *   - bindSelectionEvents($wrapper)   — wires .gt-select-all change
+ *   - bindSelectionEvents($wrapper) - wires .gt-select-all change
  *                                       (toggle every gt-entry-checkbox)
  *                                       + .gt-bulk-action-btn click
  *                                       (delegates to performBulkAction
@@ -938,18 +938,18 @@
  *                                       selected). Called once from
  *                                       bindEvents in frontend.js.
  *
- *   - getSelectedEntryIds()           — collects values from every
+ *   - getSelectedEntryIds() - collects values from every
  *                                       checked .gt-entry-checkbox
  *                                       inside the wrapper. Pure-DOM
  *                                       helper, no side effects.
  *
- *   - performBulkAction(action)       — collects selected ids; alerts
+ *   - performBulkAction(action) - collects selected ids; alerts
  *                                       and returns early when none;
  *                                       confirms on delete; POSTs to
  *                                       the gt_bulk_action AJAX
  *                                       endpoint; on success: alerts
  *                                       the response message, unchecks
- *                                       every checkbox (#130 — prevent
+ *                                       every checkbox (#130 - prevent
  *                                       stale selections after reload),
  *                                       reloads entries.
  *
@@ -1005,11 +1005,11 @@
                 return;
             }
 
-            // #613 phase 2 slice 5 (v4.200.0) — intercept push_to_source and
+            // #613 phase 2 slice 5 (v4.200.0) - intercept push_to_source and
             // delegate to pushRowToSource per entry. Reads each row's current
             // values from its tbody cells (keyed by data-field-id) so the
             // payload reflects the user's latest inline edits.
-            // #613 phase 2 slice 6 (v4.201.0) — aggregate success/failure
+            // #613 phase 2 slice 6 (v4.201.0) - aggregate success/failure
             // feedback. After all per-row pushes complete, surface a single
             // alert with success and failure counts so the user sees the
             // outcome (previously silent).
@@ -1032,7 +1032,7 @@
                     });
                     self.pushRowToSource(rowId, payload, function (response) {
                         completed++;
-                        // #613 phase 2 slice 7 (v4.202.0) — per-row visual
+                        // #613 phase 2 slice 7 (v4.202.0) - per-row visual
                         // feedback. Mark each row with a class so CSS can
                         // tint it; on failure, surface the typed error code
                         // via a title attribute the user can hover to read.
@@ -1095,7 +1095,7 @@
 
 /* ===== assets/js/frontend/pagination.js ===== */
 /**
- * TableCrafter — frontend/pagination.js
+ * TableCrafter - frontend/pagination.js
  *
  * Pagination controls + length selector. Fifth module under #830.
  *
@@ -1118,14 +1118,14 @@
  *   - bindPaginationEvents($wrapper)
  *       Wires the length-selector change handler + prev / next page
  *       click handlers (delegated, .gt-table namespace so the
- *       $wrapper.off('.gt-table') re-mount guard cleans them up — #128).
+ *       $wrapper.off('.gt-table') re-mount guard cleans them up - #128).
  *       Called once from bindEvents in frontend.js.
  *
  *   - updatePagination(data)
  *       Orchestrates the DOM update per AJAX response. Toggles the
  *       gt-pagination-single-page class on single-page responses
  *       (CSS-class hiding so the show_pagination table setting wins
- *       over the single-page check — #185). Updates entry-count text,
+ *       over the single-page check - #185). Updates entry-count text,
  *       current/total page text, prev/next disabled state.
  */
 (function (window) {
@@ -1157,7 +1157,7 @@
         bindPaginationEvents: function ($wrapper) {
             var self = this;
 
-            // Length selector — visitor-side per_page change. Mutates
+            // Length selector - visitor-side per_page change. Mutates
             // this.config.per_page in place so subsequent loadEntries calls
             // pick up the new size, then reloads from page 1. -1 means "All";
             // server-side enforces the max via existing per_page caps.
@@ -1169,7 +1169,7 @@
                 self.loadEntries();
             });
 
-            // Pagination — delegated on $wrapper with .gt-table namespace so the
+            // Pagination - delegated on $wrapper with .gt-table namespace so the
             // $wrapper.off('.gt-table') re-mount guard removes them cleanly (#128).
             $wrapper.on('click.gt-table', '.gt-prev-page', function () {
                 if (!$(this).prop('disabled') && self.currentPage > 1) {
@@ -1227,7 +1227,7 @@
 
 /* ===== assets/js/frontend/a11y-keyboard.js ===== */
 /**
- * TableCrafter — frontend/a11y-keyboard.js
+ * TableCrafter - frontend/a11y-keyboard.js
  *
  * Row-link interaction (click + auxclick + keyboard activation) and
  * the isResponsiveMode helper. Sixth module under #830.
@@ -1246,7 +1246,7 @@
  *   - Cmd/Ctrl/Shift+click and middle-click open in a new tab with
  *     noopener,noreferrer
  *   - Enter/Space on the focused row navigates (with the same
- *     modifier rules) — keyboard parity with the click handler
+ *     modifier rules) - keyboard parity with the click handler
  *   - inline interactives (a, button, input, textarea, select, label,
  *     editable cells, toggle switches, action cells, checkbox cells)
  *     suppress row navigation so the user can still click links and
@@ -1259,8 +1259,8 @@
  * column headers aren't visible.
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
- *   - bindRowLinkEvents($wrapper)   — wires click + auxclick + keydown.
- *   - isResponsiveMode()            — pure-ish helper.
+ *   - bindRowLinkEvents($wrapper) - wires click + auxclick + keydown.
+ *   - isResponsiveMode() - pure-ish helper.
  */
 (function (window) {
     'use strict';
@@ -1275,7 +1275,7 @@
 
     // Inline interactives that suppress row navigation. The selector list
     // must cover real links, buttons, inputs, editable cells, toggle
-    // switches, action cells, and checkbox cells — only the "blank" cell
+    // switches, action cells, and checkbox cells - only the "blank" cell
     // areas of a clickable row should fire the navigation.
     var INLINE_INTERACTIVE_SELECTOR =
         'a, button, input, textarea, select, label, .gt-editable-cell, .gt-toggle-switch, .gt-actions-cell, .gt-checkbox-cell';
@@ -1286,7 +1286,7 @@
         // having to mutate window.location (jsdom blocks Object.defineProperty
         // on Location.href). Production behavior is unchanged: same-tab path
         // assigns location.href; new-tab path calls window.open with
-        // noopener,noreferrer (security + privacy hardening — prevents the
+        // noopener,noreferrer (security + privacy hardening - prevents the
         // opened page from reaching window.opener).
         _navigate: function (href, newTab) {
             if (newTab) {
@@ -1309,7 +1309,7 @@
 
                 // #567 slice 2.4: per-table always-new-tab override.
                 var alwaysNewTab = !!(self.config && self.config.row_link_open_new_tab);
-                // Coerce to strict bool — keyboard events may have undefined
+                // Coerce to strict bool - keyboard events may have undefined
                 // modifier keys instead of false (synthetic-event quirk).
                 var newTab = !!(alwaysNewTab || e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1);
                 self._navigate(href, newTab);
@@ -1328,7 +1328,7 @@
                 if (navigateRow(e, $(this))) { e.preventDefault(); }
             });
 
-            // Keyboard activation — Enter or Space on the focused row.
+            // Keyboard activation - Enter or Space on the focused row.
             $wrapper.on('keydown.gt-table', 'tr.gt-row-clickable', function (e) {
                 if (e.key !== 'Enter' && e.key !== ' ') { return; }
                 if ($(e.target).closest(INLINE_INTERACTIVE_SELECTOR).length > 0) { return; }
@@ -1360,7 +1360,7 @@
 
 /* ===== assets/js/frontend/detail-popup.js ===== */
 /**
- * TableCrafter — frontend/detail-popup.js
+ * TableCrafter - frontend/detail-popup.js
  *
  * Entry-details popup overlay + file-upload cell renderer. Seventh
  * module under #830.
@@ -1596,7 +1596,7 @@
 
 /* ===== assets/js/frontend/search.js ===== */
 /**
- * TableCrafter — frontend/search.js
+ * TableCrafter - frontend/search.js
  *
  * Search controls (search button + Enter keypress on search input).
  * First slice of #834 (the larger filter-sort surface).
@@ -1613,7 +1613,7 @@
  *
  * Scope-honest note (#834): the umbrella estimated ~700 lines for
  * filter-sort, but the filter, sort, and search handlers are tightly
- * intertwined in bindEvents — splitting them all in one PR would be
+ * intertwined in bindEvents - splitting them all in one PR would be
  * high-risk. This module ships ONLY the search controls (smallest
  * cohesive sub-piece). Sort handlers, per-column filter inputs,
  * applyFilters / clearFilters, and initTextFilterTypeaheads remain in
@@ -1658,9 +1658,9 @@
 
 /* ===== assets/js/frontend/search-grammar.js ===== */
 /**
- * TableCrafter — frontend/search-grammar.js
+ * TableCrafter - frontend/search-grammar.js
  *
- * #2278 Phase 1 — advanced global search grammar (client-side only).
+ * #2278 Phase 1 - advanced global search grammar (client-side only).
  *
  * Ports the query tokenizer and AST evaluator from tablecrafter.js
  * (_tokenizeQuery / _evalQueryAst) into a frontend module attached to
@@ -1677,7 +1677,7 @@
  *
  * Fuzzy mode: when enable_fuzzy_search is set and the AST contains any
  * `field`, `not`, or `or` node, grammar evaluation wins over fuzzy.
- * Collect highlight terms via _getGrammarHighlightTerms() — returns []
+ * Collect highlight terms via _getGrammarHighlightTerms() - returns []
  * when fuzzy-disable nodes are present (per spec, suppress highlighting
  * for not/comparison/or nodes).
  *
@@ -1687,7 +1687,7 @@
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
  *   _hasGrammarOperators(query)
- *   parseSearchGrammarQuery(input)         — returns AST root
+ *   parseSearchGrammarQuery(input) - returns AST root
  *   _evalGrammarAst(node, row)
  *   _resolveColumnValue(row, fieldName)
  *   _grammarAstHasFuzzyDisableNode(ast)
@@ -2133,7 +2133,7 @@
 
 /* ===== assets/js/frontend/filter-panel.js ===== */
 /**
- * TableCrafter — frontend/filter-panel.js
+ * TableCrafter - frontend/filter-panel.js
  *
  * Advanced filter panel controls. #834 slice 2 of N.
  *
@@ -2142,13 +2142,13 @@
  *   - bindFilterPanelEvents($wrapper)
  *       Wires 5 handlers in one call (all previously inlined in
  *       frontend.js's bindEvents):
- *         1. .gt-toggle-filters click — slideToggle the panel, flip
+ *         1. .gt-toggle-filters click - slideToggle the panel, flip
  *            button label ("Show Filters" / "Hide Filters") + arrow
  *            (▼/▲) + active class.
- *         2. .gt-apply-filters click — delegates to self.applyFilters().
- *         3. .gt-clear-filters click — delegates to self.clearFilters().
- *         4. .gt-filter-input keypress(Enter) — delegates to applyFilters.
- *         5. select.gt-filter-input change — delegates to applyFilters
+ *         2. .gt-apply-filters click - delegates to self.applyFilters().
+ *         3. .gt-clear-filters click - delegates to self.clearFilters().
+ *         4. .gt-filter-input keypress(Enter) - delegates to applyFilters.
+ *         5. select.gt-filter-input change - delegates to applyFilters
  *            (text-input change deliberately does NOT trigger to avoid
  *            partial-typing noise; Enter or button click only).
  */
@@ -2168,7 +2168,7 @@
         bindFilterPanelEvents: function ($wrapper) {
             var self = this;
 
-            // Advanced filters — toggle panel visibility.
+            // Advanced filters - toggle panel visibility.
             $wrapper.find('.gt-toggle-filters').on('click', function () {
                 var $filtersPanel = $wrapper.find('.gt-filters-panel');
                 var $button = $(this);
@@ -2211,7 +2211,7 @@
 
             // Apply filters on change for select fields (including lookup
             // dropdowns). Text-input change deliberately does NOT trigger
-            // — Enter or button click only — to avoid partial-typing noise.
+            // - Enter or button click only - to avoid partial-typing noise.
             $wrapper.find('select.gt-filter-input, .gt-filter-input[type="select"], .gt-filter-input:not([type])').on('change', function () {
                 if ($(this).is('select')) {
                     self.applyFilters();
@@ -2225,7 +2225,7 @@
 
 /* ===== assets/js/frontend/sort.js ===== */
 /**
- * TableCrafter — frontend/sort.js
+ * TableCrafter - frontend/sort.js
  *
  * Sort handler + multi-column shift-click state machine. #834 slice 3 of N.
  *
@@ -2247,7 +2247,7 @@
  *   - bindSortEvents($wrapper)
  *       Wires the .gt-sortable click handler. On click:
  *         1. Skip when click is inside .gt-resizer (column resize gesture).
- *         2. Skip when isResponsiveMode() — card view has no headers.
+ *         2. Skip when isResponsiveMode() - card view has no headers.
  *         3. Validate field; if missing from config.columns, push it.
  *         4. Call computeNextSortState to mutate stack/field/order.
  *         5. Call self.loadEntries() to refetch with new sort.
@@ -2295,7 +2295,7 @@
                         order = existing.direction;
                     }
                 } else {
-                    // New column added — cap at 3.
+                    // New column added - cap at 3.
                     if (stack.length < 3) {
                         stack.push({ column_id: field, direction: 'asc' });
                     } else {
@@ -2303,7 +2303,7 @@
                     }
                 }
             } else {
-                // Plain click — reset to single-column.
+                // Plain click - reset to single-column.
                 if (currentField === field && currentOrder === 'asc') {
                     order = 'desc';
                 }
@@ -2338,7 +2338,7 @@
                     return;
                 }
 
-                // Auto-add field to columns if missing — preserves legacy behavior.
+                // Auto-add field to columns if missing - preserves legacy behavior.
                 if (self.config.columns.indexOf(field) === -1) {
                     self.config.columns.push(field);
                 }
@@ -2387,9 +2387,9 @@
 
 /* ===== assets/js/frontend/filter-apply.js ===== */
 /**
- * TableCrafter — frontend/filter-apply.js
+ * TableCrafter - frontend/filter-apply.js
  *
- * applyFilters + clearFilters — the orchestrator pair for the
+ * applyFilters + clearFilters - the orchestrator pair for the
  * advanced-filter pipeline. #834 slice 4 of N.
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
@@ -2585,7 +2585,7 @@
             this.loadEntries();
         },
 
-        // #1679 — per-column filter row (.gt-per-col-filter inputs under the
+        // #1679 - per-column filter row (.gt-per-col-filter inputs under the
         // header). Each input filters its own column via the existing server
         // text-filter path (filter_<fieldId> => {type:'text', value}). Merges
         // into this.filters without clobbering advanced-panel filters; an
@@ -2605,7 +2605,7 @@
                 var key = 'filter_' + fieldId;
                 var value = $(this).val();
                 if (value !== null && value !== undefined && String(value).trim() !== '') {
-                    // #1681 — lookup columns store an ID but display a name, so
+                    // #1681 - lookup columns store an ID but display a name, so
                     // a typed name must be resolved server-side (lookup_name);
                     // plain columns use a straight text LIKE.
                     var isLookup = $(this).attr('data-lookup') === '1' || $(this).data('lookup') === 1;
@@ -2628,15 +2628,15 @@
 
 /* ===== assets/js/frontend/typeahead.js ===== */
 /**
- * TableCrafter — frontend/typeahead.js
+ * TableCrafter - frontend/typeahead.js
  *
- * Text-filter typeahead. #834 slice 5 of 5 — closes #834.
+ * Text-filter typeahead. #834 slice 5 of 5 - closes #834.
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
  *
  *   - initTextFilterTypeaheads($wrapper)
  *       Wires each `input.gt-text-filter` inside the wrapper as a
- *       typeahead. Idempotent via a `gtTypeaheadInit` data flag —
+ *       typeahead. Idempotent via a `gtTypeaheadInit` data flag - 
  *       safe to call after re-render.
  *
  *       Per input:
@@ -2720,7 +2720,7 @@
                 }
 
                 function refreshActive() {
-                    // #1049 Option 2 v4.221.0 — vanilla DOM. Fires on every
+                    // #1049 Option 2 v4.221.0 - vanilla DOM. Fires on every
                     // arrow-key press in a typeahead; was $list.children('li')
                     // jQuery selector parse + .each() + $(this).css() per
                     // item. Native: children NodeList + el.style.background.
@@ -2798,7 +2798,7 @@
 
 /* ===== assets/js/frontend/totals.js ===== */
 /**
- * TableCrafter — frontend/totals.js
+ * TableCrafter - frontend/totals.js
  *
  * Column-totals row renderer. #832 slice 1 of N.
  *
@@ -2845,7 +2845,7 @@
             // Shared numeric coercion (#1731): use the canonical
             // gtParseNumeric (util.js) so the column-totals row and the
             // Data Bars fill can never disagree. Falls back to the inline
-            // form only if util.js isn't on the prototype (defensive —
+            // form only if util.js isn't on the prototype (defensive - 
             // never happens in production where util enqueues first).
             var coerce = (typeof self.gtParseNumeric === 'function')
                 ? function (s) { return self.gtParseNumeric(s); }
@@ -2944,7 +2944,7 @@
 
 /* ===== assets/js/frontend/data-bars.js ===== */
 /**
- * TableCrafter — frontend/data-bars.js
+ * TableCrafter - frontend/data-bars.js
  *
  * Data Bars (#1731): Pro-gated, per-column, CSS-only in-cell horizontal
  * value bars for numeric columns.
@@ -3002,7 +3002,7 @@
             // response (#1733). In that case, render-entries.js will merge
             // bar_column_maxes into _barMax after computeBarMaxes returns, so
             // we still need to populate the map for any bars the server
-            // didn't cover — but only when server_bar_max_available is set.
+            // didn't cover - but only when server_bar_max_available is set.
             if (!bars || !entries || !entries.length) {
                 return out;
             }
@@ -3010,7 +3010,7 @@
                 return out;
             }
             var columnConfig = config.column_config || {};
-            // #1738 — sparkline series collector.
+            // #1738 - sparkline series collector.
             var seriesMap = {};
             for (var fieldId in bars) {
                 if (!Object.prototype.hasOwnProperty.call(bars, fieldId)) continue;
@@ -3032,7 +3032,7 @@
                 if (max !== null && max > 0) {
                     out[fieldId] = max;
                 }
-                // #1738 — persist sparkline series on the instance.
+                // #1738 - persist sparkline series on the instance.
                 if (sparkline && series && series.length) {
                     seriesMap[fieldId] = series;
                 }
@@ -3044,7 +3044,7 @@
         },
 
         /**
-         * #1734 — Data Bars: pivot view support.
+         * #1734 - Data Bars: pivot view support.
          *
          * Computes a page-scoped max for each aggregate pivot column so
          * renderPivotRowsHtml can scale in-cell bars against it.
@@ -3070,7 +3070,7 @@
             for (var c = 0; c < cols.length; c++) {
                 var col = cols[c];
                 var pivotKey = col.key;
-                // Skip the group-by column — it is a label, not a numeric aggregate.
+                // Skip the group-by column - it is a label, not a numeric aggregate.
                 if (pivotKey === groupByKey) { continue; }
 
                 // Derive the originating field ID from the pivot key format `<col>_<op>`.
@@ -3109,7 +3109,7 @@
             if (!bars || !bars.enabled) return null;
             // Structural suppressions (see #1731 out-of-scope list).
             // SSP mode is allowed when the caller supplies a server-scoped barMax
-            // via ctx.barMax (set by renderSSPEntries from _sspBarMaxes — #1735).
+            // via ctx.barMax (set by renderSSPEntries from _sspBarMaxes - #1735).
             if (config.processing_mode === 'server' && !(ctx.barMax && ctx.barMax > 0)) return null;
             if (config.column_auto_merge && config.column_auto_merge[fieldId]) return null;
             if (!isNumericType(colCfg)) return null;
@@ -3126,7 +3126,7 @@
             if (pct > 100) pct = 100;
             var color = (bars.color && String(bars.color)) || DEFAULT_COLOR;
 
-            // #1738 — visual sub-options.
+            // #1738 - visual sub-options.
             var gradient  = !!bars.gradient;
             var bipolar   = !!bars.bipolar;
             var result    = { pct: pct, color: color, gradient: gradient, bipolar: bipolar };
@@ -3154,7 +3154,7 @@
 
 /* ===== assets/js/frontend/badge-cell.js ===== */
 /**
- * #1741 — Status Badge Cell Type (Free).
+ * #1741 - Status Badge Cell Type (Free).
  *
  * Post-render pass: walks td[data-field-id] cells for columns that have a
  * badge map configured, wraps matching values in a colored pill badge span.
@@ -3170,7 +3170,7 @@
 
         /**
          * Apply badge spans to all rendered cells that match a badge map entry.
-         * Safe to call multiple times — skips cells that already have a .gt-badge.
+         * Safe to call multiple times - skips cells that already have a .gt-badge.
          */
         applyBadges: function () {
             var config = this.config || {};
@@ -3224,7 +3224,7 @@
 
 /* ===== assets/js/frontend/auto-refresh.js ===== */
 /**
- * TableCrafter — frontend/auto-refresh.js
+ * TableCrafter - frontend/auto-refresh.js
  *
  * Configurable table auto-refresh on interval (#1743, Free).
  * Last-updated timestamp display (#1912, Free).
@@ -3329,7 +3329,7 @@
 
 /* ===== assets/js/frontend/ssp.js ===== */
 /**
- * TableCrafter — frontend/ssp.js
+ * TableCrafter - frontend/ssp.js
  *
  * Server-side processing entries pipeline. #832 slice 2 of N.
  *
@@ -3401,7 +3401,7 @@
                 if (response && typeof response.recordsTotal !== 'undefined') {
                     self.totalEntries = parseInt(response.recordsTotal, 10) || 0;
                     self.totalFiltered = parseInt(response.recordsFiltered, 10) || self.totalEntries;
-                    // #1735 — store server-supplied per-column bar maxes so
+                    // #1735 - store server-supplied per-column bar maxes so
                     // renderSSPEntries can scale bars against the full filtered set.
                     self._sspBarMaxes = (response.bar_maxes && typeof response.bar_maxes === 'object')
                         ? response.bar_maxes
@@ -3425,7 +3425,7 @@
             if (!rows || rows.length === 0) {
                 html = '<tr><td colspan="' + ($wrapper.find('thead th').length) + '" class="gt-no-entries">' + ((self.config.pagination_labels && self.config.pagination_labels.no_results) || self.config.no_entries_text || 'No entries found.') + '</td></tr>';
             } else {
-                // #1735 — grab server-supplied bar maxes (set by loadEntriesServerSide).
+                // #1735 - grab server-supplied bar maxes (set by loadEntriesServerSide).
                 var barMaxes = (self._sspBarMaxes && typeof self._sspBarMaxes === 'object')
                     ? self._sspBarMaxes
                     : {};
@@ -3470,7 +3470,7 @@
 
 /* ===== assets/js/frontend/row-link-resolver.js ===== */
 /**
- * TableCrafter — frontend/row-link-resolver.js
+ * TableCrafter - frontend/row-link-resolver.js
  *
  * Row-link template resolver (#567). #832 slice 3 of N.
  *
@@ -3492,7 +3492,7 @@
  *       empty.
  *
  *       aria-label uses entry_id when present (#567 slice 2.1); falls
- *       back to plain "Open entry" when entry_id is undefined — custom
+ *       back to plain "Open entry" when entry_id is undefined - custom
  *       data sources like woocommerce_products and JSON/REST adapters
  *       don't expose a numeric entry_id, and screen readers should
  *       never announce "Open entry #undefined" (#567 slice 2.2).
@@ -3534,7 +3534,7 @@
 
 /* ===== assets/js/frontend/alignment-resolver.js ===== */
 /**
- * TableCrafter — frontend/alignment-resolver.js
+ * TableCrafter - frontend/alignment-resolver.js
  *
  * Cell alignment style + class builder (#549). #832 slice 4 of N.
  *
@@ -3544,9 +3544,9 @@
  *       Pure helper. Returns { style, valignClass } given the table
  *       config + a (fieldId, entryId) lookup pair. Three layers
  *       stack (later wins) per #549 slice 3:
- *         1. column_alignments[fieldId] — horizontal text-align.
- *         2. column_vertical_alignments[fieldId] — vertical-align base.
- *         3. cell_vertical_alignments[entryId][fieldId] — per-cell
+ *         1. column_alignments[fieldId] - horizontal text-align.
+ *         2. column_vertical_alignments[fieldId] - vertical-align base.
+ *         3. cell_vertical_alignments[entryId][fieldId] - per-cell
  *            v-align override.
  *
  *       Output shape:
@@ -3554,7 +3554,7 @@
  *           valignClass: ' gt-valign-X' | '' }
  *
  *       Empty `colVAlign` means: emit no vertical-align so the
- *       browser default of `middle` applies — preserves prior
+ *       browser default of `middle` applies - preserves prior
  *       behavior. `middle` explicitly does NOT emit a class (also
  *       browser default).
  *
@@ -3599,7 +3599,7 @@
 
 /* ===== assets/js/frontend/link-anchor.js ===== */
 /**
- * TableCrafter — frontend/link-anchor.js
+ * TableCrafter - frontend/link-anchor.js
  *
  * Column link-settings anchor builder (#109). #832 slice 5 of N.
  *
@@ -3662,7 +3662,7 @@
 
 /* ===== assets/js/frontend/toggle-cell.js ===== */
 /**
- * TableCrafter — frontend/toggle-cell.js
+ * TableCrafter - frontend/toggle-cell.js
  *
  * Toggle / boolean column cell renderer (#325). #832 slice 6 of N.
  *
@@ -3731,7 +3731,7 @@
 
 /* ===== assets/js/frontend/actions-cell.js ===== */
 /**
- * TableCrafter — frontend/actions-cell.js
+ * TableCrafter - frontend/actions-cell.js
  *
  * Per-row actions-cell renderer. #832 slice 7 of N.
  *
@@ -3754,7 +3754,7 @@
  *
  *       Pure: no DOM, no jQuery, no `this` reads. The DOM check
  *       `$wrapper.find('.gt-actions-header').length > 0` stays in
- *       frontend.js — this helper assumes the caller already decided
+ *       frontend.js - this helper assumes the caller already decided
  *       to render an actions cell.
  */
 (function (window) {
@@ -3774,7 +3774,7 @@
             if (config && config.enable_delete) {
                 html += '<span class="gt-action gt-delete-action" title="Delete" data-entry-id="' + entryId + '">🗑</span>';
             }
-            // #1747 — duplicate entry (Pro).
+            // #1747 - duplicate entry (Pro).
             if (config && config.is_pro && config.enable_duplicate) {
                 html += '<span class="gt-action gt-duplicate-action" title="Duplicate row" data-entry-id="' + entryId + '">⧉</span>';
             }
@@ -3792,9 +3792,9 @@
 
 /* ===== assets/js/frontend/search-highlight.js ===== */
 /**
- * TableCrafter — frontend/search-highlight.js
+ * TableCrafter - frontend/search-highlight.js
  *
- * #1606 — search-term highlighting in matched cells. When a global
+ * #1606 - search-term highlighting in matched cells. When a global
  * search term is active, matched substrings in cell text are wrapped
  * in <mark class="gt-search-hit"> so users can see WHERE the match
  * occurred instead of scanning every column.
@@ -3861,9 +3861,9 @@
 
 /* ===== assets/js/frontend/search-highlight-dom.js ===== */
 /**
- * TableCrafter — frontend/search-highlight-dom.js
+ * TableCrafter - frontend/search-highlight-dom.js
  *
- * #1612 — search-highlight v2: DOM text-node walker.
+ * #1612 - search-highlight v2: DOM text-node walker.
  *
  * v6.1.4 (#1606) highlighted plain-text cells at the string level and
  * deliberately skipped cells with server-rendered markup so the
@@ -3875,8 +3875,8 @@
  * (scoped to their own column's cells).
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
- *   - highlightTextNodes(rootEl, term)   — returns wrap count
- *   - applyDomSearchHighlight($wrapper)  — post-render pass
+ *   - highlightTextNodes(rootEl, term) - returns wrap count
+ *   - applyDomSearchHighlight($wrapper) - post-render pass
  */
 (function (window) {
     'use strict';
@@ -3972,7 +3972,7 @@
 
 /* ===== assets/js/frontend/text-cell.js ===== */
 /**
- * TableCrafter — frontend/text-cell.js
+ * TableCrafter - frontend/text-cell.js
  *
  * Default (non-toggle) text-cell renderer. #832 slice 8 of N.
  *
@@ -4023,8 +4023,8 @@
             // Data Bars (#1731). When the caller passes a clamped barPct,
             // MERGE the bar CSS custom properties into the cell's style
             // attribute (never a second style="...") and add the
-            // data-gt-bar-pct hook. Bars are attribute-only — never inner
-            // markup — so totals / export / conditional-format /
+            // data-gt-bar-pct hook. Bars are attribute-only - never inner
+            // markup - so totals / export / conditional-format /
             // inline-edit all keep reading the unchanged cell text.
             var barAttr = '';
             var barLabelHtml = '';
@@ -4038,14 +4038,14 @@
                     colAlignStyle = colAlignStyle + ' style="' + barVars + '"';
                 }
                 barAttr = ' data-gt-bar-pct="' + barPct + '"';
-                // #1738 — show_label: render the cell value as a visible
+                // #1738 - show_label: render the cell value as a visible
                 // <span class="gt-bar-label"> alongside the ::after underlay.
                 if (opts.showBarLabel) {
                     barLabelHtml = '<span class="gt-bar-label">' + (displayValue ? self.escapeHtml(String(displayValue)) : '') + '</span>';
                 }
             }
 
-            // #1606 — active global search term highlights matched
+            // #1606 - active global search term highlights matched
             // substrings (escape-then-highlight; plain text only).
             var searchTerm = (typeof self.searchTerm === 'string' && typeof self.highlightInEscapedHtml === 'function')
                 ? self.searchTerm.trim()
@@ -4067,7 +4067,7 @@
                 return '<td class="gt-editable-cell gt-empty-field' + valignClass + '" data-field-id="' + fieldId + '" data-entry-id="' + entryId + '"' + barAttr + colAlignStyle + '>' + barLabelHtml + '</td>';
             }
 
-            // Readonly branch. Highlight only plain-text cell content —
+            // Readonly branch. Highlight only plain-text cell content - 
             // server-rendered markup (links, images) is left untouched
             // so the wrapper can't land inside an attribute. (#1606)
             var isEntryId = fieldId === 'entry_id';
@@ -4087,7 +4087,7 @@
 
 /* ===== assets/js/frontend/detail-row.js ===== */
 /**
- * TableCrafter — frontend/detail-row.js
+ * TableCrafter - frontend/detail-row.js
  *
  * #556 expandable detail-rows render path. #832 slice 9 of N.
  *
@@ -4168,7 +4168,7 @@
 
 /* ===== assets/js/frontend/entry-cell.js ===== */
 /**
- * TableCrafter — frontend/entry-cell.js
+ * TableCrafter - frontend/entry-cell.js
  *
  * Per-column cell dispatcher. #832 slice 10 of N.
  *
@@ -4249,7 +4249,7 @@
             var valignClass = _gtAlign.valignClass;
 
             // Build cellHtml: if the value starts with '<' it contains
-            // server-sanitized HTML (e.g. <img> tags) — pass through raw
+            // server-sanitized HTML (e.g. <img> tags) - pass through raw
             // so images render (#439). Otherwise escape the plain-text
             // value to prevent double-escaping when link settings later
             // wrap displayValue in an <a> tag (#132).
@@ -4318,14 +4318,14 @@
 
 /* ===== assets/js/frontend/entry-row.js ===== */
 /**
- * TableCrafter — frontend/entry-row.js
+ * TableCrafter - frontend/entry-row.js
  *
  * Per-row HTML builder + no-entries fallback. #832 slice 11 of N.
  *
  * Two helpers attached to GravityTable.prototype via Object.assign:
  *
  *   - renderEntryRowHtml(entry, ctx)
- *       Pure-ish helper (no jQuery, no DOM access — all DOM probes
+ *       Pure-ish helper (no jQuery, no DOM access - all DOM probes
  *       are pre-resolved by the caller into the `ctx` flags object).
  *       Returns the `<tr>…</tr>` markup for one entry plus the
  *       optional hidden detail-row sibling.
@@ -4374,7 +4374,7 @@
                 html += self.renderDetailToggleCellHtml(entry.entry_id, detailRowId);
             }
 
-            // #2340 — index cell: 1-based counter, renumbers on sort/filter/page.
+            // #2340 - index cell: 1-based counter, renumbers on sort/filter/page.
             if (ctx.hasIndexHeader) {
                 html += '<td class="gt-index-cell">' + (ctx.rowIndex || 0) + '</td>';
             }
@@ -4413,9 +4413,9 @@
 
 /* ===== assets/js/frontend/pivot-view.js ===== */
 /**
- * TableCrafter — frontend/pivot-view.js
+ * TableCrafter - frontend/pivot-view.js
  *
- * #1596 — frontend pivot view + visitor raw/pivot toggle.
+ * #1596 - frontend pivot view + visitor raw/pivot toggle.
  *
  * The #562 slices shipped TC_Pivot_Service, the builder pivot config,
  * and the AJAX path that replaces entries with aggregated rows and
@@ -4493,7 +4493,7 @@
         },
 
         /**
-         * #1734 — pivot data-bar support.
+         * #1734 - pivot data-bar support.
          *
          * Optional third argument `barMaxes` is a map keyed by pivot column key
          * (e.g. `12_sum`) with the page-scoped numeric maximum, produced by
@@ -4559,7 +4559,7 @@
             var resolveLabel = function (fieldId) {
                 var th = probe.querySelector('th[data-field-id="' + fieldId + '"]');
                 if (!th) { return ''; }
-                // First text chunk only — sort arrows / filter inputs
+                // First text chunk only - sort arrows / filter inputs
                 // inside the th must not leak into the label.
                 var txt = (th.textContent || '').trim();
                 return txt.split('\n')[0].trim();
@@ -4568,7 +4568,7 @@
             $headRow.html(self.renderPivotHeadHtml(cols));
             var $tbody = $wrapper.find('tbody');
             var rows = Array.isArray(data.entries) ? data.entries : [];
-            // #1734 — compute per-pivot-column bar maxes before rendering rows
+            // #1734 - compute per-pivot-column bar maxes before rendering rows
             // so each aggregate cell can scale its fill proportionally.
             // typeof guard keeps harnesses without data-bars.js on the old path.
             var barMaxes = (typeof self.computePivotBarMaxes === 'function')
@@ -4625,18 +4625,18 @@
 
 /* ===== assets/js/frontend/table-summary.js ===== */
 /**
- * TableCrafter — frontend/table-summary.js
+ * TableCrafter - frontend/table-summary.js
  *
- * #1601 slice A — table summary line. When the per-table
+ * #1601 slice A - table summary line. When the per-table
  * `show_table_summary` setting is on, fetch gt_ai_table_summary
- * (TC_AI_Table_Summarizer — rule-based slice-1 engine, no API key
+ * (TC_AI_Table_Summarizer - rule-based slice-1 engine, no API key
  * required) once on init and render a one-line digest above the
  * table content: row count, date span, numeric min/max/avg, dominant
  * text values.
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
- *   - initTableSummary()        — gate on config, fetch, render
- *   - renderTableSummary(data)  — escaped digest line (idempotent)
+ *   - initTableSummary() - gate on config, fetch, render
+ *   - renderTableSummary(data) - escaped digest line (idempotent)
  */
 (function (window) {
     'use strict';
@@ -4706,9 +4706,9 @@
 
 /* ===== assets/js/frontend/computed-sort.js ===== */
 /**
- * TableCrafter — frontend/computed-sort.js
+ * TableCrafter - frontend/computed-sort.js
  *
- * #1621 — client-side sort for computed columns. Computed values
+ * #1621 - client-side sort for computed columns. Computed values
  * (gtc_*) have no DB column, so SQL ORDER BY can't see them; their
  * th carries .gt-client-sortable (instead of .gt-sortable) and this
  * module reorders the LOADED page's rows in the DOM. Numeric-aware:
@@ -4783,13 +4783,13 @@
 
 /* ===== assets/js/frontend/responsive-visibility.js ===== */
 /**
- * TableCrafter — frontend/responsive-visibility.js
+ * TableCrafter - frontend/responsive-visibility.js
  *
  * Pure visibility helpers for responsive card-view rendering.
  * #832 slice 12 of N.
  *
  * Five small helpers attached to GravityTable.prototype via Object.assign.
- * All read `this.config.responsive_settings` keyed by fieldId — when the
+ * All read `this.config.responsive_settings` keyed by fieldId - when the
  * key is absent or the entire map is missing, default to visible.
  *
  *   - isFieldVisibleInCards(fieldId, isTabletView)
@@ -4809,7 +4809,7 @@
  *       otherwise falls back to defaultLabel.
  *
  *   - isFieldVisibleOnCurrentDevice(fieldId, isTabletView)
- *       Alias of isFieldVisibleInCards — same branch table, used at
+ *       Alias of isFieldVisibleInCards - same branch table, used at
  *       different call sites in card render. Pre-existing duplication.
  */
 (function (window) {
@@ -4875,7 +4875,7 @@
 
 /* ===== assets/js/frontend/toolbar-export.js ===== */
 /**
- * TableCrafter — frontend/toolbar-export.js
+ * TableCrafter - frontend/toolbar-export.js
  *
  * Toolbar export helpers: copy-to-clipboard + CSV/Excel/PDF download.
  * #832 slice 13 of N (with getVisibleTableData added in slice 17).
@@ -4936,7 +4936,7 @@
             var $wrapper = $('#' + this.wrapperId);
             var rows = [];
             var headers = [];
-            // #2340 — track which column indices are excluded from export so
+            // #2340 - track which column indices are excluded from export so
             // the corresponding td cells are skipped in the data rows.
             // Columns marked data-export-exclude="true" (e.g. the index column)
             // must not appear in CSV/copy/Excel exports.
@@ -5026,7 +5026,7 @@
         toolbarDownloadPDF: function () {
             // Route through the existing #531 Print button when present.
             // Fall back to window.print() when the Print button is suppressed
-            // via #521 show_print=false. See v4.8.15 — #636 closed honestly.
+            // via #521 show_print=false. See v4.8.15 - #636 closed honestly.
             var $wrapper = $('#' + this.wrapperId);
             var $printBtn = $wrapper.find('.gt-print-btn').first();
             if ($printBtn.length) {
@@ -5036,13 +5036,13 @@
             window.print();
         },
 
-        // #2285 — JSON visible-rows export helpers.
+        // #2285 - JSON visible-rows export helpers.
 
         /**
          * toolbarBuildJSON(rows)
          *
          * Takes a 2D array of cell values (same shape as getVisibleTableData)
-         * and returns a pretty-printed JSON string — an array of objects keyed
+         * and returns a pretty-printed JSON string - an array of objects keyed
          * by the column headers from the first row.
          *
          * @param  {string[][]} rows  2D array; rows[0] is the header row.
@@ -5079,7 +5079,7 @@
 
 /* ===== assets/js/frontend/filter-state-persistence.js ===== */
 /**
- * TableCrafter — frontend/filter-state-persistence.js
+ * TableCrafter - frontend/filter-state-persistence.js
  *
  * localStorage persistence of search term + per-column filter state.
  * #832 slice 14 of N.
@@ -5098,7 +5098,7 @@
  *
  *   - restoreFilterStateLocal()
  *       No-ops the same way. Otherwise reads + merges into
- *       `this.searchTerm` and `this.filters` — URL takes precedence
+ *       `this.searchTerm` and `this.filters` - URL takes precedence
  *       (only fills slots that applyUrlFilters left empty). Returns
  *       true on a successful restore.
  *
@@ -5151,7 +5151,7 @@
                     $('#' + this.wrapperId).find('.gt-search-input').val(state.searchTerm);
                 }
                 if (state.filters && typeof state.filters === 'object') {
-                    // Merge rather than replace — applyUrlFilters may have already
+                    // Merge rather than replace - applyUrlFilters may have already
                     // seeded entries from the URL, and URL takes precedence.
                     for (var k in state.filters) {
                         if (Object.prototype.hasOwnProperty.call(state.filters, k) && !this.filters[k]) {
@@ -5180,7 +5180,7 @@
 
 /* ===== assets/js/frontend/column-order-persistence.js ===== */
 /**
- * TableCrafter — frontend/column-order-persistence.js
+ * TableCrafter - frontend/column-order-persistence.js
  *
  * localStorage persistence of the user's per-table column order.
  * #832 slice 15 of N.
@@ -5373,7 +5373,7 @@
 
 /* ===== assets/js/frontend/bulk-column-fill.js ===== */
 /**
- * TableCrafter — frontend/bulk-column-fill.js
+ * TableCrafter - frontend/bulk-column-fill.js
  *
  * Pro-gated bulk column fill for selected rows.
  * Opens a modal with a field selector + value input;
@@ -5382,8 +5382,8 @@
  * Closes #1745.
  *
  * Surface (GravityTable.prototype):
- *   - openBulkFillModal(entryIds)   — builds and shows the fill modal.
- *   - executeBulkFill({entryIds, fieldId, value}) — fires AJAX.
+ *   - openBulkFillModal(entryIds) - builds and shows the fill modal.
+ *   - executeBulkFill({entryIds, fieldId, value}) - fires AJAX.
  */
 (function (window) {
     'use strict';
@@ -5442,7 +5442,7 @@
 
         document.body.appendChild(modal);
 
-        // #1749 — live diff preview on the Apply button (Pro).
+        // #1749 - live diff preview on the Apply button (Pro).
         var $applyBtn = modal.querySelector('.gt-bulk-fill-confirm');
         var $valInput = modal.querySelector('input[name="gt_fill_value"]');
         var $fieldSel = modal.querySelector('select[name="gt_fill_field"]');
@@ -5501,7 +5501,7 @@
             }
         })
         .fail(function () {
-            /* silently ignore network failures — table state unchanged */
+            /* silently ignore network failures - table state unchanged */
         });
     };
 
@@ -5509,7 +5509,7 @@
 
 /* ===== assets/js/frontend/column-role-visibility.js ===== */
 /**
- * TableCrafter — frontend/column-role-visibility.js
+ * TableCrafter - frontend/column-role-visibility.js
  *
  * Pro-gated per-column role visibility. Hides th + td elements for
  * columns whose allowed-roles list does not include any role the current
@@ -5518,7 +5518,7 @@
  * Closes #1746.
  *
  * Surface (GravityTable.prototype):
- *   - applyColumnRoleVisibility() — reads config.column_role_visibility
+ *   - applyColumnRoleVisibility() - reads config.column_role_visibility
  *     (field_id => roles[]) and config.user_roles, hides/shows columns.
  */
 (function (window) {
@@ -5558,7 +5558,7 @@
 
 /* ===== assets/js/frontend/entry-duplicate.js ===== */
 /**
- * TableCrafter — frontend/entry-duplicate.js
+ * TableCrafter - frontend/entry-duplicate.js
  *
  * Pro-gated one-click entry duplicate. POSTs to gt_duplicate_entry
  * AJAX handler which creates a new GF entry copying all field values
@@ -5567,7 +5567,7 @@
  * Closes #1747.
  *
  * Surface (GravityTable.prototype):
- *   - duplicateEntry(entryId) — fires AJAX, reloads on success.
+ *   - duplicateEntry(entryId) - fires AJAX, reloads on success.
  */
 (function (window) {
     'use strict';
@@ -5608,13 +5608,13 @@
 }(window));
 
 /* ===== assets/js/frontend/row-diff.js ===== */
-/* #1749 — Inline cell diff badge + bulk fill diff preview. */
+/* #1749 - Inline cell diff badge + bulk fill diff preview. */
 
 /**
  * Show a brief "was: {oldValue}" badge on a cell after an inline edit
  * changes its value. Badge auto-removes after 3 seconds.
  *
- * Free feature — no Pro gate needed (purely cosmetic feedback).
+ * Free feature - no Pro gate needed (purely cosmetic feedback).
  *
  * @param {Element} cell       The td/th element that was just saved.
  * @param {string}  oldValue   The value before the edit.
@@ -5682,9 +5682,9 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/row-grouping.js ===== */
 /**
- * TableCrafter — frontend/row-grouping.js
+ * TableCrafter - frontend/row-grouping.js
  *
- * #2338 — Row Grouping: inject group-header <tr> rows into the rendered
+ * #2338 - Row Grouping: inject group-header <tr> rows into the rendered
  * tbody so rows are visually grouped under sub-headings by shared column
  * values. Supports single-column and hierarchical multi-column grouping.
  *
@@ -5698,11 +5698,11 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
  *     is enabled). Visitor-initiated sorts work as secondary sort within
  *     groups; the JS layer re-applies row grouping after each render.
  *   - Pagination policy: groups spanning a page boundary show the header
- *     on each page. The simplest correct behavior — no DB-level group
+ *     on each page. The simplest correct behavior - no DB-level group
  *     awareness required.
  *   - Collapsible support: groups are collapsible via click when
  *     group_default_collapsed is set; state is tracked in-memory per
- *     session (no localStorage persistence — avoids stale state across
+ *     session (no localStorage persistence - avoids stale state across
  *     filter/search changes).
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
@@ -5722,7 +5722,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
     var $ = window.jQuery;
 
     // -------------------------------------------------------------------------
-    // Escape helper (mirrors util.js escapeHtml — available on proto but we
+    // Escape helper (mirrors util.js escapeHtml - available on proto but we
     // keep a local copy so this module is self-contained in unit tests).
     // -------------------------------------------------------------------------
     function escHtml(s) {
@@ -5862,7 +5862,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/post-render-gates.js ===== */
 /**
- * TableCrafter — frontend/post-render-gates.js
+ * TableCrafter - frontend/post-render-gates.js
  *
  * Post-render DOM gates triggered at the tail of renderEntries.
  * #832 slice 18 of N.
@@ -5884,7 +5884,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
  *       consecutive cells with identical text content into a single
  *       `rowspan=N` cell. Empty cells terminate runs and don't start
  *       new ones (#518 slice 2). Skips `.gt-totals-row` (#518 slice
- *       2.1) — merging totals would visually misrepresent them.
+ *       2.1) - merging totals would visually misrepresent them.
  *       Re-runs from sort/filter/search are automatic because this
  *       method is invoked at the tail of renderEntries.
  */
@@ -5932,7 +5932,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                 var raw = ($cell.text() || '').trim();
                 if (!raw) { return; }
                 // #501 slice 2.1: ISO date-only strings parse as UTC midnight
-                // by default — but we compare against local Date.now(), so
+                // by default - but we compare against local Date.now(), so
                 // construct the Date with local-midnight semantics instead.
                 var t;
                 var isoOnly = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -6033,23 +6033,23 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/column-reorder-dnd.js ===== */
 /**
- * TableCrafter — frontend/column-reorder-dnd.js
+ * TableCrafter - frontend/column-reorder-dnd.js
  *
  * Column reorder drag-and-drop UI. #832 slice 19 of N.
  *
  * Eight helpers attached to GravityTable.prototype via Object.assign.
- * Pairs with column-order-persistence.js (#832 slice 15) — these methods
+ * Pairs with column-order-persistence.js (#832 slice 15) - these methods
  * provide the UI, the persistence module provides the storage.
  *
- *   - getReorderableHeaders()       — return jQuery set of draggable <th>s
- *   - fieldIdFromTh(th)             — pure: extract field id from gt-column-* class
- *   - applyStoredColumnOrderToHead()— reorder thead per stored order, sync config.columns
- *   - applyStoredColumnOrderToBody()— reorder tbody cells to match stored order
- *   - bindColumnDragEvents()        — wire dragstart/dragover/drop on headers
- *   - reorderColumn(src, tgt)       — compute new order, persist, re-apply, update reset btn
- *   - initColumnReorder()           — entry point: skip on touch-only, inject reset button,
+ *   - getReorderableHeaders() - return jQuery set of draggable <th>s
+ *   - fieldIdFromTh(th) - pure: extract field id from gt-column-* class
+ *   - applyStoredColumnOrderToHead() - reorder thead per stored order, sync config.columns
+ *   - applyStoredColumnOrderToBody() - reorder tbody cells to match stored order
+ *   - bindColumnDragEvents() - wire dragstart/dragover/drop on headers
+ *   - reorderColumn(src, tgt) - compute new order, persist, re-apply, update reset btn
+ *   - initColumnReorder() - entry point: skip on touch-only, inject reset button,
  *                                     snapshot defaults, apply stored order, bind drag, update btn
- *   - updateColumnReorderResetButton() — toggle reset button visibility based on stored order
+ *   - updateColumnReorderResetButton() - toggle reset button visibility based on stored order
  */
 (function (window) {
     'use strict';
@@ -6117,7 +6117,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         applyStoredColumnOrderToBody: function () {
             var saved = this.readStoredColumnOrder();
             if (!saved.length) return;
-            // #1049 Option 2 v4.220.0 — hot-loop perf refactor. Behavior pinned
+            // #1049 Option 2 v4.220.0 - hot-loop perf refactor. Behavior pinned
             // by 4 e2e vitest tests; equivalence verified pre/post.
             // 1. $.each -> native for-loop on the row list.
             // 2. $(this).attr -> el.getAttribute (saves a jQuery wrap per cell).
@@ -6211,7 +6211,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         initColumnReorder: function () {
             var $wrapper = $('#' + this.wrapperId);
 
-            // Skip on touch-primary devices (mobile) — column drag isn't practical there.
+            // Skip on touch-primary devices (mobile) - column drag isn't practical there.
             var isTouchOnly = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
             if (isTouchOnly) return;
 
@@ -6258,13 +6258,13 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/responsive-card-view.js ===== */
 /**
- * TableCrafter — frontend/responsive-card-view.js
+ * TableCrafter - frontend/responsive-card-view.js
  *
  * Responsive view + card-view rendering. #832 slice 20 of N.
  *
  * Thirteen helpers attached to GravityTable.prototype directly (kept as
  * `GravityTable.prototype.X = function...` assignments rather than the
- * Object.assign property-shorthand pattern used by other modules — the
+ * Object.assign property-shorthand pattern used by other modules - the
  * block is large enough that re-folding into Object.assign would risk
  * subtle method-body changes during the move).
  *
@@ -6640,7 +6640,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         var cardHtml = '<div class="gt-entry-card" data-entry-id="' + entryId + '">';
 
         // Process each table cell to create card fields
-        // #2340 — skip the index cell; it has no semantic label and the counter
+        // #2340 - skip the index cell; it has no semantic label and the counter
         // is meaningless in the card layout.
         var $cells = $row.find('td:not(.gt-checkbox-cell):not(.gt-actions-column):not(.gt-index-cell)');
         var $headers = $row.closest('table').find('thead th:not(.gt-selection-header):not(.gt-actions-header):not(.gt-index-header)');
@@ -6929,46 +6929,46 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/edit-history.js ===== */
 /**
- * TableCrafter — frontend/edit-history.js
+ * TableCrafter - frontend/edit-history.js
  *
  * Undo / Redo history for inline cell edits. First slice under #833
  * (which itself is a child of the #830 split of frontend.js).
  *
  * Nine helpers attached directly to GravityTable.prototype:
  *
- *   - initUndoRedo()              — wire toolbar buttons, keyboard
+ *   - initUndoRedo() - wire toolbar buttons, keyboard
  *                                   shortcuts, initial state. Called
  *                                   from init() in frontend.js.
- *   - pushHistoryEntry(entry)     — push to undo stack, evict oldest
+ *   - pushHistoryEntry(entry) - push to undo stack, evict oldest
  *                                   past _undoLimit, clear redo stack.
  *                                   Called by saveField after each
  *                                   successful edit (unless
  *                                   _suppressHistory is true).
- *   - updateUndoRedoButtons()     — sync disabled state of both buttons
+ *   - updateUndoRedoButtons() - sync disabled state of both buttons
  *                                   to current stack contents.
- *   - undoLastEdit()              — pop undo, push to redo, replay with
+ *   - undoLastEdit() - pop undo, push to redo, replay with
  *                                   oldValue, show toast.
- *   - redoLastEdit()              — pop redo, push to undo, replay with
+ *   - redoLastEdit() - pop redo, push to undo, replay with
  *                                   newValue, show toast.
  *   - replayHistoryEntry(entry, useNew)
- *                                 — re-issue saveField for the entry's
+ * - re-issue saveField for the entry's
  *                                   cell with _suppressHistory set, so
  *                                   the replay doesn't re-enter the
  *                                   stack. Skips silently if row is no
  *                                   longer in the DOM (#535).
- *   - getFieldLabel(fieldId)      — resolve a human-readable label for
+ *   - getFieldLabel(fieldId) - resolve a human-readable label for
  *                                   the field used in toast messages.
  *                                   Reads config.column_config, falls
  *                                   back to the <th> text, then to
  *                                   "Field N".
- *   - shortValue(v)               — truncate a value for toast display
+ *   - shortValue(v) - truncate a value for toast display
  *                                   (40 chars, ellipsis, "(empty)" for
  *                                   empty string / null).
- *   - showUndoToast(msg)          — render a transient aria-live toast.
+ *   - showUndoToast(msg) - render a transient aria-live toast.
  *
  * Listed as separate prototype assignments (not Object.assign) so the
- * pre-#831 file-grep contracts in our PHP test suite — which look for
- * `GravityTable.prototype.X = function` literals — keep working as the
+ * pre-#831 file-grep contracts in our PHP test suite - which look for
+ * `GravityTable.prototype.X = function` literals - keep working as the
  * #833 split progresses.
  */
 (function (window) {
@@ -7019,13 +7019,13 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             if (!inWrapper) return;
             if ($(active).is('input, textarea, select')) return;
             // #535: also skip elements the page has marked as editable. The
-            // browser's own undo already operates on those — capturing here
+            // browser's own undo already operates on those - capturing here
             // would double-fire (our stack pop + the browser's own undo) and
             // the cell value drifts out of sync with what the user sees.
             // Using the browser-native HTMLElement.isContentEditable property
             // is more correct than a selector check: it returns true when the
             // element OR any ancestor has contenteditable="true", and false
-            // when contenteditable="false" explicitly opts out — exactly the
+            // when contenteditable="false" explicitly opts out - exactly the
             // semantics we want. (gravity-tables itself never turns this on;
             // the inline editor uses real <input> elements, see #433.)
             if (active.isContentEditable) return;
@@ -7082,7 +7082,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         var $cell = $wrapper.find('td.gt-editable-cell[data-entry-id="' + entry.entryId + '"][data-field-id="' + entry.fieldId + '"]').first();
         if ( ! $cell.length ) {
             // Stale reference (#535): the row this entry pointed at is no longer
-            // in the DOM — deleted, paginated away, or filtered out. Earlier
+            // in the DOM - deleted, paginated away, or filtered out. Earlier
             // versions fell back to a detached placeholder and called saveField()
             // anyway, which could resurrect a deleted entry server-side or
             // surface as an "Undefined index" / 500 in the user's face. Skip
@@ -7130,7 +7130,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/edit-validation.js ===== */
 /**
- * TableCrafter — frontend/edit-validation.js
+ * TableCrafter - frontend/edit-validation.js
  *
  * Per-column inline-edit validation rules (#1742, Pro).
  *
@@ -7171,7 +7171,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
      *
      * @param {string|number} fieldId
      * @param {string} value
-     * @param {number|string} [entryId]  Current entry ID — used by the unique rule to exclude
+     * @param {number|string} [entryId]  Current entry ID - used by the unique rule to exclude
      *                                   the row being edited from the duplicate scan.
      * @returns {{valid: boolean, message: string}}
      */
@@ -7211,7 +7211,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                     return { valid: false, message: rules.regex_message || 'Invalid format.' };
                 }
             } catch (e) {
-                // invalid pattern — silently skip
+                // invalid pattern - silently skip
             }
         }
 
@@ -7229,7 +7229,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             }
         }
 
-        // #2282 — oneOf: value must be in the allowed list (strict string comparison).
+        // #2282 - oneOf: value must be in the allowed list (strict string comparison).
         // An empty oneOf array means no restriction (skip the rule).
         if (rules.oneOf && Array.isArray(rules.oneOf) && rules.oneOf.length > 0) {
             if (rules.oneOf.indexOf(str) === -1) {
@@ -7237,38 +7237,38 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             }
         }
 
-        // #2282 — notOneOf: value must NOT be in the blocked list (strict string comparison).
+        // #2282 - notOneOf: value must NOT be in the blocked list (strict string comparison).
         if (rules.notOneOf && Array.isArray(rules.notOneOf) && rules.notOneOf.length > 0) {
             if (rules.notOneOf.indexOf(str) !== -1) {
                 return { valid: false, message: 'Value is not allowed.' };
             }
         }
 
-        // #2282 — phone validation: dual mode — permissive or E.164.
+        // #2282 - phone validation: dual mode - permissive or E.164.
         if (rules.phone) {
             if (rules.phone === 'permissive') {
                 // Permissive: strip formatting chars (spaces, parens, dots, +, dashes),
-                // then require 7–15 remaining digit characters.
+                // then require 7 - 15 remaining digit characters.
                 var stripped = str.replace(/[\s().+\-]/g, '');
                 if (!/^\d{7,15}$/.test(stripped)) {
                     return { valid: false, message: 'Please enter a valid phone number.' };
                 }
             } else {
-                // E.164 mode: optional + prefix, first significant digit [1-9], 1–14 more digits.
+                // E.164 mode: optional + prefix, first significant digit [1-9], 1 - 14 more digits.
                 if (!/^\+?[1-9]\d{1,14}$/.test(str)) {
                     return { valid: false, message: 'Please enter a valid phone number (E.164 format).' };
                 }
             }
         }
 
-        // #2282 — unique: client-side pre-check by scanning this.config.table_data.
+        // #2282 - unique: client-side pre-check by scanning this.config.table_data.
         //
         // In non-SSP mode, when table_data is available (pre-loaded rows array), scan
         // it synchronously to catch obvious duplicates before the AJAX save round-trip.
         // The server enforces the authoritative unique constraint via GFAPI::get_entries
         // or via the gt_check_unique endpoint (used for SSP and any missed client cases).
         //
-        // Skip in server-side processing (SSP) mode — all rows are not loaded locally.
+        // Skip in server-side processing (SSP) mode - all rows are not loaded locally.
         if (rules.unique) {
             var tableData = config.table_data;
             var isSSP = config.processing_mode === 'server';
@@ -7285,7 +7285,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                     }
                 }
             }
-            // SSP mode or no table_data — skip client-side check; server enforces.
+            // SSP mode or no table_data - skip client-side check; server enforces.
         }
 
         return { valid: true, message: '' };
@@ -7323,10 +7323,10 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/edit-save.js ===== */
 /**
- * TableCrafter — frontend/edit-save.js
+ * TableCrafter - frontend/edit-save.js
  *
  * Inline cell-edit AJAX save. Second slice under #833 / #889.
- * Pairs with edit-history.js (slice 1) — saveField calls into
+ * Pairs with edit-history.js (slice 1) - saveField calls into
  * pushHistoryEntry + getFieldLabel via this/self.
  *
  * Public surface (attached directly to GravityTable.prototype):
@@ -7396,13 +7396,13 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         };
         data.updates[fieldId] = value;
 
-        // #553 slice 3 — WAF-safe payload client-side encode. When the
+        // #553 slice 3 - WAF-safe payload client-side encode. When the
         // self.config.waf_safe_payload flag is on (driven by the
         // gt_waf_safe_payload_enabled filter on the server side), wrap entry_id
         // + updates into an opaque base64 envelope under `payload` so generic
         // WAF rules (Cloudflare/Sucuri/mod_security/Wordfence) can't pattern-
         // match SQLi/XSS tokens against legitimate cell content. Server (slice
-        // 2 v4.41.0) accepts both shapes — encoded or legacy form-encoded —
+        // 2 v4.41.0) accepts both shapes - encoded or legacy form-encoded - 
         // and falls through cleanly when the envelope is absent.
         if (this.config && this.config.waf_safe_payload) {
             var encoded = btoa(JSON.stringify({
@@ -7438,7 +7438,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
                 $field.html(self.escapeHtml(finalDisplayValue));
 
-                // #1749 — show diff badge if value changed.
+                // #1749 - show diff badge if value changed.
                 if (typeof self.showDiffBadge === 'function') {
                     var preEditValue = $field.data('original-value');
                     self.showDiffBadge($field[0], String(preEditValue !== undefined ? preEditValue : ''), String(finalDisplayValue));
@@ -7507,7 +7507,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/edit-keyboard-nav.js ===== */
 /**
- * TableCrafter — frontend/edit-keyboard-nav.js
+ * TableCrafter - frontend/edit-keyboard-nav.js
  *
  * Keyboard navigation between inline-editable cells. Third slice
  * under #833. Two helpers, ~80 lines.
@@ -7635,7 +7635,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/edit-ajs-lookup.js ===== */
 /**
- * TableCrafter — frontend/edit-ajs-lookup.js
+ * TableCrafter - frontend/edit-ajs-lookup.js
  *
  * Search-as-you-type inline editor for AJS Toolkit client / pit /
  * destination / material lookups. Fourth slice under #833.
@@ -7657,7 +7657,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
  *   8. Focus + select-all on entry (50ms setTimeout to ensure the DOM
  *      has settled before setSelectionRange).
  *
- * Pairs with edit-save.js (slice 2) — every save path routes through
+ * Pairs with edit-save.js (slice 2) - every save path routes through
  * this.saveField on the prototype.
  */
 (function (window) {
@@ -7791,32 +7791,32 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/presets.js ===== */
 /**
- * TableCrafter — frontend/presets.js
+ * TableCrafter - frontend/presets.js
  *
  * Saved-filter / saved-view "preset" subsystem. Fifth slice under
  * #833. Eight helpers, ~232 lines.
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - initPresets()              — bootstrap UI, wire toolbar
+ *   - initPresets() - bootstrap UI, wire toolbar
  *                                  handlers (select change, save,
  *                                  delete), kick off loadPresets.
- *   - findPresetById(presetId)   — pure linear search in
+ *   - findPresetById(presetId) - pure linear search in
  *                                  this._presets.
- *   - renderPresetOptions()      — populate the toolbar <select>
+ *   - renderPresetOptions() - populate the toolbar <select>
  *                                  from this._presets, restore the
  *                                  currently-selected value if it
  *                                  survived the refresh.
- *   - loadPresets()              — AJAX gt_get_filter_presets, write
+ *   - loadPresets() - AJAX gt_get_filter_presets, write
  *                                  response into this._presets, then
  *                                  renderPresetOptions.
- *   - savePresetPrompt()         — window.prompt for the name, then
+ *   - savePresetPrompt() - window.prompt for the name, then
  *                                  AJAX gt_save_filter_preset with the
  *                                  current this.filters payload.
- *   - deletePreset(presetId)     — AJAX gt_delete_filter_preset, then
+ *   - deletePreset(presetId) - AJAX gt_delete_filter_preset, then
  *                                  refresh options.
- *   - applyPresetById(presetId)  — findPresetById + applyPresetFilters.
- *   - applyPresetFilters(filters)— write filter values into the input
+ *   - applyPresetById(presetId) - findPresetById + applyPresetFilters.
+ *   - applyPresetFilters(filters) - write filter values into the input
  *                                  DOM, handling each filter type
  *                                  (date_range, number_range, dropdown,
  *                                  lookup, checkboxes, text), then call
@@ -7885,9 +7885,9 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         return null;
     };
 
-    // #1605 — capture the full visitor-adjustable view state so a
+    // #1605 - capture the full visitor-adjustable view state so a
     // preset survives device changes (column order, sort stack, page
-    // size — the pieces that previously lived only in localStorage).
+    // size - the pieces that previously lived only in localStorage).
     GravityTable.prototype.capturePresetView = function () {
         var $wrapper = $('#' + this.wrapperId);
         var order = [];
@@ -7904,7 +7904,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         };
     };
 
-    // #1605 — re-apply a stored view. Column order routes through the
+    // #1605 - re-apply a stored view. Column order routes through the
     // existing stored-order helpers so localStorage stays in sync and
     // the established head/body reorder path does the DOM work.
     GravityTable.prototype.applyPresetView = function (view) {
@@ -7938,7 +7938,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         return null;
     };
 
-    // #1605 — one-shot default-view application on load. Skips when
+    // #1605 - one-shot default-view application on load. Skips when
     // the visitor already has explicit state (URL filters, restored
     // localStorage filters, or an active search) so the pin only
     // fills the fresh-device gap it was designed for.
@@ -7962,7 +7962,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         var html = '<option value="">Saved presets&hellip;</option>';
         var arr = this._presets || [];
         for (var i = 0; i < arr.length; i++) {
-            // #1605 — star-prefix the default view.
+            // #1605 - star-prefix the default view.
             var label = (arr[i].is_default ? '★ ' : '') + arr[i].name;
             html += '<option value="' + this.escapeHtml(arr[i].id) + '">' + this.escapeHtml(label) + '</option>';
         }
@@ -7986,7 +7986,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             if (response && response.success && response.data && Array.isArray(response.data.presets)) {
                 self._presets = response.data.presets;
                 self.renderPresetOptions();
-                // #1605 — default pin auto-applies on fresh devices.
+                // #1605 - default pin auto-applies on fresh devices.
                 if (typeof self.maybeApplyDefaultPreset === 'function') {
                     self.maybeApplyDefaultPreset();
                 }
@@ -8004,7 +8004,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             return;
         }
         var filtersJson = JSON.stringify(this.filters || {});
-        // #1605 — capture the full view state + default pin.
+        // #1605 - capture the full view state + default pin.
         var viewJson = JSON.stringify(typeof this.capturePresetView === 'function' ? this.capturePresetView() : {});
         var isDefault = window.confirm('Make this your default view for this table?') ? '1' : '0';
         $.post(this.config.ajax_url, {
@@ -8051,7 +8051,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
     GravityTable.prototype.applyPresetById = function (presetId) {
         var preset = this.findPresetById(presetId);
         if (!preset) return;
-        // #1605 — view first (column order / sort / page size), then
+        // #1605 - view first (column order / sort / page size), then
         // filters; applyPresetFilters ends in applyFilters, which
         // reloads entries once with the full state in place.
         if (typeof this.applyPresetView === 'function' && preset.view) {
@@ -8093,7 +8093,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                     var $toHtml5 = $field.find('.gt-date-to-html5');
                     // Saved values are display-formatted; setting the html5 input expects YYYY-MM-DD,
                     // so write into the display input which existing apply path can re-read. The
-                    // existing applyFilters reads the html5 input only — so we restore both.
+                    // existing applyFilters reads the html5 input only - so we restore both.
                     if ($singleHtml5.length && f.from && f.from === f.to) {
                         var iso = parseDateToIso(f.from);
                         if (iso) $singleHtml5.val(iso);
@@ -8158,20 +8158,20 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/print.js ===== */
 /**
- * TableCrafter — frontend/print.js
+ * TableCrafter - frontend/print.js
  *
  * Print-preparation helpers. Sixth slice under #833. Three methods:
  *
- *   - initPrint()              — wire the .gt-print-btn click to a
+ *   - initPrint() - wire the .gt-print-btn click to a
  *                                preparePrintHeader + (optional)
  *                                load-all-rows + window.print sequence.
  *                                Honors config.print_all_rows (default
  *                                true) and the #531 5000-row cap with
  *                                an afterprint listener that restores
  *                                pagination.
- *   - preparePrintHeader()     — fill .gt-print-header with timestamp
+ *   - preparePrintHeader() - fill .gt-print-header with timestamp
  *                                and active-filter summary.
- *   - summarizeActiveFilters() — pure helper rendering the active
+ *   - summarizeActiveFilters() - pure helper rendering the active
  *                                filter state as a human-readable
  *                                string (handles each filter type).
  */
@@ -8192,7 +8192,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         $wrapper.on('click', '.gt-print-btn', function (e) {
             e.preventDefault();
 
-            // #1024 — re-entrancy guard. If the previous print-prep is still
+            // #1024 - re-entrancy guard. If the previous print-prep is still
             // in flight (AJAX hasn't returned yet), a second click would
             // mutate per_page from its already-mutated value, corrupt the
             // restore state, and stack a second afterprint listener.
@@ -8218,11 +8218,11 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                 return;
             }
 
-            // Hide the legacy "current page only" notice — no longer relevant
+            // Hide the legacy "current page only" notice - no longer relevant
             // when we're loading everything.
             $wrapper.find('.gt-print-pagination-notice').hide();
 
-            // #1024 — skip the heavy refetch when the table already has every
+            // #1024 - skip the heavy refetch when the table already has every
             // entry in the DOM. The original print-all-rows flow ALWAYS
             // pushed per_page to 5000 and re-fetched even when the current
             // pagination already covered every row, which on slow networks
@@ -8266,7 +8266,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             // supposed to ADD rows, not remove them.
             self.config.per_page = Math.max(originalPerPage || 0, 5000);
             self.currentPage = 1;
-            self._printPrepInFlight = true; // #1024 — re-entrancy guard
+            self._printPrepInFlight = true; // #1024 - re-entrancy guard
             self.loadEntries(function (response) {
                 self._printPrepInFlight = false; // clear in-flight flag
                 // #531 slice 1.2: only print when the AJAX succeeded. On
@@ -8277,7 +8277,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                     // DOM has a chance to commit the newly rendered rows.
                     setTimeout(function () { window.print(); }, 50);
                 } else {
-                    // Restore pagination immediately — the afterprint event
+                    // Restore pagination immediately - the afterprint event
                     // won't fire because the dialog never opened. Without
                     // this, the table stays at per_page=5000 with broken
                     // tbody content.
@@ -8362,13 +8362,13 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/push-to-source.js ===== */
 /**
- * TableCrafter — frontend/push-to-source.js
+ * TableCrafter - frontend/push-to-source.js
  *
- * #613 phase 2 slice 3 — pushRowToSource prototype method on GravityTable.
+ * #613 phase 2 slice 3 - pushRowToSource prototype method on GravityTable.
  * Calls the gt_push_row AJAX endpoint shipped in v4.197.0.
  *
  * Surface:
- *   - pushRowToSource(rowId, payload, [onResponse]) — posts the row update
+ *   - pushRowToSource(rowId, payload, [onResponse]) - posts the row update
  *     to the configured external data source (currently JSON; Airtable +
  *     Notion follow in later slices). Optional callback fires with the
  *     response object (success or error envelope).
@@ -8388,7 +8388,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
     window.GravityTable.prototype.pushRowToSource = function (rowId, payload, onResponse, opts) {
         var self = this;
         opts = opts || {};
-        // #613 phase 2 slice 17 (v4.212.0) — auto-retry with backoff.
+        // #613 phase 2 slice 17 (v4.212.0) - auto-retry with backoff.
         // _retryAttempt is used internally to bound recursion to 1 retry.
         var retryAttempt = typeof opts._retryAttempt === 'number' ? opts._retryAttempt : 0;
         var retryDelayMs = typeof opts._retryDelay === 'number' ? opts._retryDelay : 1100;
@@ -8411,7 +8411,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             payload:  payload,
         };
 
-        // #613 phase 2 slice 16 (v4.211.0) — conflict-detection baseline.
+        // #613 phase 2 slice 16 (v4.211.0) - conflict-detection baseline.
         // Send the last-known baseline so the server can refuse the push
         // if the row has been modified since this client loaded it.
         // Backward compat: callers that don't maintain self._pushBaselines
@@ -8421,7 +8421,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         }
 
         $.post(self.config.ajax_url, data, function (response) {
-            // #613 — bump the baseline on success so subsequent pushes use
+            // #613 - bump the baseline on success so subsequent pushes use
             // a fresh token. The server returns the new baseline in
             // response.data.new_baseline (added in v4.211.0).
             if (response && response.success && self._pushBaselines
@@ -8429,7 +8429,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                 self._pushBaselines[rowId] = response.data.new_baseline;
             }
 
-            // #613 phase 2 slice 17 (v4.212.0) — auto-retry once on
+            // #613 phase 2 slice 17 (v4.212.0) - auto-retry once on
             // rate_limited. The server-side rate window is 1s (per
             // TC_Push_Rate_Limiter::WINDOW_SECONDS); waiting just past
             // 1s should clear it. Bound to one retry so a perpetually
@@ -8468,7 +8468,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/row-actions.js ===== */
 /**
- * TableCrafter — frontend/row-actions.js
+ * TableCrafter - frontend/row-actions.js
  *
  * Handlers behind the per-row action buttons. Seventh slice under
  * #833. Pairs with actions-cell.js (#832 slice 7) which renders the
@@ -8476,17 +8476,17 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - loadWooCommerceProducts() — populate the WC product list via
+ *   - loadWooCommerceProducts() - populate the WC product list via
  *     gt_get_wc_products AJAX. Used when the table is configured as
  *     a WC product browser (config.is_wc_products_table).
- *   - createWooCommerceProduct(entryId, $btn) — POST to
+ *   - createWooCommerceProduct(entryId, $btn) - POST to
  *     gt_create_wc_product to spin up a draft WC product from a row.
  *     Confirms first, swaps button to a spinner icon, opens the
  *     edit URL in a new tab on success, alerts on failure.
- *   - viewEntryHistory(entryId) — AJAX gt_get_entry_history and
+ *   - viewEntryHistory(entryId) - AJAX gt_get_entry_history and
  *     render the change-log in the detail popup (showDetailsPopup
  *     lives in detail-popup.js, #837).
- *   - triggerInlineEditForEntry(entryId) — find a row by entryId in
+ *   - triggerInlineEditForEntry(entryId) - find a row by entryId in
  *     the DOM, scroll to it, mark it gt-row-selected, and call
  *     showEditIndicator. Used by deep-link URLs and the inline-edit
  *     icon.
@@ -8659,10 +8659,10 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/lookup-dropdown.js ===== */
 /**
- * TableCrafter — frontend/lookup-dropdown.js
+ * TableCrafter - frontend/lookup-dropdown.js
  *
  * Generic (non-AJS-toolkit) lookup-field dropdown populator. Eighth
- * slice under #833. One method, ~275 lines — the largest single
+ * slice under #833. One method, ~275 lines - the largest single
  * extraction yet.
  *
  * Public surface (attached directly to GravityTable.prototype):
@@ -8685,7 +8685,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
  *      message, then falls back to a plain text editor after 3
  *      seconds with the same keyboard / blur save lifecycle.
  *
- * Pairs with edit-save.js (slice 2) — every save path routes through
+ * Pairs with edit-save.js (slice 2) - every save path routes through
  * this.saveField on the prototype.
  */
 (function (window) {
@@ -8800,7 +8800,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
         // Make AJAX call to get lookup options.
         // #914: previously emitted a `console.log('GT Lookup: Making AJAX
-        // request...')` on every customer edit — removed to keep the console
+        // request...')` on every customer edit - removed to keep the console
         // clean. Re-enable behind a debug flag if diagnostics needed.
 
         $.post(this.config.ajax_url, {
@@ -8974,7 +8974,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/edit-field.js ===== */
 /**
- * TableCrafter — frontend/edit-field.js
+ * TableCrafter - frontend/edit-field.js
  *
  * Inline-editor dispatcher. Ninth slice under #833. One method,
  * ~280 lines.
@@ -9060,7 +9060,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         //console.log('GT Edit: Lookup config for field:', this.config.lookup_fields ? this.config.lookup_fields[fieldId] : 'No lookup fields config');
 
         // Check if this field has predefined choices (dropdown/select fields from form configuration).
-        // #2281: exclude multiselect and checkbox_group — those types own their choices rendering
+        // #2281: exclude multiselect and checkbox_group - those types own their choices rendering
         // in the switch block below and must NOT be caught here by the single-select path.
         var hasChoices = fieldType !== 'multiselect' && fieldType !== 'checkbox_group' && this.config.column_config && this.config.column_config[fieldId] && this.config.column_config[fieldId].choices && Array.isArray(this.config.column_config[fieldId].choices) && this.config.column_config[fieldId].choices.length > 0;
         //console.log('GT Edit: Has predefined choices?', hasChoices);
@@ -9397,13 +9397,13 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                 }
             } catch (e) {
                 /* c8 ignore next */
-                // Swallow — focus is the important side-effect; selection is
+                // Swallow - focus is the important side-effect; selection is
                 // an extra convenience that can be skipped on input types
                 // that reject it.
             }
         }, 100);
 
-        // #2281 — client-side URL guard. Fires before saveField for url-type
+        // #2281 - client-side URL guard. Fires before saveField for url-type
         // inputs (type="url"). Returns an error message string on invalid input,
         // null when the value is valid or the input is not a URL field.
         var checkUrlValidity = function (val) {
@@ -9477,7 +9477,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
                     // Only save if value actually changed and is not empty (unless original was empty)
                     if (newValue !== originalValue && (newValue !== '' || originalValue !== '')) {
-                        // #2281 — URL guard on blur
+                        // #2281 - URL guard on blur
                         var urlErrBlur = checkUrlValidity(newValue);
                         if (urlErrBlur) {
                             if (self.showValidationError) self.showValidationError($field, $input, urlErrBlur);
@@ -9510,7 +9510,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/bind-events.js ===== */
 /**
- * TableCrafter — frontend/bind-events.js
+ * TableCrafter - frontend/bind-events.js
  *
  * Global event wiring for a GravityTable instance. Tenth slice
  * under #833. One method, ~220 lines.
@@ -9544,7 +9544,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         // Remove any stale handlers from a previous init cycle (re-mount safety)
         $wrapper.off('.gt-table');
 
-        // #599 slice 3 — Cascading filter dropdown handler. When the
+        // #599 slice 3 - Cascading filter dropdown handler. When the
         // visitor changes a filter input that has data-gt-cascade-parent,
         // fetch valid child options for the chosen value and update the
         // child filter's placeholder to surface the cascade. Behavior
@@ -9589,7 +9589,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             }, 'json');
         });
 
-        // #1679 — per-column filter inputs. The .gt-per-col-filter row was
+        // #1679 - per-column filter inputs. The .gt-per-col-filter row was
         // dead UI: nothing collected the typed values or reloaded the table
         // (only the cascade placeholder hint above was wired). Collect every
         // per-column value into this.filters and reload via the existing
@@ -9616,7 +9616,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             }
         });
 
-        // #568 slice 4 — Click-to-filter cell drill-down (URL + AJAX integration).
+        // #568 slice 4 - Click-to-filter cell drill-down (URL + AJAX integration).
         // Visitor clicks a cell value in an enabled column → a chip appears,
         // the URL ?gt_df= parameter is updated, and the table reloads from
         // the server with the new filter applied. Survives pagination.
@@ -9705,7 +9705,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             });
         }
 
-        // Row-link interaction (#567) — click + auxclick + keyboard activation
+        // Row-link interaction (#567) - click + auxclick + keyboard activation
         // moved to assets/js/frontend/a11y-keyboard.js (#839). bindRowLinkEvents
         // wires the three handlers in one call.
         self.bindRowLinkEvents($wrapper);
@@ -9723,7 +9723,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         // Sort handler + multi-column state machine moved to assets/js/frontend/sort.js (#834 slice 3).
         self.bindSortEvents($wrapper);
 
-        // #1621 — client-side sort for computed columns (no DB column,
+        // #1621 - client-side sort for computed columns (no DB column,
         // so the server sort path can't see them). typeof guard keeps
         // harnesses without the module on the old path.
         if (typeof self.bindComputedSortEvents === 'function') {
@@ -9735,13 +9735,13 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         // .gt-bulk-action-btn click in one call.
         self.bindSelectionEvents($wrapper);
 
-        // #1745 — show/hide Fill Column button based on row selection.
+        // #1745 - show/hide Fill Column button based on row selection.
         $wrapper.on('change', '.gt-entry-checkbox, .gt-select-all', function () {
             var anyChecked = $wrapper.find('.gt-entry-checkbox:checked').length > 0;
             $wrapper.find('.gt-bulk-fill-btn').toggle(anyChecked);
         });
 
-        // #1745 — open fill modal when button clicked.
+        // #1745 - open fill modal when button clicked.
         $wrapper.find('.gt-bulk-fill-btn').on('click', function () {
             if (typeof self.openBulkFillModal === 'function') {
                 var ids = self.getSelectedEntryIds ? self.getSelectedEntryIds() : [];
@@ -9769,7 +9769,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             $(this).closest('.gt-export-dropdown').removeClass('open');
         });
 
-        // #1680 — the visible-rows export actions (Copy / CSV / Excel / PDF)
+        // #1680 - the visible-rows export actions (Copy / CSV / Excel / PDF)
         // now live inside the Export dropdown; their actual handlers are wired
         // by initToolbarExport() via the preserved gt-toolbar-*-btn classes.
         // Here we just close the dropdown after the action runs. Delegated so
@@ -9806,7 +9806,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             }
         });
 
-        // Close export dropdowns within this wrapper when clicking outside — scoped to
+        // Close export dropdowns within this wrapper when clicking outside - scoped to
         // $wrapper so it cannot capture clicks that belong to other plugins (#435)
         $wrapper.on('click.gt-table', function (e) {
             if (!$(e.target).closest('.gt-export-dropdown').length) {
@@ -9819,7 +9819,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/bind-entry-events.js ===== */
 /**
- * TableCrafter — frontend/bind-entry-events.js
+ * TableCrafter - frontend/bind-entry-events.js
  *
  * Per-row event wiring. Eleventh slice under #833. One method,
  * ~186 lines.
@@ -9852,7 +9852,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         // #556 slice 3: chevron click toggles the sibling gt-detail-row.
         // Delegated so it stays bound across re-renders. Bound once via
         // $wrapper.data('gt-detail-bound') because bindEntryEvents fires on
-        // every renderEntries — without the guard we'd stack N handlers.
+        // every renderEntries - without the guard we'd stack N handlers.
         if (!$wrapper.data('gt-detail-bound')) {
             $wrapper.on('click', '.gt-detail-toggle', function (e) {
                 e.preventDefault();
@@ -9870,7 +9870,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                     $btn.attr('aria-expanded', 'true').attr('aria-label', 'Hide row details');
                 }
             });
-            // Keyboard activation (Enter / Space) — buttons already do this
+            // Keyboard activation (Enter / Space) - buttons already do this
             // natively, but stopPropagation above means we also want to keep
             // it from bubbling into the row-click handler.
             $wrapper.on('keydown', '.gt-detail-toggle', function (e) {
@@ -9971,7 +9971,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             self.editField($(this));
         });
 
-        // #1921 — Mobile touch-tap: fast-edit on tap without the 300ms synthetic-click
+        // #1921 - Mobile touch-tap: fast-edit on tap without the 300ms synthetic-click
         // delay on older iOS. A movement guard (>10px) prevents scroll from opening an
         // editor. preventDefault on the touchend cancels the subsequent synthetic click
         // so editField is not called twice when touch + click both fire.
@@ -9989,7 +9989,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             if (!t) { return; }
             var dx = Math.abs(t.clientX - start.x);
             var dy = Math.abs(t.clientY - start.y);
-            if (dx > 10 || dy > 10) { return; } // scroll gesture — do not edit
+            if (dx > 10 || dy > 10) { return; } // scroll gesture - do not edit
             if ($(e.target).is('input, select, option')) { return; }
             if ($cell.find('.gt-edit-input').length > 0) {
                 $cell.find('.gt-edit-input').focus();
@@ -10015,7 +10015,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         // View-detail click handlers moved to assets/js/frontend/detail-popup.js (#837).
         self.bindDetailViewEvents($wrapper);
 
-        // #1747 — duplicate entry (Pro).
+        // #1747 - duplicate entry (Pro).
         $wrapper.on('click', '.gt-duplicate-action', function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -10070,15 +10070,15 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/scroll-indicators.js ===== */
 /**
- * TableCrafter — frontend/scroll-indicators.js
+ * TableCrafter - frontend/scroll-indicators.js
  *
  * Horizontal scroll affordance overlay. Twelfth slice under #833.
- * One method, ~370 lines — second-largest single-method extraction
+ * One method, ~370 lines - second-largest single-method extraction
  * after #832 slice 20's responsive block.
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - setupScrollIndicators() — install scroll-shadow gradients on
+ *   - setupScrollIndicators() - install scroll-shadow gradients on
  *     the .gt-table-content wrapper, wire scroll listeners to
  *     toggle the .gt-scrollable-left / .gt-scrollable-right classes,
  *     re-evaluate after entries load via the gt-entries-loaded
@@ -10171,7 +10171,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
      * @param  {string} url  File URL or filename.
      * @return {string}      Lowercase extension (e.g. 'pdf', 'jpg') or ''.
      */
-    // getFileExtension removed (#832 slice 16) — dead code; the only
+    // getFileExtension removed (#832 slice 16) - dead code; the only
     // caller (renderFileUploadCell) moved to detail-popup.js in #837 with
     // its own inline extension parsing, leaving this method orphaned.
 
@@ -10194,14 +10194,14 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
     // Date formatting utilities
     // applyConditionalFormatting / getColumnIndex / getCellValue / evaluateCondition /
-    // applyFormattingAction moved to assets/js/frontend/conditional-format.js (#838 —
+    // applyFormattingAction moved to assets/js/frontend/conditional-format.js (#838 - 
     // third child of #830). Object.assign attachment keeps the public surface
     // unchanged so existing call sites (self.applyConditionalFormatting(),
     // self.evaluateCondition(...), etc.) work as before.
 
     // formatDate moved to assets/js/frontend/util.js (#841).
 
-    // parseDateInput moved to assets/js/frontend/util.js (#832 slice 16) —
+    // parseDateInput moved to assets/js/frontend/util.js (#832 slice 16) - 
     // joins the existing date helper family.
 
     // Initialize add new entry functionality
@@ -10459,14 +10459,14 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/date-inputs.js ===== */
 /**
- * TableCrafter — frontend/date-inputs.js
+ * TableCrafter - frontend/date-inputs.js
  *
  * Date picker input wiring. Thirteenth slice under #833. One
  * method, ~158 lines.
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - setupDateInputs() — wires the html5 <input type="date"> +
+ *   - setupDateInputs() - wires the html5 <input type="date"> +
  *     display-format mirror inputs, preset chip clicks ("today",
  *     "yesterday", "last 7", etc.), range from/to validation,
  *     and the format-conversion helpers (parseDateInput / formatDate).
@@ -10555,7 +10555,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
     };
 
     // convertHtml5DateToFormat / parseInputDate / formatDateToTarget moved to
-    // assets/js/frontend/util.js as part of #841 (split frontend.js — module 1).
+    // assets/js/frontend/util.js as part of #841 (split frontend.js - module 1).
     // The util module attaches them to GravityTable.prototype via Object.assign
     // so callsites here continue to use this.convertHtml5DateToFormat etc.
     // unchanged.
@@ -10568,17 +10568,17 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/export.js ===== */
 /**
- * TableCrafter — frontend/export.js
+ * TableCrafter - frontend/export.js
  *
  * Toolbar export pipeline. Fourteenth slice under #833. Two methods,
  * ~150 lines.
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - initToolbarExport() — wire the export dropdown click handlers
+ *   - initToolbarExport() - wire the export dropdown click handlers
  *     (Copy / CSV / Excel / PDF). Pairs with the pure formatters in
  *     toolbar-export.js (#832 slice 13).
- *   - exportTable(format)  — orchestrate the actual export: fetch all
+ *   - exportTable(format) - orchestrate the actual export: fetch all
  *     entries, build the payload via the pure formatters, trigger
  *     download (Blob + anchor + revoke).
  */
@@ -10617,7 +10617,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             self.toolbarDownloadPDF();
         });
 
-        // #2285 — visible-rows JSON export button.
+        // #2285 - visible-rows JSON export button.
         $wrapper.on('click', '.gt-toolbar-json-btn', function (e) {
             e.preventDefault();
             self.toolbarDownloadJSON();
@@ -10757,16 +10757,16 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/row-edit.js ===== */
 /**
- * TableCrafter — frontend/row-edit.js
+ * TableCrafter - frontend/row-edit.js
  *
  * Full-row edit feature. Fifteenth slice under #833. Two methods,
  * ~126 lines.
  *
  * Public surface (attached directly to GravityTable.prototype):
  *
- *   - editEntireRow(entryId) — expand a row into "edit-all-cells"
+ *   - editEntireRow(entryId) - expand a row into "edit-all-cells"
  *     mode: render every editable cell as an inline input at once.
- *   - saveAllFields(entryId) — batch-save AJAX: collect every cell
+ *   - saveAllFields(entryId) - batch-save AJAX: collect every cell
  *     value in the row, POST as a single gt_update_entry call.
  */
 (function (window) {
@@ -10859,7 +10859,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             entry_id: entryId,
             fields: fieldsToSave
         };
-        // #553 slice 3 — WAF-safe payload encode for the bulk-edit path.
+        // #553 slice 3 - WAF-safe payload encode for the bulk-edit path.
         // Mirrors the per-field encode above; same gt_waf_safe_payload_enabled
         // filter gate; same opaque base64 envelope under `payload`.
         if (this.config && this.config.waf_safe_payload) {
@@ -10911,14 +10911,14 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/edit-indicators.js ===== */
 /**
- * TableCrafter — frontend/edit-indicators.js
+ * TableCrafter - frontend/edit-indicators.js
  *
  * Edit-mode UX overlays. Sixteenth slice under #833. Two methods,
  * ~94 lines.
  *
- *   - showEditIndicator($row, entryId) — show the "editing row N" badge
+ *   - showEditIndicator($row, entryId) - show the "editing row N" badge
  *     overlay; auto-hide on click-out.
- *   - showReadonlyIndicator($cell) — flash the readonly-cell tooltip
+ *   - showReadonlyIndicator($cell) - flash the readonly-cell tooltip
  *     when the user clicks a non-editable cell.
  */
 (function (window) {
@@ -11029,12 +11029,12 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/column-resizing.js ===== */
 /**
- * TableCrafter — frontend/column-resizing.js
+ * TableCrafter - frontend/column-resizing.js
  *
  * Column drag-to-resize feature. Seventeenth slice under #833. One
  * method, ~77 lines.
  *
- *   - initializeColumnResizing($wrapper) — wire mousedown handles on
+ *   - initializeColumnResizing($wrapper) - wire mousedown handles on
  *     .gt-resizer elements, drag to resize columns, persist widths
  *     to localStorage per table_id.
  */
@@ -11096,7 +11096,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                 $('body').removeClass('gt-resizing-active');
                 $(document).off('mousemove.gt-resize');
                 $(document).off('mouseup.gt-resize');
-                // Sticky-header layout recalc is no longer needed — native
+                // Sticky-header layout recalc is no longer needed - native
                 // position:sticky on <th> handles re-alignment automatically.
             });
         });
@@ -11107,7 +11107,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             e.preventDefault();
         });
 
-        // Restore saved column widths from localStorage (#111 — works for all users)
+        // Restore saved column widths from localStorage (#111 - works for all users)
         if (window.localStorage && self.config.table_id) {
             $wrapper.find('thead th[data-field-id]').each(function () {
                 var fid = $(this).attr('data-field-id');
@@ -11129,12 +11129,12 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/delete-entry.js ===== */
 /**
- * TableCrafter — frontend/delete-entry.js
+ * TableCrafter - frontend/delete-entry.js
  *
  * Single-entry delete flow. Eighteenth slice under #833. One method,
  * ~53 lines.
  *
- *   - deleteEntry(entryId, $row) — confirm dialog + AJAX delete +
+ *   - deleteEntry(entryId, $row) - confirm dialog + AJAX delete +
  *     row removal + success/error message.
  */
 (function (window) {
@@ -11204,15 +11204,15 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/table-utils.js ===== */
 /**
- * TableCrafter — frontend/table-utils.js
+ * TableCrafter - frontend/table-utils.js
  *
  * Small table-utility methods. Nineteenth slice under #833. Four
  * methods (~50 lines):
  *
- *   - destroy()          — clean up event handlers and remove the table.
- *   - adjustColumns()    — DataTables-style column-width recompute.
- *   - showMessage(msg, t)— flash a transient inline status message.
- *   - updateEntryCount(delta) — increment/decrement the visible entry count.
+ *   - destroy() - clean up event handlers and remove the table.
+ *   - adjustColumns() - DataTables-style column-width recompute.
+ *   - showMessage(msg, t) - flash a transient inline status message.
+ *   - updateEntryCount(delta) - increment/decrement the visible entry count.
  */
 (function (window) {
     'use strict';
@@ -11272,14 +11272,14 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/url-state.js ===== */
 /**
- * TableCrafter — frontend/url-state.js
+ * TableCrafter - frontend/url-state.js
  *
  * URL drilldown state sync. Twentieth slice under #833. Two methods,
  * ~46 lines.
  *
- *   - updateDrilldownUrlState() — serialize this.drilldownFilters to
+ *   - updateDrilldownUrlState() - serialize this.drilldownFilters to
  *     ?gt_df=col:val,col:val via history.pushState.
- *   - applyUrlFilters() — parse the inverse on init: read the
+ *   - applyUrlFilters() - parse the inverse on init: read the
  *     drilldownFilters config block + DOM data-attrs and seed
  *     this.filters.
  */
@@ -11313,7 +11313,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         history.pushState(null, '', url.toString());
     };
 
-    // TC_URL_Filter_Service — pre-populate per-column filter inputs and
+    // TC_URL_Filter_Service - pre-populate per-column filter inputs and
     // seed this.filters from URL params. config.url_filters arrives as a
     // flat { column_id => sanitized_value } map (server-side parsed via
     // TC_URL_Filter_Service::parse_filters). Empty / disabled = no-op.
@@ -11327,7 +11327,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             var val = urlFilters[colId];
             if (val == null || val === '') continue;
             // Pre-populate the visible filter input so the customer sees
-            // what's filtered. id="gt-filter-{field_id}" — same selector
+            // what's filtered. id="gt-filter-{field_id}" - same selector
             // template uses (text + lookup + select all share this id).
             var $input = $wrapper.find('#gt-filter-' + colId);
             if ($input.length) {
@@ -11343,12 +11343,12 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/load-entries.js ===== */
 /**
- * TableCrafter — frontend/load-entries.js
+ * TableCrafter - frontend/load-entries.js
  *
  * AJAX entry-fetch path. Twenty-first slice under #833. One method,
  * ~72 lines.
  *
- *   - loadEntries(onComplete) — dispatch to loadEntriesServerSide
+ *   - loadEntries(onComplete) - dispatch to loadEntriesServerSide
  *     when server-side processing is on, otherwise POST gt_get_entries
  *     with current filters/sort/page state and fan out into
  *     renderEntries on success.
@@ -11374,15 +11374,15 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         var $wrapper = $('#' + this.wrapperId);
         var $tbody = $wrapper.find('tbody');
 
-        // Show loading — add wrapper class so CSS can block premature pagination clicks
+        // Show loading - add wrapper class so CSS can block premature pagination clicks
         $wrapper.addClass('gt-table-loading');
-        // #1713 — render a layout-stable shimmer skeleton instead of a single
+        // #1713 - render a layout-stable shimmer skeleton instead of a single
         // full-width "Loading…" colspan row (which collapsed the columns on
         // sort and read as a flash). Pins the header widths, paints multi-row
         // skeleton rows mirroring the real column/row count.
         self.showLoadingSkeleton($wrapper);
 
-        // #2278 Phase 1 — grammar query detection.
+        // #2278 Phase 1 - grammar query detection.
         // When the search term contains grammar operators (field:, -, OR, ""),
         // suppress the server-side LIKE filter (which would match the raw
         // operator string literally) and apply grammar evaluation client-side
@@ -11408,11 +11408,11 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             search: serverSearch,
             sort_field: this.sortField,
             sort_order: this.sortOrder,
-            // #565 — pass the full multi-sort stack as JSON. Server validates
+            // #565 - pass the full multi-sort stack as JSON. Server validates
             // via TC_Multi_Sort_Service::validate_sort_stack and wires it
             // into the SQL ORDER BY clause when length > 1.
             sort_stack: JSON.stringify(this.sortStack || []),
-            // #568 slice 4 — pass drilldown filters (chips) for server-side filtering.
+            // #568 slice 4 - pass drilldown filters (chips) for server-side filtering.
             drilldown_filters: JSON.stringify(this.drilldownFilters || []),
             columns: this.config.columns,
             lookup_fields: this.config.lookup_fields || {}
@@ -11424,7 +11424,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             data.preview_settings = this.config.preview_settings;
         }
 
-        // #1596 — visitor flipped the pivot toggle to raw: ask the
+        // #1596 - visitor flipped the pivot toggle to raw: ask the
         // server to skip aggregation for this request.
         if (this.pivotViewRaw) {
             data.pivot_view = 'raw';
@@ -11438,7 +11438,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             data.debug = 'true';
         }
 
-        // #916 — debug logging removed. Re-enable behind a debug flag if needed:
+        // #916 - debug logging removed. Re-enable behind a debug flag if needed:
         // console.log('GT Frontend: Loading entries with filters:', this.filters);
         // console.log('GT Frontend: Full AJAX data:', data);
 
@@ -11448,7 +11448,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             $wrapper.removeClass('gt-table-loading');
             self.releaseColumnWidths($wrapper);
             if (response.success) {
-                // #2278 Phase 1 — apply grammar filter client-side when active.
+                // #2278 Phase 1 - apply grammar filter client-side when active.
                 var renderData = response.data;
                 if (grammarQuery && typeof self.grammarFilterEntries === 'function'
                         && renderData && Array.isArray(renderData.entries)) {
@@ -11469,11 +11469,11 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         });
     };
 
-    // #1713 — layout-stable loading skeleton.
+    // #1713 - layout-stable loading skeleton.
     //
     // Replaces the old single full-width "Loading…" colspan row (which let
-    // the columns collapse to min-content on every sort/filter/paginate —
-    // the "squish" — then snap back when data arrived). Instead we:
+    // the columns collapse to min-content on every sort/filter/paginate - 
+    // the "squish" - then snap back when data arrived). Instead we:
     //   1. Pin the current header column widths inline so swapping the
     //      <tbody> can't reflow the header geometry.
     //   2. Paint multi-row shimmer rows that mirror the real column count
@@ -11525,7 +11525,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         }
     };
 
-    // #1713 — release the header widths pinned by showLoadingSkeleton so the
+    // #1713 - release the header widths pinned by showLoadingSkeleton so the
     // freshly rendered rows can settle to their natural column widths.
     GravityTable.prototype.releaseColumnWidths = function ($wrapper) {
         if (!this._gtPinnedThWidths) { return; }
@@ -11540,12 +11540,12 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/render-entries.js ===== */
 /**
- * TableCrafter — frontend/render-entries.js
+ * TableCrafter - frontend/render-entries.js
  *
  * Central DOM render for entries. Twenty-second slice under #833.
  * One method, ~81 lines.
  *
- *   - renderEntries(data) — wipe tbody, render row HTML via
+ *   - renderEntries(data) - wipe tbody, render row HTML via
  *     renderEntryRowHtml (entry-row.js, slice 11), bindEntryEvents
  *     (bind-entry-events.js, slice 11), trigger gt-entries-loaded
  *     custom event for scroll indicators.
@@ -11565,7 +11565,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         var $tbody = $wrapper.find('tbody');
         var html = '';
 
-        // #613 phase 2 slice 18 (v4.213.0) — initial baseline population.
+        // #613 phase 2 slice 18 (v4.213.0) - initial baseline population.
         // If the server provides per-entry baselines (data.push_baselines),
         // copy them into self._pushBaselines so subsequent pushes carry
         // the right optimistic-concurrency token. Backward compat: when
@@ -11580,7 +11580,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             }
         }
 
-        // #1596 — pivot responses render through the pivot layout
+        // #1596 - pivot responses render through the pivot layout
         // (group-by + aggregate columns) instead of the raw column
         // set. typeof guards keep harnesses without the pivot module
         // on the old path.
@@ -11607,7 +11607,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             ? self.computeBarMaxes(data.entries, self.config)
             : {};
 
-        // #1733 — server-supplied full-filtered-set maxes override the
+        // #1733 - server-supplied full-filtered-set maxes override the
         // page-local max so bars scale against ALL matching rows, not
         // just the current page. bar_column_maxes is only present when
         // the Pro gate and column_data_bars are both active.
@@ -11622,7 +11622,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         if (data.entries && data.entries.length > 0) {
             // Per-row HTML builder moved to assets/js/frontend/entry-row.js (#832 slice 11).
             // DOM probes resolved once here so the helper stays jQuery-free.
-            // #2340 — rowOffset: (page-1)*perPage so index cells show 1-based
+            // #2340 - rowOffset: (page-1)*perPage so index cells show 1-based
             // global counter that renumbers on every sort/filter/page change.
             var rowOffset = (self.currentPage - 1) * (self.config.per_page || 25);
             var ctx = {
@@ -11633,7 +11633,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                 hasIndexHeader: $wrapper.find('.gt-index-header').length > 0,
                 detailColCount: $wrapper.find('thead tr').first().find('th').length || $wrapper.find('thead th').length,
             };
-            // #1049 Option 2 v4.222.0 — hot-loop perf refactor. Behavior
+            // #1049 Option 2 v4.222.0 - hot-loop perf refactor. Behavior
             // pinned by 4 e2e vitest tests; equivalence verified pre/post.
             // 1. $.each -> native for-loop (saves callback indirection per
             //    entry; on a 1000-row table that's 1000 fewer Function
@@ -11653,10 +11653,10 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             html += self.renderNoEntriesRowHtml(colCount, noResultsLabel);
         }
 
-        // #1049 Option 2 v4.222.0 — $tbody.html(html) -> direct
+        // #1049 Option 2 v4.222.0 - $tbody.html(html) -> direct
         // .innerHTML assignment. jQuery's .html() does extra
         // bookkeeping (script execution, event cleanup) that we
-        // don't need here — innerHTML is a single DOM-parse pass.
+        // don't need here - innerHTML is a single DOM-parse pass.
         if ($tbody[0]) {
             $tbody[0].innerHTML = html;
         } else {
@@ -11685,7 +11685,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
         // expiry-filtered DOM.
         self.applyRowExpiry();
 
-        // #2338 — row grouping: inject group-header <tr> rows before the
+        // #2338 - row grouping: inject group-header <tr> rows before the
         // first data row of each group. Runs BEFORE auto-merge so that
         // the merge pass sees the correct row positions after headers are
         // inserted. typeof guard keeps harnesses without the module on the
@@ -11712,7 +11712,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             this.updateColumnTotals();
         }
 
-        // #1612 — DOM text-node highlight pass: HTML cells, card view,
+        // #1612 - DOM text-node highlight pass: HTML cells, card view,
         // and per-column text-filter terms. Runs LAST so it sees the
         // final DOM (post-merge, post-card-update). typeof guard keeps
         // harnesses without the module on the old path.
@@ -11734,12 +11734,12 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
 /* ===== assets/js/frontend/init.js ===== */
 /**
- * TableCrafter — frontend/init.js
+ * TableCrafter - frontend/init.js
  *
  * GravityTable instance lifecycle entry point. **Final** slice under
  * #833 (slice 23). One method, ~125 lines.
  *
- *   - init() — full bootstrap: validate wrapperId+config, dedup guard,
+ *   - init() - full bootstrap: validate wrapperId+config, dedup guard,
  *     destroy stray DataTables instance (#155), set sticky-header class,
  *     dispatch to bindEvents / setupDateInputs / bindEntryEvents /
  *     setupResponsiveCardView / initFlipResponsive / initCollapsibleRows /
@@ -11774,7 +11774,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             }
 
             if (window.GTCore && window.GTCore.checkVersionMismatch) {
-                // #960 v4.155.1 — was a bare reference to a var inside core.js's IIFE,
+                // #960 v4.155.1 - was a bare reference to a var inside core.js's IIFE,
                 // undefined here in init.js's own IIFE; threw ReferenceError and killed
                 // the frontend render. Use the namespace export instead.
                 window.GTCore.checkVersionMismatch(this.config, window.GTCore.VERSION);
@@ -11808,17 +11808,17 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             }
 
             // Apply sticky header class if enabled. The v4.7.71 CSS rewrite
-            // makes this purely class-driven — `position: sticky; top: 0` on
+            // makes this purely class-driven - `position: sticky; top: 0` on
             // <th> handles freezing natively, no JS scroll watcher required.
             if (this.config.sticky_header && !$wrapper.hasClass('sticky-header')) {
                 $wrapper.addClass('sticky-header');
             }
 
-            // #544 slice 2: the JS scroll-watcher path is gone — CSS
+            // #544 slice 2: the JS scroll-watcher path is gone - CSS
             // `position: sticky; top: 0` on the <th> elements (rule
             // lives in frontend.css since the v4.7.71 rewrite) keeps
             // the thead in the table flow, so the browser handles
-            // header alignment without any JS width-syncing — including
+            // header alignment without any JS width-syncing - including
             // in the multi-row frozen-header case, since each th stays
             // in its column's flow and inherits the body cell's
             // effective width. No JS to restore here.
@@ -11848,7 +11848,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
 
             this.bindEvents();
             this.setupDateInputs();
-            // TC_Default_Sort_Service — per-table initial sort override.
+            // TC_Default_Sort_Service - per-table initial sort override.
             // Override the hardcoded date_created/desc default before the
             // first AJAX so the table arrives sorted as configured. The
             // existing click-to-sort handler will continue to mutate
@@ -11858,7 +11858,7 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
                 this.sortOrder = this.config.default_sort_direction === 'desc' ? 'desc' : 'asc';
                 this.sortStack = [{ column_id: this.sortField, direction: this.sortOrder }];
             }
-            // TC_URL_Filter_Service — apply URL pre-filters before the
+            // TC_URL_Filter_Service - apply URL pre-filters before the
             // first AJAX. Server-side parse_filters has already validated +
             // sanitized, so config.url_filters is a safe column_id => value
             // map. We populate the visible filter inputs (so customers see
@@ -11866,14 +11866,14 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             // backend expects (filter_<id> = {type:'text', value:<v>}).
             this.applyUrlFilters();
             // Persistent filter restore (v4.9.12). URL filters above take
-            // precedence — restoreFilterStateLocal merges, doesn't replace.
+            // precedence - restoreFilterStateLocal merges, doesn't replace.
             this.restoreFilterStateLocal();
             this.loadEntries();
             this.setupScrollIndicators();
             this.initializeColumnResizing($wrapper);
             this.initPrint();
             this.initPresets();
-            // #1601 — summary line (no-op unless show_table_summary).
+            // #1601 - summary line (no-op unless show_table_summary).
             if (typeof this.initTableSummary === 'function') {
                 this.initTableSummary();
             }
@@ -11881,18 +11881,18 @@ GravityTable.prototype.updateBulkFillPreview = function (rowCount, fieldLabel, v
             this.initUndoRedo();
             this.initVisibilityObserver($wrapper);
             this.initToolbarExport();
-            // #1743 — auto-refresh on interval. startAutoRefresh is a no-op when
+            // #1743 - auto-refresh on interval. startAutoRefresh is a no-op when
             // config.auto_refresh_interval is 0 or absent so we call it unconditionally.
             if (typeof this.startAutoRefresh === 'function') {
                 this.startAutoRefresh();
             }
-            // #1744 — column visibility picker. initColumnPicker is a no-op when
+            // #1744 - column visibility picker. initColumnPicker is a no-op when
             // config.show_column_picker is falsy.
             if (typeof this.initColumnPicker === 'function') {
                 this.initColumnPicker();
             }
-            // #1745 — bulk column fill is triggered from bulk-action toolbar, no init needed.
-            // #1746 — column-level role visibility (Pro). Apply once after render.
+            // #1745 - bulk column fill is triggered from bulk-action toolbar, no init needed.
+            // #1746 - column-level role visibility (Pro). Apply once after render.
             if (typeof this.applyColumnRoleVisibility === 'function') {
                 this.applyColumnRoleVisibility();
             }

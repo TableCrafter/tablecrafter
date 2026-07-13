@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.44
+Stable tag: 8.0.45
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,9 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 6. Mobile-friendly: your tables stay readable on any screen size.
 
 == Changelog ==
+
+= 8.0.45 =
+* Style: replaced em-dashes and en-dashes with standard hyphens across all plugin code, admin interface text, tooling, and documentation for consistent typography. No functional changes.
 
 = 8.0.44 =
 * New: Manual tables - build a table by typing into a spreadsheet-style grid, no external data source required. Insert, delete, duplicate, and move rows and columns; rich cell content; per-row, per-column, and per-cell visibility; and CSV import straight into a manual table.

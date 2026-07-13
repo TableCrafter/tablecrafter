@@ -1,6 +1,6 @@
 <?php
 /**
- * #1740 — One-Click Table Duplicate.
+ * #1740 - One-Click Table Duplicate.
  *
  * Pure static helper: prepares the data array for a duplicated table row.
  * The AJAX handler (class-tc-ajax.php) calls these methods and handles

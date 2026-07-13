@@ -75,7 +75,7 @@ class TC_Multi_Sort_Service {
      * Generate a DataTables `order` config JSON array.
      *
      * Returns an array of [columnIndex, direction] pairs, e.g.
-     * [[1, "asc"], [3, "desc"]] — ready to pass as the DataTables `order` init option.
+     * [[1, "asc"], [3, "desc"]] - ready to pass as the DataTables `order` init option.
      *
      * @param array $sort_stack  Validated sort stack (from validate_sort_stack()).
      * @param array $columns     Table column definitions (used to resolve column index).
@@ -101,7 +101,7 @@ class TC_Multi_Sort_Service {
      * so user input can never inject arbitrary SQL.
      *
      * @param array $sort_stack  Validated sort stack.
-     * @param array $columns     Column definitions — provides the whitelist of valid field IDs.
+     * @param array $columns     Column definitions - provides the whitelist of valid field IDs.
      * @return string  e.g. "field_123 ASC, field_456 DESC" (without the "ORDER BY" keyword).
      */
     public static function build_order_by( array $sort_stack, array $columns ): string {
@@ -117,7 +117,7 @@ class TC_Multi_Sort_Service {
         foreach ( $sort_stack as $entry ) {
             $column_id = $entry['column_id'];
 
-            // Strict whitelist check — only columns declared in the table config.
+            // Strict whitelist check - only columns declared in the table config.
             if ( ! in_array( $column_id, $allowed, true ) ) {
                 continue;
             }

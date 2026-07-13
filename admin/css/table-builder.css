@@ -1,12 +1,12 @@
 
 /* =========================================================
-   Tooltip Icon – data-tooltip attribute
+   Tooltip Icon - data-tooltip attribute
    IMPORTANT: dashicons uses ::before for the icon glyph,
    so we ONLY use ::after for the tooltip popup.
    ========================================================= */
 
 /* =========================================================
-   Tooltip Icon – Premium Redesign
+   Tooltip Icon - Premium Redesign
    ========================================================= */
 
 .gt-tooltip-icon {
@@ -34,7 +34,7 @@
     transform: scale(1.2);
 }
 
-/* Tooltip popup — ::after only (::before is reserved for dashicons glyph) */
+/* Tooltip popup - ::after only (::before is reserved for dashicons glyph) */
 .gt-tooltip-icon[data-tooltip]::after {
     content: attr(data-tooltip);
     position: absolute;
@@ -112,7 +112,7 @@ label.gt-checkbox-label {
 }
 
 /* =========================================================
-   Manual grid editor — row/col operations UI (#2368)
+   Manual grid editor - row/col operations UI (#2368)
    ========================================================= */
 
 /* Drag-handle gutter column */
@@ -248,7 +248,7 @@ label.gt-checkbox-label {
 }
 
 /* =========================================================
-   Manual grid editor — visibility toggles UI (#2370)
+   Manual grid editor - visibility toggles UI (#2370)
    ========================================================= */
 
 .gt-manual-grid tr.gt-grid-row-hidden > td {

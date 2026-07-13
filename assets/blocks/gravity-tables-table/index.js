@@ -117,7 +117,7 @@
                         : el(
                             'div',
                             { className: 'gt-block-placeholder' },
-                            el( 'p', null, __( 'Gravity Table — enter a Table ID in the sidebar to display a table.', 'gravity-tables' ) )
+                            el( 'p', null, __( 'Gravity Table - enter a Table ID in the sidebar to display a table.', 'gravity-tables' ) )
                         )
                 )
             );

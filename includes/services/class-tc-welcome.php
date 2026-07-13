@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Welcome — first-activation onboarding screen (#2064).
+ * TC_Welcome - first-activation onboarding screen (#2064).
  *
  * Onboarding-port epic #2061. Ported from the standalone free plugin's welcome
  * flow. On first activation a capable admin is redirected once to a welcome page
@@ -41,7 +41,7 @@ class TC_Welcome
     /** Redirect once on first activation; mark shown so it never repeats. */
     public static function maybe_redirect(): void
     {
-        $bulk = isset($_GET['activate-multi']); // bulk plugin activation — don't hijack
+        $bulk = isset($_GET['activate-multi']); // bulk plugin activation - don't hijack
         $should = self::should_redirect_for(
             (bool) get_option(self::FLAG, false),
             current_user_can('manage_options'),
@@ -62,7 +62,7 @@ class TC_Welcome
     public static function register_page(): void
     {
         add_submenu_page(
-            '', // hidden — reachable only by URL / the redirect
+            '', // hidden - reachable only by URL / the redirect
             __('Welcome to TableCrafter', 'tc-data-tables'),
             __('Welcome', 'tc-data-tables'),
             'manage_options',

@@ -167,7 +167,7 @@ class TC_Column_Filter_Service {
     }
 
     // ---------------------------------------------------------------------------
-    // Issue #506 — JS wiring that AND-combines column filters with global search.
+    // Issue #506 - JS wiring that AND-combines column filters with global search.
     // ---------------------------------------------------------------------------
 
     /**
@@ -214,7 +214,7 @@ class TC_Column_Filter_Service {
         clearTimeout(debounceTimers[colId]);
         debounceTimers[colId] = setTimeout(function () {
             if (idx >= 0) {
-                // Per-column search only — never call the table-level global search here,
+                // Per-column search only - never call the table-level global search here,
                 // which would wipe the term set by the gravity_global_search widget.
                 api.column(idx).search(value).draw();
             }

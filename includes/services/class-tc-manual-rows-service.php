@@ -2,7 +2,7 @@
 /**
  * TC_Manual_Rows_Service
  *
- * Issue #2366 — P1-1a Manual tables: data-source foundation.
+ * Issue #2366 - P1-1a Manual tables: data-source foundation.
  *
  * Storage: a dedicated {prefix}tablecrafter_manual_rows table (one row per
  * data row, separate from wp_gravity_tables.settings). Rationale:
@@ -49,7 +49,7 @@ class TC_Manual_Rows_Service {
     /** dbDelta-compatible CREATE TABLE statement for the rows table. */
     public static function schema_sql( string $prefix ): string {
         $t = $prefix . self::TABLE_SUFFIX;
-        // Two spaces before PRIMARY KEY — required by dbDelta.
+        // Two spaces before PRIMARY KEY - required by dbDelta.
         return "CREATE TABLE {$t} (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   table_id BIGINT UNSIGNED NOT NULL,
@@ -285,7 +285,7 @@ class TC_Manual_Rows_Service {
      *
      * Called from force_delete_table and purge_expired_trash (the table is
      * already gone from wp_gravity_tables; we clean up orphan rows here).
-     * Soft-delete / trash-restore do NOT call this — rows must survive trash.
+     * Soft-delete / trash-restore do NOT call this - rows must survive trash.
      *
      * @param int   $table_id
      * @param mixed $db
@@ -308,7 +308,7 @@ class TC_Manual_Rows_Service {
     /**
      * Copy all rows from one table to another.
      *
-     * Used by the duplicate-table flow (#2366 — rows must survive duplication).
+     * Used by the duplicate-table flow (#2366 - rows must survive duplication).
      *
      * @param int   $source_id
      * @param int   $dest_id

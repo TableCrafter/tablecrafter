@@ -9,7 +9,7 @@
     width: 100%;
 }
 
-/* Horizontal scroll enabled — preserve natural cell widths (#343).
+/* Horizontal scroll enabled - preserve natural cell widths (#343).
    Override the desktop table-layout:fixed + width/min-width:100% rules so
    the table only grows as wide as its content requires, keeping cells at
    their natural/configured widths instead of inflating to fill the container. */
@@ -209,14 +209,14 @@
 }
 
 /* ============================================================
- * Issue #564 — CLS (Cumulative Layout Shift) reservations.
+ * Issue #564 - CLS (Cumulative Layout Shift) reservations.
  * Mirrors a Ninja Tables defect where the server emits a bare
  * <table> and JS adds toolbar / pagination above and below at
  * hydration time, pushing all subsequent content down.
  *
  * The min-height declarations below RESERVE vertical space for
  * the toolbar, pagination row, and loading-state tbody BEFORE
- * JS runs. min-height only sets a floor — when content does
+ * JS runs. min-height only sets a floor - when content does
  * render, the natural height takes over. CLS budget on a
  * Lighthouse run drops from "Poor" to "Good" with these in place.
  * ============================================================ */
@@ -230,7 +230,7 @@
     background: #f8f9fa;
     border-bottom: 1px solid #ddd;
     align-items: center;
-    /* #564 — reserve toolbar height (search input + length selector + filter chips
+    /* #564 - reserve toolbar height (search input + length selector + filter chips
      * collectively ~46px tall before padding). */
     min-height: 76px;
     box-sizing: border-box;
@@ -312,7 +312,7 @@
     background-color: #bbdefb !important;
 }
 
-/* #613 phase 2 slice 7 (v4.202.0) — per-row push outcome states.
+/* #613 phase 2 slice 7 (v4.202.0) - per-row push outcome states.
  * Subtle tint that doesn't fight with .gt-row-selected. The browser's
  * native title tooltip carries the error code text for failed rows. */
 .gt-push-success {
@@ -795,7 +795,7 @@ select.gt-filter-input:focus,
     transition: background-color 0.2s ease;
 }
 
-/* Explicit cell background — overrides row stripe for merged (rowspan/colspan) cells.
+/* Explicit cell background - overrides row stripe for merged (rowspan/colspan) cells.
    Using !important ensures the inline style on .gt-cell-bg wins over the row's
    background shorthand, which would otherwise reset background-color. */
 .gt-table tbody td.gt-cell-bg,
@@ -853,7 +853,7 @@ select.gt-filter-input:focus,
 
 /* Visitor-side length selector ("Show N entries" dropdown) added in
  * v4.9.15. Sits inside .gt-pagination-container before .gt-pagination-info
- * and .gt-pagination-controls. Off by default — only renders when
+ * and .gt-pagination-controls. Off by default - only renders when
  * show_length_selector is on. */
 .gt-length-selector {
     display: inline-flex;
@@ -874,7 +874,7 @@ select.gt-filter-input:focus,
     background: #fff;
 }
 
-/* TC_Collapsible_Service — whole-table collapse toggle button + body
+/* TC_Collapsible_Service - whole-table collapse toggle button + body
  * wrapper. Emitted before / around the .gt-table-wrapper when the per-table
  * "Make whole table collapsible" toggle is on. Service emits the markup;
  * these styles give the button + chevron a sensible default look without
@@ -924,7 +924,7 @@ select.gt-filter-input:focus,
     .gt-chevron, .gt-collapsible-animating { transition: none; }
 }
 
-/* #565 — multi-column sort: numbered badges next to sort arrows showing
+/* #565 - multi-column sort: numbered badges next to sort arrows showing
  * the active sort order (1 = primary, 2 = secondary, 3 = tertiary). Only
  * rendered when the sort stack has 2+ entries; single-column sort doesn't
  * render the badge so existing tables look unchanged. */
@@ -980,7 +980,7 @@ select.gt-filter-input:focus,
     background: #f8f9fa !important;
 }
 
-/* #1713 — layout-stable loading skeleton for the AJAX reload path.
+/* #1713 - layout-stable loading skeleton for the AJAX reload path.
    Shimmer rows that mirror the real columns so sort/filter/paginate no
    longer collapse ("squish") the table or flash a single "Loading…" row. */
 @keyframes gt-shimmer {
@@ -1012,7 +1012,7 @@ select.gt-filter-input:focus,
     .gt-skeleton-bar { animation: none; background: #e9eaed; }
 }
 
-/* Loading state – block premature pagination clicks and indicate busy state (#92) */
+/* Loading state - block premature pagination clicks and indicate busy state (#92) */
 .gt-table-loading .gt-pagination-container {
     pointer-events: none;
     opacity: 0.5;
@@ -1106,12 +1106,12 @@ select.gt-filter-input:focus,
     /* Keep original padding from base .gt-table th, .gt-table td rule */
 }
 
-/* Lock table layout when explicit widths are configured – colgroup <col> elements carry the widths */
+/* Lock table layout when explicit widths are configured - colgroup <col> elements carry the widths */
 .gt-table.gt-has-widths {
     table-layout: fixed;
 }
 
-/* colgroup col widths – the <col> element receives an inline style="width:X" from PHP */
+/* colgroup col widths - the <col> element receives an inline style="width:X" from PHP */
 .gt-table colgroup col {
     /* width is set via inline style on each <col>; no override needed here */
 }
@@ -1142,7 +1142,7 @@ select.gt-filter-input:focus,
     min-width: 80px;
 }
 
-/* Actions column — width set to comfortably fit View + Delete + History (3 icons,
+/* Actions column - width set to comfortably fit View + Delete + History (3 icons,
    roughly 30-46px each + gaps). 4.7.61 widened from 80px to 130px because the
    third icon was being clipped on narrow viewports / inside table-layout:fixed
    contexts where the previous max-width forced ~104px content into a smaller
@@ -1154,16 +1154,16 @@ select.gt-filter-input:focus,
     max-width: 200px;
     text-align: center;
     overflow: visible;
-    /* #1719 — under table-layout:fixed the column collapses to the equal-share
+    /* #1719 - under table-layout:fixed the column collapses to the equal-share
        width (~101px), too narrow for the inline icons. Keep them on one line so
        they never wrap to a second row; the tighter padding/margin below let the
        current icon set fit inline within that width. !important overrides the
        desktop "wrap cell text" rule (@media min-width:1024px), which is more
-       specific — actions must never wrap. */
+       specific - actions must never wrap. */
     white-space: nowrap !important;
 }
 
-/* #1719 — trim the actions-cell horizontal padding and per-icon margin so the
+/* #1719 - trim the actions-cell horizontal padding and per-icon margin so the
    action icons fit inline even when the column is collapsed to its equal-share
    width. */
 .gt-table td.gt-actions-cell {
@@ -1174,7 +1174,7 @@ select.gt-filter-input:focus,
     margin: 0 1px;
 }
 
-/* 4.7.59 — Sticky-right Actions column.
+/* 4.7.59 - Sticky-right Actions column.
    On wide tables (e.g. AJS Trucking's 16-column Admin Loads Hauled), the rightmost
    actions column (View / History / Delete) was scrolling off-screen and required
    horizontal scroll to access. Pinning it to the right edge keeps the buttons
@@ -1284,7 +1284,7 @@ select.gt-filter-input:focus,
 }
 
 /*
- * #1685 — toolbar breathing space. The controls were left-packed and read as
+ * #1685 - toolbar breathing space. The controls were left-packed and read as
  * cramped. Push the secondary group (Bulk Actions + Apply, and the Undo/Redo
  * history buttons that follow it) to the right with margin-left:auto so the
  * primary group (Search / Export / Print) sits left with clear whitespace
@@ -1366,13 +1366,13 @@ select.gt-filter-input:focus,
     padding: 15px;
     background: #f8f9fa;
     border-top: 1px solid #ddd;
-    /* #564 — reserve pagination row height (info text + pagination buttons
+    /* #564 - reserve pagination row height (info text + pagination buttons
      * collectively ~42px tall before padding). */
     min-height: 72px;
     box-sizing: border-box;
 }
 
-/* #564 — reserve a minimum body height during the JS-loading window so
+/* #564 - reserve a minimum body height during the JS-loading window so
  * the empty <tbody> does not collapse to 0px and then jump to N rows
  * worth of content on hydration. ~10 rows × ~40px = 400px is a safe
  * default for the typical default per_page=25 view; trims naturally
@@ -1387,7 +1387,7 @@ select.gt-filter-input:focus,
     color: #666;
 }
 
-/* #1912 — auto-refresh last-updated timestamp */
+/* #1912 - auto-refresh last-updated timestamp */
 .gt-last-updated {
     font-size: 12px;
     color: #999;
@@ -3494,7 +3494,7 @@ select[multiple].gt-dropdown-filter option:checked {
     position: relative;
 }
 
-/* #549 slice 1.2 — .gt-valign-* class-based vertical alignment. Companion
+/* #549 slice 1.2 - .gt-valign-* class-based vertical alignment. Companion
    to the inline-style path (which is what slice 1's JS render emits). The
    pre-existing TC_Vertical_Align_Service::to_class() returns these names;
    without these rules, callers using the class path silently got no
@@ -3513,7 +3513,7 @@ select[multiple].gt-dropdown-filter option:checked {
     vertical-align: bottom;
 }
 
-/* #501 slice 1 — row expiry. The JS gate adds `.gt-row-expired` to rows
+/* #501 slice 1 - row expiry. The JS gate adds `.gt-row-expired` to rows
    past their configured expiry date. Behavior=hide also calls .hide(),
    behavior=strikethrough relies on these styles to communicate the
    "stale" state without removing the row from the visual list, and
@@ -3528,7 +3528,7 @@ select[multiple].gt-dropdown-filter option:checked {
     opacity: 0.9;
 }
 
-/* #501 slice 2 — inverse-mode "coming soon" rows. Distinct from
+/* #501 slice 2 - inverse-mode "coming soon" rows. Distinct from
    .gt-row-expired so themes can convey the different semantic
    ("not yet active" vs "stale"). Default visual: dimmed but no
    line-through, plus a subtle italic to hint at the "future" state. */
@@ -3542,7 +3542,7 @@ select[multiple].gt-dropdown-filter option:checked {
     opacity: 0.95;
 }
 
-/* #567 slice 1 — clickable rows. When the per-table `row_link_template`
+/* #567 slice 1 - clickable rows. When the per-table `row_link_template`
    setting is set, the JS render adds the `gt-row-clickable` class plus
    role=link / tabindex=0 to every <tr>; the cursor here gives users the
    visual affordance and the focus outline keeps keyboard nav obvious. */
@@ -3573,7 +3573,7 @@ select[multiple].gt-dropdown-filter option:checked {
    capped at 9999) so the top-right corner cell layers above body cells
    and the sticky-right column without further per-cell rules.
 
-   Defensive layer (Katie 2026-05-12 report — sticky-header lost on
+   Defensive layer (Katie 2026-05-12 report - sticky-header lost on
    loadtracker.ajstrucking.com under JupiterX + Elementor Canvas +
    NitroPack):
    - `-webkit-sticky` prefix keeps older iOS / Safari builds working.
@@ -3589,7 +3589,7 @@ select[multiple].gt-dropdown-filter option:checked {
     z-index: 6;
     /* background-color is needed so scrolled body cells don't show through;
        the dark-gradient header below paints on top, so any solid base is
-       fine — `inherit` falls back to the wrapper's table background. */
+       fine - `inherit` falls back to the wrapper's table background. */
     background-color: #2c3e50;
 }
 
@@ -3623,12 +3623,12 @@ body.admin-bar .gt-table-wrapper.sticky-header {
     }
 }
 
-/* Legacy `.is-stuck` class neutralized — the JS scroll-watcher still adds
+/* Legacy `.is-stuck` class neutralized - the JS scroll-watcher still adds
    it, but the position-fixed rule is gone. Native sticky on `th` already
    handles the freeze, so the class is a no-op. Kept the selector empty so
    any future override CSS targeting it doesn't silently appear. */
 .gt-table-wrapper.sticky-header .gt-table thead.is-stuck {
-    /* intentionally no rules — see comment above */
+    /* intentionally no rules - see comment above */
 }
 
 /* Style the sticky header cells */
@@ -4625,7 +4625,7 @@ body.admin-bar .gt-table-wrapper.sticky-header {
     flex: 0 0 auto;
     color: #6b7280;
 }
-/* #1680 — inline SVG export icons sit crisp at 16px and inherit row color. */
+/* #1680 - inline SVG export icons sit crisp at 16px and inherit row color. */
 .gt-format-icon svg {
     width: 16px;
     height: 16px;
@@ -4656,7 +4656,7 @@ body.admin-bar .gt-table-wrapper.sticky-header {
 }
 
 /*
- * #1680 — the visible-rows export actions (Copy / CSV / Excel / Save as PDF)
+ * #1680 - the visible-rows export actions (Copy / CSV / Excel / Save as PDF)
  * now live inside the Export dropdown. Reset the native <button> chrome and
  * style them as full-width menu rows matching .gt-export-option (previously
  * they rendered as unstyled browser buttons in a separate bar).
@@ -5578,7 +5578,7 @@ body.gt-resizing-active {
 }
 
 /* ============================================================
-   #193 – Freeze first column
+   #193 - Freeze first column
    ============================================================ */
 
 /* The wrapper must set overflow-x:auto so horizontal scrolling works */
@@ -5831,7 +5831,7 @@ body.gt-resizing-active {
     color: #fff;
 }
 
-/* Flip responsive mode — first column becomes row labels on mobile (#348). */
+/* Flip responsive mode - first column becomes row labels on mobile (#348). */
 @media (max-width: 768px) {
     .gt-table-wrapper.gt-flip-responsive .gt-table thead {
         display: none;
@@ -5872,7 +5872,7 @@ body.gt-resizing-active {
 }
 
 /* ============================================================
- * Issue #534 — Freeze first column.
+ * Issue #534 - Freeze first column.
  * Activated by .gt-freeze-first-column on the .gt-table-wrapper
  * (composed in templates/table.php from $table_settings['freeze_first_column']).
  * Pins the first <th> / <td> of every row so it stays visible while
@@ -5895,7 +5895,7 @@ body.gt-resizing-active {
 }
 
 /* ============================================================
- * #556 slice 3 — expandable / collapsible detail rows
+ * #556 slice 3 - expandable / collapsible detail rows
  * ============================================================
  * Renders when at least one column on the table is flagged
  * "Show in detail row only" via the slice-2 admin toggle.
@@ -6004,7 +6004,7 @@ body.gt-resizing-active {
 }
 
 /* ==========================================================================
-   #1606 — search-term highlighting
+   #1606 - search-term highlighting
    Matched substrings in cell text when a global search term is active.
    Theme-aware via --gt-search-hit-bg (settable from custom CSS / typography
    custom colors); falls back to a soft amber that works on light themes.
@@ -6018,7 +6018,7 @@ body.gt-resizing-active {
 }
 
 /* ==========================================================================
-   #1596 — pivot view visitor toggle + pivot layout
+   #1596 - pivot view visitor toggle + pivot layout
    ========================================================================== */
 
 .gt-table-controls .gt-pivot-toggle {
@@ -6043,7 +6043,7 @@ body.gt-resizing-active {
 }
 
 /* ==========================================================================
-   #1601 — table summary line (rule-based digest above the table)
+   #1601 - table summary line (rule-based digest above the table)
    ========================================================================== */
 
 .gt-table-wrapper .gt-table-summary {
@@ -6067,7 +6067,7 @@ body.gt-resizing-active {
    td's own stacking context), its width driven by the inline
    --gt-bar-pct custom property. Scoped to `td` so card-view field divs
    cannot inherit it. The bar is suppressed on cells that already carry an
-   inline background (conditional formatting / per-column background — see
+   inline background (conditional formatting / per-column background - see
    the td[style*="background-color"] rule earlier in this file) to avoid a
    muddy double-paint.
    ------------------------------------------------------------------- */
@@ -6120,7 +6120,7 @@ body.gt-resizing-active {
     color: #4b5563;
     border-top-width: 1px;
 }
-/* Collapsible group rows — data rows below a collapsed header are hidden */
+/* Collapsible group rows - data rows below a collapsed header are hidden */
 .gt-table tbody tr.gt-row-group-header[aria-expanded="false"] ~ tr:not(.gt-row-group-header) {
     /* JS toggles hidden attribute; CSS provides the base style. */
 }

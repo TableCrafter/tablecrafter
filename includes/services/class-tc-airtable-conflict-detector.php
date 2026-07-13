@@ -2,13 +2,13 @@
 /**
  * TC_Airtable_Conflict_Detector
  *
- * Issue #517 — slice 4f of N. Pure conflict-detection helpers for
+ * Issue #517 - slice 4f of N. Pure conflict-detection helpers for
  * the future optimistic-locking write path. Strategy: when the
  * plugin reads an Airtable record, snapshot the record's
  * lastModifiedTime as a baseline keyed by the local entry id.
  * Before pushing, fetch again and compare; if the remote is newer
  * than the local baseline, the source has changed since we read it
- * — that's a conflict.
+ * - that's a conflict.
  *
  * Slice 4g will wire this into the slice-4c push helper. Slice 4h
  * adds rate limiting; slice 4i adds the permission gate.
@@ -85,7 +85,7 @@ class TC_Airtable_Conflict_Detector {
 
     /**
      * Persist a baseline for the given entry. Refuses non-positive
-     * entry ids (defensive — would namespace to a global key).
+     * entry ids (defensive - would namespace to a global key).
      *
      * @param callable|null $writer fn(string $key, mixed $value): bool
      */

@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Multi_Format_Parser — parse multiple file formats into rows (#2322).
+ * TC_Multi_Format_Parser - parse multiple file formats into rows (#2322).
  *
  * Supports: CSV, XLSX, XLS, ODS, HTML (table extraction), JSON
  * (array-of-objects). ZIP files are extracted in memory and each contained
@@ -10,7 +10,7 @@
  *   - ZIP bomb guard: max 100 entries, max 50 MB decompressed total.
  *   - Path traversal: entry names are sanitized (basename only).
  *   - CSV injection: all cells passed through transform_csv_cell (handled in
- *     the import layer, not here — parser returns raw strings).
+ *     the import layer, not here - parser returns raw strings).
  *   - MIME + extension validation is done by TC_Import before calling this
  *     class.
  *
@@ -416,8 +416,8 @@ class TC_Multi_Format_Parser {
      * Parse a JSON array-of-objects into rows.
      *
      * Also handles:
-     *   - Wrapped object: {"data": [...]} — extracts the first array value.
-     *   - Single object: {...} — wrapped in array.
+     *   - Wrapped object: {"data": [...]} - extracts the first array value.
+     *   - Single object: {...} - wrapped in array.
      *
      * @param string $bytes
      * @return array|WP_Error
@@ -451,7 +451,7 @@ class TC_Multi_Format_Parser {
             }
         }
 
-        // Single object — wrap in array
+        // Single object - wrap in array
         if (is_array($decoded) && !array_is_list($decoded)) {
             $decoded = [$decoded];
         }

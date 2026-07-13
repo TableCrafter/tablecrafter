@@ -1,12 +1,12 @@
 /**
- * TableCrafter — frontend/edit-indicators.js
+ * TableCrafter - frontend/edit-indicators.js
  *
  * Edit-mode UX overlays. Sixteenth slice under #833. Two methods,
  * ~94 lines.
  *
- *   - showEditIndicator($row, entryId) — show the "editing row N" badge
+ *   - showEditIndicator($row, entryId) - show the "editing row N" badge
  *     overlay; auto-hide on click-out.
- *   - showReadonlyIndicator($cell) — flash the readonly-cell tooltip
+ *   - showReadonlyIndicator($cell) - flash the readonly-cell tooltip
  *     when the user clicks a non-editable cell.
  */
 (function (window) {

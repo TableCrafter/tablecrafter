@@ -2,7 +2,7 @@
 /**
  * TC_Data_Bars_Service
  *
- * Issue #1731 — Data Bars (Pro): per-column, CSS-only in-cell horizontal
+ * Issue #1731 - Data Bars (Pro): per-column, CSS-only in-cell horizontal
  * value bars for numeric columns. Pure helpers shared by the save
  * sanitizer (TC_Admin::save_table) and the server-side template preview
  * (templates/table.php). The live frontend render is handled in JS
@@ -46,7 +46,7 @@ class TC_Data_Bars_Service {
             $out[(string) $field_id] = array(
                 'enabled'    => !empty($v['enabled']),
                 'color'      => self::sanitize_color(isset($v['color']) ? $v['color'] : ''),
-                // #1738 — visual sub-options (Pro-only)
+                // #1738 - visual sub-options (Pro-only)
                 'show_label' => !empty($v['show_label']),
                 'gradient'   => !empty($v['gradient']),
                 'bipolar'    => !empty($v['bipolar']),
@@ -61,7 +61,7 @@ class TC_Data_Bars_Service {
      * currency symbols / thousands separators, then parse. Returns the
      * float or null when not finite-numeric.
      *
-     * #1736 — locale-aware two-pass normalizer. Heuristic: the last
+     * #1736 - locale-aware two-pass normalizer. Heuristic: the last
      * separator is the decimal separator ONLY when followed by 1 or 2
      * digits (not 3). Three digits after a separator => thousands grouping.
      *
@@ -88,7 +88,7 @@ class TC_Data_Bars_Service {
             $is_thousands = ($after_last === 3);
 
             if ($is_thousands) {
-                // Last separator is a thousands char — strip all commas/periods.
+                // Last separator is a thousands char - strip all commas/periods.
                 $normalized = str_replace([',', '.'], '', $stripped);
             } elseif ($last_sep === ',') {
                 // Comma is the decimal separator (EU format).
@@ -98,7 +98,7 @@ class TC_Data_Bars_Service {
                 $normalized = str_replace(',', '', $stripped);
             }
         } else {
-            // No separator at all — plain integer.
+            // No separator at all - plain integer.
             $normalized = $stripped;
         }
 
@@ -184,7 +184,7 @@ class TC_Data_Bars_Service {
         $color = self::sanitize_color($color);
         $attr  = ' data-gt-bar-pct="' . $pct . '" style="--gt-bar-pct:' . $pct . ';--gt-bar-color:' . $color . ';"';
 
-        // #1738 — show_label: render the formatted cell value as a visible
+        // #1738 - show_label: render the formatted cell value as a visible
         // <span class="gt-bar-label"> alongside the ::after underlay.
         if (!empty($options['show_label'])) {
             $attr .= '<span class="gt-bar-label">' . esc_html((string) $value) . '</span>';
@@ -244,7 +244,7 @@ class TC_Data_Bars_Service {
      *   SELECT MAX(CAST(em.meta_value AS DECIMAL(20,6)))
      * query per qualifying column against the SAME WHERE clause used by
      * the pagination count query, so the returned max spans the entire
-     * filtered result set — not just the current page.
+     * filtered result set - not just the current page.
      *
      * Returns a flat map { field_id (string) => float } for fields whose
      * MAX is a positive finite number. Fields with NULL or non-positive

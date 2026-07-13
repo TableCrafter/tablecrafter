@@ -3,7 +3,7 @@
  * License-state observability across plugin auto-updates.
  *
  * A valid Freemius premium license must survive a WordPress plugin
- * auto-update unchanged — that's the regression #502 guards against.
+ * auto-update unchanged - that's the regression #502 guards against.
  * This class adds a passive observer on `upgrader_process_complete`:
  * it records gt_is_premium() before/after, logs a warning if the
  * value flipped from true to false during an update of *this* plugin,
@@ -25,7 +25,7 @@ class TC_License_Persistence
 {
     /**
      * Option key used to remember the last observed premium state. We
-     * only ever write our own option here — never touch Freemius keys.
+     * only ever write our own option here - never touch Freemius keys.
      */
     public const STATE_OPTION = 'gt_license_last_observed_state';
 
@@ -82,7 +82,7 @@ class TC_License_Persistence
      * the update did not include this plugin. Returns the post-update
      * snapshot otherwise. Never deletes any license-related option.
      *
-     * @param mixed $upgrader Unused — kept to match WP signature.
+     * @param mixed $upgrader Unused - kept to match WP signature.
      * @param array $hook_extra Extra info passed by WP (type, action, plugins, etc).
      * @return array|false
      */
@@ -114,7 +114,7 @@ class TC_License_Persistence
         }
 
         // If we used to be premium and now we are not, log it. We do NOT
-        // attempt to "fix" the license — Freemius owns that decision —
+        // attempt to "fix" the license - Freemius owns that decision - 
         // we just leave a breadcrumb so support can detect the regression.
         if (is_array($previous)
             && !empty($previous['is_premium'])

@@ -2,7 +2,7 @@
 /**
  * TC_Revision_Snapshot_Service
  *
- * Issue #536 — slice 1 of 3. Pure helper for table revision history.
+ * Issue #536 - slice 1 of 3. Pure helper for table revision history.
  * Builds revision payloads, summarizes diffs between revisions,
  * applies retention policy.
  *
@@ -176,7 +176,7 @@ class TC_Revision_Snapshot_Service {
     }
 
     /**
-     * #536 slice 2a — Storage helpers.
+     * #536 slice 2a - Storage helpers.
      *
      * `option_key($table_id)` returns the WP option key under which a
      * given table's revisions array lives. Returns empty string for

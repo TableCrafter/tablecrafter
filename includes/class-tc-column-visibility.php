@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_Column_Visibility — server-side enforcement of per-column role visibility.
+ * TC_Column_Visibility - server-side enforcement of per-column role visibility.
  *
  * Per-column role visibility (#1746, Pro) was originally enforced only in the
  * browser (assets/js/frontend/column-role-visibility.js sets display:none),
@@ -86,7 +86,7 @@ class TC_Column_Visibility {
                 $fid = (string) $fid;
                 unset( $entry[ $fid ] );
                 // Composite fields (address/name/checkbox/etc.) store sub-inputs
-                // under "{id}.{n}" keys — strip those too so none leak.
+                // under "{id}.{n}" keys - strip those too so none leak.
                 $prefix = $fid . '.';
                 foreach ( array_keys( $entry ) as $key ) {
                     if ( strpos( (string) $key, $prefix ) === 0 ) {

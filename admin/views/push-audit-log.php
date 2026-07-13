@@ -1,12 +1,12 @@
 <?php
 /**
- * Push Audit Log admin view — #613 phase 2 v4.223.0.
+ * Push Audit Log admin view - #613 phase 2 v4.223.0.
  *
  * Surfaces:
  *   - The most-recent N push events from TC_Push_Audit_Log_Service (v4.205.0).
  *   - The per-source rate-limit caps from TC_Push_Rate_Limiter (v4.206.0).
  *
- * Read-only — no actions, no AJAX. Operators use this page to debug
+ * Read-only - no actions, no AJAX. Operators use this page to debug
  * customer reports like "the push didn't work" without dropping to wp-cli.
  */
 
@@ -18,7 +18,7 @@ if (!current_user_can('manage_options')) {
     wp_die(esc_html__('You do not have permission to view this page.', 'tc-data-tables'));
 }
 
-// Ensure the services we render are loaded — they're normally pulled in by
+// Ensure the services we render are loaded - they're normally pulled in by
 // the frontend shortcode path, not on admin pages.
 foreach (array(
     TC_PLUGIN_PATH . 'includes/services/class-tc-push-audit-log-service.php',
@@ -91,7 +91,7 @@ $gt_rate_sources = array('json', 'airtable', 'notion');
                 $success   = !empty($evt['success']);
                 $err_code  = isset($evt['error_code']) ? (string) $evt['error_code'] : '';
                 $http_code = isset($evt['http_code']) ? (int) $evt['http_code'] : 0;
-                $ts_str    = $ts > 0 ? wp_date('Y-m-d H:i:s', $ts) : '—';
+                $ts_str    = $ts > 0 ? wp_date('Y-m-d H:i:s', $ts) : ' - ';
                 ?>
                 <tr>
                     <td><code><?php echo esc_html($ts_str); ?></code></td>
@@ -106,7 +106,7 @@ $gt_rate_sources = array('json', 'airtable', 'notion');
                         <?php endif; ?>
                     </td>
                     <td><code><?php echo esc_html($err_code); ?></code></td>
-                    <td><?php echo $http_code > 0 ? esc_html((string) $http_code) : '—'; ?></td>
+                    <td><?php echo $http_code > 0 ? esc_html((string) $http_code) : ' - '; ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

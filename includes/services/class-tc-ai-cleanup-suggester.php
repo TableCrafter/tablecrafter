@@ -2,7 +2,7 @@
 /**
  * TC_AI_Cleanup_Suggester
  *
- * Issue #497 (sub of #490) — slice 1 of 3. Pure rule-based cleanup
+ * Issue #497 (sub of #490) - slice 1 of 3. Pure rule-based cleanup
  * suggester. Scans a column of values and returns structured
  * suggestions for low-risk obvious edits: trim whitespace, normalize
  * internal spaces, empty-after-trim. Future slices add:
@@ -22,7 +22,7 @@
  *     'confidence'      => 0.95,               // float 0-1
  *   ]
  *
- * Slices 2/3 plug in additively — they extend the suggestion list
+ * Slices 2/3 plug in additively - they extend the suggestion list
  * for the same envelope shape, and callers (preview-and-apply UI,
  * future audit-log writer) bind to a single contract.
  *
@@ -45,7 +45,7 @@ class TC_AI_Cleanup_Suggester {
      *
      * @param array  $values       Column values, in row order. Non-string
      *                             entries (int / bool / null / array) are
-     *                             skipped — they're not text-cleanup targets.
+     *                             skipped - they're not text-cleanup targets.
      * @param string $column_type  Column-type hint (text / email / url / etc.).
      *                             Reserved for slice 2; slice 1 ignores it.
      * @return array<int,array{value_index:int,current_value:string,
@@ -71,7 +71,7 @@ class TC_AI_Cleanup_Suggester {
      * matching rule wins. Returns the suggestion envelope or null.
      */
     private static function evaluate_rules(int $idx, string $value): ?array {
-        // Rule 1: empty_whitespace — value is all whitespace, suggest empty.
+        // Rule 1: empty_whitespace - value is all whitespace, suggest empty.
         // Must be tested BEFORE trim_whitespace so we don't classify
         // "   " as a trim (which would suggest empty already, but with
         // a less precise reason).
@@ -85,7 +85,7 @@ class TC_AI_Cleanup_Suggester {
             ];
         }
 
-        // Rule 2: trim_whitespace — leading or trailing whitespace.
+        // Rule 2: trim_whitespace - leading or trailing whitespace.
         $trimmed = trim($value);
         if ($trimmed !== $value) {
             // Could ALSO have multiple internal spaces; detect that and
@@ -106,7 +106,7 @@ class TC_AI_Cleanup_Suggester {
             ];
         }
 
-        // Rule 3: normalize_internal_spaces — multiple internal spaces / tabs / newlines.
+        // Rule 3: normalize_internal_spaces - multiple internal spaces / tabs / newlines.
         $normalized = self::normalize_internal_whitespace($value);
         if ($normalized !== $value) {
             return [
@@ -123,7 +123,7 @@ class TC_AI_Cleanup_Suggester {
 
     /**
      * Collapse runs of internal whitespace (space / tab / newline) to a
-     * single space. Does NOT trim — caller has already trimmed if
+     * single space. Does NOT trim - caller has already trimmed if
      * appropriate.
      */
     private static function normalize_internal_whitespace(string $value): string {

@@ -84,7 +84,7 @@ class TC_Excel_Float_Service {
      * Returns true for:
      *  - PHP int / float scalars
      *  - Strings that represent a pure decimal number (with optional leading
-     *    sign and a single decimal point) — e.g. "3.14", "-0.75", "1000.00"
+     *    sign and a single decimal point) - e.g. "3.14", "-0.75", "1000.00"
      *
      * Returns false for:
      *  - Empty strings (let Excel treat them as blank)

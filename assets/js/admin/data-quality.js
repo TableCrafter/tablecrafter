@@ -1,7 +1,7 @@
 /**
- * TableCrafter — admin/data-quality.js
+ * TableCrafter - admin/data-quality.js
  *
- * #1601 slice B — builder "Data Quality" panel. First UI consumer of
+ * #1601 slice B - builder "Data Quality" panel. First UI consumer of
  * TC_AI_Cleanup_Suggester (rule-based, key-free): scan one column of
  * the form's entries via gt_ai_cleanup_suggest, list the suggestions
  * (current → suggested, reason, confidence), and write accepted
@@ -53,7 +53,7 @@
     GT.dqRenderSuggestions = function (suggestions, fieldId, scanned) {
         var $results = $('.gt-dq-results').first();
         if (!suggestions.length) {
-            $results.html('<p class="gt-dq-clean">No cleanup suggestions — the scanned values look clean.</p>');
+            $results.html('<p class="gt-dq-clean">No cleanup suggestions - the scanned values look clean.</p>');
             return;
         }
         var parts = ['<table class="widefat striped gt-dq-table"><thead><tr>'
@@ -94,7 +94,7 @@
         });
     };
 
-    // Panel wiring — delegated so the handlers survive rerenders.
+    // Panel wiring - delegated so the handlers survive rerenders.
     $(function () {
         var $panel = $('#gt-data-quality');
         if (!$panel.length) { return; }

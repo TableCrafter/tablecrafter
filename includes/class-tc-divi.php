@@ -140,7 +140,7 @@ if (class_exists('ET_Builder_Module')) :
         if ($table_id <= 0) {
             if (et_core_is_fb_enabled()) {
                 return '<div class="gt-divi-placeholder" style="padding:20px;text-align:center;background:#f0f0f0;border:2px dashed #ccc;">' .
-                    esc_html__('Gravity Table — set a Table ID in the module settings.', 'tc-data-tables') .
+                    esc_html__('Gravity Table - set a Table ID in the module settings.', 'tc-data-tables') .
                     '</div>';
             }
             return '';

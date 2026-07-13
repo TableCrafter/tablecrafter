@@ -2,10 +2,10 @@
 /**
  * TC_Pivot_Service
  *
- * Issue #562 — slice 1 of 3. Pure aggregation engine for the future
+ * Issue #562 - slice 1 of 3. Pure aggregation engine for the future
  * pivot-table feature. Defines the pivot config schema, validates /
  * sanitizes it, and computes aggregated rows from a raw rows array.
- * No UI, no SQL — just the in-memory aggregation engine slices 2 + 3
+ * No UI, no SQL - just the in-memory aggregation engine slices 2 + 3
  * bind to.
  *
  * Slice 2 ships the per-table view-mode toggle (Raw / Pivot) and

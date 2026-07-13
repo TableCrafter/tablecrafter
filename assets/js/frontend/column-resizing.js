@@ -1,10 +1,10 @@
 /**
- * TableCrafter — frontend/column-resizing.js
+ * TableCrafter - frontend/column-resizing.js
  *
  * Column drag-to-resize feature. Seventeenth slice under #833. One
  * method, ~77 lines.
  *
- *   - initializeColumnResizing($wrapper) — wire mousedown handles on
+ *   - initializeColumnResizing($wrapper) - wire mousedown handles on
  *     .gt-resizer elements, drag to resize columns, persist widths
  *     to localStorage per table_id.
  */
@@ -66,7 +66,7 @@
                 $('body').removeClass('gt-resizing-active');
                 $(document).off('mousemove.gt-resize');
                 $(document).off('mouseup.gt-resize');
-                // Sticky-header layout recalc is no longer needed — native
+                // Sticky-header layout recalc is no longer needed - native
                 // position:sticky on <th> handles re-alignment automatically.
             });
         });
@@ -77,7 +77,7 @@
             e.preventDefault();
         });
 
-        // Restore saved column widths from localStorage (#111 — works for all users)
+        // Restore saved column widths from localStorage (#111 - works for all users)
         if (window.localStorage && self.config.table_id) {
             $wrapper.find('thead th[data-field-id]').each(function () {
                 var fid = $(this).attr('data-field-id');

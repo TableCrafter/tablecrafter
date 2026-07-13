@@ -1,6 +1,6 @@
 <?php
 /**
- * AI-first support system — phase 1: thread store + admin panel (#2159).
+ * AI-first support system - phase 1: thread store + admin panel (#2159).
  *
  * Phase 1 is the data + admin foundation: a thread/message store with status and
  * role attribution, plus a Pro-gated admin panel for manual Q&A threads. The AI
@@ -34,7 +34,7 @@ class TC_Support {
 		return in_array( (string) $role, self::ROLES, true );
 	}
 
-	/** Human-readable attribution for a message author — AI vs human stays visible. */
+	/** Human-readable attribution for a message author - AI vs human stays visible. */
 	public static function attribution_label( string $role ): string {
 		switch ( $role ) {
 			case 'ai':

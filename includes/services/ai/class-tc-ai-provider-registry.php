@@ -43,7 +43,7 @@ class TC_AI_Provider_Registry {
             return null;
         }
 
-        // #1076 finding #2 — decrypt the api_key envelope before handing it
+        // #1076 finding #2 - decrypt the api_key envelope before handing it
         // to the provider constructor. gt_ai_settings_decrypt() is a no-op
         // for legacy plaintext (backward-compat) and returns '' on tampered
         // envelopes; we fall through to the empty-key short-circuit below.

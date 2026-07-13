@@ -1,6 +1,6 @@
 <?php
 /**
- * Wizard Step 4 — Display options (#1982)
+ * Wizard Step 4 - Display options (#1982)
  *
  * @package GravityTables
  */
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         <?php esc_html_e( 'How should it look?', 'tc-data-tables' ); ?>
     </h3>
     <p class="gt-wizard-step-desc">
-        <?php esc_html_e( 'Three quick settings — you can fine-tune everything else in the full builder later.', 'tc-data-tables' ); ?>
+        <?php esc_html_e( 'Three quick settings - you can fine-tune everything else in the full builder later.', 'tc-data-tables' ); ?>
     </p>
 
     <div class="gt-wizard-display-options">

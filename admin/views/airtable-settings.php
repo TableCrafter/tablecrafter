@@ -1,6 +1,6 @@
 <?php
 /**
- * #517 slice 3b — Airtable settings admin view.
+ * #517 slice 3b - Airtable settings admin view.
  *
  * Shows form to enter base id + table id + token, submits to three
  * separate admin-post handlers (save / test / clear). Token is never
@@ -34,7 +34,7 @@ $post_url = esc_url(admin_url('admin-post.php'));
     <?php endif; ?>
 
     <?php if ($test === 'ok') : ?>
-        <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Connection successful — Airtable accepted the credentials.', 'tc-data-tables'); ?></p></div>
+        <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Connection successful - Airtable accepted the credentials.', 'tc-data-tables'); ?></p></div>
     <?php elseif ($test === 'fail') : ?>
         <div class="notice notice-error is-dismissible"><p><?php printf(esc_html__('Connection failed: %s', 'tc-data-tables'), esc_html($test_err)); ?></p></div>
     <?php elseif ($test === 'unconfigured') : ?>
@@ -103,7 +103,7 @@ $post_url = esc_url(admin_url('admin-post.php'));
                         id="gt-airtable-token"
                         name="token"
                         class="regular-text"
-                        placeholder="<?php echo $is_configured ? esc_attr__('(stored — leave blank to keep current)', 'tc-data-tables') : 'pat...'; ?>"
+                        placeholder="<?php echo $is_configured ? esc_attr__('(stored - leave blank to keep current)', 'tc-data-tables') : 'pat...'; ?>"
                         autocomplete="off" />
                     <p class="description">
                         <?php esc_html_e('Personal access token (PAT) with data.records:read scope. Encrypted before storage.', 'tc-data-tables'); ?>
@@ -129,7 +129,7 @@ $post_url = esc_url(admin_url('admin-post.php'));
         <hr style="margin:24px 0;">
 
         <h2><?php esc_html_e('Clear credentials', 'tc-data-tables'); ?></h2>
-        <p class="description"><?php esc_html_e('Removes the encrypted token and base/table mapping. The Airtable services stay available — just unconfigured.', 'tc-data-tables'); ?></p>
+        <p class="description"><?php esc_html_e('Removes the encrypted token and base/table mapping. The Airtable services stay available - just unconfigured.', 'tc-data-tables'); ?></p>
         <form method="post" action="<?php echo $post_url; ?>" onsubmit="return confirm('<?php echo esc_js(__('Clear stored Airtable credentials? You will need to re-enter them to reconnect.', 'tc-data-tables')); ?>');" style="display:inline-block;">
             <?php wp_nonce_field('gt_airtable_clear_credentials'); ?>
             <input type="hidden" name="action" value="gt_airtable_clear_credentials" />
@@ -138,7 +138,7 @@ $post_url = esc_url(admin_url('admin-post.php'));
     <?php endif; ?>
 
     <?php
-    // #517 slice 4e — Recent push activity. Surfaces the audit log from
+    // #517 slice 4e - Recent push activity. Surfaces the audit log from
     // TC_Airtable_Audit_Log_Service so admins can inspect what's been pushed
     // (success + failure) without grepping debug.log. Capped at 25 events
     // for the on-page view; the underlying option holds up to 100.
@@ -176,10 +176,10 @@ $post_url = esc_url(admin_url('admin-post.php'));
                     <tr>
                         <td><code><?php
                             $gt_ts = isset($gt_evt['timestamp']) ? (int) $gt_evt['timestamp'] : 0;
-                            echo esc_html($gt_ts > 0 ? gmdate('Y-m-d H:i:s', $gt_ts) . ' UTC' : '—');
+                            echo esc_html($gt_ts > 0 ? gmdate('Y-m-d H:i:s', $gt_ts) . ' UTC' : ' - ');
                         ?></code></td>
-                        <td><code><?php echo esc_html((string) ($gt_evt['entry_id'] ?? '—')); ?></code></td>
-                        <td><code><?php echo esc_html((string) ($gt_evt['record_id'] ?? '—')); ?></code></td>
+                        <td><code><?php echo esc_html((string) ($gt_evt['entry_id'] ?? ' - ')); ?></code></td>
+                        <td><code><?php echo esc_html((string) ($gt_evt['record_id'] ?? ' - ')); ?></code></td>
                         <td>
                             <?php if (!empty($gt_evt['ok'])) : ?>
                                 <span style="color:#2271b1;font-weight:600;"><?php esc_html_e('OK', 'tc-data-tables'); ?></span>
@@ -192,7 +192,7 @@ $post_url = esc_url(admin_url('admin-post.php'));
                         </td>
                         <td><?php
                             $gt_err = isset($gt_evt['error']) && $gt_evt['error'] !== null ? (string) $gt_evt['error'] : '';
-                            echo $gt_err === '' ? '—' : esc_html($gt_err);
+                            echo $gt_err === '' ? ' - ' : esc_html($gt_err);
                         ?></td>
                     </tr>
                 <?php endforeach; ?>

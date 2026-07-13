@@ -1,5 +1,5 @@
 /**
- * Gravity Tables – RTL (right-to-left) stylesheet
+ * Gravity Tables - RTL (right-to-left) stylesheet
  *
  * Loaded only when is_rtl() is true (Arabic, Hebrew, Persian, Urdu, etc.).
  * Uses CSS logical properties where possible; falls back to explicit

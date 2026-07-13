@@ -199,7 +199,7 @@ $settings = get_option('gt_settings', array());
                             <?php _e('None (Use theme styles only)', 'tc-data-tables'); ?>
                         </option>
                     </select>
-                    <p class="description"><?php _e('Wired through to asset enqueue as of v4.8.14 (#633 closed). Default loads the full frontend.css (~125 KB). Minimal loads frontend-minimal.css (~3.4 KB) — basic table styles only, intended for theme-styled sites. None registers the stylesheet handle with no source so the plugin contributes no CSS at all and only your theme styles apply.', 'tc-data-tables'); ?></p>
+                    <p class="description"><?php _e('Wired through to asset enqueue as of v4.8.14 (#633 closed). Default loads the full frontend.css (~125 KB). Minimal loads frontend-minimal.css (~3.4 KB) - basic table styles only, intended for theme-styled sites. None registers the stylesheet handle with no source so the plugin contributes no CSS at all and only your theme styles apply.', 'tc-data-tables'); ?></p>
                 </td>
             </tr>
         </table>
@@ -209,7 +209,7 @@ $settings = get_option('gt_settings', array());
 
     <!-- Performance: autoload management (#213) -->
     <div class="gt-settings-section" style="margin-top:30px">
-        <h2><?php _e('Performance — Autoload Management', 'tc-data-tables'); ?></h2>
+        <h2><?php _e('Performance - Autoload Management', 'tc-data-tables'); ?></h2>
         <p><?php _e('WordPress loads all autoloaded options on every page request. TableCrafter options that store table data should not be autoloaded. Use this tool to check and fix your autoload footprint.', 'tc-data-tables'); ?></p>
         <?php
         $manager_path = defined('TC_PLUGIN_PATH') ? TC_PLUGIN_PATH . 'includes/class-tc-autoload-manager.php' : '';

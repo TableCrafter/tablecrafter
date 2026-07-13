@@ -3,7 +3,7 @@
  * Rich auto-formatting engine (#2132).
  *
  * Pure value→display logic: classify a raw scalar and render it as safe display
- * HTML. Used by the table renderer to deliver the "beautiful table" promise —
+ * HTML. Used by the table renderer to deliver the "beautiful table" promise - 
  * ISO dates, large numbers, and URLs render formatted by default, with an
  * explicit per-column type override (incl. currency + status badge).
  *

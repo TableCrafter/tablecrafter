@@ -1,8 +1,8 @@
 /**
- * TableCrafter — frontend/edit-save.js
+ * TableCrafter - frontend/edit-save.js
  *
  * Inline cell-edit AJAX save. Second slice under #833 / #889.
- * Pairs with edit-history.js (slice 1) — saveField calls into
+ * Pairs with edit-history.js (slice 1) - saveField calls into
  * pushHistoryEntry + getFieldLabel via this/self.
  *
  * Public surface (attached directly to GravityTable.prototype):
@@ -72,13 +72,13 @@
         };
         data.updates[fieldId] = value;
 
-        // #553 slice 3 — WAF-safe payload client-side encode. When the
+        // #553 slice 3 - WAF-safe payload client-side encode. When the
         // self.config.waf_safe_payload flag is on (driven by the
         // gt_waf_safe_payload_enabled filter on the server side), wrap entry_id
         // + updates into an opaque base64 envelope under `payload` so generic
         // WAF rules (Cloudflare/Sucuri/mod_security/Wordfence) can't pattern-
         // match SQLi/XSS tokens against legitimate cell content. Server (slice
-        // 2 v4.41.0) accepts both shapes — encoded or legacy form-encoded —
+        // 2 v4.41.0) accepts both shapes - encoded or legacy form-encoded - 
         // and falls through cleanly when the envelope is absent.
         if (this.config && this.config.waf_safe_payload) {
             var encoded = btoa(JSON.stringify({
@@ -114,7 +114,7 @@
 
                 $field.html(self.escapeHtml(finalDisplayValue));
 
-                // #1749 — show diff badge if value changed.
+                // #1749 - show diff badge if value changed.
                 if (typeof self.showDiffBadge === 'function') {
                     var preEditValue = $field.data('original-value');
                     self.showDiffBadge($field[0], String(preEditValue !== undefined ? preEditValue : ''), String(finalDisplayValue));

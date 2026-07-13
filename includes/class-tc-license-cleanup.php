@@ -2,7 +2,7 @@
 /**
  * License-tied cleanup. When the plugin is deactivated (or the customer's
  * license is uninstalled by Freemius) we must leave no orphaned WP-cron
- * schedules behind — that was AC #3 of issue #481.
+ * schedules behind - that was AC #3 of issue #481.
  *
  * Every cron hook the plugin schedules MUST be listed in {@see cron_hooks()}
  * so {@see on_deactivate()} can clear it. Adding a new wp_schedule_event

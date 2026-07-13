@@ -2,7 +2,7 @@
 /**
  * TC_Pagination_Service
  *
- * Issue #560 — slice 1 of 3. Pure helper for the future server-side
+ * Issue #560 - slice 1 of 3. Pure helper for the future server-side
  * pagination feature. Normalizes per-table settings, parses request
  * params (page / page_size / sort / search) into a canonical struct
  * with bounds clamping, and builds the canonical response envelope.

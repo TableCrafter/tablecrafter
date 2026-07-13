@@ -5,10 +5,10 @@
  * Issue #797 (child of #793). GF `multiselect` fields store the
  * chosen values as a comma-separated string in `$entry[$field_id]`.
  * Without this service, filter / sort treat the CSV blob as a
- * single string — facet-style filtering (OR-match across N
+ * single string - facet-style filtering (OR-match across N
  * distinct values) isn't possible.
  *
- * Pure helpers — no WP / GFAPI coupling. Slice 1 + 2 of this
+ * Pure helpers - no WP / GFAPI coupling. Slice 1 + 2 of this
  * issue rolled into one PR per the resumed-loop convention.
  *
  * @since 4.75.0
@@ -53,7 +53,7 @@ class TC_Multiselect_Filter_Service {
 
     /**
      * Distinct values across every row's CSV for a given field id.
-     * Used by the filter UI to render facet checkboxes — each
+     * Used by the filter UI to render facet checkboxes - each
      * distinct value gets its own checkbox so the customer can
      * OR-select multiple.
      *

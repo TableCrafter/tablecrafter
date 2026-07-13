@@ -2,7 +2,7 @@
 /**
  * TC_Schema_Service
  *
- * Issue #547 — slice 1 of 3. Pure builder helper for the per-table
+ * Issue #547 - slice 1 of 3. Pure builder helper for the per-table
  * schema.org JSON-LD output feature. Slice 1 ships the config
  * normalization + the `Table` JSON-LD builder. Slices 2 + 3 wire
  * the render hook, richer types (Dataset / ProductList / EventList),
@@ -62,7 +62,7 @@ class TC_Schema_Service {
      * Build the JSON-LD payload array for a table. Returns null when
      * disabled. Slice 2 (4.7.66) extends slice 1's `Table` support with
      * `Dataset` (most useful for SEO on pricing / spec / data tables).
-     * `ProductList` and `EventList` remain pending slice 3 — they need
+     * `ProductList` and `EventList` remain pending slice 3 - they need
      * the column-to-property map UI before they can emit useful output.
      */
     public static function build_jsonld(array $table, array $settings): ?array {

@@ -1,11 +1,11 @@
 <?php
 /**
- * TC_Source_Registry — single source of truth for TableCrafter data-source types.
+ * TC_Source_Registry - single source of truth for TableCrafter data-source types.
  *
  * Issue #2009 (convergence epic #2006, Phase 1). Replaces the hardcoded source
  * lists previously duplicated in the builder select (admin/views/table-builder.php)
- * and the wizard radios (admin/views/wizard/step-1.php). Every consumer — builder,
- * wizard, shortcode dispatch — reads from here, and new sources register once via
+ * and the wizard radios (admin/views/wizard/step-1.php). Every consumer - builder,
+ * wizard, shortcode dispatch - reads from here, and new sources register once via
  * the `gravity_tables_source_types` filter and surface everywhere.
  *
  * Each source definition:
@@ -35,11 +35,11 @@ class TC_Source_Registry
             'manual' => array(
                 'label'       => self::t('Manual / Static table'),
                 'requires_gf' => false,
-                'pro'         => false, // #2366 — manual tables are a free-tier feature (TablePress parity P1-1)
+                'pro'         => false, // #2366 - manual tables are a free-tier feature (TablePress parity P1-1)
                 'in_wizard'   => true,
                 'wizard_icon' => 'dashicons-editor-table',
                 'wizard_badge' => self::t('New'),
-                'description' => self::t('Enter data directly — no external source needed. Edit rows in the grid editor (coming soon).'),
+                'description' => self::t('Enter data directly - no external source needed. Edit rows in the grid editor (coming soon).'),
             ),
             'gravity_forms' => array(
                 'label'          => self::t('Gravity Forms entries'),
@@ -78,7 +78,7 @@ class TC_Source_Registry
             'notion' => array(
                 'label'       => self::t('Notion'),
                 'requires_gf' => false,
-                'pro'         => true, // #2026 (D1) — Notion is a Pro source.
+                'pro'         => true, // #2026 (D1) - Notion is a Pro source.
                 'in_wizard'   => false,
                 'description' => self::t('Pull rows from a Notion database.'),
             ),
@@ -86,14 +86,14 @@ class TC_Source_Registry
                 'label'       => self::t('Google Sheets'),
                 'requires_gf' => false,
                 'pro'         => false,
-                'in_wizard'   => true, // #2039 — URL-based, good wizard fit.
+                'in_wizard'   => true, // #2039 - URL-based, good wizard fit.
                 'wizard_icon' => 'dashicons-media-spreadsheet',
                 'description' => self::t('Display a public Google Sheet (published to the web) as a table.'),
             ),
             'xml' => array(
                 'label'       => self::t('XML feed or file'),
                 'requires_gf' => false,
-                'pro'         => true, // #2026 (D1) — XML is a Pro source.
+                'pro'         => true, // #2026 (D1) - XML is a Pro source.
                 'in_wizard'   => false,
                 'description' => self::t('Fetch rows from an XML feed or file via a repeating-element path.'),
             ),
@@ -101,7 +101,7 @@ class TC_Source_Registry
                 'label'       => self::t('CSV file or URL'),
                 'requires_gf' => false,
                 'pro'         => false,
-                'in_wizard'   => true, // #2039 — URL-based, good wizard fit.
+                'in_wizard'   => true, // #2039 - URL-based, good wizard fit.
                 'wizard_icon' => 'dashicons-media-spreadsheet',
                 'description' => self::t('Fetch a remote CSV file; cached and auto-refreshed after a configurable interval.'),
             ),

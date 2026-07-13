@@ -1,5 +1,5 @@
 /**
- * TableCrafter — admin/field-config-modal.js
+ * TableCrafter - admin/field-config-modal.js
  *
  * Third slice of #842 (admin.js monolith split). Per-field configuration
  * modal lifecycle:
@@ -60,15 +60,15 @@
             // Default filterable to true unless explicitly set to false
             $('#field-filterable').prop('checked', field.filterable !== false);
             $('#field-width').val(field.width || '');
-            $('#field-alignment').val(field.alignment || ''); // #661 — column alignment
-            $('#field-wrap-mode').val(field.wrap_mode || 'default'); // #662 — column wrap mode
-            $('#field-vertical-alignment').val(field.vertical_alignment || ''); // #663 — column vertical alignment
+            $('#field-alignment').val(field.alignment || ''); // #661 - column alignment
+            $('#field-wrap-mode').val(field.wrap_mode || 'default'); // #662 - column wrap mode
+            $('#field-vertical-alignment').val(field.vertical_alignment || ''); // #663 - column vertical alignment
             $('#field-cell-type').val(field.cell_type || ''); // TC_Star_Rating_Service / TC_Badge_Service per-column cell type
             // #1741 badge map: populate textarea + show/hide the row
             var badgeMap = field.badge_map || {};
             $('#field-badge-map').val(Object.keys(badgeMap).length ? JSON.stringify(badgeMap, null, 2) : '');
             $('.gt-badge-map-row').toggle(field.cell_type === 'badge');
-            // #1742 — per-column inline-edit validation rules (Pro)
+            // #1742 - per-column inline-edit validation rules (Pro)
             var vr = field.validation_rules || {};
             $('#field-val-required').prop('checked', !!vr.required);
             $('#field-val-min-length').val(vr.min_length || '');
@@ -77,7 +77,7 @@
             $('#field-val-max-value').val(vr.max_value !== undefined && vr.max_value !== null ? vr.max_value : '');
             $('#field-val-regex').val(vr.regex || '');
             $('#field-val-regex-message').val(vr.regex_message || '');
-            // #1746 — per-column role visibility (Pro)
+            // #1746 - per-column role visibility (Pro)
             var allowedRoles = field.allowed_roles || [];
             $('.field-role-visibility-cb').each(function () {
                 var role = $(this).data('role');
@@ -88,8 +88,8 @@
             $('#field-auto-merge-consecutive').prop('checked', !!field.auto_merge_consecutive); // TC_Rowspan_Merge_Service per-column auto-merge flag (#518 slice 2)
             $('#field-drilldown-enabled').prop('checked', !!field.drilldown_enabled); // TC_Drilldown_Filter_Service per-column click-to-filter flag (#568 slice 2)
             $('#field-data-bar-enabled').prop('checked', !!field.data_bar_enabled); // TC_Data_Bars_Service per-column value-bar (#1731, Pro)
-            $('#field-data-bar-color').val(field.data_bar_color || '#3b82f6'); // #1731 — data-bar color
-            // #664 — column link settings (nested object: link_target / link_color / link_underline)
+            $('#field-data-bar-color').val(field.data_bar_color || '#3b82f6'); // #1731 - data-bar color
+            // #664 - column link settings (nested object: link_target / link_color / link_underline)
             var ls = field.link_settings || {};
             $('#field-link-target').val(ls.link_target || '');
             $('#field-link-color').val(ls.link_color || '');
@@ -387,18 +387,18 @@
             this.formFields[fieldId].editable = !$('#field-disabled').is(':checked');
             this.formFields[fieldId].filterable = isFilterableChecked;
             this.formFields[fieldId].width = $('#field-width').val();
-            this.formFields[fieldId].alignment = $('#field-alignment').val(); // #661 — column alignment
-            this.formFields[fieldId].wrap_mode = $('#field-wrap-mode').val(); // #662 — column wrap mode
-            this.formFields[fieldId].vertical_alignment = $('#field-vertical-alignment').val(); // #663 — column vertical alignment
+            this.formFields[fieldId].alignment = $('#field-alignment').val(); // #661 - column alignment
+            this.formFields[fieldId].wrap_mode = $('#field-wrap-mode').val(); // #662 - column wrap mode
+            this.formFields[fieldId].vertical_alignment = $('#field-vertical-alignment').val(); // #663 - column vertical alignment
             this.formFields[fieldId].cell_type = $('#field-cell-type').val(); // TC_Star_Rating_Service / TC_Badge_Service per-column cell type
-            // #1741 — badge map: parse JSON from textarea (silently ignore invalid JSON)
+            // #1741 - badge map: parse JSON from textarea (silently ignore invalid JSON)
             try {
                 var rawBadge = $('#field-badge-map').val() || '';
                 this.formFields[fieldId].badge_map = rawBadge.trim() ? JSON.parse(rawBadge) : {};
             } catch (e) {
                 this.formFields[fieldId].badge_map = {};
             }
-            // #1746 — per-column role visibility (Pro)
+            // #1746 - per-column role visibility (Pro)
             var checkedRoles = [];
             $('.field-role-visibility-cb:checked').each(function () {
                 checkedRoles.push($(this).data('role'));
@@ -409,8 +409,8 @@
             this.formFields[fieldId].auto_merge_consecutive = $('#field-auto-merge-consecutive').is(':checked'); // TC_Rowspan_Merge_Service (#518 slice 2)
             this.formFields[fieldId].drilldown_enabled = $('#field-drilldown-enabled').is(':checked'); // TC_Drilldown_Filter_Service (#568 slice 2)
             this.formFields[fieldId].data_bar_enabled = $('#field-data-bar-enabled').is(':checked'); // TC_Data_Bars_Service (#1731, Pro)
-            this.formFields[fieldId].data_bar_color = $('#field-data-bar-color').val() || '#3b82f6'; // #1731 — data-bar color
-            // #1742 — per-column inline-edit validation rules (Pro)
+            this.formFields[fieldId].data_bar_color = $('#field-data-bar-color').val() || '#3b82f6'; // #1731 - data-bar color
+            // #1742 - per-column inline-edit validation rules (Pro)
             var valRules = {};
             if ($('#field-val-required').is(':checked')) valRules.required = true;
             var minLen = parseInt($('#field-val-min-length').val(), 10);
@@ -424,7 +424,7 @@
             var regex = $('#field-val-regex').val().trim();
             if (regex) { valRules.regex = regex; valRules.regex_message = $('#field-val-regex-message').val().trim(); }
             this.formFields[fieldId].validation_rules = Object.keys(valRules).length ? valRules : null;
-            // #664 — column link settings (target / color / underline)
+            // #664 - column link settings (target / color / underline)
             this.formFields[fieldId].link_settings = {
                 link_target:    $('#field-link-target').val() || '',
                 link_color:     $('#field-link-color').val() || '',

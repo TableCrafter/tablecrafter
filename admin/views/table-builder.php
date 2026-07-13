@@ -137,18 +137,18 @@ if ($table_id) {
                         <label><?php _e('Data Source', 'tc-data-tables'); ?></label>
                         <select name="data_source_type" id="gt-data-source-type">
                             <?php
-                            // #2009 — render options from the single source-of-truth registry
+                            // #2009 - render options from the single source-of-truth registry
                             // instead of a hardcoded list. New sources register once via the
                             // gravity_tables_source_types filter and appear here automatically.
                             $gt_current_source = isset($table_settings['data_source_type']) ? $table_settings['data_source_type'] : 'gravity_forms';
                             $gt_is_free        = function_exists('gt_is_free_plan') ? gt_is_free_plan() : false;
                             foreach (TC_Source_Registry::for_builder() as $gt_src_key => $gt_src_def) :
                                 $gt_src_pro = !empty($gt_src_def['pro']);
-                                // #2118 — flag Pro sources in-context. Free users see "— Pro"
+                                // #2118 - flag Pro sources in-context. Free users see " - Pro"
                                 // right in the option so the upsell lands at the moment of choosing.
                                 $gt_src_label = $gt_src_def['label'];
                                 if ($gt_src_pro) {
-                                    $gt_src_label .= ' — ' . __('Pro', 'tc-data-tables');
+                                    $gt_src_label .= ' - ' . __('Pro', 'tc-data-tables');
                                 }
                                 ?>
                                 <option value="<?php echo esc_attr($gt_src_key); ?>" data-pro="<?php echo $gt_src_pro ? '1' : '0'; ?>" <?php selected($gt_current_source, $gt_src_key); ?>>
@@ -158,7 +158,7 @@ if ($table_id) {
                         </select>
                         <p class="description"><?php _e('Choose the data source for this table. WooCommerce Products queries your product catalog live; JSON URL fetches from a remote endpoint with optional auth headers.', 'tc-data-tables'); ?></p>
                         <?php
-                        // #2118 — contextual upsell shown (to free plans) at the moment a Pro
+                        // #2118 - contextual upsell shown (to free plans) at the moment a Pro
                         // source is the active choice. JS in admin/bind-events.js toggles it on
                         // change via the data-pro attribute; server-side it starts visible only
                         // when the current source is Pro.
@@ -177,7 +177,7 @@ if ($table_id) {
                         <?php endif; ?>
                     </div>
 
-                    <!-- #2002 — Google Sheets data source fields (convergence #2006). -->
+                    <!-- #2002 - Google Sheets data source fields (convergence #2006). -->
                     <!-- Shown only when data_source_type = google_sheets. Toggle wired in admin/bind-events.js. -->
                     <div class="gt-form-row gt-google-sheets-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'google_sheets') ? '' : 'display: none;'; ?>">
@@ -196,7 +196,7 @@ if ($table_id) {
                         <span class="gt-remote-source-preview-result" data-source-type="google_sheets" style="margin-left:8px;"></span>
                     </div>
 
-                    <!-- #2004 — XML data source fields (convergence #2006). -->
+                    <!-- #2004 - XML data source fields (convergence #2006). -->
                     <!-- Shown only when data_source_type = xml. Toggle wired in admin/bind-events.js. -->
                     <div class="gt-form-row gt-xml-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'xml') ? '' : 'display: none;'; ?>">
@@ -226,7 +226,7 @@ if ($table_id) {
                         <span class="gt-remote-source-preview-result" data-source-type="xml" style="margin-left:8px;"></span>
                     </div>
 
-                    <!-- #2010 — live CSV URL data source fields (convergence #2006). -->
+                    <!-- #2010 - live CSV URL data source fields (convergence #2006). -->
                     <!-- Shown only when data_source_type = csv. Toggle wired in admin/bind-events.js. -->
                     <div class="gt-form-row gt-csv-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'csv') ? '' : 'display: none;'; ?>">
@@ -244,7 +244,7 @@ if ($table_id) {
                         </p>
                     </div>
 
-                    <!-- #1998 — Excel (.xlsx) source -->
+                    <!-- #1998 - Excel (.xlsx) source -->
                     <div class="gt-form-row gt-xlsx-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'xlsx') ? '' : 'display: none;'; ?>">
                         <label for="gt-xlsx-url"><?php _e('Excel (.xlsx) URL', 'tc-data-tables'); ?></label>
@@ -261,7 +261,7 @@ if ($table_id) {
                         </p>
                     </div>
 
-                    <!-- #2003 — External database data source fields (convergence #2006). -->
+                    <!-- #2003 - External database data source fields (convergence #2006). -->
                     <!-- Shown only when data_source_type = external_db. Toggle wired in admin/bind-events.js. -->
                     <?php
                     $gt_db_connections = class_exists('TC_External_DB') ? TC_External_DB::get_instance()->get_connections() : array();
@@ -271,7 +271,7 @@ if ($table_id) {
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'external_db') ? '' : 'display: none;'; ?>">
                         <label for="gt-external-db-connection"><?php _e('Database connection', 'tc-data-tables'); ?></label>
                         <select id="gt-external-db-connection" name="external_db_connection" style="width: 100%; max-width: 520px;">
-                            <option value=""><?php _e('— Select a connection —', 'tc-data-tables'); ?></option>
+                            <option value=""><?php _e(' - Select a connection - ', 'tc-data-tables'); ?></option>
                             <?php foreach ($gt_db_connections as $gt_db_i => $gt_db_conn) :
                                 $gt_db_label = !empty($gt_db_conn['label'])
                                     ? $gt_db_conn['label']
@@ -302,15 +302,15 @@ if ($table_id) {
                         <p class="description"><?php _e('Only SELECT statements run (enforced server-side in read-only mode).', 'tc-data-tables'); ?></p>
                     </div>
 
-                    <!-- #2242 — Load External DB columns into the field picker + live preview. -->
+                    <!-- #2242 - Load External DB columns into the field picker + live preview. -->
                     <div class="gt-form-row gt-external-db-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'external_db') ? '' : 'display: none;'; ?>">
                         <button type="button" class="button gt-external-db-load-columns"><?php esc_html_e('Load database columns', 'tc-data-tables'); ?></button>
                         <span class="gt-external-db-load-result" style="margin-left:8px;"></span>
-                        <p class="description"><?php esc_html_e('Runs the query above against the selected connection and loads the result columns into the field picker + preview — no save needed.', 'tc-data-tables'); ?></p>
+                        <p class="description"><?php esc_html_e('Runs the query above against the selected connection and loads the result columns into the field picker + preview - no save needed.', 'tc-data-tables'); ?></p>
                     </div>
 
-                    <!-- #2254 — Public render opt-in for external DB tables. -->
+                    <!-- #2254 - Public render opt-in for external DB tables. -->
                     <div class="gt-form-row gt-external-db-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'external_db') ? '' : 'display: none;'; ?>">
                         <label>
@@ -323,17 +323,17 @@ if ($table_id) {
                         <p class="description"><?php esc_html_e('When unchecked (default), only users with the external data capability can see this table. When checked, anyone can view the query results. The builder, query editing, and write operations remain capability-gated regardless of this setting.', 'tc-data-tables'); ?></p>
                     </div>
 
-                    <!-- #2200 — WooCommerce products source. Shown only when
+                    <!-- #2200 - WooCommerce products source. Shown only when
                          data_source_type = woocommerce_products. Columns auto-load on
                          select/edit; the button refreshes. Toggle in admin/bind-events.js. -->
                     <div class="gt-form-row gt-woocommerce-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'woocommerce_products') ? '' : 'display: none;'; ?>">
-                        <p class="description"><?php esc_html_e('Lists your WooCommerce products — name, SKU, price, stock, rating, and add-to-cart. Columns load automatically; use the button to refresh.', 'tc-data-tables'); ?></p>
+                        <p class="description"><?php esc_html_e('Lists your WooCommerce products - name, SKU, price, stock, rating, and add-to-cart. Columns load automatically; use the button to refresh.', 'tc-data-tables'); ?></p>
                         <button type="button" class="button gt-wc-load-columns"><?php esc_html_e('Load WooCommerce columns', 'tc-data-tables'); ?></button>
                         <span class="gt-wc-load-result" style="margin-left:8px;"></span>
                     </div>
 
-                    <!-- #2366 — Manual / static data source fields. -->
+                    <!-- #2366 - Manual / static data source fields. -->
                     <!-- Shown only when data_source_type = manual. Toggle wired in admin/bind-events.js. -->
                     <div class="gt-form-row gt-manual-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'manual') ? '' : 'display: none;'; ?>">
@@ -377,14 +377,14 @@ if ($table_id) {
                             ?>
                         </p>
                         <?php endif; ?>
-                        <!-- #2367 — Spreadsheet grid editor container. Rendered by manual-grid-editor.js
+                        <!-- #2367 - Spreadsheet grid editor container. Rendered by manual-grid-editor.js
                              via the gtManualGridData payload; hidden until JS hydrates it. -->
                         <div id="gt-manual-grid-editor"
                              style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'manual' && !empty($table_settings['manual_columns'])) ? '' : 'display:none;'; ?>"
                              data-dirty="0">
                         </div>
 
-                        <!-- #2369 — Shortcode expansion opt-in for manual-table cells. -->
+                        <!-- #2369 - Shortcode expansion opt-in for manual-table cells. -->
                         <div class="gt-form-row" style="margin-top:8px;">
                             <label>
                                 <input type="checkbox"
@@ -399,7 +399,7 @@ if ($table_id) {
                         </div>
                     </div>
 
-                    <!-- #985 v4.168.0 — JSON data source fields (slice 3b-2 of #512). -->
+                    <!-- #985 v4.168.0 - JSON data source fields (slice 3b-2 of #512). -->
                     <!-- Shown only when data_source_type = json. The toggle is wired in admin/bind-events.js. -->
                     <div class="gt-form-row gt-json-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'json') ? '' : 'display: none;'; ?>">
@@ -456,7 +456,7 @@ if ($table_id) {
                                max="1440"
                                step="5"
                                style="width: 120px;" />
-                        <p class="description"><?php _e('How often to re-fetch the URL. Clamped to 5–1440 minutes (5 min minimum to avoid hammering the remote endpoint).', 'tc-data-tables'); ?></p>
+                        <p class="description"><?php _e('How often to re-fetch the URL. Clamped to 5 - 1440 minutes (5 min minimum to avoid hammering the remote endpoint).', 'tc-data-tables'); ?></p>
                     </div>
 
                     <div class="gt-form-row gt-json-source-fields"
@@ -468,8 +468,8 @@ if ($table_id) {
                         <p class="description"><?php _e('Fetches the URL with your headers + dot-path and shows a preview of the inferred columns + first rows.', 'tc-data-tables'); ?></p>
                     </div>
 
-                    <!-- #990 v4.171.0 — Airtable picker preview (phase A of #517). -->
-                    <!-- #992 v4.172.0 — Connection wizard fields (phase B of #517). -->
+                    <!-- #990 v4.171.0 - Airtable picker preview (phase A of #517). -->
+                    <!-- #992 v4.172.0 - Connection wizard fields (phase B of #517). -->
                     <div class="gt-form-row gt-airtable-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'airtable') ? '' : 'display: none;'; ?>">
                         <label for="gt-airtable-pat"><?php _e('Personal Access Token', 'tc-data-tables'); ?></label>
@@ -477,7 +477,7 @@ if ($table_id) {
                                id="gt-airtable-pat"
                                name="airtable_pat"
                                value=""
-                               placeholder="<?php echo !empty($table_settings['airtable_pat_set']) ? esc_attr__('•••••••• (saved — leave blank to keep)', 'tc-data-tables') : 'pat...'; ?>"
+                               placeholder="<?php echo !empty($table_settings['airtable_pat_set']) ? esc_attr__('•••••••• (saved - leave blank to keep)', 'tc-data-tables') : 'pat...'; ?>"
                                autocomplete="new-password"
                                style="width: 100%; max-width: 420px; font-family: monospace;" />
                         <p class="description">
@@ -522,15 +522,15 @@ if ($table_id) {
                         <p class="description"><?php _e('Specific view to filter/sort by (leave empty to use the default view).', 'tc-data-tables'); ?></p>
                     </div>
 
-                    <!-- #2240 — Load Airtable columns into the field picker + live preview. -->
+                    <!-- #2240 - Load Airtable columns into the field picker + live preview. -->
                     <div class="gt-form-row gt-airtable-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'airtable') ? '' : 'display: none;'; ?>">
                         <button type="button" class="button gt-airtable-load-columns"><?php esc_html_e('Load Airtable columns', 'tc-data-tables'); ?></button>
                         <span class="gt-airtable-load-result" style="margin-left:8px;"></span>
-                        <p class="description"><?php esc_html_e('Connects with the config above (or the saved token) and loads the table\'s columns into the field picker + preview — no save needed.', 'tc-data-tables'); ?></p>
+                        <p class="description"><?php esc_html_e('Connects with the config above (or the saved token) and loads the table\'s columns into the field picker + preview - no save needed.', 'tc-data-tables'); ?></p>
                     </div>
 
-                    <!-- #998 v4.175.0 — Notion connection foundation (phase 1 of #592). -->
+                    <!-- #998 v4.175.0 - Notion connection foundation (phase 1 of #592). -->
                     <div class="gt-form-row gt-notion-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'notion') ? '' : 'display: none;'; ?>">
                         <label for="gt-notion-token"><?php _e('Notion API Token', 'tc-data-tables'); ?></label>
@@ -538,7 +538,7 @@ if ($table_id) {
                                id="gt-notion-token"
                                name="notion_token"
                                value=""
-                               placeholder="<?php echo !empty($table_settings['notion_token_set']) ? esc_attr__('•••••••• (saved — leave blank to keep)', 'tc-data-tables') : 'secret_...'; ?>"
+                               placeholder="<?php echo !empty($table_settings['notion_token_set']) ? esc_attr__('•••••••• (saved - leave blank to keep)', 'tc-data-tables') : 'secret_...'; ?>"
                                autocomplete="new-password"
                                style="width: 100%; max-width: 420px; font-family: monospace;" />
                         <p class="description">
@@ -560,17 +560,17 @@ if ($table_id) {
                         <p class="description"><?php _e('The Notion database UUID. Open the database in Notion and find it in the URL: notion.so/.../<strong>DATABASE-ID</strong>?v=...', 'tc-data-tables'); ?></p>
                     </div>
 
-                    <!-- #2241 — Load Notion columns into the field picker + live preview. -->
+                    <!-- #2241 - Load Notion columns into the field picker + live preview. -->
                     <div class="gt-form-row gt-notion-source-fields"
                          style="<?php echo (isset($table_settings['data_source_type']) && $table_settings['data_source_type'] === 'notion') ? '' : 'display: none;'; ?>">
                         <button type="button" class="button gt-notion-load-columns"><?php esc_html_e('Load Notion columns', 'tc-data-tables'); ?></button>
                         <span class="gt-notion-load-result" style="margin-left:8px;"></span>
-                        <p class="description"><?php esc_html_e('Connects with the config above (or the saved token) and loads the database\'s columns into the field picker + preview — no save needed.', 'tc-data-tables'); ?></p>
+                        <p class="description"><?php esc_html_e('Connects with the config above (or the saved token) and loads the database\'s columns into the field picker + preview - no save needed.', 'tc-data-tables'); ?></p>
                     </div>
 
                     <?php
-                    // #1010 v4.181.0 — sync_direction picker (phase 1 of #613).
-                    // #1013 v4.183.0 — Picker unified across all three external sources
+                    // #1010 v4.181.0 - sync_direction picker (phase 1 of #613).
+                    // #1013 v4.183.0 - Picker unified across all three external sources
                     // (json, airtable, notion) now that the Airtable push consumer
                     // accepts both legacy (pull_only/push_only/bidirectional) and
                     // canonical (pull/push/two_way) naming (see #1011).
@@ -584,16 +584,16 @@ if ($table_id) {
                         <label for="gt-sync-direction"><?php _e('Sync direction', 'tc-data-tables'); ?></label>
                         <?php /* edit-mode reads $table_settings['sync_direction'] via the $gt_sync_dir variable computed above (#1010 phase 1 of #613). */ ?>
                         <select id="gt-sync-direction" name="sync_direction">
-                            <option value="pull"    <?php selected($gt_sync_dir, 'pull'); ?>><?php _e('Pull only — read from source (default, safe)', 'tc-data-tables'); ?></option>
-                            <option value="push"    <?php selected($gt_sync_dir, 'push'); ?>><?php _e('Push only — write to source (preview, write-back per source pending)', 'tc-data-tables'); ?></option>
-                            <option value="two_way" <?php selected($gt_sync_dir, 'two_way'); ?>><?php _e('Two-way — read AND write (preview)', 'tc-data-tables'); ?></option>
+                            <option value="pull"    <?php selected($gt_sync_dir, 'pull'); ?>><?php _e('Pull only - read from source (default, safe)', 'tc-data-tables'); ?></option>
+                            <option value="push"    <?php selected($gt_sync_dir, 'push'); ?>><?php _e('Push only - write to source (preview, write-back per source pending)', 'tc-data-tables'); ?></option>
+                            <option value="two_way" <?php selected($gt_sync_dir, 'two_way'); ?>><?php _e('Two-way - read AND write (preview)', 'tc-data-tables'); ?></option>
                         </select>
                         <p class="description">
-                            <?php _e('Pull is the safe default. Push and Two-way are reserved for the upcoming write-back implementation (phase 2+ of #613) — selecting them now records the intent but does not yet push edits.', 'tc-data-tables'); ?>
+                            <?php _e('Pull is the safe default. Push and Two-way are reserved for the upcoming write-back implementation (phase 2+ of #613) - selecting them now records the intent but does not yet push edits.', 'tc-data-tables'); ?>
                         </p>
                     </div>
 
-                    <!-- #2108 — only relevant when the data source is Gravity Forms entries.
+                    <!-- #2108 - only relevant when the data source is Gravity Forms entries.
                          Toggled in admin/bind-events.js on data-source change. -->
                     <div class="gt-form-row gt-gravity-forms-source-fields"
                          style="<?php echo ($gt_current_source === 'gravity_forms') ? '' : 'display: none;'; ?>">
@@ -756,10 +756,10 @@ if ($table_id) {
                                 <label><?php _e('Cell type', 'tc-data-tables'); ?></label>
                                 <select id="field-cell-type">
                                     <option value=""><?php _e('Plain text (default)', 'tc-data-tables'); ?></option>
-                                    <option value="star_rating"><?php _e('Star rating (numeric → 0–5 stars)', 'tc-data-tables'); ?></option>
+                                    <option value="star_rating"><?php _e('Star rating (numeric → 0 - 5 stars)', 'tc-data-tables'); ?></option>
                                     <option value="badge"><?php _e('Status badge (text → colored pill)', 'tc-data-tables'); ?></option>
                                 </select>
-                                <p class="description"><?php _e('Render the cell value through a renderer service. Star rating: numeric → SVG stars. Status badge: map text values to colored pill badges — configure the badge map below (#1741).', 'tc-data-tables'); ?></p>
+                                <p class="description"><?php _e('Render the cell value through a renderer service. Star rating: numeric → SVG stars. Status badge: map text values to colored pill badges - configure the badge map below (#1741).', 'tc-data-tables'); ?></p>
                             </div>
 
                             <div class="gt-form-row gt-badge-map-row" style="display:none;">
@@ -787,11 +787,11 @@ if ($table_id) {
                                     </div>
                                     <div>
                                         <label><?php _e('Min value', 'tc-data-tables'); ?></label>
-                                        <input type="number" id="field-val-min-value" style="width:80px;" placeholder="—">
+                                        <input type="number" id="field-val-min-value" style="width:80px;" placeholder=" - ">
                                     </div>
                                     <div>
                                         <label><?php _e('Max value', 'tc-data-tables'); ?></label>
-                                        <input type="number" id="field-val-max-value" style="width:80px;" placeholder="—">
+                                        <input type="number" id="field-val-max-value" style="width:80px;" placeholder=" - ">
                                     </div>
                                     <div style="grid-column:1/-1;">
                                         <label><?php _e('Regex pattern (no delimiters)', 'tc-data-tables'); ?></label>
@@ -824,13 +824,13 @@ if ($table_id) {
                             <label class="gt-checkbox-label">
                                 <input type="checkbox" id="field-detail-only">
                                 <?php _e('Mark as detail-row column (slice 2 of #556)', 'tc-data-tables'); ?>
-                                <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Persists the column as a "detail-only" candidate. Slice 2 (this iteration) ships the admin toggle + persistence layer; slice 3 (future) ships the runtime expand/collapse rendering. Configuring this today carries no visible effect — it just stages the per-column flag so when slice 3 lands, the chosen columns automatically move into the detail-row UX. The save shape (column_detail_only flat field_id => true map) is normalized via TC_Detail_Rows_Service::normalize_column.', 'tc-data-tables'); ?>"></span>
+                                <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Persists the column as a "detail-only" candidate. Slice 2 (this iteration) ships the admin toggle + persistence layer; slice 3 (future) ships the runtime expand/collapse rendering. Configuring this today carries no visible effect - it just stages the per-column flag so when slice 3 lands, the chosen columns automatically move into the detail-row UX. The save shape (column_detail_only flat field_id => true map) is normalized via TC_Detail_Rows_Service::normalize_column.', 'tc-data-tables'); ?>"></span>
                             </label>
 
                             <label class="gt-checkbox-label">
                                 <input type="checkbox" id="field-auto-merge-consecutive">
                                 <?php _e('Auto-merge consecutive duplicate values (slice 2 of #518)', 'tc-data-tables'); ?>
-                                <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('When this column has consecutive rows with the same value, merge them into a single rowspan group. Slice 1 shipped TC_Rowspan_Merge_Service (the pure-function helper). Slice 2 (this iteration) wires the per-column opt-in. Slice 3 will do the template surgery so the runtime actually emits rowspan-merged cells. Configuring this today persists the flag (column_auto_merge field_id => bool map) but carries no visible effect until slice 3 lands. Strict equality — \'10\' and 10 are NOT merged.', 'tc-data-tables'); ?>"></span>
+                                <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('When this column has consecutive rows with the same value, merge them into a single rowspan group. Slice 1 shipped TC_Rowspan_Merge_Service (the pure-function helper). Slice 2 (this iteration) wires the per-column opt-in. Slice 3 will do the template surgery so the runtime actually emits rowspan-merged cells. Configuring this today persists the flag (column_auto_merge field_id => bool map) but carries no visible effect until slice 3 lands. Strict equality - \'10\' and 10 are NOT merged.', 'tc-data-tables'); ?>"></span>
                             </label>
 
                             <label class="gt-checkbox-label">
@@ -1257,7 +1257,7 @@ if ($table_id) {
                         <input type="checkbox" name="show_length_selector"
                                <?php checked(!empty($table_settings['show_length_selector'])); ?>>
                         <?php _e('Show length selector ("Show N entries" dropdown)', 'tc-data-tables'); ?>
-                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Lets visitors pick the page size on the fly. Off by default — existing tables stay locked to the admin-set "Entries per page" value.', 'tc-data-tables'); ?>"></span>
+                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Lets visitors pick the page size on the fly. Off by default - existing tables stay locked to the admin-set "Entries per page" value.', 'tc-data-tables'); ?>"></span>
                     </label>
                     <div class="gt-form-row">
                         <label for="gt-length-options"><?php _e('Length selector options', 'tc-data-tables'); ?></label>
@@ -1321,14 +1321,14 @@ if ($table_id) {
                     <div class="gt-form-row">
                         <label for="gt-default-sort-column"><?php _e('Default sort column', 'tc-data-tables'); ?></label>
                         <select id="gt-default-sort-column" name="default_sort_column" style="min-width: 280px;">
-                            <option value="" <?php selected($gt_ds_current_col, ''); ?>><?php _e('— Use legacy default (date_created desc) —', 'tc-data-tables'); ?></option>
+                            <option value="" <?php selected($gt_ds_current_col, ''); ?>><?php _e(' - Use legacy default (date_created desc) - ', 'tc-data-tables'); ?></option>
                             <option value="date_created" <?php selected($gt_ds_current_col, 'date_created'); ?>><?php _e('Entry creation date', 'tc-data-tables'); ?></option>
                             <option value="entry_id" <?php selected($gt_ds_current_col, 'entry_id'); ?>><?php _e('Entry ID', 'tc-data-tables'); ?></option>
                             <?php foreach ($gt_ds_form_fields as $gt_dsf_id => $gt_dsf_label): ?>
                                 <option value="<?php echo esc_attr($gt_dsf_id); ?>" <?php selected($gt_ds_current_col, (string) $gt_dsf_id); ?>><?php echo esc_html($gt_dsf_label) . ' (#' . esc_html($gt_dsf_id) . ')'; ?></option>
                             <?php endforeach; ?>
                             <?php if ($gt_ds_current_col !== '' && $gt_ds_current_col !== 'date_created' && $gt_ds_current_col !== 'entry_id' && !isset($gt_ds_form_fields[$gt_ds_current_col])): ?>
-                                <option value="<?php echo esc_attr($gt_ds_current_col); ?>" selected><?php echo esc_html($gt_ds_current_col); ?> <?php _e('(saved value — field not in current form)', 'tc-data-tables'); ?></option>
+                                <option value="<?php echo esc_attr($gt_ds_current_col); ?>" selected><?php echo esc_html($gt_ds_current_col); ?> <?php _e('(saved value - field not in current form)', 'tc-data-tables'); ?></option>
                             <?php endif; ?>
                         </select>
                     </div>
@@ -1393,7 +1393,7 @@ if ($table_id) {
 
 <h5>
                         <?php _e('Filter persistence (browser localStorage)', 'tc-data-tables'); ?>
-                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e('When on, the visitor\'s search box value and per-column filter selections are saved to their browser\'s localStorage (keyed by table id). On their next visit (or when they navigate away and back), those filters are auto-restored before the first AJAX so the table arrives in the same filtered state. Sort state is NOT persisted — it would be surprising to "remember" sort across pages. URL pre-filters (the toggle below) take precedence: when ?gt_col_X=value is in the URL, localStorage is ignored. Off by default to avoid surprising visitors who expect a fresh table on revisit.', 'tc-data-tables'); ?>" style="color: #2271b1; cursor: help; vertical-align: middle; font-size: 16px;"></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e('When on, the visitor\'s search box value and per-column filter selections are saved to their browser\'s localStorage (keyed by table id). On their next visit (or when they navigate away and back), those filters are auto-restored before the first AJAX so the table arrives in the same filtered state. Sort state is NOT persisted - it would be surprising to "remember" sort across pages. URL pre-filters (the toggle below) take precedence: when ?gt_col_X=value is in the URL, localStorage is ignored. Off by default to avoid surprising visitors who expect a fresh table on revisit.', 'tc-data-tables'); ?>" style="color: #2271b1; cursor: help; vertical-align: middle; font-size: 16px;"></span>
                     </h5>
                     <label class="gt-checkbox-label">
                         <input type="checkbox" name="persist_filters_localstorage"
@@ -1406,7 +1406,7 @@ if ($table_id) {
 
 <h5>
                         <?php _e('URL pre-filtering', 'tc-data-tables'); ?>
-                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e('When enabled, append <code>?gt_col_{column_id}=value</code> query parameters to the page URL to pre-filter the table on load. Useful for shareable / bookmarkable filtered views, "deep links" from email campaigns, and sales pages that link to a category-filtered table. Multiple parameters are AND-combined. Backed by TC_URL_Filter_Service. Off by default — enabling per-table is an explicit admin decision (the URL params reach client-side via $_GET sanitization, then map to the existing per-column filter inputs).', 'tc-data-tables'); ?>" style="color: #2271b1; cursor: help; vertical-align: middle; font-size: 16px;"></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e('When enabled, append <code>?gt_col_{column_id}=value</code> query parameters to the page URL to pre-filter the table on load. Useful for shareable / bookmarkable filtered views, "deep links" from email campaigns, and sales pages that link to a category-filtered table. Multiple parameters are AND-combined. Backed by TC_URL_Filter_Service. Off by default - enabling per-table is an explicit admin decision (the URL params reach client-side via $_GET sanitization, then map to the existing per-column filter inputs).', 'tc-data-tables'); ?>" style="color: #2271b1; cursor: help; vertical-align: middle; font-size: 16px;"></span>
                     </h5>
                     <label class="gt-checkbox-label">
                         <input type="checkbox" name="allow_url_filters"
@@ -1439,7 +1439,7 @@ if ($table_id) {
 
 <h5>
                         <?php _e('Collapsible table', 'tc-data-tables'); ?>
-                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Wrap the entire table in a collapsible container with an accessible expand/collapse toggle button above it. Useful for dashboards with multiple tables — visitors can collapse the ones they\'re not currently using to reduce visual noise. Toggle uses aria-expanded + aria-controls + role-correct semantics for screen readers. Open/closed state persists per-table in localStorage so the collapsed/expanded choice survives page reloads. Backed by TC_Collapsible_Service. Off by default — existing tables render exactly as today.', 'tc-data-tables'); ?>"></span>
+                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Wrap the entire table in a collapsible container with an accessible expand/collapse toggle button above it. Useful for dashboards with multiple tables - visitors can collapse the ones they\'re not currently using to reduce visual noise. Toggle uses aria-expanded + aria-controls + role-correct semantics for screen readers. Open/closed state persists per-table in localStorage so the collapsed/expanded choice survives page reloads. Backed by TC_Collapsible_Service. Off by default - existing tables render exactly as today.', 'tc-data-tables'); ?>"></span>
                     </h5>
                     <label class="gt-checkbox-label">
                         <input type="checkbox" name="collapsible_enabled"
@@ -1488,7 +1488,7 @@ if ($table_id) {
 
 <h5>
                         <?php _e('Border style', 'tc-data-tables'); ?>
-                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Per-table border preset. Classic = horizontal + vertical lines + outer border + accented header bottom (default — matches the existing look). Rows only = horizontal dividers without column dividers. None = borderless. Outer only = single outer border with rounded corners. Backed by TC_Border_Service.', 'tc-data-tables'); ?>"></span>
+                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Per-table border preset. Classic = horizontal + vertical lines + outer border + accented header bottom (default - matches the existing look). Rows only = horizontal dividers without column dividers. None = borderless. Outer only = single outer border with rounded corners. Backed by TC_Border_Service.', 'tc-data-tables'); ?>"></span>
                     </h5>
                     <div class="gt-form-row">
                         <label for="gt-border-preset"><?php _e('Border preset', 'tc-data-tables'); ?></label>
@@ -1497,9 +1497,9 @@ if ($table_id) {
                             $gt_border_current = isset($table_settings['border_preset']) ? (string) $table_settings['border_preset'] : 'classic';
                             $gt_border_options = array(
                                 'classic'    => __('Classic (default)', 'tc-data-tables'),
-                                'rows_only'  => __('Rows only — no vertical dividers', 'tc-data-tables'),
-                                'none'       => __('None — borderless', 'tc-data-tables'),
-                                'outer_only' => __('Outer only — single rounded outer border', 'tc-data-tables'),
+                                'rows_only'  => __('Rows only - no vertical dividers', 'tc-data-tables'),
+                                'none'       => __('None - borderless', 'tc-data-tables'),
+                                'outer_only' => __('Outer only - single rounded outer border', 'tc-data-tables'),
                             );
                             foreach ($gt_border_options as $gt_bo_key => $gt_bo_label):
                             ?>
@@ -1515,7 +1515,7 @@ if ($table_id) {
 
                     <h5>
                         <?php _e('Password protection (#607)', 'tc-data-tables'); ?>
-                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Per-table password gate for the frontend. When set, visitors see a password form instead of the table; on correct password, the table renders and the password is remembered for ~24h via a signed cookie. Useful for: club rosters, member directories, internal pricing tables, sensitive data on otherwise public pages. Distinct from role-based access — works for visitors WITHOUT WordPress accounts. Backed by TC_Table_Password_Service (slice 1, v4.10.1). Slice 2 (this release) wires the admin field + save sanitization. Slice 3 wires the frontend gate; until that lands, this setting persists but does NOT yet block visitors. Stored as a bcrypt hash, never as plaintext.', 'tc-data-tables'); ?>"></span>
+                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Per-table password gate for the frontend. When set, visitors see a password form instead of the table; on correct password, the table renders and the password is remembered for ~24h via a signed cookie. Useful for: club rosters, member directories, internal pricing tables, sensitive data on otherwise public pages. Distinct from role-based access - works for visitors WITHOUT WordPress accounts. Backed by TC_Table_Password_Service (slice 1, v4.10.1). Slice 2 (this release) wires the admin field + save sanitization. Slice 3 wires the frontend gate; until that lands, this setting persists but does NOT yet block visitors. Stored as a bcrypt hash, never as plaintext.', 'tc-data-tables'); ?>"></span>
                     </h5>
                     <?php
                     $gt_pwd_has = !empty($table_settings['table_password_hash']);
@@ -1530,7 +1530,7 @@ if ($table_id) {
                             id="gt-table-password"
                             value=""
                             autocomplete="new-password"
-                            placeholder="<?php echo $gt_pwd_has ? esc_attr__('Password currently set — leave blank to keep it', 'tc-data-tables') : esc_attr__('Leave blank to disable password protection', 'tc-data-tables'); ?>"
+                            placeholder="<?php echo $gt_pwd_has ? esc_attr__('Password currently set - leave blank to keep it', 'tc-data-tables') : esc_attr__('Leave blank to disable password protection', 'tc-data-tables'); ?>"
                             style="width: 100%; max-width: 380px;"
                         >
                         <p class="description" style="margin-top:6px;">
@@ -1560,7 +1560,7 @@ if ($table_id) {
                             name="send_email_recipient_field"
                             id="gt-send-email-recipient-field"
                             value="<?php echo esc_attr(isset($table_settings['send_email_recipient_field']) ? (string) $table_settings['send_email_recipient_field'] : ''); ?>"
-                            placeholder="<?php esc_attr_e('e.g. 3 — leave blank to use the first email-shaped value in the row', 'tc-data-tables'); ?>"
+                            placeholder="<?php esc_attr_e('e.g. 3 - leave blank to use the first email-shaped value in the row', 'tc-data-tables'); ?>"
                             style="width: 100%; max-width: 380px;"
                         >
                         <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Gravity Forms field id whose value should be used as the email recipient. Leave blank to fall back to auto-detect (first value in the entry that looks like an email address).', 'tc-data-tables'); ?>"></span>
@@ -1587,7 +1587,7 @@ if ($table_id) {
 
 <h5>
                         <?php _e('Print settings (#531)', 'tc-data-tables'); ?>
-                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Per-table print customization. The base print stylesheet (assets/css/frontend-print.css) hides chrome, expands rows, repeats thead, and applies grayscale zebra striping. These settings let you override paper size, opt out of the default repeat-header / row-striping behavior, and exclude specific columns from the printed output. Backed by TC_Print_Settings_Service. When the master toggle is off (default) the global print stylesheet alone applies — existing tables see no behavior change.', 'tc-data-tables'); ?>"></span>
+                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Per-table print customization. The base print stylesheet (assets/css/frontend-print.css) hides chrome, expands rows, repeats thead, and applies grayscale zebra striping. These settings let you override paper size, opt out of the default repeat-header / row-striping behavior, and exclude specific columns from the printed output. Backed by TC_Print_Settings_Service. When the master toggle is off (default) the global print stylesheet alone applies - existing tables see no behavior change.', 'tc-data-tables'); ?>"></span>
                     </h5>
                     <?php
                     $gt_print_settings = isset($table_settings['print_settings']) && is_array($table_settings['print_settings']) ? $table_settings['print_settings'] : array();
@@ -1732,7 +1732,7 @@ if ($table_id) {
                         ?>
                         <select name="top_n_column" style="min-width: 280px;">
                             <option value=""<?php selected($top_n_current, ''); ?>>
-                                <?php esc_html_e('— Top-N disabled —', 'tc-data-tables'); ?>
+                                <?php esc_html_e(' - Top-N disabled - ', 'tc-data-tables'); ?>
                             </option>
                             <option value="date_created"<?php selected($top_n_current, 'date_created'); ?>>
                                 <?php esc_html_e('Entry creation date (date_created)', 'tc-data-tables'); ?>
@@ -1744,7 +1744,7 @@ if ($table_id) {
                             <?php endforeach; ?>
                             <?php if ($top_n_current !== '' && $top_n_current !== 'date_created' && !isset($top_n_form_fields[$top_n_current])) : ?>
                                 <option value="<?php echo esc_attr($top_n_current); ?>" selected>
-                                    <?php echo esc_html(sprintf(__('%s (saved value — field not in current form)', 'tc-data-tables'), $top_n_current)); ?>
+                                    <?php echo esc_html(sprintf(__('%s (saved value - field not in current form)', 'tc-data-tables'), $top_n_current)); ?>
                                 </option>
                             <?php endif; ?>
                         </select>
@@ -1786,7 +1786,7 @@ if ($table_id) {
                         <input type="checkbox" name="show_advanced_filters"
                                <?php checked(isset($table_settings['show_advanced_filters']) ? $table_settings['show_advanced_filters'] : true); ?>>
                         <?php _e('Show advanced filters', 'tc-data-tables'); ?>
-                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Show the advanced filter panel and Filter button in the table toolbar. Disabled in error by a May 9 refactor (#1728) — re-enabled here.', 'tc-data-tables'); ?>"></span>
+                        <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Show the advanced filter panel and Filter button in the table toolbar. Disabled in error by a May 9 refactor (#1728) - re-enabled here.', 'tc-data-tables'); ?>"></span>
                     </label>
 
                     <label class="gt-checkbox-label">
@@ -1855,7 +1855,7 @@ if ($table_id) {
                         <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('GF field id that holds the Airtable record id.', 'tc-data-tables'); ?>"></span>
                     </div>
 
-                    <?php /* #1013 v4.183.0 — Legacy Airtable-specific sync_direction picker removed.
+                    <?php /* #1013 v4.183.0 - Legacy Airtable-specific sync_direction picker removed.
                           * The unified picker at the top of the page (rendered for json + airtable + notion)
                           * now handles all three external sources. Saved tables retain whichever value
                           * the legacy picker last wrote; the push consumer in class-tc-ajax.php (#1011)
@@ -1874,7 +1874,7 @@ if ($table_id) {
 
                     <div class="gt-form-row" style="margin-left: 24px;">
                         <label for="gt-frozen-top-rows" style="font-weight: normal;">
-                            <?php _e('Header rows to freeze (1–10)', 'tc-data-tables'); ?>
+                            <?php _e('Header rows to freeze (1 - 10)', 'tc-data-tables'); ?>
                         </label>
                         <input type="number" id="gt-frozen-top-rows" name="frozen_top_rows" min="1" max="10" step="1" style="width: 80px;"
                                value="<?php
@@ -1889,7 +1889,7 @@ if ($table_id) {
                         <?php _e('Freeze first column', 'tc-data-tables'); ?>
                     </label>
 
-                    <?php /* #1601 — AI table summary line (rule-based; no API key required). */ ?>
+                    <?php /* #1601 - AI table summary line (rule-based; no API key required). */ ?>
                     <label class="gt-checkbox-label">
                         <input type="checkbox" name="show_table_summary"
                                <?php checked(isset($table_settings['show_table_summary']) ? $table_settings['show_table_summary'] : false); ?>>
@@ -2043,7 +2043,7 @@ if ($table_id) {
                     <div class="gt-form-row">
                         <label for="gt-expiry-field-id"><?php _e('Expiry column', 'tc-data-tables'); ?></label>
                         <select id="gt-expiry-field-id" name="expiry_field_id">
-                            <option value=""><?php _e('— Disabled —', 'tc-data-tables'); ?></option>
+                            <option value=""><?php _e(' - Disabled - ', 'tc-data-tables'); ?></option>
                             <?php foreach ($gt_re_date_fields as $gt_re_id => $gt_re_label): ?>
                                 <option value="<?php echo esc_attr($gt_re_id); ?>" <?php selected($gt_re_field_id, $gt_re_id); ?>>
                                     <?php echo esc_html($gt_re_label . ' (#' . $gt_re_id . ')'); ?>
@@ -2067,7 +2067,7 @@ if ($table_id) {
                     </div>
                     <label class="gt-checkbox-label">
                         <input type="checkbox" name="expiry_inverse" value="1" <?php checked($gt_re_inverse); ?>>
-                        <?php _e('Inverse mode — show only upcoming rows (hide everything in the past)', 'tc-data-tables'); ?>
+                        <?php _e('Inverse mode - show only upcoming rows (hide everything in the past)', 'tc-data-tables'); ?>
                     </label>
                 </div>
 
@@ -2102,7 +2102,7 @@ if ($table_id) {
 
                 <div class="gt-feature-group" id="gt-data-quality" data-form-id="<?php echo esc_attr(!empty($table_data->form_id) ? (int) $table_data->form_id : 0); ?>">
                     <h4><?php _e('Data Quality (#1601)', 'tc-data-tables'); ?></h4>
-                    <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Scan a column for cleanup suggestions (stray whitespace, doubled spaces). Rule-based — no AI key required. Accepted fixes write back through the normal entry-update path.', 'tc-data-tables'); ?>"></span>
+                    <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Scan a column for cleanup suggestions (stray whitespace, doubled spaces). Rule-based - no AI key required. Accepted fixes write back through the normal entry-update path.', 'tc-data-tables'); ?>"></span>
                     <?php
                     // All scannable (scalar text) fields for the dropdown.
                     $gt_dq_fields = array();
@@ -2121,7 +2121,7 @@ if ($table_id) {
                     <div class="gt-form-row">
                         <label for="gt-dq-column"><?php _e('Column to scan', 'tc-data-tables'); ?></label>
                         <select id="gt-dq-column">
-                            <option value=""><?php _e('— Select a column —', 'tc-data-tables'); ?></option>
+                            <option value=""><?php _e(' - Select a column - ', 'tc-data-tables'); ?></option>
                             <?php foreach ($gt_dq_fields as $gt_dq_id => $gt_dq_label): ?>
                                 <option value="<?php echo esc_attr($gt_dq_id); ?>">
                                     <?php echo esc_html($gt_dq_label . ' (#' . $gt_dq_id . ')'); ?>
@@ -2180,7 +2180,7 @@ if ($table_id) {
                     </div>
                     <label class="gt-checkbox-label">
                         <input type="checkbox" name="scheduled_export_honor_filters" value="1" <?php checked($gt_se_honor); ?>>
-                        <?php _e('Honor current filters (advanced — wire via gt_scheduled_export_search_criteria filter)', 'tc-data-tables'); ?>
+                        <?php _e('Honor current filters (advanced - wire via gt_scheduled_export_search_criteria filter)', 'tc-data-tables'); ?>
                     </label>
                     <div class="gt-form-row">
                         <button type="button" class="button" id="gt-run-export-now" data-gt-action="run-export-now"
@@ -2222,7 +2222,7 @@ if ($table_id) {
                     <div class="gt-form-row">
                         <label for="gt-pivot-group-by"><?php _e('Group by column', 'tc-data-tables'); ?></label>
                         <select id="gt-pivot-group-by" name="pivot_group_by">
-                            <option value=""><?php _e('— None —', 'tc-data-tables'); ?></option>
+                            <option value=""><?php _e(' - None - ', 'tc-data-tables'); ?></option>
                             <?php foreach ($gt_pivot_fields as $gt_pivot_fid => $gt_pivot_label): ?>
                                 <option value="<?php echo esc_attr($gt_pivot_fid); ?>" <?php selected($gt_pivot_group, $gt_pivot_fid); ?>>
                                     <?php echo esc_html($gt_pivot_label . ' (#' . $gt_pivot_fid . ')'); ?>
@@ -2230,7 +2230,7 @@ if ($table_id) {
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <?php /* #1617 — multi-aggregate repeater: one row per
+                    <?php /* #1617 - multi-aggregate repeater: one row per
                            * aggregate; the engine and the v6.1.6 frontend
                            * pivot view always supported several. */ ?>
                     <div class="gt-pivot-aggregates">
@@ -2239,7 +2239,7 @@ if ($table_id) {
                             <?php foreach (($gt_pivot_cfg['aggregates'] ?? array()) as $gt_pa_agg): ?>
                             <div class="gt-pa-row" style="margin-bottom:6px;">
                                 <select class="gt-pa-col">
-                                    <option value=""><?php _e('— None —', 'tc-data-tables'); ?></option>
+                                    <option value=""><?php _e(' - None - ', 'tc-data-tables'); ?></option>
                                     <?php foreach ($gt_pivot_fields as $gt_pivot_fid => $gt_pivot_label): ?>
                                         <option value="<?php echo esc_attr($gt_pivot_fid); ?>" <?php selected((string) $gt_pa_agg['col'], $gt_pivot_fid); ?>>
                                             <?php echo esc_html($gt_pivot_label . ' (#' . $gt_pivot_fid . ')'); ?>
@@ -2261,7 +2261,7 @@ if ($table_id) {
                         <template id="gt-pa-row-template">
                             <div class="gt-pa-row" style="margin-bottom:6px;">
                                 <select class="gt-pa-col">
-                                    <option value=""><?php _e('— None —', 'tc-data-tables'); ?></option>
+                                    <option value=""><?php _e(' - None - ', 'tc-data-tables'); ?></option>
                                     <?php foreach ($gt_pivot_fields as $gt_pivot_fid => $gt_pivot_label): ?>
                                         <option value="<?php echo esc_attr($gt_pivot_fid); ?>">
                                             <?php echo esc_html($gt_pivot_label . ' (#' . $gt_pivot_fid . ')'); ?>
@@ -2307,7 +2307,7 @@ if ($table_id) {
                     <div class="gt-form-row">
                         <label for="gt-rg-column"><?php _e('Group by column', 'tc-data-tables'); ?></label>
                         <select id="gt-rg-column" name="group_by_column">
-                            <option value=""><?php _e('— None (disabled) —', 'tc-data-tables'); ?></option>
+                            <option value=""><?php _e(' - None (disabled) - ', 'tc-data-tables'); ?></option>
                             <?php foreach ($gt_rg_fields as $gt_rg_fid => $gt_rg_label): ?>
                                 <option value="<?php echo esc_attr($gt_rg_fid); ?>" <?php selected($gt_rg_column, $gt_rg_fid); ?>>
                                     <?php echo esc_html($gt_rg_label . ' (#' . $gt_rg_fid . ')'); ?>
@@ -2341,7 +2341,7 @@ if ($table_id) {
                         <?php _e('Enable server-side pagination (REST endpoint)', 'tc-data-tables'); ?>
                     </label>
                     <div class="gt-form-row">
-                        <label for="gt-pag-default-page-size"><?php _e('Default page size (1–500)', 'tc-data-tables'); ?></label>
+                        <label for="gt-pag-default-page-size"><?php _e('Default page size (1 - 500)', 'tc-data-tables'); ?></label>
                         <input type="number" id="gt-pag-default-page-size" name="default_page_size" min="1" max="500" step="1" style="width: 80px;"
                                value="<?php echo esc_attr((int) $gt_pag_settings['default_page_size']); ?>">
                     </div>
@@ -2352,7 +2352,7 @@ if ($table_id) {
                     <?php
                     $gt_mf_active = class_exists('TC_Media_Folder_Adapter') ? TC_Media_Folder_Adapter::config() : null;
                     $gt_mf_tooltip = ($gt_mf_active && !empty($gt_mf_active['supports_folder_ui']))
-                        ? sprintf(__('Folder browser via %s detected — pick from organized folders.', 'tc-data-tables'), $gt_mf_active['plugin_label'])
+                        ? sprintf(__('Folder browser via %s detected - pick from organized folders.', 'tc-data-tables'), $gt_mf_active['plugin_label'])
                         : __('Pick an image to display when an image-type column has no value. Install FileBird / FolderPress / WP Media Folder / Real Media Library for a folder browser.', 'tc-data-tables');
                     $gt_mf_fallback = isset($table_settings['default_image_fallback_url']) ? (string) $table_settings['default_image_fallback_url'] : '';
                     ?>
@@ -2427,8 +2427,8 @@ if ($table_id) {
                         <label for="gt-schema-type"><?php _e('Schema type', 'tc-data-tables'); ?></label>
                         <select id="gt-schema-type" name="schema[schema_type]">
                             <option value="off"     <?php selected($schema_type_current, 'off'); ?>><?php _e('Off (no JSON-LD emitted)', 'tc-data-tables'); ?></option>
-                            <option value="Table"   <?php selected($schema_type_current, 'Table'); ?>><?php _e('Table (generic — uses table title for name + about)', 'tc-data-tables'); ?></option>
-                            <option value="Dataset" <?php selected($schema_type_current, 'Dataset'); ?>><?php _e('Dataset (best for pricing / spec / data tables — Google Rich Results)', 'tc-data-tables'); ?></option>
+                            <option value="Table"   <?php selected($schema_type_current, 'Table'); ?>><?php _e('Table (generic - uses table title for name + about)', 'tc-data-tables'); ?></option>
+                            <option value="Dataset" <?php selected($schema_type_current, 'Dataset'); ?>><?php _e('Dataset (best for pricing / spec / data tables - Google Rich Results)', 'tc-data-tables'); ?></option>
                         </select>
                         <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('The Dataset type is the most useful for SEO; Google has a dedicated Rich Results path for it. ProductList / EventList types are pending the column-to-property mapping UI (slice 3 of #547).', 'tc-data-tables'); ?>"></span>
                     </div>
@@ -2503,7 +2503,7 @@ if ($table_id) {
                             <div class="gt-form-row">
                                 <label for="gt-wc-map-<?php echo esc_attr($key); ?>"><?php echo esc_html($label); ?></label>
                                 <select id="gt-wc-map-<?php echo esc_attr($key); ?>" name="wc_mapping[<?php echo esc_attr($key); ?>]" style="min-width: 240px">
-                                    <option value=""><?php esc_html_e('— Not mapped —', 'tc-data-tables'); ?></option>
+                                    <option value=""><?php esc_html_e(' - Not mapped - ', 'tc-data-tables'); ?></option>
                                     <?php foreach ($form_fields_for_map as $fid => $flabel): ?>
                                         <option value="<?php echo esc_attr($fid); ?>" <?php selected($current, $fid); ?>><?php echo esc_html(sprintf('%s (#%s)', $flabel, $fid)); ?></option>
                                     <?php endforeach; ?>
@@ -2515,7 +2515,7 @@ if ($table_id) {
 
                 <div class="gt-feature-group" id="gt-cell-merges-section">
                     <h4><?php _e('Cell Merges (#2323)', 'tc-data-tables'); ?></h4>
-                    <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Arbitrary rowspan/colspan cell merges for static (non-sorted) tables. Merges are applied in the server-side preview render. When DataTables sorting or filtering is active the row order changes and merge positions no longer match — disable sorting (uncheck "Show search" and remove sortable columns, or use a static data source) before relying on merges.', 'tc-data-tables'); ?>"></span>
+                    <span class="dashicons dashicons-editor-help gt-tooltip-icon" data-tooltip="<?php esc_attr_e('Arbitrary rowspan/colspan cell merges for static (non-sorted) tables. Merges are applied in the server-side preview render. When DataTables sorting or filtering is active the row order changes and merge positions no longer match - disable sorting (uncheck "Show search" and remove sortable columns, or use a static data source) before relying on merges.', 'tc-data-tables'); ?>"></span>
                     <?php
                     $gt_cell_merges_raw = isset($table_settings['cell_merges']) && is_array($table_settings['cell_merges'])
                         ? $table_settings['cell_merges']

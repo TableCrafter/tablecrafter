@@ -1,13 +1,13 @@
 /**
- * TableCrafter — frontend/table-utils.js
+ * TableCrafter - frontend/table-utils.js
  *
  * Small table-utility methods. Nineteenth slice under #833. Four
  * methods (~50 lines):
  *
- *   - destroy()          — clean up event handlers and remove the table.
- *   - adjustColumns()    — DataTables-style column-width recompute.
- *   - showMessage(msg, t)— flash a transient inline status message.
- *   - updateEntryCount(delta) — increment/decrement the visible entry count.
+ *   - destroy() - clean up event handlers and remove the table.
+ *   - adjustColumns() - DataTables-style column-width recompute.
+ *   - showMessage(msg, t) - flash a transient inline status message.
+ *   - updateEntryCount(delta) - increment/decrement the visible entry count.
  */
 (function (window) {
     'use strict';

@@ -1,9 +1,9 @@
 /**
- * gt-external-interactive.js — #1960
+ * gt-external-interactive.js - #1960
  *
  * Progressive enhancement for static external-source tables (JSON / CSV / XML /
  * Google Sheets / Airtable / Notion / External DB). Adds click-to-sort headers,
- * client-side pagination (data-per-page), and a search filter — no dependencies,
+ * client-side pagination (data-per-page), and a search filter - no dependencies,
  * no build step. Degrades gracefully: without JS the full static table still
  * renders.
  */
@@ -33,14 +33,14 @@
         var perPage = parseInt(table.getAttribute('data-per-page'), 10) || 25;
         var page = 1, filter = '', sortCol = -1, sortDir = 1;
 
-        // #2142 — honour the shortcode toggles emitted as data-attributes.
+        // #2142 - honour the shortcode toggles emitted as data-attributes.
         var showSearch = table.getAttribute('data-search') !== 'false';
         var showExport = table.getAttribute('data-export') === 'true';
 
         var wrap = table.parentNode;
         var head = table.tHead && table.tHead.rows[0] ? table.tHead.rows[0].cells : [];
 
-        // #2142 — export the filtered + sorted rows (what the user sees) to CSV.
+        // #2142 - export the filtered + sorted rows (what the user sees) to CSV.
         function exportCsv() {
             var cols = Array.prototype.map.call(head, function (th) { return th.textContent.trim(); });
             var lines = [cols.map(csvCell).join(',')];
@@ -127,7 +127,7 @@
             if (page > pages) { page = pages; }
             var start = (page - 1) * perPage;
 
-            // #2131 — DOM virtualization: keep ONLY the current page's rows in
+            // #2131 - DOM virtualization: keep ONLY the current page's rows in
             // the DOM instead of leaving every row attached (display:none). For
             // large datasets (thousands of rows) this keeps the live tbody tiny,
             // so sort/filter/paginate stay fast and layout/reflow cost is bounded
@@ -146,7 +146,7 @@
             var info = document.createElement('span');
             info.className = 'gt-ext-pager-info';
             info.textContent = rows.length
-                ? ('Showing ' + (start + 1) + '–' + Math.min(start + perPage, rows.length) + ' of ' + rows.length)
+                ? ('Showing ' + (start + 1) + ' - ' + Math.min(start + perPage, rows.length) + ' of ' + rows.length)
                 : 'No matching entries';
             pager.appendChild(info);
 
@@ -163,7 +163,7 @@
         render();
     }
 
-    // #2143 — legacy inline auto-refresh. Re-fetch the source via admin-ajax on
+    // #2143 - legacy inline auto-refresh. Re-fetch the source via admin-ajax on
     // a timer and swap the rendered table in place, restoring 3.5.x behavior.
     function setupAutoRefresh(wrapper) {
         if (wrapper.__gtRefreshing) { return; }

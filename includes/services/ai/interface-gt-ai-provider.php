@@ -1,6 +1,6 @@
 <?php
 /**
- * TC_AI_Provider — single seam every AI feature talks to.
+ * TC_AI_Provider - single seam every AI feature talks to.
  *
  * Implementations wrap a third-party LLM vendor (OpenAI, Anthropic, Gemini, ...).
  * Feature code never imports a vendor SDK directly; it resolves a provider via

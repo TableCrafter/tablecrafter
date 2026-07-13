@@ -1,7 +1,7 @@
 /**
- * TableCrafter — frontend/pivot-view.js
+ * TableCrafter - frontend/pivot-view.js
  *
- * #1596 — frontend pivot view + visitor raw/pivot toggle.
+ * #1596 - frontend pivot view + visitor raw/pivot toggle.
  *
  * The #562 slices shipped TC_Pivot_Service, the builder pivot config,
  * and the AJAX path that replaces entries with aggregated rows and
@@ -79,7 +79,7 @@
         },
 
         /**
-         * #1734 — pivot data-bar support.
+         * #1734 - pivot data-bar support.
          *
          * Optional third argument `barMaxes` is a map keyed by pivot column key
          * (e.g. `12_sum`) with the page-scoped numeric maximum, produced by
@@ -145,7 +145,7 @@
             var resolveLabel = function (fieldId) {
                 var th = probe.querySelector('th[data-field-id="' + fieldId + '"]');
                 if (!th) { return ''; }
-                // First text chunk only — sort arrows / filter inputs
+                // First text chunk only - sort arrows / filter inputs
                 // inside the th must not leak into the label.
                 var txt = (th.textContent || '').trim();
                 return txt.split('\n')[0].trim();
@@ -154,7 +154,7 @@
             $headRow.html(self.renderPivotHeadHtml(cols));
             var $tbody = $wrapper.find('tbody');
             var rows = Array.isArray(data.entries) ? data.entries : [];
-            // #1734 — compute per-pivot-column bar maxes before rendering rows
+            // #1734 - compute per-pivot-column bar maxes before rendering rows
             // so each aggregate cell can scale its fill proportionally.
             // typeof guard keeps harnesses without data-bars.js on the old path.
             var barMaxes = (typeof self.computePivotBarMaxes === 'function')

@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/a11y-keyboard.js
+ * TableCrafter - frontend/a11y-keyboard.js
  *
  * Row-link interaction (click + auxclick + keyboard activation) and
  * the isResponsiveMode helper. Sixth module under #830.
@@ -18,7 +18,7 @@
  *   - Cmd/Ctrl/Shift+click and middle-click open in a new tab with
  *     noopener,noreferrer
  *   - Enter/Space on the focused row navigates (with the same
- *     modifier rules) — keyboard parity with the click handler
+ *     modifier rules) - keyboard parity with the click handler
  *   - inline interactives (a, button, input, textarea, select, label,
  *     editable cells, toggle switches, action cells, checkbox cells)
  *     suppress row navigation so the user can still click links and
@@ -31,8 +31,8 @@
  * column headers aren't visible.
  *
  * Surface (attached to GravityTable.prototype via Object.assign):
- *   - bindRowLinkEvents($wrapper)   — wires click + auxclick + keydown.
- *   - isResponsiveMode()            — pure-ish helper.
+ *   - bindRowLinkEvents($wrapper) - wires click + auxclick + keydown.
+ *   - isResponsiveMode() - pure-ish helper.
  */
 (function (window) {
     'use strict';
@@ -47,7 +47,7 @@
 
     // Inline interactives that suppress row navigation. The selector list
     // must cover real links, buttons, inputs, editable cells, toggle
-    // switches, action cells, and checkbox cells — only the "blank" cell
+    // switches, action cells, and checkbox cells - only the "blank" cell
     // areas of a clickable row should fire the navigation.
     var INLINE_INTERACTIVE_SELECTOR =
         'a, button, input, textarea, select, label, .gt-editable-cell, .gt-toggle-switch, .gt-actions-cell, .gt-checkbox-cell';
@@ -58,7 +58,7 @@
         // having to mutate window.location (jsdom blocks Object.defineProperty
         // on Location.href). Production behavior is unchanged: same-tab path
         // assigns location.href; new-tab path calls window.open with
-        // noopener,noreferrer (security + privacy hardening — prevents the
+        // noopener,noreferrer (security + privacy hardening - prevents the
         // opened page from reaching window.opener).
         _navigate: function (href, newTab) {
             if (newTab) {
@@ -81,7 +81,7 @@
 
                 // #567 slice 2.4: per-table always-new-tab override.
                 var alwaysNewTab = !!(self.config && self.config.row_link_open_new_tab);
-                // Coerce to strict bool — keyboard events may have undefined
+                // Coerce to strict bool - keyboard events may have undefined
                 // modifier keys instead of false (synthetic-event quirk).
                 var newTab = !!(alwaysNewTab || e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1);
                 self._navigate(href, newTab);
@@ -100,7 +100,7 @@
                 if (navigateRow(e, $(this))) { e.preventDefault(); }
             });
 
-            // Keyboard activation — Enter or Space on the focused row.
+            // Keyboard activation - Enter or Space on the focused row.
             $wrapper.on('keydown.gt-table', 'tr.gt-row-clickable', function (e) {
                 if (e.key !== 'Enter' && e.key !== ' ') { return; }
                 if ($(e.target).closest(INLINE_INTERACTIVE_SELECTOR).length > 0) { return; }

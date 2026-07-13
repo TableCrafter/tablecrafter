@@ -44,7 +44,7 @@ class TC_Frontend_Editing_Panel {
 
             <p class="gt-help-text">
                 <?php esc_html_e(
-                    'Frontend editing lets logged-in users edit, add, and delete table rows directly from the front end of your site — no admin access required. Access is controlled by role and capability settings below.',
+                    'Frontend editing lets logged-in users edit, add, and delete table rows directly from the front end of your site - no admin access required. Access is controlled by role and capability settings below.',
                     'tc-data-tables'
                 ); ?>
             </p>

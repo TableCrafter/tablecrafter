@@ -1,5 +1,5 @@
 /**
- * TableCrafter — frontend/auto-refresh.js
+ * TableCrafter - frontend/auto-refresh.js
  *
  * Configurable table auto-refresh on interval (#1743, Free).
  * Last-updated timestamp display (#1912, Free).

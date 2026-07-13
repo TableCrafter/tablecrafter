@@ -112,7 +112,7 @@ class TC_Row_Height_Service {
                 $css .= "$scope tbody tr { height: $height; max-height: $height; overflow: hidden; }\n";
                 $css .= "$scope tbody td { max-height: $height; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }\n";
             } else {
-                // 'expand' mode — row is collapsible; default state is clamped
+                // 'expand' mode - row is collapsible; default state is clamped
                 $css .= "$scope tbody tr:not(.gt-row-expanded) { height: $height; max-height: $height; overflow: hidden; }\n";
                 $css .= "$scope tbody td { overflow: hidden; }\n";
                 $css .= "$scope tbody tr.gt-row-expanded { height: auto; max-height: none; }\n";
