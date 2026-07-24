@@ -54,6 +54,10 @@ $gf_version  = $gf_active && class_exists( 'GFCommon' )
 // (per the docs-per-release policy), newest first.
 $changelog = array(
     array(
+        'version' => '8.0.46',
+        'summary' => __( 'License activation notice for Pro sites running without an active license (snoozable, never on localhost/staging), plus security dependency updates: PhpSpreadsheet 2.4.7 (CVE-2026-59933) and npm build-chain advisories.', 'tc-data-tables' ),
+    ),
+    array(
         'version' => '8.0.45',
         'summary' => __( 'Typography consistency: replaced em-dashes and en-dashes with standard hyphens across plugin code, admin UI text, tooling, and documentation. No functional changes.', 'tc-data-tables' ),
     ),

@@ -681,6 +681,12 @@ if (!defined('ABSPATH')) {
                 <h2><?php printf(esc_html__('What\'s New (v%s)', 'tc-data-tables'), defined('TC_VERSION') ? TC_VERSION : '4.x'); ?></h2>
                 <p><?php _e('Highlights of what\'s landed across recent versions. Full per-version detail lives in CHANGELOG.md and readme.txt.', 'tc-data-tables'); ?></p>
 
+                <h3><?php _e('v8.0.46 -- License activation notice + security updates', 'tc-data-tables'); ?></h3>
+                <ul>
+                    <li><strong><?php _e('License notice (#2394)', 'tc-data-tables'); ?></strong> -- <?php _e('Pro sites without an active license now see a clear activation notice in wp-admin with Activate License and Get a License shortcuts. Snoozable for 7 days; never shown on localhost or staging.', 'tc-data-tables'); ?></li>
+                    <li><strong><?php _e('Security updates (#2395)', 'tc-data-tables'); ?></strong> -- <?php _e('Bundled PhpSpreadsheet updated to 2.4.7 (CVE-2026-59933 and related advisories); build-chain dependency advisories patched.', 'tc-data-tables'); ?></li>
+                </ul>
+
                 <h3><?php _e('v8.0.45 -- Typography consistency', 'tc-data-tables'); ?></h3>
                 <ul>
                     <li><strong><?php _e('Style sweep (#2386)', 'tc-data-tables'); ?></strong> -- <?php _e('Replaced em-dashes and en-dashes with standard hyphens across all plugin code, admin text, tooling, and documentation. Cosmetic only; no functional changes.', 'tc-data-tables'); ?></li>

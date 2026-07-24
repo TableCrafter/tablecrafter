@@ -4,7 +4,7 @@ Tags: gravity forms, editable table, google sheets, datatables, airtable
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 8.0.45
+Stable tag: 8.0.46
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,11 @@ Those are part of TableCrafter Pro - see the Upgrade to Pro section.
 6. Mobile-friendly: your tables stay readable on any screen size.
 
 == Changelog ==
+
+= 8.0.46 =
+* New: Pro sites running without an active license now show a clear activation notice in wp-admin with Activate License and Get a License shortcuts. It can be snoozed for 7 days and never appears on localhost or staging environments.
+* Security: bundled PhpSpreadsheet updated to 2.4.7 (CVE-2026-59933 and two related advisories); npm build-chain advisories patched (brace-expansion, adm-zip).
+* Dev: release tooling hardening - WP.org SVN auth now resolves from the macOS Keychain, and dist packaging hygiene improvements.
 
 = 8.0.45 =
 * Style: replaced em-dashes and en-dashes with standard hyphens across all plugin code, admin interface text, tooling, and documentation for consistent typography. No functional changes.

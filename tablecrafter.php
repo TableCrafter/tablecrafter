@@ -3,7 +3,7 @@
  * Plugin Name: TableCrafter
  * Plugin URI: https://github.com/TableCrafter/tablecrafter-pro
  * Description: TableCrafter - beautiful, responsive data tables for WordPress. Free: 3 tables, 8 columns, 500 entries. Pro: unlimited everything + frontend editing, bulk operations, advanced filters.
- * Version: 8.0.45
+ * Version: 8.0.46
  * Author: Fahad Murtaza @ iSuperCoder.com
  * Author URI: https://isupercoder.com/contact
  * License: GPL-2.0-or-later
@@ -15,7 +15,7 @@
  * Requires PHP: 8.1
  * Network: false
  *
- * @fs_premium_only /includes/services/class-tc-notion-sync-engine.php, /includes/services/class-tc-notion-payload-normalizer.php, /includes/services/class-tc-notion-push-engine.php, /includes/services/class-tc-airtable-push-engine.php, /includes/class-tc-external-db.php, /includes/class-tc-xml-source.php, /admin/views/db-connections.php, /admin/js/db-connections.js
+ * @fs_premium_only /includes/services/class-tc-notion-sync-engine.php, /includes/services/class-tc-notion-payload-normalizer.php, /includes/services/class-tc-notion-push-engine.php, /includes/services/class-tc-airtable-push-engine.php, /includes/class-tc-external-db.php, /includes/class-tc-xml-source.php, /includes/class-tc-license-nag.php, /admin/views/db-connections.php, /admin/js/db-connections.js
  */
 
 // Prevent direct access
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('TC_VERSION', '8.0.45');
+define('TC_VERSION', '8.0.46');
 define('TC_PHP_COMPAT_VERSION', '8.1');
 define('TC_ELEMENTOR_MIN_VERSION', '3.5.0');
 define('TC_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -452,6 +452,14 @@ require_once TC_PLUGIN_PATH . 'includes/class-tc-divi.php';
 require_once TC_PLUGIN_PATH . 'includes/class-tc-merged-table.php';
 gt_require_premium_file('includes/class-tc-external-db.php');
 gt_require_premium_file('includes/class-tc-xml-source.php');
+// #2394 - license nag. Premium-only file (stripped from the free build via
+// @fs_premium_only), so the registration must be class_exists-guarded.
+gt_require_premium_file('includes/class-tc-license-nag.php');
+if (class_exists('TC_License_Nag')) {
+    // No is_admin() gate: the shim bootstrap defines it late (Patchwork), and
+    // both hooks only ever fire inside wp-admin anyway.
+    TC_License_Nag::register();
+}
 require_once TC_PLUGIN_PATH . 'includes/class-tc-auto-import.php';
 require_once TC_PLUGIN_PATH . 'includes/class-tc-cloud-storage.php';
 require_once TC_PLUGIN_PATH . 'includes/class-tc-amp-compat.php';
